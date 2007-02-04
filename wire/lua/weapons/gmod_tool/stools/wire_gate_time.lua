@@ -9,6 +9,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_gate_time_desc", "Spawns a time chip for use with the wire system." )
     language.Add( "Tool_wire_gate_time_0", "Primary: Create/Update Time Chip" )
     language.Add( "WireGateTimeTool_action", "Action:" )
+    language.Add( "WireGateTimeTool_model", "Model:" )
 	language.Add( "sboxlimit_wire_gate_times", "You've hit time chips limit!" )
 	language.Add( "undone_wiregatetime", "Undone Wire Time Chip" )
 end
@@ -19,7 +20,7 @@ end
 
 TOOL.ClientConVar[ "action" ] = "timer"
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_gate.mdl"
+ModelPlug_Register(TOOL, "chip", "models/jaanus/wiretool/wiretool_gate.mdl")
 
 cleanup.Register( "wire_gate_times" )
 
@@ -34,6 +35,7 @@ function TOOL:LeftClick( trace )
 
 	// Get client's CVars
 	local action			= self:GetClientInfo( "action" )
+	local model             = self:GetClientInfo( "model" )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_gate" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup( GateActions[action] )
@@ -46,7 +48,7 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_gate_time = MakeWireGate( ply, trace.HitPos, Ang, self.Model, action )
+	local wire_gate_time = MakeWireGate( ply, trace.HitPos, Ang, model, action )
 	
 	local min = wire_gate_time:OBBMins()
 	wire_gate_time:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -103,13 +105,11 @@ function TOOL:UpdateGhostWireGateTime( ent, player )
 end
 
 function TOOL:Think()
-
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" )) then
+		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), Angle(0,0,0) )
 	end
 	
 	self:UpdateGhostWireGateTime( self.GhostEntity, self:GetOwner() )
-	
 end
 
 function TOOL.BuildCPanel(panel)
@@ -128,6 +128,8 @@ function TOOL.BuildCPanel(panel)
 	end
 
 	panel:AddControl("ListBox", Actions)
+
+	ModelPlug_AddToCPanel(panel, "chip", "wire_gate_time", "#WireGateTimeTool_model", nil, "#WireGateTimeTool_model")
 end
 
 

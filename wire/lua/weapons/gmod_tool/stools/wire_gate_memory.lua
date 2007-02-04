@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Control"
 TOOL.Name			= "Chip - Memory"
 TOOL.Command		= nil
@@ -9,6 +8,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_gate_memory_desc", "Spawns a memory chip for use with the wire system." )
     language.Add( "Tool_wire_gate_memory_0", "Primary: Create/Update Memory Chip" )
     language.Add( "WireGateMemoryTool_action", "Action:" )
+    language.Add( "WireGateMemoryTool_model", "Model:" )
 	language.Add( "sboxlimit_wire_gate_memorys", "You've hit memory chips limit!" )
 	language.Add( "undone_wiregatememory", "Undone Wire Memory Chip" )
 end
@@ -19,7 +19,7 @@ end
 
 TOOL.ClientConVar[ "action" ] = "latch"
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_gate.mdl"
+ModelPlug_Register(TOOL, "chip", "models/jaanus/wiretool/wiretool_gate.mdl")
 
 cleanup.Register( "wire_gate_memorys" )
 
@@ -34,6 +34,7 @@ function TOOL:LeftClick( trace )
 
 	// Get client's CVars
 	local action			= self:GetClientInfo( "action" )
+	local model             = self:GetClientInfo( "model" )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_gate" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup( GateActions[action] )
@@ -46,7 +47,7 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_gate_memory = MakeWireGate( ply, trace.HitPos, Ang, self.Model, action )
+	local wire_gate_memory = MakeWireGate( ply, trace.HitPos, Ang, model, action )
 	
 	local min = wire_gate_memory:OBBMins()
 	wire_gate_memory:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -103,13 +104,11 @@ function TOOL:UpdateGhostWireGateMemory( ent, player )
 end
 
 function TOOL:Think()
-
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" )) then
+		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), Angle(0,0,0) )
 	end
 	
 	self:UpdateGhostWireGateMemory( self.GhostEntity, self:GetOwner() )
-	
 end
 
 function TOOL.BuildCPanel(panel)
@@ -128,6 +127,8 @@ function TOOL.BuildCPanel(panel)
 	end
 
 	panel:AddControl("ListBox", Actions)
+
+	ModelPlug_AddToCPanel(panel, "chip", "wire_gate_memory", "#WireGateMemoryTool_model", nil, "#WireGateMemoryTool_model")
 end
 
 
