@@ -59,25 +59,29 @@ function ENT:EnableHover()
 	s = self.strength or 1 //needed to prevent some error when Initializing
 	self:SetHoverMode( true )
 	self:SetStrength(s) //reset weight so it will work
+	self:SetTargetZ ( self.Entity:GetPos().z ) //set height to current
 	local phys = self.Entity:GetPhysicsObject()
-	local Pos = phys:GetPos()
-	self:SetTargetZ ( Pos.z ) //set height to current
-	phys:EnableGravity( false )
-	phys:Wake()
+	if ( phys:IsValid() ) then
+		phys:EnableGravity( false )
+		phys:Wake()
+	end
 end
 
 
 function ENT:DisableHover()
 	self:SetHoverMode( false )
 	self:SetStrength(0.1) //for less dead weight while off
-	self.Entity:GetPhysicsObject():EnableGravity( true ) //falls slowly otherwise
+	local phys = self.Entity:GetPhysicsObject()
+	if ( phys:IsValid() ) then
+		phys:EnableGravity( true ) //falls slowly otherwise
+	end
 end
 
 
 function ENT:OnRestore()
 	self.ZVelocity = 0
 	
-    self.BaseClass.OnRestore(self)
+	self.BaseClass.OnRestore(self)
 end
 
 /*---------------------------------------------------------

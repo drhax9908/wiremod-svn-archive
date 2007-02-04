@@ -1,5 +1,5 @@
 
-TOOL.Category		= "Wire - Physics"
+TOOL.Category		= "Wire"
 TOOL.Name			= "Hoverball"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
@@ -79,6 +79,7 @@ function TOOL:LeftClick( trace )
 	if ( trace.Entity != NULL && !trace.Entity:IsWorld() ) then
 	
 		const 		= constraint.Weld( trace.Entity, wire_ball, trace.PhysicsBone, 0, 0, true )
+		nocollide = constraint.NoCollide( trace.Entity, wire_ball, 0, trace.PhysicsBone )
 		trace.Entity:DeleteOnRemove( wire_ball )
 		
 		wire_ball:GetPhysicsObject():EnableCollisions( false )
@@ -141,7 +142,7 @@ if (SERVER) then
 		
 	end
 	
-	duplicator.RegisterEntityClass("wire_hoverballs", MakeWireHoverBall, "Pos", "speed", "resistance", "strength", "Vel", "aVel", "frozen", "nocollide")
+	duplicator.RegisterEntityClass("gmod_wire_hoverball", MakeWireHoverBall, "Pos", "speed", "resistance", "strength", "Vel", "aVel", "frozen", "nocollide")
 
 end
 
