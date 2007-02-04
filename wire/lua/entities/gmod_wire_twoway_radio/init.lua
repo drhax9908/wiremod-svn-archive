@@ -67,6 +67,7 @@ end
 function ENT:RadioLink(other, id)
 	self.Other = other
 	self.PairID = id
+	self.PeerID = id
 	
 	self:ReceiveRadio("A", 0)
 end

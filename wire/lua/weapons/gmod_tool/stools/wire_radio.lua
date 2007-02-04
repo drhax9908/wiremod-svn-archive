@@ -37,6 +37,7 @@ function TOOL:LeftClick( trace )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_radio" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup( _channel )
+		trace.Entity:GetTable().channel = _channel
 		return true
 	end
 
@@ -80,7 +81,7 @@ if SERVER then
 
 		local ttable = 
 		{
-			Channel      = channel,
+			channel      = channel,
 			pl			= pl,
 			nocollide	= nocollide,
 			description = description
