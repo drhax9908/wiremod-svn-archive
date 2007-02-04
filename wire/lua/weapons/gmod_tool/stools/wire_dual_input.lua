@@ -1,5 +1,5 @@
 
-TOOL.Category		= "Wire"
+TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Input (dual)"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""

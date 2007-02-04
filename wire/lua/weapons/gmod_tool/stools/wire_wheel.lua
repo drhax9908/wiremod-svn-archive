@@ -1,5 +1,5 @@
 
-TOOL.Category		= "Wire"
+TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Wheel"
 TOOL.Command		= nil
 TOOL.ConfigName		= nil
