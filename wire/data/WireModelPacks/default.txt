@@ -1,0 +1,18 @@
+"0"
+{
+	"Chip"
+	{
+		"categories"    "gate,chip"
+		"model"			"models/jaanus/wiretool/wiretool_gate.mdl"
+
+		"files"
+		{
+			"0" "models/jaanus/wiretool/wiretool_gate.dx80.vtx"
+			"1" "models/jaanus/wiretool/wiretool_gate.dx90.vtx"
+			"2" "models/jaanus/wiretool/wiretool_gate.phy"
+			"3" "models/jaanus/wiretool/wiretool_gate.sw.vtx"
+			"4" "models/jaanus/wiretool/wiretool_gate.vvd"
+			"5" "models/jaanus/wiretool/wiretool_gate.xbox.vtx"
+		}
+	}
+}

@@ -9,6 +9,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_gate_arithmetic_desc", "Spawns an arithmetic gate for use with the wire system." )
     language.Add( "Tool_wire_gate_arithmetic_0", "Primary: Create/Update Arithmetic Gate" )
     language.Add( "WireGateArithmeticTool_action", "Action:" )
+    language.Add( "WireGateArithmeticTool_model", "Model:" )
 	language.Add( "sboxlimit_wire_gate_arithmetics", "You've hit arithmetic gates limit!" )
 	language.Add( "undone_wiregatearithmetic", "Undone Wire Arithmetic Gate" )
 end
@@ -19,7 +20,7 @@ end
 
 TOOL.ClientConVar[ "action" ] = "+"
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_gate.mdl"
+ModelPlug_Register(TOOL, "gate", "models/jaanus/wiretool/wiretool_gate.mdl")
 
 cleanup.Register( "wire_gate_arithmetics" )
 
@@ -34,6 +35,7 @@ function TOOL:LeftClick( trace )
 
 	// Get client's CVars
 	local action			= self:GetClientInfo( "action" )
+	local model             = self:GetClientInfo( "model" )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_gate" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup( GateActions[action] )
@@ -46,7 +48,7 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_gate_arithmetic = MakeWireGate( ply, trace.HitPos, Ang, self.Model, action )
+	local wire_gate_arithmetic = MakeWireGate( ply, trace.HitPos, Ang, model, action )
 	
 	local min = wire_gate_arithmetic:OBBMins()
 	wire_gate_arithmetic:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -103,13 +105,11 @@ function TOOL:UpdateGhostWireGateArithmetic( ent, player )
 end
 
 function TOOL:Think()
-
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" )) then
+		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), Angle(0,0,0) )
 	end
-	
+
 	self:UpdateGhostWireGateArithmetic( self.GhostEntity, self:GetOwner() )
-	
 end
 
 function TOOL.BuildCPanel(panel)
@@ -128,6 +128,8 @@ function TOOL.BuildCPanel(panel)
 	end
 
 	panel:AddControl("ListBox", Actions)
+	
+	ModelPlug_AddToCPanel(panel, "gate", "wire_gate_arithmetic", "#WireGateArithmeticTool_model", nil, "#WireGateArithmeticTool_model")
 end
 
 

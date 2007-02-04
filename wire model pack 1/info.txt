@@ -1,0 +1,11 @@
+"AddonInfo"
+{
+	"name"				"Wire Model Pack 1"
+	"version"			"0.1"
+	"up_date"			"4th February 2007"
+	"author_name"			"Kobilica"
+	"author_email"			"ErkleMad@gmail.com"
+	"author_url"			""
+	"info"				"Alternative models for the Wire addon."
+	"override"			"0"
+}

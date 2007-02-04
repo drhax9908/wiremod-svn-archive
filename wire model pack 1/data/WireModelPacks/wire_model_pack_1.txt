@@ -1,0 +1,57 @@
+"ModelPack"
+{
+	"Transistor Small"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/kobilica/transistorsmall.mdl"
+		"files"
+		{
+			"0"     "models/kobilica/transistorsmall.dx80.vtx"
+			"1"     "models/kobilica/transistorsmall.dx90.vtx"
+			"2"     "models/kobilica/transistorsmall.phy"
+			"3"     "models/kobilica/transistorsmall.sw.vtx"
+			"4"     "models/kobilica/transistorsmall.vvd"
+			"5"     "models/kobilica/transistorsmall.xbox.vtx"
+			"6"     "materials/models/wire/transistor.vmt"
+			"7"     "materials/models/wire/transistor.vtf"
+			"8"     "materials/models/wire/transistor_normal.vtf"
+		}
+	}
+
+	"Transistor Large"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/kobilica/transistor.mdl"
+		"files"
+		{
+			"0"     "models/kobilica/transistor.dx80.vtx"
+			"1"     "models/kobilica/transistor.dx90.vtx"
+			"2"     "models/kobilica/transistor.phy"
+			"3"     "models/kobilica/transistor.sw.vtx"
+			"4"     "models/kobilica/transistor.vvd"
+			"5"     "models/kobilica/transistor.xbox.vtx"
+			"6"     "materials/models/wire/transistor.vmt"
+			"7"     "materials/models/wire/transistor.vtf"
+			"8"     "materials/models/wire/transistor_normal.vtf"
+		}
+	}
+
+	"Capacitor"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/kobilica/capacatitor.mdl"
+		"files"
+		{
+			"0"     "models/kobilica/capacatitor.dx80.vtx"
+			"1"     "models/kobilica/capacatitor.dx90.vtx"
+			"2"     "models/kobilica/capacatitor.phy"
+			"3"     "models/kobilica/capacatitor.sw.vtx"
+			"4"     "models/kobilica/capacatitor.vvd"
+			"5"     "models/kobilica/capacatitor.xbox.vtx"
+			"6"     "materials/models/wire/capacatitor.vmt"
+			"7"     "materials/models/wire/capacatitor.vtf"
+			"8"     "materials/models/wire/capacatitor_normal.vtf"
+			"9"     "materials/models/wire/capacatitor_phong.vtf"
+		}
+	}
+}

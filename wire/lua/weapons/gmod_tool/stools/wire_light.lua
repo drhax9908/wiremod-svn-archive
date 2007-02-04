@@ -1,5 +1,5 @@
 
-TOOL.Category		= "Wire - Effects"
+TOOL.Category		= "Wire - Display"
 TOOL.Name			= "Light"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""

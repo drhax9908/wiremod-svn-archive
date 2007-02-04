@@ -1,5 +1,5 @@
 
-TOOL.Category		= "Wire - Destruction"
+TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Detonator"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
