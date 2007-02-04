@@ -15,6 +15,7 @@ function ModelPlug_Register(tool, category, default_model)
 
 	    local packs = file.Find("WireModelPacks/*.txt")
 	    for _,filename in pairs(packs) do
+	        resource.AddFile("data/WireModelPacks/" .. filename)
 	        local packtbl = util.KeyValuesToTable(file.Read("WireModelPacks/" .. filename) or {})
 
 	        for name,entry in pairs(packtbl) do
