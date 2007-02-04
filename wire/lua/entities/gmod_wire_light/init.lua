@@ -113,8 +113,6 @@ function ENT:Setup(directional, radiant)
 		end
 	end
 
---	self.Entity:SetColor( 0, 0, 0, 255 )
---	self:ShowOutput( 0, 0, 0 )
 end
 
 function ENT:ShowOutput( R, G, B )
