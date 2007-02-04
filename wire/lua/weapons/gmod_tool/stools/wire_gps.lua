@@ -1,4 +1,4 @@
-TOOL.Category		= "Wire"
+TOOL.Category		= "Wire - Detection"
 TOOL.Name			= "GPS"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""

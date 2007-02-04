@@ -1,5 +1,5 @@
 
-TOOL.Category		= "Wire"
+TOOL.Category		= "Wire - Control"
 TOOL.Name			= "Chip - Time"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""

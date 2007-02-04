@@ -1,5 +1,5 @@
 
-TOOL.Category		= "Wire"
+TOOL.Category		= "Wire - Detection"
 TOOL.Name			= "Ranger"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""

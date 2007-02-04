@@ -1,5 +1,5 @@
 
-TOOL.Category		= "Wire"
+TOOL.Category		= "Wire - Tools"
 TOOL.Name			= "Debugger"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""

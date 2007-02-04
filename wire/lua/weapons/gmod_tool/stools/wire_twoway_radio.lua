@@ -1,5 +1,5 @@
 
-TOOL.Category		= "Wire"
+TOOL.Category		= "Wire - Connection"
 TOOL.Name			= "Two-way Radio"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""

@@ -1,5 +1,5 @@
 
-TOOL.Category		= "Wire"
+TOOL.Category		= "Wire - Beacon"
 TOOL.Name			= "Target Finder"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""

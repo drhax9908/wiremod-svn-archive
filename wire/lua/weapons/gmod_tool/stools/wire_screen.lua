@@ -1,5 +1,5 @@
 
-TOOL.Category		= "Wire"
+TOOL.Category		= "Wire - Display"
 TOOL.Name			= "Screen"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""

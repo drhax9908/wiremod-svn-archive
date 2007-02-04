@@ -1,5 +1,5 @@
 
-TOOL.Category		= "Wire"
+TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Hoverball"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""

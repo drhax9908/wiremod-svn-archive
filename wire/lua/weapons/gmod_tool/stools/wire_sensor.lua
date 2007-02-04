@@ -1,6 +1,6 @@
 
-TOOL.Category		= "Wire"
-TOOL.Name			= "Distance Sensor"
+TOOL.Category		= "Wire - Beacon"
+TOOL.Name			= "Beacon Sensor"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 

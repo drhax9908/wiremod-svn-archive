@@ -1,6 +1,6 @@
 
-TOOL.Category		= "Wire"
-TOOL.Name			= "Output"
+TOOL.Category		= "Wire - Ouput"
+TOOL.Name			= "Numpad Output"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 

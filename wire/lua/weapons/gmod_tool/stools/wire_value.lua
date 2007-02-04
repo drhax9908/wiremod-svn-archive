@@ -1,6 +1,6 @@
 
-TOOL.Category		= "Wire"
-TOOL.Name			= "Value"
+TOOL.Category		= "Wire - Input"
+TOOL.Name			= "Constant Value"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
