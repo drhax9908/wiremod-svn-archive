@@ -4,7 +4,8 @@ AddCSLuaFile( "shared.lua" )
 
 include('shared.lua')
 
-
+ENT.WireDebugName = "AdvIndicator"
+ENT.OverlayDelay = 0
 
 /*---------------------------------------------------------
    Name: Initialize
@@ -23,7 +24,7 @@ function ENT:Initialize()
 	
 	self.exploding = false
 	self.reloading = false
-	
+	self.NormInfo = ""
 	self.count = 0
 	
 	self.Inputs = Wire_CreateInputs(self.Entity, { "Detonate", "ResetHealth" })
@@ -53,7 +54,7 @@ end
    Name: Setup
    Desc: does a whole lot of setting up
 ---------------------------------------------------------*/
-function ENT:Setup( damage, delaytime, removeafter, doblastdamage, radius, affectother, notaffected, delayreloadtime, maxhealth, bulletproof, explosionproof, fallproof, explodeatzero, resetatexplode, fireeffect, coloreffect )
+function ENT:Setup( damage, delaytime, removeafter, doblastdamage, radius, affectother, notaffected, delayreloadtime, maxhealth, bulletproof, explosionproof, fallproof, explodeatzero, resetatexplode, fireeffect, coloreffect, invisibleatzero, nocollide )
 
 	self.Damage = damage 
 	self.Delayetime = delaytime
@@ -73,17 +74,22 @@ function ENT:Setup( damage, delaytime, removeafter, doblastdamage, radius, affec
 	
 	self.FireEffect = fireeffect
 	self.ColorEffect = coloreffect
+	self.NoCollide = nocollide
+	self.InvisibleAtZero = invisibleatzero
 	
 	self.Entity:SetMaxHealth(maxhealth)
-	self.Entity:SetHealth(maxhealth)
-	Wire_TriggerOutput(self.Entity, "Health", maxhealth)
+	self:ResetHealth()
+
+
+	//self.Entity:SetHealth(maxhealth)
+	//Wire_TriggerOutput(self.Entity, "Health", maxhealth)
 	
 	//reset everthing back and try to stop exploding
-	self.exploding = false
-	self.reloading = false
-	self.count = 0
-	self.Entity:Extinguish()
-	if (self.ColorEffect) then self.Entity:SetColor(255, 255, 255, 255) end
+	//self.exploding = false
+	//self.reloading = false
+	//self.count = 0
+	//self.Entity:Extinguish()
+	//if (self.ColorEffect) then self.Entity:SetColor(255, 255, 255, 255) end
 	
 	self.NormInfo = "Explosive"
 	if (self.DoBlastDamage) then self.NormInfo = self.NormInfo.." (Damage: "..self.Damage..")" end
@@ -97,7 +103,24 @@ end
 
 function ENT:ResetHealth( )
 	self.Entity:SetHealth( self.Entity:GetMaxHealth() )
+	Wire_TriggerOutput(self.Entity, "Health", self.Entity:GetMaxHealth())
+	
+	//put the fires out and try to stop exploding
+	self.exploding = false
+	self.reloading = false
+	self.count = 0
+	self.Entity:Extinguish()
+	
 	if (self.ColorEffect) then self.Entity:SetColor(255, 255, 255, 255) end
+	
+	self.Entity:SetNoDraw( false )
+	
+	if (self.NoCollide) then
+		self.Entity:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
+	else
+		self.Entity:SetCollisionGroup(COLLISION_GROUP_NONE)
+	end
+	
 	self:ShowOutput()
 end
 
@@ -120,7 +143,6 @@ function ENT:OnTakeDamage( dmginfo )
 		dammage = dmginfo:GetDamage()
 		h = self.Entity:Health() - dammage
 		if (h < 0) then h = 0 end
-		if (h == 0 && self.ExplodeAtZero) then self:Trigger() end //oh shi--
 		self.Entity:SetHealth(h)
 		Wire_TriggerOutput(self.Entity, "Health", h)
 		self:ShowOutput()
@@ -128,8 +150,10 @@ function ENT:OnTakeDamage( dmginfo )
 			if (h == 0) then c = 0 else c = 255 * (h / self.Entity:GetMaxHealth()) end
 			self.Entity:SetColor(255, c, c, 255)
 		end
+		if (h == 0) then
+			if (self.ExplodeAtZero) then self:Trigger() end //oh shi--
+		end
 	end
-	
 
 end
 
@@ -163,6 +187,12 @@ function ENT:Explode( )
 	if (!self.exploding) then return end //why are we exploding if we shouldn't be
 	
 	ply = self.Entity
+	
+	if (self.InvisibleAtZero) then
+		ply:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+		ply:SetNoDraw( true )
+		ply:SetColor(255, 255, 255, 0)
+	end
 	
 	if ( self.DoBlastDamage ) then
 		util.BlastDamage( self.Entity, ply, self.Entity:GetPos(), self.Radius, self.Damage )
@@ -218,9 +248,14 @@ function ENT:ShowOutput( )
 	local txt = ""
 	if (self.reloading && self.Delayreloadtime > 0) then
 		txt = "Rearming... "..self.count
-		if (self.ColorEffect) then 
+		if (self.ColorEffect && !self.InvisibleAtZero) then 
 			if (self.count == 0) then c = 255 else c = 255 * ((self.Delayreloadtime - self.count) / self.Delayreloadtime) end
 			self.Entity:SetColor(255, c, c, 255)
+		end
+		if (self.InvisibleAtZero) then
+			ply:SetNoDraw( false )
+			if (self.count == 0) then c = 255 else c = 255 * ((self.Delayreloadtime - self.count) / self.Delayreloadtime) end
+			self.Entity:SetColor(255, 255, 255, c)
 		end
 	elseif (self.exploding) then
 		txt = "Triggered... "..self.count
