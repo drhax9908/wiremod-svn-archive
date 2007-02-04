@@ -1,0 +1,375 @@
+
+TOOL.Category		= "Wire"
+TOOL.Name			= "Wire"
+TOOL.Command		= nil
+TOOL.ConfigName		= ""
+
+if ( CLIENT ) then
+    language.Add( "Tool_wire_name", "Wiring Tool" )
+    language.Add( "Tool_wire_desc", "Used to connect wirable props." )
+    language.Add( "Tool_wire_0", "Primary: Attach to selected input.\nSecondary: Next input.\nReload: Unlink selected input." )
+    language.Add( "Tool_wire_1", "Primary: Attach to output.\nSecondary: Attach but continue.\nReload: Cancel." )
+    language.Add( "Tool_wire_2", "Primary: Confirm attach to output.\nSecondary: Next output.\nReload: Cancel." )
+    language.Add( "WireTool_addlength", "Add Length:" )
+    language.Add( "WireTool_width", "Width:" )
+    language.Add( "WireTool_rigid", "Rigid:" )
+    language.Add( "WireTool_breakable", "Breakable:" )
+    language.Add( "WireTool_material", "Material:" )
+    language.Add( "WireTool_colour", "Material:" )
+	language.Add( "undone_wire", "Undone Wire" )
+end
+
+TOOL.ClientConVar[ "addlength" ] = "4"
+TOOL.ClientConVar[ "width" ] = "2"
+TOOL.ClientConVar[ "rigid" ] = "0"
+TOOL.ClientConVar[ "breakable" ] = "0"
+TOOL.ClientConVar[ "material" ] = "cable/cable2"
+TOOL.ClientConVar[ "color_r" ] = "255"
+TOOL.ClientConVar[ "color_g" ] = "255"
+TOOL.ClientConVar[ "color_b" ] = "255"
+
+TOOL.ForceLimit = 2000
+TOOL.CurrentComponent = nil
+TOOL.CurrentInput = nil
+TOOL.Inputs = nil
+TOOL.CurrentOutput = nil
+TOOL.Outputs = nil
+
+util.PrecacheSound("weapons/pistol/pistol_empty.wav")
+
+cleanup.Register( "wireconstraints" )
+
+function TOOL:LeftClick( trace )
+	if (trace.Entity:IsValid()) and (trace.Entity:IsPlayer()) then return end
+
+	// If there's no physics object then we can't constraint it!
+	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
+
+	local stage = self:GetStage()
+	
+	if (stage == 0) then
+		if (CLIENT) then
+		    if (self:GetWeapon():GetNetworkedString("WireCurrentInput")) then
+				self:SetStage(0)
+				return true
+			end
+		elseif (self.CurrentInput) then
+			local material	= self:GetClientInfo("material")
+			local width		= self:GetClientNumber("width")
+			local breakable	= (self:GetClientNumber("breakable") ~= 0)
+			local color     = Color(self:GetClientNumber("color_r"), self:GetClientNumber("color_g"), self:GetClientNumber("color_b"))
+
+			if (Wire_Link_Start(self:GetOwner():UniqueID(), trace.Entity, trace.Entity:WorldToLocal(trace.HitPos), self.CurrentInput, material, color, width)) then
+				self:SetStage(1)
+			    return true
+			end
+		end
+		
+		return
+	elseif (stage == 1) then
+		if (CLIENT) then
+			self:SetStage(0)
+			return true
+		end
+		
+		if (not trace.Entity.Outputs) then
+			self:SetStage(0)
+		
+			Wire_Link_Cancel(self:GetOwner():UniqueID())
+
+	        self:GetOwner():SendLua( "GAMEMODE:AddNotify('Wire source invalid!', NOTIFY_GENERIC, 7);" )
+			return
+		end
+		
+		self.Outputs = {}
+		for key,_ in pairs(trace.Entity.Outputs) do table.insert(self.Outputs, key) end
+		table.sort(self.Outputs)
+
+		local oname = nil
+		for k,_ in pairs(trace.Entity.Outputs) do
+		    if (oname) then
+				self:SelectComponent(nil)
+		        self.CurrentOutput = oname
+		        self.OutputEnt = trace.Entity
+		        self.OutputPos = trace.Entity:WorldToLocal(trace.HitPos)
+		    	self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output:"..self.CurrentOutput)
+		        self:SetStage(2)
+		        return true
+		    end
+
+		    oname = k
+		end
+
+		Wire_Link_End(self:GetOwner():UniqueID(), trace.Entity, trace.Entity:WorldToLocal(trace.HitPos), oname)
+
+		self:SelectComponent(nil)
+		self:SetStage(0)
+	else
+		if (CLIENT) then
+			self:SetStage(0)
+			return true
+		end
+
+		Wire_Link_End(self:GetOwner():UniqueID(), self.OutputEnt, self.OutputPos, self.CurrentOutput)
+		
+		self.CurrentOutput = nil
+		self.OutputEnt = nil
+		self.OutputPos = nil
+
+		self:SelectComponent(nil)
+		self:SetStage(0)
+	end
+
+	return true
+end
+
+
+function TOOL:RightClick( trace )
+	local stage = self:GetStage()
+
+	if (stage < 2) then
+		if (not trace.Entity:IsValid()) or (trace.Entity:IsPlayer()) then return end
+	end
+
+	// If there's no physics object then we can't constraint it!
+	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
+
+	if (stage == 0) then
+		if (CLIENT) then return end
+
+		if (trace.Entity:IsValid()) then
+			self:SelectComponent(trace.Entity)
+		else
+		    self:SelectComponent(nil)
+		end
+		if (not self.Inputs) or (not self.CurrentInput) then return end
+
+		local iNextInput
+		for k,v in pairs(self.Inputs) do
+		    if (v == self.CurrentInput) then iNextInput = k+1 end
+		end
+		if (iNextInput) then
+		    self:GetOwner():EmitSound("weapons/pistol/pistol_empty.wav")
+
+		    if (iNextInput > table.getn(self.Inputs)) then iNextInput = 1 end
+
+		    self.CurrentInput = self.Inputs[iNextInput]
+			if (self.CurrentInput) then self.LastValidInput = self.CurrentInput end
+
+			if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) and (self.CurrentInput)
+			  and (self.CurrentComponent.Inputs) and (self.CurrentComponent.Inputs[self.CurrentInput])
+			  and (self.CurrentComponent.Inputs[self.CurrentInput].Src) then
+		    	self:GetWeapon():SetNetworkedString("WireCurrentInput", "%"..(self.CurrentInput or ""))
+			else
+		    	self:GetWeapon():SetNetworkedString("WireCurrentInput", self.CurrentInput or "")
+			end
+
+			if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) then
+			    self.CurrentComponent:SetNetworkedString("BlinkWire", self.CurrentInput)
+			end
+		end
+	elseif (stage == 1) then
+	    if (SERVER) then
+			Wire_Link_Node(self:GetOwner():UniqueID(), trace.Entity, trace.Entity:WorldToLocal(trace.HitPos+trace.HitNormal))
+		end
+	elseif (self.Outputs) then
+		if (CLIENT) then return end
+
+		local iNextOutput
+		for k,v in pairs(self.Outputs) do
+		    if (v == self.CurrentOutput) then iNextOutput = k+1 end
+		end
+		
+		if (iNextOutput) then
+		    self:GetOwner():EmitSound("weapons/pistol/pistol_empty.wav")
+
+		    if (iNextOutput > table.getn(self.Outputs)) then iNextOutput = 1 end
+		    
+            self.CurrentOutput = self.Outputs[iNextOutput]
+	    	self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output: "..self.CurrentOutput)
+		end
+	end
+end
+
+
+function TOOL:Reload(trace)
+	if (not trace.Entity:IsValid()) or (trace.Entity:IsPlayer()) then return false end
+	if (CLIENT) then return true end
+
+	if (self:GetStage() == 0) then
+	    if (not self.CurrentComponent) or (not self.CurrentComponent:IsValid()) then return end
+	    if (not self.CurrentInput) or (self.CurrentInput == "") then return end
+	    
+	    Wire_Link_Clear(self.CurrentComponent, self.CurrentInput)
+
+		return true
+	end
+	
+	Wire_Link_Cancel(self:GetOwner():UniqueID())
+	self:SetStage(0)
+	
+	return true
+end
+
+
+if (CLIENT) then
+
+	function TOOL:DrawHUD()
+	    local current_input = self:GetWeapon():GetNetworkedString("WireCurrentInput") or ""
+		if (current_input ~= "") then
+		    if (string.sub(current_input, 1, 1) == "%") then
+		    	draw.WordBox(8, ScrW()/2+10, ScrH()/2+10, string.sub(current_input, 2), "Default", Color(150,50,50,192), Color(255,255,255,255) )
+		    else
+		    	draw.WordBox(8, ScrW()/2+10, ScrH()/2+10, current_input, "Default", Color(50,50,75,192), Color(255,255,255,255) )
+			end
+		end
+	end
+	
+end
+
+
+function TOOL:Think()
+	if (self:GetStage() == 0) then
+		local player = self:GetOwner()
+		local tr = utilx.GetPlayerTrace(player, player:GetCursorAimVector())
+		local trace = util.TraceLine(tr)
+
+		if (trace.Hit) and (trace.Entity:IsValid()) then
+			self:SelectComponent(trace.Entity)
+		else
+            self:SelectComponent(nil)
+		end
+	end
+end
+
+
+function TOOL.BuildCPanel(panel)
+	panel:AddControl("Header", { Text = "#Tool_wire_name", Description = "#Tool_wire_desc" })
+
+	panel:AddControl("ComboBox", {
+		Label = "#Presets",
+		MenuButton = "1",
+		Folder = "wire",
+
+		Options = {
+			Default = {
+				wire_addlength = "4",
+				wire_material = "cable/rope",
+				wire_width = "3",
+				wire_rigid = "0",
+				wire_breakable = "1"
+			}
+		},
+
+		CVars = {
+			[0] = "wire_addlength",
+			[1] = "wire_width",
+			[2] = "wire_material",
+			[3] = "wire_rigid",
+			[4] = "wire_breakable"
+		}
+	})
+
+	panel:AddControl("Slider", {
+		Label = "#WireTool_addlength",
+		Type = "Float",
+		Min = "-1000",
+		Max = "1000",
+		Command = "wire_addlength"
+	})
+
+	panel:AddControl("Slider", {
+		Label = "#WireTool_width",
+		Type = "Float",
+		Min = "1",
+		Max = "20",
+		Command = "wire_width"
+	})
+
+	panel:AddControl("CheckBox", {
+		Label = "#WireTool_rigid",
+		Command = "wire_rigid"
+	})
+
+	panel:AddControl("CheckBox", {
+		Label = "#WireTool_breakable",
+		Command = "wire_breakable"
+	})
+
+	panel:AddControl("MaterialGallery", {
+		Label = "#WireTool_material",
+		Height = "64",
+		Width = "28",
+		Rows = "1",
+		Stretch = "1",
+
+		Options = {
+			["Wire"] = { Material = "cable/rope_icon", wire_material = "cable/rope" },
+			["Cable 2"] = { Material = "cable/cable_icon", wire_material = "cable/cable2" },
+			["XBeam"] = { Material = "cable/xbeam", wire_material = "cable/xbeam" },
+			["Red Laser"] = { Material = "cable/redlaser", wire_material = "cable/redlaser" },
+			["Blue Electric"] = { Material = "cable/blue_elec", wire_material = "cable/blue_elec" },
+			["Physics Beam"] = { Material = "cable/physbeam", wire_material = "cable/physbeam" },
+			["Hydra"] = { Material = "cable/hydra", wire_material = "cable/hydra" },
+		},
+
+		CVars = {
+			[0] = "wire_material"
+		}
+	})
+
+	panel:AddControl("Color", {
+		Label = "#WireTool_colour",
+		Red = "wire_color_r",
+		Green = "wire_color_g",
+		Blue = "wire_color_b",
+		ShowAlpha = "0",
+		ShowHSV = "1",
+		ShowRGB = "1",
+		Multiplier = "255"
+	})
+end
+
+
+function TOOL:SelectComponent(ent)
+	if (CLIENT) then return end
+
+	if (self.CurrentComponent == ent) then return end
+
+    if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) then
+ 	    self.CurrentComponent:SetNetworkedString("BlinkWire", "")
+	end
+
+	self.CurrentComponent = ent
+	self.CurrentInput = nil
+	self.Inputs = {}
+	
+	local best = nil
+	local first = nil
+	if (ent) and (ent.Inputs) then
+		for k,v in pairs(ent.Inputs) do
+		    if (not first) then first = k end
+		    if (k == self.LastValidInput) then best = k end
+		    table.insert(self.Inputs, k)
+		end
+	end
+	
+	table.sort(self.Inputs)
+	first = self.Inputs[1] or first
+
+	self.CurrentInput = best or first
+	if (self.CurrentInput) and (self.CurrentInput ~= "") then self.LastValidInput = self.CurrentInput end
+	
+	if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) and (self.CurrentInput)
+	  and (self.CurrentComponent.Inputs) and (self.CurrentComponent.Inputs[self.CurrentInput])
+	  and (self.CurrentComponent.Inputs[self.CurrentInput].Src) then
+    	self:GetWeapon():SetNetworkedString("WireCurrentInput", "%"..(self.CurrentInput or ""))
+	else
+    	self:GetWeapon():SetNetworkedString("WireCurrentInput", self.CurrentInput or "")
+	end
+	
+	if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) then
+	    self.CurrentComponent:SetNetworkedString("BlinkWire", self.CurrentInput)
+	end
+end
+

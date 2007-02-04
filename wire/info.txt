@@ -1,0 +1,11 @@
+"AddonInfo"
+{
+	"name"				"Wire"
+	"version"			"0.2"
+	"up_date"			"5th January 2007"
+	"author_name"			"Geoffrey Brown"
+	"author_email"			"ErkleMad@gmail.com"
+	"author_url"			""
+	"info"				"A set of SEnts and STools that communicate through wires."
+	"override"			"0"
+}
