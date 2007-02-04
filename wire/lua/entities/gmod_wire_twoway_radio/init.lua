@@ -108,6 +108,8 @@ function ENT:ShowOutput(iname, value)
 end
 
 function ENT:OnRestore()
+	self.BaseClass.OnRestore(self)
+
 	Wire_AdjustInputs(self.Entity, { "A", "B", "C", "D" })
 	Wire_AdjustOutputs(self.Entity, { "A", "B", "C", "D" })
 end
