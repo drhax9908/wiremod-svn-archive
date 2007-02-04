@@ -15,4 +15,22 @@
 			"5" "models/jaanus/wiretool/wiretool_gate.xbox.vtx"
 		}
 	}
+
+	"Value Chip"
+	{
+		"categories"    "value"
+		"model"			"models/kobilica/value.mdl"
+
+		"files"
+		{
+			"0" "models/kobilica/value.dx80.vtx"
+			"1" "models/kobilica/value.dx90.vtx"
+			"2" "models/kobilica/value.phy"
+			"3" "models/kobilica/value.sw.vtx"
+			"4" "models/kobilica/value.vvd"
+			"5" "models/kobilica/value.xbox.vtx"
+			"6" "materials/models/wire/chipnum.vmt"
+			"7" "materials/models/wire/chipnum.vtf"
+		}
+	}
 }

@@ -9,6 +9,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_value_desc", "Spawns a constant value prop for use with the wire system." )
     language.Add( "Tool_wire_value_0", "Primary: Create/Update Value   Secondary: Copy Settings" )
     language.Add( "WireValueTool_value", "Value:" )
+    language.Add( "WireValueTool_model", "Model:" )
 	language.Add( "sboxlimit_wire_values", "You've hit values limit!" )
 	language.Add( "undone_wirevalue", "Undone Wire Value" )
 end
@@ -19,7 +20,7 @@ end
 
 TOOL.ClientConVar[ "value" ] = "0"
 
-TOOL.Model = "models/props_lab/reciever01d.mdl"
+ModelPlug_Register(TOOL, "value", "models/kobilica/value.mdl")
 
 cleanup.Register( "wire_values" )
 
@@ -33,6 +34,7 @@ function TOOL:LeftClick( trace )
 
 	// Get client's CVars
 	local value = self:GetClientNumber( "value" )
+	local model             = self:GetClientInfo( "model" )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_value" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup(value)
@@ -45,7 +47,7 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_value = MakeWireValue( ply, trace.HitPos, Ang, value )
+	local wire_value = MakeWireValue( ply, model, trace.HitPos, Ang, value )
 
 	local min = wire_value:OBBMins()
 	wire_value:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -88,7 +90,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireValue( pl, Pos, Ang, value, Vel, aVel, frozen )
+	function MakeWireValue( pl, Model, Pos, Ang, value, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_values" ) ) then return false end
 	
 		local wire_value = ents.Create( "gmod_wire_value" )
@@ -96,7 +98,7 @@ if (SERVER) then
 
 		wire_value:SetAngles( Ang )
 		wire_value:SetPos( Pos )
-		wire_value:SetModel( Model("models/props_lab/reciever01d.mdl") )
+		wire_value:SetModel( Model )
 		wire_value:Spawn()
 
 		wire_value:Setup(value)
@@ -114,7 +116,7 @@ if (SERVER) then
 		return wire_value
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_value", MakeWireValue, "Pos", "Ang", "value", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_value", MakeWireValue, "Model", "Pos", "Ang", "value", "Vel", "aVel", "frozen")
 
 end
 
@@ -140,8 +142,8 @@ function TOOL:UpdateGhostWireValue( ent, player )
 end
 
 function TOOL:Think()
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" )) then
+		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), Angle(0,0,0) )
 	end
 
 	self:UpdateGhostWireValue( self.GhostEntity, self:GetOwner() )
@@ -173,4 +175,6 @@ function TOOL.BuildCPanel(panel)
 		Max = "10",
 		Command = "wire_value_value"
 	})
+
+	ModelPlug_AddToCPanel(panel, "value", "wire_value", "#WireValueTool_model", nil, "#WireValueTool_model")
 end

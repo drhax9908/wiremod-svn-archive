@@ -7,10 +7,7 @@ include('shared.lua')
 ENT.WireDebugName = "Value"
 ENT.OverlayDelay = 0
 
-local MODEL = Model( "models/props_lab/reciever01d.mdl" )
-
 function ENT:Initialize()
-	self.Entity:SetModel( MODEL )
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )

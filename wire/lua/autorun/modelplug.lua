@@ -47,25 +47,24 @@ function ModelPlug_Register(tool, category, default_model)
 	end
 
 	tool.ClientConVar["model"] = default_model or ""
-	Msg("GBDBG: " .. default_model)
 end
 
 function ModelPlug_AddToCPanel(panel, category, toolname, label, type, textbox_label)
-	if (not ModelPlugInfo[category]) or (table.Count(ModelPlugInfo[category]) <= 1) then return end
+	if (ModelPlugInfo[category]) and (table.Count(ModelPlugInfo[category]) > 1) then
+		local type = type or "ComboBox"
+		local Models = {
+			Label = label or "Model:",
+			MenuButton = "0",
 
-	local type = type or "ComboBox"
-	local Models = {
-		Label = label or "Model:",
-		MenuButton = "0",
+			Options = {}
+		}
 
-		Options = {}
-	}
+		for name,model in pairs(ModelPlugInfo[category]) do
+		    Models.Options[name] = { [toolname .. "_model"] = model }
+		end
 
-	for name,model in pairs(ModelPlugInfo[category]) do
-	    Models.Options[name] = { [toolname .. "_model"] = model }
+		panel:AddControl(type, Models)
 	end
-
-	panel:AddControl(type, Models)
 
 	if (textbox_label) then
 		panel:AddControl("TextBox", {
