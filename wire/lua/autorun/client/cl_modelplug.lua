@@ -1,8 +1,4 @@
-
-if (SERVER) then
-	AddCSLuaFile( "autorun/modelplug.lua" )
-end
-
+Msg("--- cl_modelplug.lua ---\n")
 
 ModelPlugInfo = {}
 
@@ -15,10 +11,6 @@ function ModelPlug_Register(tool, category, default_model)
 
 	    local packs = file.Find("WireModelPacks/*.txt")
 	    for _,filename in pairs(packs) do
-	        if (SERVER) then
-	        	resource.AddFile("data/WireModelPacks/" .. filename)
-			end
-			
 	        local packtbl = util.KeyValuesToTable(file.Read("WireModelPacks/" .. filename) or {})
 
 	        for name,entry in pairs(packtbl) do
@@ -28,18 +20,6 @@ function ModelPlug_Register(tool, category, default_model)
 					if (cat == category) then
 					    catinfo[name] = entry.model or ""
 					    default = default or entry.model
-
-						if (SERVER) then
-							if (entry.model) then
-							    resource.AddFile(entry.model)
-							end
-
-							if (entry.files) then
-							    for _,extrafilename in pairs(entry.files) do
-								    resource.AddFile(extrafilename)
-							    end
-							end
-						end
 
 						break
 					end
