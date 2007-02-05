@@ -97,31 +97,6 @@
 		}
 	}
 
-	"Speaker 1"
-	{
-		"categories"    "speaker"
-		"model"			"models/cheeze/wires/speaker.mdl"
-
-		"files"
-		{
-			"0" "models/cheeze/wires/speaker.dx80.vtx"
-			"1" "models/cheeze/wires/speaker.dx90.vtx"
-			"2" "models/cheeze/wires/speaker.phy"
-			"3" "models/cheeze/wires/speaker.sw.vtx"
-			"4" "models/cheeze/wires/speaker.vvd"
-			"5" "materials/models/cheeze/wires/leather2.vmt"
-			"6" "materials/models/cheeze/wires/leather2.vtf"
-			"7" "materials/models/cheeze/wires/metal_texture.vmt"
-			"8" "materials/models/cheeze/wires/metal_texture.vtf"
-			"9" "materials/models/cheeze/wires/speaker_base.vmt"
-			"10" "materials/models/cheeze/wires/speaker_base.vtf"
-			"11" "materials/models/cheeze/wires/speaker_blck.vmt"
-			"12" "materials/models/cheeze/wires/speaker_blck.vtf"
-			"13" "materials/models/cheeze/wires/speaker_red.vmt"
-			"14" "materials/models/cheeze/wires/speaker_base.vtf"
-		}
-	}
-
 	"PC Speaker - Medium"
 	{
 		"categories"    "speaker"
