@@ -11,7 +11,7 @@ function ModelPlug_Register(category)
 
 	    local packs = file.Find("WireModelPacks/*.txt")
 	    for _,filename in pairs(packs) do
-        	resource.AddFile("data/WireModelPacks/" .. filename)
+        	//resource.AddFile("data/WireModelPacks/" .. filename)
 			
 	        local packtbl = util.KeyValuesToTable(file.Read("WireModelPacks/" .. filename) or {})
 
@@ -22,15 +22,15 @@ function ModelPlug_Register(category)
 					if (cat == category) then
 					    catinfo[name] = entry.model or ""
 
-						if (entry.model) then
-						    resource.AddFile(entry.model)
-						end
+						//if (entry.model) then
+						//    resource.AddFile(entry.model)
+						//end
 
-						if (entry.files) then
-						    for _,extrafilename in pairs(entry.files) do
-							    resource.AddFile(extrafilename)
-						    end
-						end
+						//if (entry.files) then
+						//    for _,extrafilename in pairs(entry.files) do
+						//	    resource.AddFile(extrafilename)
+						//    end
+						//end
 
 						break
 					end
