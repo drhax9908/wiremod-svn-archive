@@ -134,30 +134,26 @@ function ENT:Think()
 end
 
 
-function ENT:GetPos( ent, phys, lpos )
-
+function ENT:GetWPos( ent, phys, lpos )
 	if (ent:EntIndex() == 0) then
 		return lpos
 	end
 	
-	if (phys ~= nil && phys:IsValid()) then	
+	if (phys) and (phys:IsValid()) then
 		return phys:LocalToWorld( lpos )
 	else 
 		return ent:LocalToWorld( lpos ) 
 	end
-
-	
 end
 
 
 function ENT:SetConstraint( c )
-
 	self.constraint = c
 	self.direction = DIR_NONE
 	self.toggle = c:GetTable().toggle
 
-	local p1 = self:GetPos(c:GetTable().Ent1, c:GetTable().Phys1, c:GetTable().LPos1)
-	local p2 = self:GetPos(c:GetTable().Ent2, c:GetTable().Phys2, c:GetTable().LPos2)
+	local p1 = self:GetWPos(c:GetTable().Ent1, c:GetTable().Phys1, c:GetTable().LPos1)
+	local p2 = self:GetWPos(c:GetTable().Ent2, c:GetTable().Phys2, c:GetTable().LPos2)
 	local dist = (p1 - p2)
 	
 	self.current_length = dist:Length()
@@ -251,10 +247,13 @@ function ENT:IsExpanded()
 	return self.isexpanded
 end
 
+
+
+
 /*----------------------------------------------------------------------
 	HydraulicToggle - Toggle hydraulic on off
 ----------------------------------------------------------------------*/
-local function HydraulicToggle( pl, hyd )
+/*local function HydraulicToggle( pl, hyd )
 	
 	if ( !hyd || !hyd:IsValid() ) then return false end
 	
@@ -281,40 +280,39 @@ local function HydraulicToggle( pl, hyd )
 	end
 
 end
-
-numpad.Register( "HydraulicToggle", HydraulicToggle )
+numpad.Register( "HydraulicToggle", HydraulicToggle )*/
 
 
 /*----------------------------------------------------------------------
 	WinchOn - Called to switch the winch on
 ----------------------------------------------------------------------*/
-local function WinchOn( pl, winch, dir )
+/*local function WinchOn( pl, winch, dir )
 	if ( !winch || !winch:IsValid() ) then return false end
 	winch:GetTable():SetDirection(dir)
 end
-numpad.Register( "WinchOn", WinchOn )
+numpad.Register( "WinchOn", WinchOn )*/
 
 /*----------------------------------------------------------------------
 	WinchOn - Called to switch the winch off
 ----------------------------------------------------------------------*/
-local function WinchOff( pl, winch )
+/*local function WinchOff( pl, winch )
 	if ( !winch || !winch:IsValid() ) then return false end
 	winch:GetTable():SetDirection(0)
 end
-numpad.Register( "WinchOff", WinchOff )
+numpad.Register( "WinchOff", WinchOff )*/
 
 /*----------------------------------------------------------------------
 	WinchToggle - Called to toggle the winch
 ----------------------------------------------------------------------*/
-local function WinchToggle( pl, winch, dir )
+/*local function WinchToggle( pl, winch, dir )
 	if ( !winch || !winch:IsValid() ) then return false end
 	if (winch:GetTable():GetDirection() == dir) then winch:GetTable():SetDirection(0)
 	else winch:GetTable():SetDirection(dir)	end
 end
-numpad.Register( "WinchToggle", WinchToggle )
+numpad.Register( "WinchToggle", WinchToggle )*/
 
 
-local function MuscleToggle( pl, hyd )
+/*local function MuscleToggle( pl, hyd )
 	
 	if ( !hyd || !hyd:IsValid() ) then return false end
 	
@@ -325,5 +323,4 @@ local function MuscleToggle( pl, hyd )
 	end
 
 end
-
-numpad.Register( "MuscleToggle", MuscleToggle )
+numpad.Register( "MuscleToggle", MuscleToggle )*/

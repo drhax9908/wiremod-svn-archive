@@ -248,8 +248,9 @@ if SERVER then
 		return const, damp
 	end
 
-	function MakeWireHydraulicController( pl, Pos, Ang )
+	function MakeWireWinchController( pl, Pos, Ang )
 		local controller = ents.Create("gmod_wire_hydraulic")
+		//local controller = ents.Create("gmod_wire_winch_controller")
 		
 		controller:SetPos( Pos )
 		controller:SetAngles( Ang )
@@ -259,11 +260,11 @@ if SERVER then
 		return controller
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_hydraulic", MakeWireHydraulicController, "Pos", "Ang")
+	duplicator.RegisterEntityClass("gmod_wire_winch_controller", MakeWireWinchController, "Pos", "Ang")
 	
-	function Winch( pl, Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, width, fwd_speed, bwd_speed, material )
-		if ( !CanConstrain( Ent1, Bone1 ) ) then return false end
-		if ( !CanConstrain( Ent2, Bone2 ) ) then return false end
+	function MakeWireWinch( pl, Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, width, fwd_speed, bwd_speed, material )
+		if ( !constraint.CanConstrain( Ent1, Bone1 ) ) then return false end
+		if ( !constraint.CanConstrain( Ent2, Bone2 ) ) then return false end
 		
 		local Phys1 = Ent1:GetPhysicsObjectNum( Bone1 )
 		local Phys2 = Ent2:GetPhysicsObjectNum( Bone2)
@@ -274,7 +275,7 @@ if SERVER then
 					
 		local constant, dampen = CalcElasticConsts( Phys1, Phys2, Ent1, Ent2 )
 
-		local const, rope = Elastic( Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, constant, dampen, 0, material, width, true )
+		local const, rope = constraint.Elastic( Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, constant, dampen, 0, material, width, true )
 		
 		if ( !const ) then return nil, rope end
 		
