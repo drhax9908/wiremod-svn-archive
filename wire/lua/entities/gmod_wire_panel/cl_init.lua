@@ -169,7 +169,6 @@ function ENT:Draw()
 			end
 		end
 		if control and onscreen then
---			if pos.x > 6.5 and pos.x < 6.7 then
 			if (math.abs(pos.x - OF) < 1.0) then
 				if cx <= .3 then
 					for i = 3,10 do
@@ -223,7 +222,6 @@ function ENT:Draw()
 			end
 		end
 		if control and onscreen then
---			if pos.x > 6.5 and pos.x < 6.7 then
 			if (math.abs(pos.x - OF) < 1.0) then
 				surface.SetDrawColor(255,255,255,255)
 				surface.SetTexture(surface.GetTextureID("gui/arrow"))
@@ -233,22 +231,6 @@ function ENT:Draw()
 		end
 
 
-/*		surface.SetDrawColor(0,0,0,255)
-		surface.DrawRect(x/RatioX,y,(x+w)/RatioX,y+h)
-		
-		surface.SetDrawColor(100,100,150,255)
-		surface.DrawRect(x/RatioX,y,(x+w)/RatioX,20)
-		
-		surface.SetDrawColor(100,100,150,255)
-		surface.DrawRect(x/RatioX,y+94,(x+w)/RatioX,20)
-		
-		draw.DrawText("Value A","Trebuchet18",(x + 92)/RatioX,y + 2,Color(255,255,255,255),1)
-		
-		local Display = self:GetDisplay( )
-		
-		draw.DrawText(Display,"panel_font",(x + 92)/RatioX,y + 20,Color(255,255,255,255),1)
-*/
-		
 	cam.End3D2D()
 	
 	Wire_Render(self.Entity)
@@ -258,3 +240,4 @@ function ENT:IsTranslucent()
 	return true
 end
 --Cosmic Tone - Title War
+--Houjaboy - Party Animals
