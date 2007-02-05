@@ -5,9 +5,7 @@ AddCSLuaFile( "autorun/client/cl_modelplug.lua" )
 ModelPlugInfo = {}
 
 
-function ModelPlug_Register(tool, category, default_model)
-	local default = default
-
+function ModelPlug_Register(category)
 	if (not ModelPlugInfo[category]) then
 		local catinfo = {}
 
@@ -23,7 +21,6 @@ function ModelPlug_Register(tool, category, default_model)
 				for _,cat in pairs(categorytable) do
 					if (cat == category) then
 					    catinfo[name] = entry.model or ""
-					    default = default or entry.model
 
 						if (entry.model) then
 						    resource.AddFile(entry.model)
@@ -43,6 +40,4 @@ function ModelPlug_Register(tool, category, default_model)
 
 	    ModelPlugInfo[category] = catinfo
 	end
-
-	tool.ClientConVar["model"] = default_model or ""
 end

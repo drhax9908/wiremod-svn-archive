@@ -19,8 +19,11 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "value" ] = "0"
+TOOL.ClientConVar[ "model" ] = "models/kobilica/value.mdl"
 
-ModelPlug_Register(TOOL, "value", "models/kobilica/value.mdl")
+if (SERVER) then
+	ModelPlug_Register("value")
+end
 
 cleanup.Register( "wire_values" )
 

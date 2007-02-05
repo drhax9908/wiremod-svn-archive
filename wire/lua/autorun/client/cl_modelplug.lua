@@ -2,9 +2,7 @@
 ModelPlugInfo = {}
 
 
-function ModelPlug_Register(tool, category, default_model)
-	local default = default
-
+function ModelPlug_AddToCPanel(panel, category, toolname, label, type, textbox_label)
 	if (not ModelPlugInfo[category]) then
 		local catinfo = {}
 
@@ -14,7 +12,7 @@ function ModelPlug_Register(tool, category, default_model)
 
 	        for name,entry in pairs(packtbl) do
 				local categorytable = string.Explode(",", entry.categories or "none") or { "none" }
-				
+
 				for _,cat in pairs(categorytable) do
 					if (cat == category) then
 					    catinfo[name] = entry.model or ""
@@ -29,11 +27,7 @@ function ModelPlug_Register(tool, category, default_model)
 	    ModelPlugInfo[category] = catinfo
 	end
 
-	tool.ClientConVar["model"] = default_model or ""
-end
-
-function ModelPlug_AddToCPanel(panel, category, toolname, label, type, textbox_label)
-	if (ModelPlugInfo[category]) and (table.Count(ModelPlugInfo[category]) > 1) then
+	if (table.Count(ModelPlugInfo[category]) > 1) then
 		local type = type or "ComboBox"
 		local Models = {
 			Label = label or "Model:",

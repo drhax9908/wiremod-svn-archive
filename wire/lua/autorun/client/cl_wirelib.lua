@@ -1,4 +1,3 @@
-
 local WIRE_SCROLL_SPEED = 0.5
 local WIRE_BLINKS_PER_SECOND = 2
 local CurPathEnt = {}

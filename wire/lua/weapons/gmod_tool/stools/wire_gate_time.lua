@@ -19,8 +19,11 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "action" ] = "timer"
+TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
 
-ModelPlug_Register(TOOL, "chip", "models/jaanus/wiretool/wiretool_gate.mdl")
+if (SERVER) then
+	ModelPlug_Register("gate")
+end
 
 cleanup.Register( "wire_gate_times" )
 

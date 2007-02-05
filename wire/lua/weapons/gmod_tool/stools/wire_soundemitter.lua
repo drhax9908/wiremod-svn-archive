@@ -21,8 +21,11 @@ end
 
 TOOL.ClientConVar[ "sound" ] = "common/warning.wav"
 TOOL.ClientConVar[ "collision" ] = "0"
+TOOL.ClientConVar[ "model" ] = "models/cheeze/wires/speaker.mdl"
 
-ModelPlug_Register(TOOL, "speaker", "models/cheeze/wires/speaker.mdl")
+if (SERVER) then
+	ModelPlug_Register("speaker")
+end
 
 cleanup.Register( "wire_emitters" )
 
