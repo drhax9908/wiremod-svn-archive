@@ -1,6 +1,6 @@
 "0"
 {
-	"Chip"
+	"Gate Chip"
 	{
 		"categories"    "gate,chip"
 		"model"			"models/jaanus/wiretool/wiretool_gate.mdl"
@@ -32,5 +32,26 @@
 			"6" "materials/models/wire/chipnum.vmt"
 			"7" "materials/models/wire/chipnum.vtf"
 		}
+	}
+
+	"Speaker"
+	{
+		"categories"    "speaker"
+		"model"			"models/cheeze/wires/speaker.mdl"
+
+		"files"
+		{
+			"0" "models/cheeze/wires/speaker.dx80.vtx"
+			"1" "models/cheeze/wires/speaker.dx90.vtx"
+			"2" "models/cheeze/wires/speaker.phy"
+			"3" "models/cheeze/wires/speaker.sw.vtx"
+			"4" "models/cheeze/wires/speaker.vvd"
+		}
+	}
+
+	"Metal Can"
+	{
+		"categories"    "speaker"
+		"model"			"models/props_junk/garbage_metalcan002a.mdl"
 	}
 }

@@ -10,6 +10,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_soundemitter_0", "Primary: Create/Update Sound Emitter" )
     language.Add( "WireEmitterTool_sound", "Sound:" )
     language.Add( "WireEmitterTool_collision", "Collision:" )
+    language.Add( "WireEmitterTool_model", "Model:" )
 	language.Add( "sboxlimit_wire_soundemitters", "You've hit soundemitters limit!" )
 	language.Add( "undone_wiresoundemitter", "Undone Wire Soundemitter" )
 end
@@ -21,7 +22,7 @@ end
 TOOL.ClientConVar[ "sound" ] = "common/warning.wav"
 TOOL.ClientConVar[ "collision" ] = "0"
 
-TOOL.Model = "models/cheeze/wires/speaker.mdl"
+ModelPlug_Register(TOOL, "speaker", "models/cheeze/wires/speaker.mdl")
 
 cleanup.Register( "wire_emitters" )
 
@@ -37,6 +38,7 @@ function TOOL:LeftClick( trace )
 	
 	local sound			= Sound( self:GetClientInfo( "sound" ) )
 	local collision		= (self:GetClientInfo( "collision" ) ~= 0)
+	local model			= self:GetClientInfo( "model" )
 
 	// If we shot a wire_emitter change its sound
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_soundemitter" && trace.Entity.pl == ply ) then
@@ -48,13 +50,13 @@ function TOOL:LeftClick( trace )
 	
 	if ( !self:GetSWEP():CheckLimit( "wire_emitters" ) ) then return false end
 
-	if (not util.IsValidModel(self.Model)) then return false end
-	if (not util.IsValidProp(self.Model)) then return false end		// Allow ragdolls to be used?
+	if (not util.IsValidModel(model)) then return false end
+	if (not util.IsValidProp(model)) then return false end
 
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	wire_emitter = MakeWireEmitter( ply, self.Model, Ang, trace.HitPos, sound )
+	wire_emitter = MakeWireEmitter( ply, model, Ang, trace.HitPos, sound )
 	
 	local min = wire_emitter:OBBMins()
 	wire_emitter:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -146,13 +148,11 @@ function TOOL:UpdateGhostWireEmitter( ent, player )
 end
 
 function TOOL:Think()
-
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" )) then
+		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), Angle(0,0,0) )
 	end
 	
 	self:UpdateGhostWireEmitter( self.GhostEntity, self:GetOwner() )
-	
 end
 
 function TOOL.BuildCPanel(panel)
@@ -184,4 +184,6 @@ function TOOL.BuildCPanel(panel)
 	})
 
 	panel:AddControl("CheckBox", { Label = "#WireEmitterTool_collision", Command = "wire_emitter_collision" })
+
+	ModelPlug_AddToCPanel(panel, "speaker", "wire_soundemitter", "#WireEmitterTool_model", nil, "#WireEmitterTool_model")
 end
