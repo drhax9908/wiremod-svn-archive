@@ -26,13 +26,14 @@ function ENT:Setup(keygroup, keygroup2, toggle, value_off, value_on, value_on2)
 	self.ValueOn = value_on
 	self.ValueOn2 = value_on2
 	self.Value = value_off
-
+	self.Select = 0
+	
 	self:ShowOutput(self.ValueOff)
 	Wire_TriggerOutput(self.Entity, "Out", self.ValueOff)
 end
 
 function ENT:InputActivate( mul )
-	if ( self.Toggle ) then
+	if ( self.Toggle && self.Select == mul ) then
 		return self:Switch( !self.On, mul )
 	end
 
@@ -49,6 +50,7 @@ function ENT:Switch( on, mul )
 	if (!self.Entity:IsValid()) then return false end
 
 	self.On = on
+	self.Select = mul
 
 	if (on && mul == 1) then
 		self:ShowOutput(self.ValueOn)
