@@ -1,4 +1,3 @@
-Msg("--- cl_modelplug.lua ---\n")
 
 ModelPlugInfo = {}
 

@@ -1,4 +1,3 @@
-Msg("--- modelplug.lua ---\n")
 
 AddCSLuaFile( "autorun/client/cl_modelplug.lua" )
 
