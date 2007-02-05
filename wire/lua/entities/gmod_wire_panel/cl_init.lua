@@ -239,5 +239,3 @@ end
 function ENT:IsTranslucent()
 	return true
 end
---Cosmic Tone - Title War
---Houjaboy - Party Animals
