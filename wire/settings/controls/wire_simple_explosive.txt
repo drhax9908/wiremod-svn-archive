@@ -16,22 +16,15 @@
 				"wire_explosive_model"			"models/props_c17/oildrum001_explosive.mdl"
 				"wire_explosive_tirgger"		"1"
 				"wire_explosive_damage"			"200"
-				"wire_explosive_delaytime" 		"0"
-				"wire_explosive_removeafter"	"0"
+				"wire_explosive_radius"		"200"
+				"wire_explosive_removeafter"	"1"
 				"wire_explosive_doblastdamage"	"1"
-				"wire_explosive_affectother"	"0"
-				"wire_explosive_notaffected"	"0"
 				"wire_explosive_freeze"			"0"
 				"wire_explosive_weld"			"1"
-				"wire_explosive_maxhealth"		"100"
-				"wire_explosive_bulletproof"	"0"
-				"wire_explosive_explosionproof"	"0"
-				"wire_explosive_explodeatzero"	"1"
-				"wire_explosive_resetatexplode"	"1"
-				"wire_explosive_fireeffect"		"1"
 				"wire_explosive_nocollide"		"0"
 				"wire_explosive_weight"			"400"
 				"wire_explosive_noparentremove"	"0"
+				"wire_explosive_modelman"		""
 			}
 		}		
 
@@ -40,22 +33,15 @@
 			"0"	"wire_explosive_model"
 			"0"	"wire_explosive_tirgger"
 			"0"	"wire_explosive_damage"
-			"0"	"wire_explosive_delaytime"
+			"0" "wire_explosive_radius"
 			"0"	"wire_explosive_removeafter"
 			"0"	"wire_explosive_doblastdamage"
-			"0"	"wire_explosive_affectother"
-			"0"	"wire_explosive_notaffected"
 			"0"	"wire_explosive_freeze"
 			"0"	"wire_explosive_weld"
-			"0"	"wire_explosive_maxhealth"
-			"0"	"wire_explosive_bulletproof"
-			"0"	"wire_explosive_explosionproof"
-			"0"	"wire_explosive_explodeatzero"
-			"0"	"wire_explosive_resetatexplode"
-			"0"	"wire_explosive_fireeffect"
 			"0"	"wire_explosive_nocollide"
 			"0"	"wire_explosive_weight"
-			"0"	"wire_explosive_noparentremove"
+			"0" "wire_explosive_noparentremove"
+			"0" "wire_explosive_modelman"
 		}
 	}
 
@@ -259,26 +245,6 @@
 		"Command"			"wire_explosive_radius"
 	}
 	
-	"Slider"
-	{
-		"Label"				"#WireExplosiveTool_delay"
-		"Description"		"#ExplosiveTool_delay"
-		"Type"				"Integer"
-		"Min"				"0"
-		"Max"				"30"
-		"Command"			"wire_explosive_delaytime"
-	}
-	
-	"Slider"
-	{
-		"Label"				"#WireExplosiveTool_delayreload"
-		"Description"		"#ExplosiveTool_delayreload"
-		"Type"				"Integer"
-		"Min"				"0"
-		"Max"				"30"
-		"Command"			"wire_explosive_delayreloadtime"
-	}
-	
 	"CheckBox"
 	{
 		"Label"				"#WireExplosiveTool_remove"
@@ -289,18 +255,6 @@
 	{
 		"Label"				"#WireExplosiveTool_doblastdamage"
 		"Command"			"wire_explosive_doblastdamage"
-	}
-	
-	"CheckBox"
-	{
-		"Label"				"#WireExplosiveTool_affectother"
-		"Command"			"wire_explosive_affectother"
-	}
-	
-	"CheckBox"
-	{
-		"Label"				"#WireExplosiveTool_notaffected"
-		"Command"			"wire_explosive_notaffected"
 	}
 	
 	"CheckBox"
@@ -329,64 +283,12 @@
 	
 	"Slider"
 	{
-		"Label"				"#WireExplosiveTool_maxhealth"
-		"Description"		"#ExplosiveTool_maxhealth"
-		"Type"				"Integer"
-		"Min"				"0"
-		"Max"				"300"
-		"Command"			"wire_explosive_maxhealth"
-	}
-	
-	"Slider"
-	{
 		"Label"				"#WireExplosiveTool_weight"
 		"Description"		"#ExplosiveTool_weight"
 		"Type"				"Integer"
 		"Min"				"1"
 		"Max"				"1000"
 		"Command"			"wire_explosive_weight"
-	}
-	
-	"CheckBox"
-	{
-		"Label"				"#WireExplosiveTool_bulletproof"
-		"Command"			"wire_explosive_bulletproof"
-	}
-	
-	"CheckBox"
-	{
-		"Label"				"#WireExplosiveTool_explosionproof"
-		"Command"			"wire_explosive_explosionproof"
-	}
-	
-	"CheckBox"
-	{
-		"Label"				"#WireExplosiveTool_explodeatzero"
-		"Command"			"wire_explosive_explodeatzero"
-	}
-	
-	"CheckBox"
-	{
-		"Label"				"#WireExplosiveTool_resetatexplode"
-		"Command"			"wire_explosive_resetatexplode"
-	}
-	
-	"CheckBox"
-	{
-		"Label"				"#WireExplosiveTool_fireeffect"
-		"Command"			"wire_explosive_fireeffect"
-	}
-	
-	"CheckBox"
-	{
-		"Label"				"#WireExplosiveTool_coloreffect"
-		"Command"			"wire_explosive_coloreffect"
-	}
-	
-	"CheckBox"
-	{
-		"Label"				"#WireExplosiveTool_invisibleatzero"
-		"Command"			"wire_explosive_invisibleatzero"
 	}
 	
 	"TextBox"

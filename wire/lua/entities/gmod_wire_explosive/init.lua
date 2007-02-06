@@ -4,7 +4,7 @@ AddCSLuaFile( "shared.lua" )
 
 include('shared.lua')
 
-ENT.WireDebugName = "AdvIndicator"
+ENT.WireDebugName = "Explosive"
 ENT.OverlayDelay = 0
 
 /*---------------------------------------------------------
