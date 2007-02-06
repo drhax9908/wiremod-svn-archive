@@ -20,18 +20,18 @@ function ENT:Initialize()
 end
 
 
-function ENT:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs)
- 	self.Range = range
-	self.TargetPlayer = players
-	self.TargetNPC = npcs
-	self.TargetBeacon = beacons
-	self.TargetHoverballs = hoverballs
-	self.TargetThrusters = thrusters
-	self.TargetRPGs = rpgs
+function ENT:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs, outdistance, painttarget)
+ 	self.Range			= range
+	self.TargetPlayer	= players
+	self.TargetNPC		= npcs
+	self.TargetBeacon	= beacons
+	self.TargetHoverballs	= hoverballs
+	self.TargetThrusters	= thrusters
+	self.TargetRPGs		= rpgs
+	self.Distance		= outdistance
+	self.PaintTarget	= painttarget
 	
-	self.FindClosest = true //disabled these till i can test them
-	self.PaintTarget = true
-	if (self.FindClosest) then
+	if (self.Distance) then
 		Wire_AdjustOutputs(self.Entity, {"Targeting", "Distance", "Bearing", "Elevation"} )
 		self.Distance	= 0
 		self.Bearing	= 0
@@ -109,7 +109,7 @@ function ENT:Think()
 			    if (dist < mindist) then
 					mindist = dist
 					self.Target = tt
-					if (self.FindClosest) then
+					if (self.Distance) then
 					    local DeltaPos = self.Entity:WorldToLocal(tt:GetPos())
 					    berng = DeltaPos:Angle()
 					end
@@ -118,7 +118,7 @@ function ENT:Think()
 		end
 	end
 	
-	if (self.FindClosest) then
+	if (self.Distance) then
 		if (self.Target) then
 			
 			if (self.PaintTarget) then
@@ -161,9 +161,18 @@ function ENT:Think()
 		
 	else
 		if (self.Target) then
+			if (self.PaintTarget) then
+				if (self.LastTarget != self.Target) then //not targeting the same as last time
+					self:TargetPainter(self.LastTarget, false)
+				end
+				self:TargetPainter(self.Target, true)
+			end
 		    self:ShowOutput(true)
 		    Wire_TriggerOutput(self.Entity, "Out", 1)
 		else
+			if (self.PaintTarget) then
+				self:TargetPainter(self.LastTarget, false)
+			end
 		    self:ShowOutput(false)
 		    Wire_TriggerOutput(self.Entity, "Out", 0)
 		end
@@ -192,7 +201,7 @@ function ENT:ShowOutput(value)
 		txt = txt .. "Target Acquired"
 		if (self.Inputs.Hold) and (self.Inputs.Hold.Value > 0) then txt = txt .. " - Locked" end
 		
-		if (self.FindClosest) then
+		if (self.Distance) then
 			txt = txt .. "\nDistance = " .. math.Round(self.Distance*1000)/1000
 			txt = txt .. "\nBearing = " .. math.Round(self.Bearing*1000)/1000 .. "," .. math.Round(self.Elevation*1000)/1000
 		end

@@ -15,6 +15,8 @@ if ( CLIENT ) then
     language.Add( "WireTargetFinderTool_hoverballs", "Target Hoverballs:" )
     language.Add( "WireTargetFinderTool_thrusters", "Target Thrusters:" )
     language.Add( "WireTargetFinderTool_rpgs", "Target RPGs:" )
+    language.Add( "WireTargetFinderTool_OutDistance", "Output Distance/Bearing/Elevation:" )
+    language.Add( "WireTargetFinderTool_PaintTarget", "Paint Target:" )
 	language.Add( "sboxlimit_wire_target_finders", "You've hit target finder beacons limit!" )
 	language.Add( "undone_wiretargetfinder", "Undone Wire Target Finder Beacon" )
 end
@@ -23,13 +25,15 @@ if (SERVER) then
   CreateConVar('sbox_maxwire_target_finders',30)
 end
 
-TOOL.ClientConVar[ "range" ] = "1000"
-TOOL.ClientConVar[ "players" ] = "0"
-TOOL.ClientConVar[ "npcs" ] = "1"
-TOOL.ClientConVar[ "beacons" ] = "0"
-TOOL.ClientConVar[ "hoverballs" ] = "0"
-TOOL.ClientConVar[ "thrusters" ] = "0"
-TOOL.ClientConVar[ "rpgs" ] = "0"
+TOOL.ClientConVar[ "range" ] 		= "1000"
+TOOL.ClientConVar[ "players" ] 		= "0"
+TOOL.ClientConVar[ "npcs" ] 		= "1"
+TOOL.ClientConVar[ "beacons" ] 		= "0"
+TOOL.ClientConVar[ "hoverballs" ] 	= "0"
+TOOL.ClientConVar[ "thrusters" ] 	= "0"
+TOOL.ClientConVar[ "rpgs" ] 		= "0"
+TOOL.ClientConVar[ "outdistance" ]	= "1"
+TOOL.ClientConVar[ "painttarget" ]	= "1"
 
 TOOL.Model = "models/props_lab/powerbox02d.mdl"
 
@@ -51,9 +55,11 @@ function TOOL:LeftClick(trace)
 	local hoverballs = (self:GetClientNumber("hoverballs") ~= 0)
 	local thrusters	= (self:GetClientNumber("thrusters") ~= 0)
 	local rpgs 		= (self:GetClientNumber("rpgs") ~= 0)
+	local outdistance 		= (self:GetClientNumber("outdistance") ~= 0)
+	local painttarget 		= (self:GetClientNumber("painttarget") ~= 0)
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_target_finder" && trace.Entity.pl == ply ) then
-		trace.Entity:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs)
+		trace.Entity:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs, outdistance, painttarget)
 
 		trace.Entity:GetTable().range = range
 		trace.Entity:GetTable().players = players
@@ -62,6 +68,8 @@ function TOOL:LeftClick(trace)
 		trace.Entity:GetTable().hoverballs = hoverballs
 		trace.Entity:GetTable().thrusters = thrusters
 		trace.Entity:GetTable().rpgs = rpgs
+		trace.Entity:GetTable().outdistance = outdistance
+		trace.Entity:GetTable().painttarget = painttarget
 
 		return true
 	end	
@@ -70,7 +78,7 @@ function TOOL:LeftClick(trace)
 
 	local Ang = trace.HitNormal:Angle()
 
-	local wire_target_finder = MakeWireTargetFinder( ply, trace.HitPos, Ang, range, players, npcs, beacons, hoverballs, thrusters, rpgs )
+	local wire_target_finder = MakeWireTargetFinder( ply, trace.HitPos, Ang, range, players, npcs, beacons, hoverballs, thrusters, rpgs, outdistance, painttarget )
 
 	local min = wire_target_finder:OBBMins()
 	wire_target_finder:SetPos( trace.HitPos - trace.HitNormal*min.z )
@@ -94,7 +102,7 @@ end
 
 if SERVER then
 
-	function MakeWireTargetFinder(pl, Pos, Ang, range, players, npcs, beacons, hoverballs, thrusters, rpgs, Vel, aVel, frozen )
+	function MakeWireTargetFinder(pl, Pos, Ang, range, players, npcs, beacons, hoverballs, thrusters, rpgs, outdistance, painttarget, Vel, aVel, frozen )
 		if (!pl:CheckLimit("wire_target_finders")) then return end
 
 		local wire_target_finder = ents.Create("gmod_wire_target_finder")
@@ -104,7 +112,7 @@ if SERVER then
 		wire_target_finder:Spawn()
 		wire_target_finder:Activate()
 		
-		wire_target_finder:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs)
+		wire_target_finder:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs, outdistance, painttarget)
 		wire_target_finder:SetPlayer(pl)
 
 		local ttable = {
@@ -112,9 +120,11 @@ if SERVER then
 			players		= players,
 			npcs		= npcs,
 			beacons		= beacons,
-			hoverballs		= hoverballs,
-			thrusters		= thrusters,
+			hoverballs	= hoverballs,
+			thrusters	= thrusters,
 			rpgs		= rpgs,
+			outdistance = outdistance,
+			painttarget = painttarget,
 			pl			= pl,
 			nocollide	= nocollide,
 			description = description
@@ -127,7 +137,7 @@ if SERVER then
 		return wire_target_finder
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_target_finder", MakeWireTargetFinder, "Pos", "Ang", "range", "players", "npcs", "beacons", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_target_finder", MakeWireTargetFinder, "Pos", "Ang", "range", "players", "npcs", "beacons", "hoverballs", "thrusters", "rpgs", "outdistance", "painttarget", "Vel", "aVel", "frozen")
 
 end
 
@@ -201,6 +211,16 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("CheckBox", {
 		Label = "#WireTargetFinderTool_rpgs",
 		Command = "wire_target_finder_rpgs"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireTargetFinderTool_OutDistance",
+		Command = "wire_target_finder_outdistance"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireTargetFinderTool_PaintTarget",
+		Command = "wire_target_finder_painttarget"
 	})
 end
 	
