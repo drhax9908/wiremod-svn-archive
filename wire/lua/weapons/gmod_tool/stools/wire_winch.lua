@@ -249,8 +249,8 @@ if SERVER then
 	end
 
 	function MakeWireWinchController( pl, Pos, Ang )
-		local controller = ents.Create("gmod_wire_hydraulic")
-		//local controller = ents.Create("gmod_wire_winch_controller")
+		//local controller = ents.Create("gmod_wire_hydraulic")
+		local controller = ents.Create("gmod_wire_winch_controller")
 		
 		controller:SetPos( Pos )
 		controller:SetAngles( Ang )

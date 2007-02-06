@@ -8,8 +8,6 @@ include('shared.lua')
 
 local MODEL = Model("models/jaanus/wiretool/wiretool_siren.mdl")
 
-ENT.Type = "point"
-
 DIR_BACKWARD 	= -1
 DIR_NONE 		= 0
 DIR_FORWARD 	= 1
@@ -27,7 +25,8 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	
-	self.Inputs = Wire_CreateInputs( self.Entity, { "Length" } )
+	self.Inputs = Wire_CreateInputs( self.Entity, { "In", "Out", "Length" } )
+	self.Outputs = Wire_CreateOutputs(self.Entity, { "Length" })
 	self.Trigger = 0
 	
 	self.last_time = CurTime()
@@ -59,23 +58,23 @@ end
    Desc: Entity's think function. 
 ---------------------------------------------------------*/
 function ENT:Think()
-
+	
 	self.Entity:NextThink( CurTime() + 0.01 )
 	local TimeDiff = CurTime() - self.last_time
 	self.last_time = CurTime()
-
+	
 	if (!self.constraint) then return end
 	if (!self.direction) then return end
 	if (self.direction == DIR_NONE) then return end
 	
 	local old_length = self.current_length
 	local current_length = self.current_length
-
+	
 	if (self.type == TYPE_NORMAL) then
-
+		
 		local speed = 0
 		local dist = 0
-
+		
 		if (self.direction == DIR_FORWARD) then
 			local speed = self.constraint:GetTable().fwd_speed
 			dist = speed * TimeDiff
@@ -83,41 +82,41 @@ function ENT:Think()
 			local speed = self.constraint:GetTable().bwd_speed
 			dist = -speed * TimeDiff
 		end
-
+		
 		if (dist == 0) then return end
-
+		
 		current_length = current_length + dist
-	
+		
 		if ( self.min_length && current_length < self.min_length ) then
-
+		
 			current_length = self.min_length
 			if (self.toggle) then self.direction = DIR_NONE end
-
+		
 		end
-
+		
 		if (self.max_length) then
-
+			
 			if (current_length > self.max_length) then
-
+				
 				current_length = self.max_length
 				self.isexpanded = true
 				if (self.toggle) then self.direction = DIR_NONE	end
-
+				
 			else
-
+				
 				self.isexpanded = false
-
+				
 			end
-
+			
 		end
 
 	elseif ( self.type == TYPE_MUSCLE ) then
-	
+		
 		local amp = self.constraint:GetTable().amplitude
 		local per = self.constraint:GetTable().period
-
+		
 		local spos = ( math.sin( (self.ctime * math.pi * per )) + 1 ) * (amp / 2)
-
+		
 		if (spos > amp) then spos = amp end
 		if (spos < 0) then spos = 0 end
 		
@@ -130,6 +129,9 @@ function ENT:Think()
 	
 	self.constraint:Fire("SetSpringLength", current_length, 0)
 	if (self.rope) then	self.rope:Fire("SetLength", current_length, 0)	end
+	
+	self:SetOverlayText( "Winch length : " .. current_length )
+	Wire_TriggerOutput(self.Entity, "Length", current_length)
 	
 end
 
@@ -151,7 +153,7 @@ function ENT:SetConstraint( c )
 	self.constraint = c
 	self.direction = DIR_NONE
 	self.toggle = c:GetTable().toggle
-
+	
 	local p1 = self:GetWPos(c:GetTable().Ent1, c:GetTable().Phys1, c:GetTable().LPos1)
 	local p2 = self:GetWPos(c:GetTable().Ent2, c:GetTable().Phys2, c:GetTable().LPos2)
 	local dist = (p1 - p2)
@@ -177,7 +179,10 @@ function ENT:SetConstraint( c )
 	self:ShowOutput( dist:Length() )
 	self.constraint:Fire("SetSpringLength", self.current_length, 0)
 	if self.rope then self.rope:Fire("SetLength", self.current_length, 0) end
-			
+	
+	self:SetOverlayText( "Winch length : " .. self.current_length )
+	Wire_TriggerOutput(self.Entity, "Length", self.current_length)
+		
 end
 
 
@@ -187,7 +192,23 @@ end
 
 
 function ENT:TriggerInput(iname, value)
-	if (iname == "Length") then
+	if (iname == "In") then
+		if (value > 0) then
+			self.direction = -1
+		elseif (value < 0) then
+			self.direction = 1
+		else
+			self.direction = 0
+		end
+	elseif (iname == "Out") then
+		if (value > 0) then
+			self.direction = 1
+		elseif (value < 0) then
+			self.direction = -1
+		else
+			self.direction = 0
+		end
+	elseif (iname == "Length") then
 		self:ShowOutput( math.max(1, value) )
 	end
 end
@@ -195,7 +216,8 @@ end
 
 function ENT:ShowOutput( Length )
 	if ( Length ~= self.current_length and self.constraint ) then
-		self:SetOverlayText( "Hydraulic length : " .. Length )
+		self:SetOverlayText( "Winch length : " .. Length )
+		Wire_TriggerOutput(self.Entity, "Length", Length)
 		self.current_length = Length
 		self.constraint:Fire("SetSpringLength", self.current_length, 0)
 		if self.rope then self.rope:Fire("SetLength", self.current_length, 0) end
@@ -212,14 +234,13 @@ function ENT:BuildDupeInfo()
 	if (self.rope) and (self.rope:IsValid()) then
 		info.rope = self.rope:EntIndex()
 	end
-
+	
 	return info
 end
 
-
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID, GetConstByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID, GetConstByID)
-
+	
 	if (info.constraint) and (info.constraint > 0) then
 	    local const = GetConstByID(info.constraint)
 		if (const) then
