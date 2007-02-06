@@ -31,20 +31,9 @@ function ENT:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs, o
 	self.Distance		= outdistance
 	self.PaintTarget	= painttarget
 	
-	if (self.Distance) then
-		Wire_AdjustOutputs(self.Entity, {"Targeting", "Distance", "Bearing", "Elevation"} )
-		self.Distance	= 0
-		self.Bearing	= 0
-		self.Elevation	= 0
-		Wire_TriggerOutput(self.Entity, "Targeting", 0)
-		Wire_TriggerOutput(self.Entity, "Distance", 0)
-		Wire_TriggerOutput(self.Entity, "Bearing", 0)
-		Wire_TriggerOutput(self.Entity, "Elevation", 0)
-		self:ShowOutput(false)
-	else
-		self:ShowOutput(false)
-		Wire_TriggerOutput(self.Entity, "Out", 0)
-	end
+	self.PaintTarget = false
+	self:ShowOutput(false)
+	Wire_TriggerOutput(self.Entity, "Out", 0)
 end
 
 
@@ -72,6 +61,7 @@ function ENT:Think()
 		if (self.Target) and (not self.Target:IsValid()) then
 		    Wire_TriggerOutput(self.Entity, "Out", 0)
 		    self.Target = nil
+		    self.LastTarget = nil
 		end
 	else
 		if (self.Target) and (self.Target:IsValid()) and (self.NextTargetTime) and (CurTime() < self.NextTargetTime) then return end
@@ -85,6 +75,7 @@ function ENT:Think()
 		end
 		
 		self.Target = nil
+		local mindist = self.Range+1
 		
 		for _,target in pairs(targets) do
 		    local tt = nil
@@ -109,73 +100,30 @@ function ENT:Think()
 			    if (dist < mindist) then
 					mindist = dist
 					self.Target = tt
-					if (self.Distance) then
-					    local DeltaPos = self.Entity:WorldToLocal(tt:GetPos())
-					    berng = DeltaPos:Angle()
-					end
 				end
 			end
 		end
 	end
 	
-	if (self.Distance) then
-		if (self.Target) then
-			
-			if (self.PaintTarget) then
-				if (self.LastTarget != self.Target) then //not targeting the same as last time
-					self:TargetPainter(self.LastTarget, false)
-				end
-				self:TargetPainter(self.Target, true)
-			end
-			
-			self.Distance = mindist or 0
-		    self:ShowOutput(true)
-			
-			Wire_TriggerOutput(self.Entity, "Targeting", 1)
-			Wire_TriggerOutput(self.Entity, "Distance", mindist)
-			
-			local pitch = berng.p
-			local yaw = berng.ys
-			if (pitch > 180) then pitch = pitch - 360 end
-			if (yaw > 180) then yaw = yaw - 360 end
-		    
-			self.Bearing = -yaw
-			self.Elevation = -pitch
-			
-			Wire_TriggerOutput(self.Entity, "Bearing", -yaw)
-		    Wire_TriggerOutput(self.Entity, "Elevation", -pitch)
-		else
-			
-			if (self.PaintTarget) then
+	if (self.Target) then
+		if (self.PaintTarget) then
+			if (self.LastTarget != self.Target) then //not targeting the same as last time
 				self:TargetPainter(self.LastTarget, false)
+				self:PaintTarget(self.Target, true)
 			end
-			
-			self.Distance = 0
-		    self:ShowOutput(false)
-			
-		    Wire_TriggerOutput(self.Entity, "Targeting", 0)
-			Wire_TriggerOutput(self.Entity, "Distance", 0)
-			Wire_TriggerOutput(self.Entity, "Bearing", 0)
-			Wire_TriggerOutput(self.Entity, "Elevation", 0)
 		end
 		
+	    self:ShowOutput(true)
+		
+		Wire_TriggerOutput(self.Entity, "Out", 1)
 	else
-		if (self.Target) then
-			if (self.PaintTarget) then
-				if (self.LastTarget != self.Target) then //not targeting the same as last time
-					self:TargetPainter(self.LastTarget, false)
-				end
-				self:TargetPainter(self.Target, true)
-			end
-		    self:ShowOutput(true)
-		    Wire_TriggerOutput(self.Entity, "Out", 1)
-		else
-			if (self.PaintTarget) then
-				self:TargetPainter(self.LastTarget, false)
-			end
-		    self:ShowOutput(false)
-		    Wire_TriggerOutput(self.Entity, "Out", 0)
+		if (self.PaintTarget) then
+			self:PaintTarget(self.LastTarget, false)
 		end
+		
+	    self:ShowOutput(false)
+		
+	    Wire_TriggerOutput(self.Entity, "Out", 0)
 	end
 end
 
@@ -199,19 +147,11 @@ function ENT:ShowOutput(value)
 	local txt = "Target Finder - "
 	if (value) then
 		txt = txt .. "Target Acquired"
-		if (self.Inputs.Hold) and (self.Inputs.Hold.Value > 0) then txt = txt .. " - Locked" end
-		
-		if (self.Distance) then
-			txt = txt .. "\nDistance = " .. math.Round(self.Distance*1000)/1000
-			txt = txt .. "\nBearing = " .. math.Round(self.Bearing*1000)/1000 .. "," .. math.Round(self.Elevation*1000)/1000
-		end
-		
 	else
 		txt = txt .. "No Target"
-		if (self.Inputs.Hold) and (self.Inputs.Hold.Value > 0) then txt = txt .. " - Locked" end
 	end
 	
-	
-	
+	if (self.Inputs.Hold) and (self.Inputs.Hold.Value > 0) then txt = txt .. " - Locked" end
+
 	self:SetOverlayText(txt)
 end
