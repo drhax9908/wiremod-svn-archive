@@ -31,7 +31,6 @@ function ENT:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs, o
 	self.Distance		= outdistance
 	self.PaintTarget	= painttarget
 	
-	self.PaintTarget = false
 	self:ShowOutput(false)
 	Wire_TriggerOutput(self.Entity, "Out", 0)
 end
@@ -106,7 +105,7 @@ function ENT:Think()
 		if (self.PaintTarget) then
 			if (self.LastTarget != self.Target) then //not targeting the same as last time
 				self:TargetPainter(self.LastTarget, false)
-				self:PaintTarget(self.Target, true)
+				self:TargetPainter(self.Target, true)
 			end
 		end
 		
@@ -115,7 +114,7 @@ function ENT:Think()
 		Wire_TriggerOutput(self.Entity, "Out", 1)
 	else
 		if (self.PaintTarget) then
-			self:PaintTarget(self.LastTarget, false)
+			self:TargetPainter(self.LastTarget, false)
 		end
 		
 	    self:ShowOutput(false)
