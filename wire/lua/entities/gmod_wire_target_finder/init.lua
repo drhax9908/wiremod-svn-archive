@@ -20,11 +20,14 @@ function ENT:Initialize()
 end
 
 
-function ENT:Setup(range, players, npcs, beacons)
-	self.Range = range
+function ENT:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs)
+ 	self.Range = range
 	self.TargetPlayer = players
 	self.TargetNPC = npcs
 	self.TargetBeacon = beacons
+	self.TargetHoverballs = hoverballs
+	self.TargetThrusters = thrusters
+	self.TargetRPGs = rpgs
 
 	self:ShowOutput(false)
 	Wire_TriggerOutput(self.Entity, "Out", 0)
@@ -63,12 +66,20 @@ function ENT:Think()
 		self.Target = nil
 		local mindist = self.Range+1
 		for _,target in pairs(targets) do
-			local tt = nil
+		    local tt = nil
 			if (self.TargetNPC) and (string.find(target:GetClass(),"^npc_.*")) then
 				tt = target
 			elseif (self.TargetPlayer) and (target:GetClass() == "player") then
 				tt = target
 			elseif (self.TargetBeacon) and (target:GetClass() == "gmod_wire_locator") then
+				tt = target
+			elseif (self.TargetRPGs) and (target:GetClass() == "rpg_missle") then
+				tt = target
+			elseif (self.TargetHoverballs) and (target:GetClass() == "gmod_hoverball" || target:GetClass() == "gmod_wire_hoverball") then
+				tt = target
+			elseif (self.TargetRPGs) and (target:GetClass() == "rpg_missile") then
+				tt = target
+			elseif (self.TargetThrusters) and (target:GetClass() == "gmod_thruster" || target:GetClass() == "gmod_wire_thruster") then
 				tt = target
 			end
 
