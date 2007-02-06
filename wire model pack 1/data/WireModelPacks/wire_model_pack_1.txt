@@ -137,11 +137,60 @@
 		}
 	}
 
-
 	"Metal Can"
 	{
 		"categories"    "speaker"
 		"model"			"models/props_junk/garbage_metalcan002a.mdl"
 	}
 
+		"Capacitor Small"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/cyborgmatt/capacitor_small.mdl"
+		"files"
+		{
+			"0"     "models/cyborgmatt/capacitor_small.dx80.vtx"
+			"1"     "models/cyborgmatt/capacitor_small.dx90.vtx"
+			"2"     "models/cyborgmatt/capacitor_small.phy"
+			"3"     "models/cyborgmatt/capacitor_small.sw.vtx"
+			"4"     "models/cyborgmatt/capacitor_small.vvd"
+			"5"     "models/cyborgmatt/capacitor_small.xbox.vtx"
+			"6"     "materials/cyborgmatt/capacitor.vmt"
+			"7"     "materials/cyborgmatt/capacitor.vtf"
+		}
+	}
+	
+			"Capacitor Medium"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/cyborgmatt/capacitor_medium.mdl"
+		"files"
+		{
+			"0"     "models/cyborgmatt/capacitor_medium.dx80.vtx"
+			"1"     "models/cyborgmatt/capacitor_medium.dx90.vtx"
+			"2"     "models/cyborgmatt/capacitor_medium.phy"
+			"3"     "models/cyborgmatt/capacitor_medium.sw.vtx"
+			"4"     "models/cyborgmatt/capacitor_medium.vvd"
+			"5"     "models/cyborgmatt/capacitor_medium.xbox.vtx"
+			"6"     "materials/cyborgmatt/capacitor.vmt"
+			"7"     "materials/cyborgmatt/capacitor.vtf"
+		}
+	}	
+	
+			"Capacitor Large"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/cyborgmatt/capacitor_large.mdl"
+		"files"
+		{
+			"0"     "models/cyborgmatt/capacitor_large.dx80.vtx"
+			"1"     "models/cyborgmatt/capacitor_large.dx90.vtx"
+			"2"     "models/cyborgmatt/capacitor_large.phy"
+			"3"     "models/cyborgmatt/capacitor_large.sw.vtx"
+			"4"     "models/cyborgmatt/capacitor_large.vvd"
+			"5"     "models/cyborgmatt/capacitor_large.xbox.vtx"
+			"6"     "materials/cyborgmatt/capacitor.vmt"
+			"7"     "materials/cyborgmatt/capacitor.vtf"
+		}
+	}
 }
