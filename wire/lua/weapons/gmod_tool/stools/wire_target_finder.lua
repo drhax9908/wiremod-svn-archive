@@ -12,6 +12,9 @@ if ( CLIENT ) then
     language.Add( "WireTargetFinderTool_players", "Target players:" )
     language.Add( "WireTargetFinderTool_npcs", "Target NPCs:" )
     language.Add( "WireTargetFinderTool_beacons", "Target Locators:" )
+    language.Add( "WireTargetFinderTool_hoverballs", "Target Hoverballs:" )
+    language.Add( "WireTargetFinderTool_thrusters", "Target Thrusters:" )
+    language.Add( "WireTargetFinderTool_rpgs", "Target RPGs:" )
 	language.Add( "sboxlimit_wire_target_finders", "You've hit target finder beacons limit!" )
 	language.Add( "undone_wiretargetfinder", "Undone Wire Target Finder Beacon" )
 end
@@ -24,6 +27,9 @@ TOOL.ClientConVar[ "range" ] = "1000"
 TOOL.ClientConVar[ "players" ] = "0"
 TOOL.ClientConVar[ "npcs" ] = "1"
 TOOL.ClientConVar[ "beacons" ] = "0"
+TOOL.ClientConVar[ "hoverballs" ] = "0"
+TOOL.ClientConVar[ "thrusters" ] = "0"
+TOOL.ClientConVar[ "rpgs" ] = "0"
 
 TOOL.Model = "models/props_lab/powerbox02d.mdl"
 
@@ -42,14 +48,20 @@ function TOOL:LeftClick(trace)
 	local players	= (self:GetClientNumber("players") ~= 0)
 	local npcs		= (self:GetClientNumber("npcs") ~= 0)
 	local beacons	= (self:GetClientNumber("beacons") ~= 0)
+	local hoverballs = (self:GetClientNumber("hoverballs") ~= 0)
+	local thrusters	= (self:GetClientNumber("thrusters") ~= 0)
+	local rpgs 		= (self:GetClientNumber("rpgs") ~= 0)
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_target_finder" && trace.Entity.pl == ply ) then
-		trace.Entity:Setup(range, players, npcs, beacons)
+		trace.Entity:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs)
 
 		trace.Entity:GetTable().range = range
 		trace.Entity:GetTable().players = players
 		trace.Entity:GetTable().npcs = npcs
 		trace.Entity:GetTable().beacons = beacons
+		trace.Entity:GetTable().hoverballs = hoverballs
+		trace.Entity:GetTable().thrusters = thrusters
+		trace.Entity:GetTable().rpgs = rpgs
 
 		return true
 	end	
@@ -58,7 +70,7 @@ function TOOL:LeftClick(trace)
 
 	local Ang = trace.HitNormal:Angle()
 
-	local wire_target_finder = MakeWireTargetFinder( ply, trace.HitPos, Ang, range, players, npcs, beacons )
+	local wire_target_finder = MakeWireTargetFinder( ply, trace.HitPos, Ang, range, players, npcs, beacons, hoverballs, thrusters, rpgs )
 
 	local min = wire_target_finder:OBBMins()
 	wire_target_finder:SetPos( trace.HitPos - trace.HitNormal*min.z )
@@ -82,7 +94,7 @@ end
 
 if SERVER then
 
-	function MakeWireTargetFinder(pl, Pos, Ang, range, players, npcs, beacons, Vel, aVel, frozen )
+	function MakeWireTargetFinder(pl, Pos, Ang, range, players, npcs, beacons, hoverballs, thrusters, rpgs, Vel, aVel, frozen )
 		if (!pl:CheckLimit("wire_target_finders")) then return end
 
 		local wire_target_finder = ents.Create("gmod_wire_target_finder")
@@ -92,7 +104,7 @@ if SERVER then
 		wire_target_finder:Spawn()
 		wire_target_finder:Activate()
 		
-		wire_target_finder:Setup(range, players, npcs, beacons)
+		wire_target_finder:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs)
 		wire_target_finder:SetPlayer(pl)
 
 		local ttable = {
@@ -100,6 +112,9 @@ if SERVER then
 			players		= players,
 			npcs		= npcs,
 			beacons		= beacons,
+			hoverballs		= hoverballs,
+			thrusters		= thrusters,
+			rpgs		= rpgs,
 			pl			= pl,
 			nocollide	= nocollide,
 			description = description
@@ -171,6 +186,21 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("CheckBox", {
 		Label = "#WireTargetFinderTool_beacons",
 		Command = "wire_target_finder_beacons"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireTargetFinderTool_hoverballs",
+		Command = "wire_target_finder_hoverballs"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireTargetFinderTool_thrusters",
+		Command = "wire_target_finder_thrusters"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireTargetFinderTool_rpgs",
+		Command = "wire_target_finder_rpgs"
 	})
 end
 	
