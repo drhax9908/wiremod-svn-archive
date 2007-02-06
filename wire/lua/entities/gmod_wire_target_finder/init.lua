@@ -28,9 +28,20 @@ function ENT:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs)
 	self.TargetHoverballs = hoverballs
 	self.TargetThrusters = thrusters
 	self.TargetRPGs = rpgs
-
-	self:ShowOutput(false)
-	Wire_TriggerOutput(self.Entity, "Out", 0)
+	
+	self.FindClosest = false //disabled these till i can test them
+	self.PaintTarget = false
+	if (self.FindClosest) then
+		Wire_AdjustOutputs(self.Entity, "Targeting", "Distance", "Bearing", "Elevation")
+		self:ShowOutput(false)
+		Wire_TriggerOutput(self.Entity, "Targeting", 0)
+		Wire_TriggerOutput(self.Entity, "Distance", 0)
+		Wire_TriggerOutput(self.Entity, "Bearing", 0)
+		Wire_TriggerOutput(self.Entity, "Elevation", 0)
+	else
+		self:ShowOutput(false)
+		Wire_TriggerOutput(self.Entity, "Out", 0)
+	end
 end
 
 
@@ -59,12 +70,18 @@ function ENT:Think()
 	else
 		if (self.Target) and (self.Target:IsValid()) and (self.NextTargetTime) and (CurTime() < self.NextTargetTime) then return end
 		self.NextTargetTime = CurTime()+1
-
+		
 		local targets = ents.FindInSphere(self.Entity:GetPos(), self.Range or 10)
 		local mypos = self.Entity:GetPos()
-
+		
+		if (self.Target) then
+			self.LastTarget = self.Target
+		end
+		
 		self.Target = nil
 		local mindist = self.Range+1
+		local brng = Angle(0, 0, 0)
+		
 		for _,target in pairs(targets) do
 		    local tt = nil
 			if (self.TargetNPC) and (string.find(target:GetClass(),"^npc_.*")) then
@@ -82,38 +99,103 @@ function ENT:Think()
 			elseif (self.TargetThrusters) and (target:GetClass() == "gmod_thruster" || target:GetClass() == "gmod_wire_thruster") then
 				tt = target
 			end
-
+			
 			if (tt) then
 			    local dist = (tt:GetPos() - mypos):Length()
 			    if (dist < mindist) then
-			        mindist = dist
-			        self.Target = tt
-			    end
+					mindist = dist
+					self.Target = tt
+					if (self.FindClosest) then
+					    local DeltaPos = self.Entity:WorldToLocal(tt:GetPos())
+					    brng = DeltaPos:Angle()
+					end
+				end
 			end
 		end
 	end
 	
-	if (self.Target) then
-	    self:ShowOutput(true)
-	    Wire_TriggerOutput(self.Entity, "Out", 1)
+	if (self.FindClosest) then
+		if (self.Target) then
+			
+			if (self.PaintTarget) then
+				if (self.LastTarget != self.Target) then //not targeting the same as last time
+					self:PaintTarget(self.LastTarget, false)
+					self:PaintTarget(self.Target, true)
+				end
+			end
+			
+			self.Distance = mindist
+		    self:ShowOutput(true)
+			
+			Wire_TriggerOutput(self.Entity, "Targeting", 1)
+			Wire_TriggerOutput(self.Entity, "Distance", mindist)
+			
+			local pitch = brng.p
+			local yaw = brng.ys
+			if (pitch > 180) then pitch = pitch - 360 end
+			if (yaw > 180) then yaw = yaw - 360 end
+		    
+			Wire_TriggerOutput(self.Entity, "Bearing", -yaw)
+		    Wire_TriggerOutput(self.Entity, "Elevation", -pitch)
+		else
+			
+			if (self.PaintTarget) then
+				self:PaintTarget(self.LastTarget, false)
+			end
+			
+			self.Distance = 0
+		    self:ShowOutput(false)
+			
+		    Wire_TriggerOutput(self.Entity, "Targeting", 0)
+			Wire_TriggerOutput(self.Entity, "Distance", 0)
+			Wire_TriggerOutput(self.Entity, "Bearing", 0)
+			Wire_TriggerOutput(self.Entity, "Elevation", 0)
+		end
+		
 	else
-	    self:ShowOutput(false)
-	    Wire_TriggerOutput(self.Entity, "Out", 0)
+		if (self.Target) then
+		    self:ShowOutput(true)
+		    Wire_TriggerOutput(self.Entity, "Out", 1)
+		else
+		    self:ShowOutput(false)
+		    Wire_TriggerOutput(self.Entity, "Out", 0)
+		end
 	end
 end
 
 
+function ENT:PaintTarget( tt, targeted )
+	if tt &&						// There is a target
+		tt.Entity &&				// Target has is an entity
+		tt.Entity:IsValid() && 		// And it's valid
+		tt.Entity:EntIndex() != 0	// And isn't worldspawn
+	then
+		if (targeted) then
+			tt.Entity:SetColor(255, 0, 0, 255)
+		else
+			tt.Entity:SetColor(255, 255, 255, 255)
+		end
+	end
+end
+	
+
 function ENT:ShowOutput(value)
 	local txt = "Target Finder - "
 	if (value) then
-		txt = txt .. "Targetting"
+		txt = txt .. "Target Acquired"
+		if (self.Inputs.Hold) and (self.Inputs.Hold.Value > 0) then txt = txt .. " - Locked" end
+		
+		if (self.FindClosest) then
+			txt = txt .. "\nDistance = " .. math.Round(self.Outputs.Distance.Value*1000)/1000
+			txt = txt .. "\nBearing = " .. math.Round(self.Outputs.Bearing.Value*1000)/1000 .. "," .. math.Round(self.Outputs.Elevation.Value*1000)/1000
+		end
+		
 	else
 		txt = txt .. "No Target"
+		if (self.Inputs.Hold) and (self.Inputs.Hold.Value > 0) then txt = txt .. " - Locked" end
 	end
 	
-	if (self.Inputs.Hold) and (self.Inputs.Hold.Value > 0) then
-		txt = txt .. " - Locked"
-	end
+	
 	
 	self:SetOverlayText(txt)
 end
