@@ -1,4 +1,6 @@
 
+CreateConVar("cl_showmodeltextbox", "0")
+
 ModelPlugInfo = {}
 
 
@@ -43,7 +45,7 @@ function ModelPlug_AddToCPanel(panel, category, toolname, label, type, textbox_l
 		panel:AddControl(type, Models)
 	end
 
-	if (textbox_label) then
+	if (textbox_label) and (GetConVarNumber("cl_showmodeltextbox") > 0) then
 		panel:AddControl("TextBox", {
 			Label = textbox_label,
 			Command = toolname .. "_model",

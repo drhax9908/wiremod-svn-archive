@@ -25,6 +25,10 @@ TOOL.ClientConVar[ "value_off" ] = "0"
 TOOL.ClientConVar[ "value_on" ] = "1"
 TOOL.ClientConVar[ "description" ] = ""
 
+if (SERVER) then
+	ModelPlug_Register("button")
+end
+
 cleanup.Register( "wire_buttons" )
 
 function TOOL:LeftClick( trace )
@@ -171,36 +175,29 @@ function TOOL.BuildCPanel(panel)
 		}
 	})
 
-	panel:AddControl("ComboBox", {
-		Label = "#Button_Model",
-		MenuButton = "0",
+	ModelPlug_AddToCPanel(panel, "button", "wire_button", "#Button_Model", nil, "#Button_Model")
 
-		Options = {
-			["#Button"] = { wire_button_model = "models/dav0r/buttons/button.mdl" },
-			["#Switch"] = { wire_button_model = "models/dav0r/buttons/switch.mdl" },
-			["#Clock"] = { wire_button_model = "models/props_c17/clock01.mdl" },
-			["Start"] = { wire_button_model = "models/cheeze/buttons/chz_button_start.mdl" },
-			["Reset"] = { wire_button_model = "models/cheeze/buttons/chz_button_reset.mdl" },
-			["Enter"] = { wire_button_model = "models/cheeze/buttons/chz_button_enter.mdl" },
-			["Stop"] = { wire_button_model = "models/cheeze/buttons/chz_button_stop.mdl" },
-			["Key 1"] = { wire_button_model = "models/cheeze/buttons/chz_button1.mdl" },
-			["Key 2"] = { wire_button_model = "models/cheeze/buttons/chz_button2.mdl" },
-			["Key 3"] = { wire_button_model = "models/cheeze/buttons/chz_button3.mdl" },
-			["Key 4"] = { wire_button_model = "models/cheeze/buttons/chz_button4.mdl" },
-			["Key 5"] = { wire_button_model = "models/cheeze/buttons/chz_button5.mdl" },
-			["Key 6"] = { wire_button_model = "models/cheeze/buttons/chz_button6.mdl" },
-			["Key 7"] = { wire_button_model = "models/cheeze/buttons/chz_button7.mdl" },
-			["Key 8"] = { wire_button_model = "models/cheeze/buttons/chz_button8.mdl" },
-			["Key 9"] = { wire_button_model = "models/cheeze/buttons/chz_button9.mdl" },
-			["Key 0"] = { wire_button_model = "models/cheeze/buttons/chz_button0.mdl" },
-			["Set"] = { wire_button_model = "models/cheeze/buttons/chz_button_set.mdl" },
-			["Plus"] = { wire_button_model = "models/cheeze/buttons/chz_button_plus.mdl" },
-			["Minus"] = { wire_button_model = "models/cheeze/buttons/chz_button_minus.mdl" },
-			["Clear"] = { wire_button_model = "models/cheeze/buttons/chz_button_clear.mdl" },
-			["Arm"] = { wire_button_model = "models/cheeze/buttons/chz_button_arm.mdl" },
-			["Muffin!"] = { wire_button_model = "models/cheeze/buttons/muffin.mdl" },
-		}
-	})
+//  ToDo: Move these to Wire Model Pack 1
+//			["Start"] = { wire_button_model = "models/cheeze/buttons/chz_button_start.mdl" },
+//			["Reset"] = { wire_button_model = "models/cheeze/buttons/chz_button_reset.mdl" },
+//			["Enter"] = { wire_button_model = "models/cheeze/buttons/chz_button_enter.mdl" },
+//			["Stop"] = { wire_button_model = "models/cheeze/buttons/chz_button_stop.mdl" },
+//			["Key 1"] = { wire_button_model = "models/cheeze/buttons/chz_button1.mdl" },
+//			["Key 2"] = { wire_button_model = "models/cheeze/buttons/chz_button2.mdl" },
+//			["Key 3"] = { wire_button_model = "models/cheeze/buttons/chz_button3.mdl" },
+//			["Key 4"] = { wire_button_model = "models/cheeze/buttons/chz_button4.mdl" },
+//			["Key 5"] = { wire_button_model = "models/cheeze/buttons/chz_button5.mdl" },
+//			["Key 6"] = { wire_button_model = "models/cheeze/buttons/chz_button6.mdl" },
+//			["Key 7"] = { wire_button_model = "models/cheeze/buttons/chz_button7.mdl" },
+//			["Key 8"] = { wire_button_model = "models/cheeze/buttons/chz_button8.mdl" },
+//			["Key 9"] = { wire_button_model = "models/cheeze/buttons/chz_button9.mdl" },
+//			["Key 0"] = { wire_button_model = "models/cheeze/buttons/chz_button0.mdl" },
+//			["Set"] = { wire_button_model = "models/cheeze/buttons/chz_button_set.mdl" },
+//			["Plus"] = { wire_button_model = "models/cheeze/buttons/chz_button_plus.mdl" },
+//			["Minus"] = { wire_button_model = "models/cheeze/buttons/chz_button_minus.mdl" },
+//			["Clear"] = { wire_button_model = "models/cheeze/buttons/chz_button_clear.mdl" },
+//			["Arm"] = { wire_button_model = "models/cheeze/buttons/chz_button_arm.mdl" },
+//			["Muffin!"] = { wire_button_model = "models/cheeze/buttons/muffin.mdl" },
 
 	panel:AddControl("CheckBox", {
 		Label = "#WireButtonTool_toggle",

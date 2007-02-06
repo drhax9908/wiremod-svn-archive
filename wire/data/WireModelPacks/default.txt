@@ -19,7 +19,7 @@
 	"Value Chip"
 	{
 		"categories"    "value"
-		"model"		"models/kobilica/value.mdl"
+		"model"			"models/kobilica/value.mdl"
 
 		"files"
 		{
@@ -37,7 +37,7 @@
 	"Speaker"
 	{
 		"categories"    "speaker"
-		"model"		"models/cheeze/wires/speaker.mdl"
+		"model"			"models/cheeze/wires/speaker.mdl"
 
 		"files"
 		{
@@ -62,6 +62,30 @@
 	"Metal Can"
 	{
 		"categories"    "speaker"
-		"model"		"models/props_junk/garbage_metalcan002a.mdl"
+		"model"			"models/props_junk/garbage_metalcan002a.mdl"
+	}
+
+	"Do Not Press"
+	{
+		"categories"    "button"
+		"model"			"models/dav0r/buttons/button.mdl"
+	}
+
+	"Switch"
+	{
+		"categories"    "button"
+		"model"			"models/dav0r/buttons/switch.mdl"
+	}
+
+	"Clock"
+	{
+		"categories"    "button"
+		"model"         "models/props_c17/clock01.mdl"
+	}
+
+	"Breen Clock"
+	{
+		"categories"    "detonator"
+		"model"         "models/props_combine/breenclock.mdl"
 	}
 }

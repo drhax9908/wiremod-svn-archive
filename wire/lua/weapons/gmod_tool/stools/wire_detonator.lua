@@ -8,6 +8,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_detonator_name", "Detonator Tool (Wire)" )
     language.Add( "Tool_wire_detonator_desc", "Spawns a Detonator for use with the wire system." )
     language.Add( "Tool_wire_detonator_0", "Primary: Create/Update Detonator" )
+    language.Add( "WireDetonatorTool_model", "Model:" )
  	language.Add( "sboxlimit_wire_detonators", "You've hit Detonators limit!" )
 	language.Add( "undone_wiredetonator", "Undone Wire Detonator" )
 end
@@ -17,7 +18,11 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "damage" ] = "1"
-TOOL.Model = "models/props_combine/breenclock.mdl"
+TOOL.ClientConVar[ "model" ] = "models/props_combine/breenclock.mdl"
+
+if (SERVER) then
+	ModelPlug_Register("detonator")
+end
 
 cleanup.Register( "wire_detonators" )
 
@@ -32,7 +37,8 @@ function TOOL:LeftClick( trace )
 	
 	local ply = self:GetOwner()
 	local damage = self:GetClientNumber( "damage" )
-	
+	local model             = self:GetClientInfo( "model" )
+
 	// If we shot a wire_detonator change its damage
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_detonator" && trace.Entity:GetTable().pl == ply ) then
 		trace.Entity:GetTable():Setup(damage)
@@ -51,7 +57,7 @@ function TOOL:LeftClick( trace )
 	
 	// Don't weld to world
 	if ( trace.Entity:IsValid() ) then
-		wire_detonator = MakeWireDetonator( ply, Ang, trace.HitPos, trace.Entity, damage )
+		wire_detonator = MakeWireDetonator( ply, model, Ang, trace.HitPos, trace.Entity, damage )
 		local min = wire_detonator:OBBMins()
 		wire_detonator:SetPos( trace.HitPos - trace.HitNormal * min.z )
 		
@@ -82,7 +88,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireDetonator( pl, Ang, Pos, target, damage, nocollide, Vel, aVel, frozen )
+	function MakeWireDetonator( pl, Model, Ang, Pos, target, damage, nocollide, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_detonators" ) ) then return false end
 	
 		local wire_detonator = ents.Create( "gmod_wire_detonator" )
@@ -90,6 +96,7 @@ if (SERVER) then
 
 		wire_detonator:SetAngles( Ang )
 		wire_detonator:SetPos( Pos )
+		wire_detonator:SetModel(Model)
 		wire_detonator:Spawn()
 
 		wire_detonator:GetTable():Setup(damage)
@@ -111,7 +118,7 @@ if (SERVER) then
 		return wire_detonator
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_detonator", MakeWireDetonator, "Ang", "Pos", "target", "damage", "nocollide", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_detonator", MakeWireDetonator, "Model", "Ang", "Pos", "target", "damage", "nocollide", "Vel", "aVel", "frozen")
 
 end
 
@@ -143,19 +150,21 @@ function TOOL:UpdateGhostWireDetonator( ent, player )
 end
 
 function TOOL:Think()
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" )) then
+		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), Angle(0,0,0) )
 	end
 	
 	self:UpdateGhostWireDetonator( self.GhostEntity, self:GetOwner() )
 end
 
-function TOOL.BuildCPanel(CPanel)
-	CPanel:AddControl("Header", { Text = "#Tool_wire_detonator_name", Description = "#Tool_wire_detonator_desc" })
-	CPanel:AddControl( "Slider",  { Label	= "#Damage",
+function TOOL.BuildCPanel(panel)
+	panel:AddControl("Header", { Text = "#Tool_wire_detonator_name", Description = "#Tool_wire_detonator_desc" })
+	panel:AddControl( "Slider",  { Label	= "#Damage",
 		Type	= "Integer",
 		Min		= 1,
 		Max		= 200,
 		Command = "wire_detonator_damage" }	 
 	)
+
+	ModelPlug_AddToCPanel(panel, "detonator", "wire_detonator", "#WireDetonatorTool_model", nil, "#WireDetonatorTool_model")
 end
