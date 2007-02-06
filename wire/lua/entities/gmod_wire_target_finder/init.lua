@@ -28,7 +28,6 @@ function ENT:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs, p
 	self.TargetHoverballs	= hoverballs
 	self.TargetThrusters	= thrusters
 	self.TargetRPGs		= rpgs
-	self.Distance		= outdistance
 	self.PaintTarget	= painttarget
 	
 	self:ShowOutput(false)
