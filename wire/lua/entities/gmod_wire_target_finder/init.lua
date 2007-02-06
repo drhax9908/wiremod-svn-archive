@@ -20,7 +20,7 @@ function ENT:Initialize()
 end
 
 
-function ENT:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs, outdistance, painttarget)
+function ENT:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs, painttarget)
  	self.Range			= range
 	self.TargetPlayer	= players
 	self.TargetNPC		= npcs
