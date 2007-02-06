@@ -29,15 +29,18 @@ function ENT:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs)
 	self.TargetThrusters = thrusters
 	self.TargetRPGs = rpgs
 	
-	self.FindClosest = false //disabled these till i can test them
-	self.PaintTarget = false
+	self.FindClosest = true //disabled these till i can test them
+	self.PaintTarget = true
 	if (self.FindClosest) then
-		Wire_AdjustOutputs(self.Entity, "Targeting", "Distance", "Bearing", "Elevation")
-		self:ShowOutput(false)
+		Wire_AdjustOutputs(self.Entity, {"Targeting", "Distance", "Bearing", "Elevation"} )
+		self.Distance	= 0
+		self.Bearing	= 0
+		self.Elevation	= 0
 		Wire_TriggerOutput(self.Entity, "Targeting", 0)
 		Wire_TriggerOutput(self.Entity, "Distance", 0)
 		Wire_TriggerOutput(self.Entity, "Bearing", 0)
 		Wire_TriggerOutput(self.Entity, "Elevation", 0)
+		self:ShowOutput(false)
 	else
 		self:ShowOutput(false)
 		Wire_TriggerOutput(self.Entity, "Out", 0)
@@ -61,7 +64,10 @@ end
 
 function ENT:Think()
 	self.BaseClass.Think(self)
-
+	
+	local berng = Angle(0, 0, 0)
+	local mindist = self.Range+1
+		
 	if (self.Inputs.Hold) and (self.Inputs.Hold.Value > 0) then
 		if (self.Target) and (not self.Target:IsValid()) then
 		    Wire_TriggerOutput(self.Entity, "Out", 0)
@@ -79,8 +85,6 @@ function ENT:Think()
 		end
 		
 		self.Target = nil
-		local mindist = self.Range+1
-		local brng = Angle(0, 0, 0)
 		
 		for _,target in pairs(targets) do
 		    local tt = nil
@@ -107,7 +111,7 @@ function ENT:Think()
 					self.Target = tt
 					if (self.FindClosest) then
 					    local DeltaPos = self.Entity:WorldToLocal(tt:GetPos())
-					    brng = DeltaPos:Angle()
+					    berng = DeltaPos:Angle()
 					end
 				end
 			end
@@ -119,28 +123,31 @@ function ENT:Think()
 			
 			if (self.PaintTarget) then
 				if (self.LastTarget != self.Target) then //not targeting the same as last time
-					self:PaintTarget(self.LastTarget, false)
-					self:PaintTarget(self.Target, true)
+					self:TargetPainter(self.LastTarget, false)
 				end
+				self:TargetPainter(self.Target, true)
 			end
 			
-			self.Distance = mindist
+			self.Distance = mindist or 0
 		    self:ShowOutput(true)
 			
 			Wire_TriggerOutput(self.Entity, "Targeting", 1)
 			Wire_TriggerOutput(self.Entity, "Distance", mindist)
 			
-			local pitch = brng.p
-			local yaw = brng.ys
+			local pitch = berng.p
+			local yaw = berng.ys
 			if (pitch > 180) then pitch = pitch - 360 end
 			if (yaw > 180) then yaw = yaw - 360 end
 		    
+			self.Bearing = -yaw
+			self.Elevation = -pitch
+			
 			Wire_TriggerOutput(self.Entity, "Bearing", -yaw)
 		    Wire_TriggerOutput(self.Entity, "Elevation", -pitch)
 		else
 			
 			if (self.PaintTarget) then
-				self:PaintTarget(self.LastTarget, false)
+				self:TargetPainter(self.LastTarget, false)
 			end
 			
 			self.Distance = 0
@@ -164,7 +171,7 @@ function ENT:Think()
 end
 
 
-function ENT:PaintTarget( tt, targeted )
+function ENT:TargetPainter( tt, targeted )
 	if tt &&						// There is a target
 		tt.Entity &&				// Target has is an entity
 		tt.Entity:IsValid() && 		// And it's valid
@@ -186,8 +193,8 @@ function ENT:ShowOutput(value)
 		if (self.Inputs.Hold) and (self.Inputs.Hold.Value > 0) then txt = txt .. " - Locked" end
 		
 		if (self.FindClosest) then
-			txt = txt .. "\nDistance = " .. math.Round(self.Outputs.Distance.Value*1000)/1000
-			txt = txt .. "\nBearing = " .. math.Round(self.Outputs.Bearing.Value*1000)/1000 .. "," .. math.Round(self.Outputs.Elevation.Value*1000)/1000
+			txt = txt .. "\nDistance = " .. math.Round(self.Distance*1000)/1000
+			txt = txt .. "\nBearing = " .. math.Round(self.Bearing*1000)/1000 .. "," .. math.Round(self.Elevation*1000)/1000
 		end
 		
 	else

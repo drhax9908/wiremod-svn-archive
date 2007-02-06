@@ -1,216 +1,216 @@
 "0"
 {
-	"Text"				"#Tool_wire_explosive_name"
-	"Description"			"#Tool_wire_explosive_desc"
+	"Text"				"#Tool_wire_simple_explosive_name"
+	"Description"			"#Tool_wire_simple_explosive_desc"
 
 	"ComboBox"
 	{
 		"Label"				"#Presets"
 		"MenuButton"			"1"
-		"Folder"			"wire_explosive"
+		"Folder"			"wire_simple_explosive"
 		
 		"Options"
 		{
 			"Default"
 			{
-				"wire_explosive_model"			"models/props_c17/oildrum001_explosive.mdl"
-				"wire_explosive_tirgger"		"1"
-				"wire_explosive_damage"			"200"
-				"wire_explosive_radius"		"200"
-				"wire_explosive_removeafter"	"1"
-				"wire_explosive_doblastdamage"	"1"
-				"wire_explosive_freeze"			"0"
-				"wire_explosive_weld"			"1"
-				"wire_explosive_nocollide"		"0"
-				"wire_explosive_weight"			"400"
-				"wire_explosive_noparentremove"	"0"
-				"wire_explosive_modelman"		""
+				"wire_simple_explosive_model"			"models/props_c17/oildrum001_explosive.mdl"
+				"wire_simple_explosive_tirgger"		"1"
+				"wire_simple_explosive_damage"			"200"
+				"wire_simple_explosive_radius"		"200"
+				"wire_simple_explosive_removeafter"	"1"
+				"wire_simple_explosive_doblastdamage"	"1"
+				"wire_simple_explosive_freeze"			"0"
+				"wire_simple_explosive_weld"			"1"
+				"wire_simple_explosive_nocollide"		"0"
+				"wire_simple_explosive_weight"			"400"
+				"wire_simple_explosive_noparentremove"	"0"
+				"wire_simple_explosive_modelman"		""
 			}
 		}		
 
 		"CVars"
 		{
-			"0"	"wire_explosive_model"
-			"0"	"wire_explosive_tirgger"
-			"0"	"wire_explosive_damage"
-			"0" "wire_explosive_radius"
-			"0"	"wire_explosive_removeafter"
-			"0"	"wire_explosive_doblastdamage"
-			"0"	"wire_explosive_freeze"
-			"0"	"wire_explosive_weld"
-			"0"	"wire_explosive_nocollide"
-			"0"	"wire_explosive_weight"
-			"0" "wire_explosive_noparentremove"
-			"0" "wire_explosive_modelman"
+			"0"	"wire_simple_explosive_model"
+			"0"	"wire_simple_explosive_tirgger"
+			"0"	"wire_simple_explosive_damage"
+			"0" "wire_simple_explosive_radius"
+			"0"	"wire_simple_explosive_removeafter"
+			"0"	"wire_simple_explosive_doblastdamage"
+			"0"	"wire_simple_explosive_freeze"
+			"0"	"wire_simple_explosive_weld"
+			"0"	"wire_simple_explosive_nocollide"
+			"0"	"wire_simple_explosive_weight"
+			"0" "wire_simple_explosive_noparentremove"
+			"0" "wire_simple_explosive_modelman"
 		}
 	}
 
 	"ComboBox"
 	{
-		"Label"				"#WireExplosiveTool_Model"
+		"Label"				"#WireSimpleExplosiveTool_Model"
 		"MenuButton"			"0"
 
 		"Options"
 		{
 			"Use manual model selection"
 			{
-				"wire_explosive_model"		"usemanmodel"
+				"wire_simple_explosive_model"		"usemanmodel"
 			}
 			"Use relaod copied model"
 			{
-				"wire_explosive_model"		"usereloadmodel"
+				"wire_simple_explosive_model"		"usereloadmodel"
 			}
 			"Dynamite"
 			{
-				"wire_explosive_model"		"models/dav0r/tnt/tnt.mdl"
+				"wire_simple_explosive_model"		"models/dav0r/tnt/tnt.mdl"
 			}
 			"Heli Bomb"
 			{
-				"wire_explosive_model"		"models/Combine_Helicopter/helicopter_bomb01.mdl"
+				"wire_simple_explosive_model"		"models/Combine_Helicopter/helicopter_bomb01.mdl"
 			}
 			"Flat Bomb"
 			{
-				"wire_explosive_model"		"models/jaanus/thruster_flat.mdl"
+				"wire_simple_explosive_model"		"models/jaanus/thruster_flat.mdl"
 			}
 			"Oil Drum"
 			{
-				"wire_explosive_model"		"models/props_c17/oildrum001.mdl"
+				"wire_simple_explosive_model"		"models/props_c17/oildrum001.mdl"
 			}
 			"Explosive Oil Drum"
 			{
-				"wire_explosive_model"		"models/props_c17/oildrum001_explosive.mdl"
+				"wire_simple_explosive_model"		"models/props_c17/oildrum001_explosive.mdl"
 			}
 			"PHX Cannon Ball"
 			{
-				"wire_explosive_model"		"models/props_phx/cannonball.mdl"
+				"wire_simple_explosive_model"		"models/props_phx/cannonball.mdl"
 			}
 			"PHX Facepunch Barrel"
 			{
-				"wire_explosive_model"		"models/props_phx/facepunch_barrel.mdl"
+				"wire_simple_explosive_model"		"models/props_phx/facepunch_barrel.mdl"
 			}
 			"PHX Oil Drum"
 			{
-				"wire_explosive_model"		"models/props_phx/oildrum001.mdl"
+				"wire_simple_explosive_model"		"models/props_phx/oildrum001.mdl"
 			}
 			"PHX Explosive Oil Drum"
 			{
-				"wire_explosive_model"		"models/props_phx/oildrum001_explosive.mdl"
+				"wire_simple_explosive_model"		"models/props_phx/oildrum001_explosive.mdl"
 			}
 			"PHX AARM"
 			{
-				"wire_explosive_model"		"models/props_phx/amraam.mdl"
+				"wire_simple_explosive_model"		"models/props_phx/amraam.mdl"
 			}
 			"PHX MK-82"
 			{
-				"wire_explosive_model"		"models/props_phx/mk-82.mdl"
+				"wire_simple_explosive_model"		"models/props_phx/mk-82.mdl"
 			}
 			"PHX Rocket"
 			{
-				"wire_explosive_model"		"models/props_phx/rocket1.mdl"
+				"wire_simple_explosive_model"		"models/props_phx/rocket1.mdl"
 			}
 			"PHX Torpedo"
 			{
-				"wire_explosive_model"		"models/props_phx/torpedo.mdl"
+				"wire_simple_explosive_model"		"models/props_phx/torpedo.mdl"
 			}
 			"PHX WW2 Bomb"
 			{
-				"wire_explosive_model"		"models/props_phx/ww2bomb.mdl"
+				"wire_simple_explosive_model"		"models/props_phx/ww2bomb.mdl"
 			}
 			"Paint Bucket"
 			{
-				"wire_explosive_model"		"models/props_junk/plasticbucket001a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/plasticbucket001a.mdl"
 			}
 			"Small Propane Canister"
 			{
-				"wire_explosive_model"		"models/props_junk/PropaneCanister001a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/PropaneCanister001a.mdl"
 			}
 			"Medium Propane Tank"
 			{
-				"wire_explosive_model"		"models/props_junk/propane_tank001a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/propane_tank001a.mdl"
 			}
 			"Cola Can"
 			{
-				"wire_explosive_model"		"models/props_junk/PopCan01a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/PopCan01a.mdl"
 			}
 			"Vitamin Jar"
 			{
-				"wire_explosive_model"		"models/props_lab/jar01a.mdl"
+				"wire_simple_explosive_model"		"models/props_lab/jar01a.mdl"
 			}
 			"Fat Can"
 			{
-				"wire_explosive_model"		"models/props_c17/canister_propane01a.mdl"
+				"wire_simple_explosive_model"		"models/props_c17/canister_propane01a.mdl"
 			}
 			"Black Canister"
 			{
-				"wire_explosive_model"		"models/props_c17/canister01a.mdl"
+				"wire_simple_explosive_model"		"models/props_c17/canister01a.mdl"
 			}
 			"Red Canister"
 			{
-				"wire_explosive_model"		"models/props_c17/canister02a.mdl"
+				"wire_simple_explosive_model"		"models/props_c17/canister02a.mdl"
 			}
 			"Gas Pump"
 			{
-				"wire_explosive_model"		"models/props_wasteland/gaspump001a.mdl"
+				"wire_simple_explosive_model"		"models/props_wasteland/gaspump001a.mdl"
 			}
 			"cardboard_box001a"
 			{
-				"wire_explosive_model"		"models/props_junk/cardboard_box001a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/cardboard_box001a.mdl"
 			}
 			"cardboard_box001b"
 			{
-				"wire_explosive_model"		"models/props_junk/cardboard_box001b.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/cardboard_box001b.mdl"
 			}
 			"cardboard_box002a"
 			{
-				"wire_explosive_model"		"models/props_junk/cardboard_box002a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/cardboard_box002a.mdl"
 			}
 			"cardboard_box002b"
 			{
-				"wire_explosive_model"		"models/props_junk/cardboard_box002b.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/cardboard_box002b.mdl"
 			}
 			"cardboard_box003a"
 			{
-				"wire_explosive_model"		"models/props_junk/cardboard_box003a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/cardboard_box003a.mdl"
 			}
 			"cardboard_box003b"
 			{
-				"wire_explosive_model"		"models/props_junk/cardboard_box003b.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/cardboard_box003b.mdl"
 			}
 			"cardboard_box004a"
 			{
-				"wire_explosive_model"		"models/props_junk/cardboard_box004a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/cardboard_box004a.mdl"
 			}
 			"Cinder Block"
 			{
-				"wire_explosive_model"		"models/props_junk/CinderBlock01a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/CinderBlock01a.mdl"
 			}
 			"Gas can"
 			{
-				"wire_explosive_model"		"models/props_junk/gascan001a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/gascan001a.mdl"
 			}
 			"Traffic Cone"
 			{
-				"wire_explosive_model"		"models/props_junk/TrafficCone001a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/TrafficCone001a.mdl"
 			}
 			"Metal gas can"
 			{
-				"wire_explosive_model"		"models/props_junk/metalgascan.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/metalgascan.mdl"
 			}
 			"Metal paint can"
 			{
-				"wire_explosive_model"		"models/props_junk/metal_paintcan001a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/metal_paintcan001a.mdl"
 			}
 			"Wood crate 1"
 			{
-				"wire_explosive_model"		"models/props_junk/wood_crate001a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/wood_crate001a.mdl"
 			}
 			"Wood crate 2"
 			{
-				"wire_explosive_model"		"models/props_junk/wood_crate002a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/wood_crate002a.mdl"
 			}
 			"Wood Pallet 1"
 			{
-				"wire_explosive_model"		"models/props_junk/wood_pallet001a.mdl"
+				"wire_simple_explosive_model"		"models/props_junk/wood_pallet001a.mdl"
 			}
 		}
 
@@ -218,83 +218,83 @@
 	
 	"Slider"
 	{
-		"Label"				"#WireExplosiveTool_tirgger"
+		"Label"				"#WireSimpleExplosiveTool_tirgger"
 		"Type"				"Integer"
 		"Min"				"1"
 		"Max"				"10"
-		"Command"			"wire_explosive_tirgger"
+		"Command"			"wire_simple_explosive_tirgger"
 	}
 	
 	"Slider"
 	{
-		"Label"				"#WireExplosiveTool_damage"
-		"Description"		"#ExplosiveTool_damage_desc"
+		"Label"				"#WireSimpleExplosiveTool_damage"
+		"Description"		"#SimpleExplosiveTool_damage_desc"
 		"Type"				"Integer"
 		"Min"				"1"
 		"Max"				"1500"
-		"Command"			"wire_explosive_damage"
+		"Command"			"wire_simple_explosive_damage"
 	}
 	
 	"Slider"
 	{
-		"Label"				"#WireExplosiveTool_radius"
-		"Description"		"#ExplosiveTool_delay"
+		"Label"				"#WireSimpleExplosiveTool_radius"
+		"Description"		"#SimpleExplosiveTool_delay"
 		"Type"				"Integer"
 		"Min"				"1"
 		"Max"				"400"
-		"Command"			"wire_explosive_radius"
+		"Command"			"wire_simple_explosive_radius"
 	}
 	
 	"CheckBox"
 	{
-		"Label"				"#WireExplosiveTool_remove"
-		"Command"			"wire_explosive_removeafter"
+		"Label"				"#WireSimpleExplosiveTool_remove"
+		"Command"			"wire_simple_explosive_removeafter"
 	}
 	
 	"CheckBox"
 	{
-		"Label"				"#WireExplosiveTool_doblastdamage"
-		"Command"			"wire_explosive_doblastdamage"
+		"Label"				"#WireSimpleExplosiveTool_doblastdamage"
+		"Command"			"wire_simple_explosive_doblastdamage"
 	}
 	
 	"CheckBox"
 	{
-		"Label"				"#WireExplosiveTool_freeze"
-		"Command"			"wire_explosive_freeze"
+		"Label"				"#WireSimpleExplosiveTool_freeze"
+		"Command"			"wire_simple_explosive_freeze"
 	}
 	
 	"CheckBox"
 	{
-		"Label"				"#WireExplosiveTool_weld"
-		"Command"			"wire_explosive_weld"
+		"Label"				"#WireSimpleExplosiveTool_weld"
+		"Command"			"wire_simple_explosive_weld"
 	}
 	
 	"CheckBox"
 	{
-		"Label"				"#WireExplosiveTool_noparentremove"
-		"Command"			"wire_explosive_noparentremove"
+		"Label"				"#WireSimpleExplosiveTool_noparentremove"
+		"Command"			"wire_simple_explosive_noparentremove"
 	}
 	
 	"CheckBox"
 	{
-		"Label"				"#WireExplosiveTool_nocollide"
-		"Command"			"wire_explosive_nocollide"
+		"Label"				"#WireSimpleExplosiveTool_nocollide"
+		"Command"			"wire_simple_explosive_nocollide"
 	}
 	
 	"Slider"
 	{
-		"Label"				"#WireExplosiveTool_weight"
-		"Description"		"#ExplosiveTool_weight"
+		"Label"				"#WireSimpleExplosiveTool_weight"
+		"Description"		"#SimpleExplosiveTool_weight"
 		"Type"				"Integer"
 		"Min"				"1"
 		"Max"				"1000"
-		"Command"			"wire_explosive_weight"
+		"Command"			"wire_simple_explosive_weight"
 	}
 	
 	"TextBox"
 	{
-		"Label"				"#WireExplosiveTool_modelman"
-		"Command"			"wire_explosive_modelman"
+		"Label"				"#WireSimpleExplosiveTool_modelman"
+		"Command"			"wire_simple_explosive_modelman"
 		"MaxLength"			"50"
 	}
 

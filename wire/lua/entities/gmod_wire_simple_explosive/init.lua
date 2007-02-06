@@ -48,9 +48,9 @@ function ENT:Setup( damage, delaytime, removeafter, doblastdamage, radius, nocol
 	
 	self.NormInfo = ""
 	if (self.DoBlastDamage) then 
-		self.NormInfo = "Damage: "..self.Damage.."/nRadius: "..self.Radius
+		self.NormInfo = "Damage: " .. math.floor(self.Damage) .. "/nRadius: " .. math.floor(self.Radius)
 	else
-		self.NormInfo = "Radius: "..self.Radius
+		self.NormInfo = "Radius: " .. math.floor(self.Radius)
 	end
 	
 	self:ShowOutput()

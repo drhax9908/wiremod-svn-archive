@@ -6,7 +6,6 @@ TOOL.ConfigName		= nil
 
 TOOL.ClientConVar[ "model" ] = "models/props_c17/oildrum001_explosive.mdl"
 TOOL.ClientConVar[ "modelman" ] = ""
-TOOL.ClientConVar[ "usemodelman" ] = 0
 TOOL.ClientConVar[ "tirgger" ] = 1		// Current tirgger
 TOOL.ClientConVar[ "damage" ] = 200		// Damage to inflict
 TOOL.ClientConVar[ "doblastdamage" ] = 1
@@ -225,9 +224,9 @@ function TOOL:Reload( trace )
 	return true
 end
 
-if SERVER then
-
-	function MakeWireSimpleExplosive(pl, Pos, Ang, key, damage, model, removeafter, delaytime, doblastdamage, radius, nocollide, Vel, aVel, frozen )
+if SERVER then 
+	
+	function MakeWireSimpleExplosive(pl, Pos, Ang, key, damage, model, removeafter, doblastdamage, radius, nocollide, Vel, aVel, frozen )
 	
 		if ( !pl:CheckLimit( "wire_simple_explosive" ) ) then return nil end
 
@@ -240,7 +239,6 @@ if SERVER then
 		explosive:Activate()
 		
 		explosive:GetTable():Setup( damage, delaytime, removeafter, doblastdamage, radius, nocollide )
-		
 		explosive:GetTable():SetPlayer( pl )
 		
 		local ttable = 
