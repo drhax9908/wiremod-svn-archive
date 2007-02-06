@@ -13,6 +13,8 @@ if ( CLIENT ) then
     language.Add( "ToolWireIndicator_a_colour", "A Colour:" )
     language.Add( "ToolWireIndicator_b_value", "B Value:" )
     language.Add( "ToolWireIndicator_b_colour", "B Colour:" )
+    language.Add( "ToolWireIndicator_Material", "Material:" )
+    language.Add( "ToolWireIndicator_90", "Rotate segment 90:" )
 	language.Add( "sboxlimit_wire_indicators", "You've hit indicators limit!" )
 	language.Add( "undone_wireindicator", "Undone Wire Indicator" )
 end
@@ -32,6 +34,8 @@ TOOL.ClientConVar[ "br" ] = "0"
 TOOL.ClientConVar[ "bg" ] = "255"
 TOOL.ClientConVar[ "bb" ] = "0"
 TOOL.ClientConVar[ "ba" ] = "255"
+TOOL.ClientConVar[ "rotate90" ] = "0"
+TOOL.ClientConVar[ "material" ] = "models/debug/debugwhite"
 
 cleanup.Register( "wire_indicators" )
 
@@ -57,11 +61,14 @@ function TOOL:LeftClick( trace )
 	local bg			= math.min(self:GetClientNumber("bg"), 255)
 	local bb			= math.min(self:GetClientNumber("bb"), 255)
 	local ba			= math.min(self:GetClientNumber("ba"), 255)
-
+	local material		= self:GetClientInfo( "material" )
+	
 	// If we shot a wire_indicator change its force
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_indicator" && trace.Entity.pl == ply ) then
+		
 		trace.Entity:Setup(a, ar, ag, ab, aa, b, br, bg, bb, ba)
-
+		wire_indicator:SetMaterial( material )
+		
 		trace.Entity.a	= a
 		trace.Entity.ar	= ar
 		trace.Entity.ag	= ag
@@ -81,13 +88,14 @@ function TOOL:LeftClick( trace )
 	if (not util.IsValidModel(model)) then return false end
 	if (not util.IsValidProp(model)) then return false end		// Allow ragdolls to be used?
 
-	local Ang = trace.HitNormal:Angle()
+	//local Ang = trace.HitNormal:Angle()
+	local Ang = self:GetSelectedAngle(trace.HitNormal:Angle())
 	Ang.pitch = Ang.pitch + 90
 
-	wire_indicator = MakeWireIndicator( ply, model, Ang, trace.HitPos, a, ar, ag, ab, aa, b, br, bg, bb, ba )
+	wire_indicator = MakeWireIndicator( ply, model, Ang, trace.HitPos, a, ar, ag, ab, aa, b, br, bg, bb, ba, material )
 	
 	local min = wire_indicator:OBBMins()
-	wire_indicator:SetPos( trace.HitPos - trace.HitNormal * min.z )
+	wire_indicator:SetPos( trace.HitPos - trace.HitNormal * self:GetSelectedMin(min) )
 	
 	local const, nocollide
 	
@@ -119,13 +127,14 @@ end
 
 if (SERVER) then
 
-	function MakeWireIndicator( pl, Model, Ang, Pos, a, ar, ag, ab, aa, b, br, bg, bb, ba, nocollide, Vel, aVel, frozen )
+	function MakeWireIndicator( pl, Model, Ang, Pos, a, ar, ag, ab, aa, b, br, bg, bb, ba, material, nocollide, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_indicators" ) ) then return false end
 	
 		local wire_indicator = ents.Create( "gmod_wire_indicator" )
 		if (!wire_indicator:IsValid()) then return false end
+		
 		wire_indicator:SetModel( Model )
-
+		wire_indicator:SetMaterial( material )
 		wire_indicator:SetAngles( Ang )
 		wire_indicator:SetPos( Pos )
 		wire_indicator:Spawn()
@@ -146,6 +155,7 @@ if (SERVER) then
 			bg	= bg,
 			bb	= bb,
 			ba	= ba,
+			material = material,
 			pl	= pl,
 			nocollide = nocollide
 			}
@@ -157,7 +167,7 @@ if (SERVER) then
 		return wire_indicator
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_indicator", MakeWireIndicator, "Model", "Ang", "Pos", "a", "ar", "ag", "ab", "aa", "b", "br", "bg", "bb", "ba", "nocollide", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_indicator", MakeWireIndicator, "Model", "Ang", "Pos", "a", "ar", "ag", "ab", "aa", "b", "br", "bg", "bb", "ba", "material", "nocollide", "Vel", "aVel", "frozen")
 
 end
 
@@ -177,20 +187,42 @@ function TOOL:UpdateGhostWireIndicator( ent, player )
 		
 	end
 	
-	local Ang = trace.HitNormal:Angle()
+	local Ang = self:GetSelectedAngle(trace.HitNormal:Angle())
 	Ang.pitch = Ang.pitch + 90
 	
 	local min = ent:OBBMins()
-	 ent:SetPos( trace.HitPos - trace.HitNormal * min.z )
+	ent:SetPos( trace.HitPos - trace.HitNormal * self:GetSelectedMin(min) )
 	ent:SetAngles( Ang )
 	
 	ent:SetNoDraw( false )
 	
 end
 
+function TOOL:GetSelectedAngle( Ang )
+	local Model = self:GetClientInfo( "model" )
+	//these models get mounted differently
+	if (Model == "models/props_borealis/bluebarrel001.mdl" || Model == "models/props_junk/PopCan01a.mdl") then
+		return Ang + Angle(180, 0, 0)
+	elseif (Model == "models/props_trainstation/trainstation_clock001.mdl" || Model == "models/segment.mdl" || Model == "models/segment2.mdl") then
+		return Ang + Angle(-90, 0, (self:GetClientNumber("rotate90") * 90))
+	else
+		return Ang
+	end
+end
+
+function TOOL:GetSelectedMin( min )
+	local Model = self:GetClientInfo( "model" )
+	//these models are different
+	if (Model == "models/props_trainstation/trainstation_clock001.mdl" || Model == "models/segment.mdl" || Model == "models/segment2.mdl") then
+		return min.x
+	else
+		return min.z
+	end
+end
+
 function TOOL:Think()
 	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" )) then
-		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), Angle(0,0,0) )
+		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), self:GetSelectedAngle(Angle(0,0,0)) )
 	end
 	
 	self:UpdateGhostWireIndicator( self.GhostEntity, self:GetOwner() )
@@ -215,7 +247,11 @@ function TOOL.BuildCPanel(panel)
 				wire_indicator_br = "0",
 				wire_indicator_bg = "255",
 				wire_indicator_bb = "0",
-				wire_indicator_ba = "255"
+				wire_indicator_ba = "255",
+				wire_indicator_model = "models/jaanus/wiretool/wiretool_siren.mdl",
+				wire_indicator_material = "models/debug/debugwhite",
+				wire_indicator_rotate90 = "0"
+				
 			}
 		},
 
@@ -229,7 +265,10 @@ function TOOL.BuildCPanel(panel)
 			[6] = "wire_indicator_br",
 			[7] = "wire_indicator_bg",
 			[8] = "wire_indicator_bb",
-			[9] = "wire_indicator_ba"
+			[9] = "wire_indicator_ba",
+			[10] = "wire_indicator_model",
+			[11] = "wire_indicator_material",
+			[12] = "wire_indicator_rotate90"
 		}
 	})
 
@@ -270,7 +309,7 @@ function TOOL.BuildCPanel(panel)
 		ShowRGB = "1",
 		Multiplier = "255"
 	})
-
+	
 	panel:AddControl("ComboBox", {
 		Label = "#ToolWireIndicator_Model",
 		MenuButton = "0",
@@ -279,6 +318,27 @@ function TOOL.BuildCPanel(panel)
 			["Siren"]				= { wire_indicator_model = "models/jaanus/wiretool/wiretool_siren.mdl" },
 			["Medium 7-seg bar"]	= { wire_indicator_model = "models/segment2.mdl" },
 			["Small 7-seg bar"]		= { wire_indicator_model = "models/segment.mdl" },
+			["Barrel"]				= { wire_indicator_model = "models/props_borealis/bluebarrel001.mdl" },
+			["Grave stone"]			= { wire_indicator_model = "models/props_c17/gravestone004a.mdl" },
+			["Pop can"]				= { wire_indicator_model = "models/props_junk/PopCan01a.mdl" },
+			["Traffic Cone"]		= { wire_indicator_model = "models/props_junk/TrafficCone001a.mdl" },
+			["Big Clock"]			= { wire_indicator_model = "models/props_trainstation/trainstation_clock001.mdl" }
 		}
+	})
+	
+	panel:AddControl("ComboBox", {
+		Label = "#ToolWireIndicator_Material",
+		MenuButton = "0",
+
+		Options = {
+			["Matte"]	= { wire_indicator_material = "models/debug/debugwhite" },
+			["Shiny"]	= { wire_indicator_material = "models/shiny" },
+			["Metal"]	= { wire_indicator_material = "models/props_c17/metalladder003" }
+		}
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#ToolWireIndicator_90",
+		Command = "wire_indicator_rotate90"
 	})
 end
