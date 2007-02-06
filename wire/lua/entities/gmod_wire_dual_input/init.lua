@@ -14,7 +14,7 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-
+	
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Out" })
 end
 
@@ -36,7 +36,7 @@ function ENT:InputActivate( mul )
 	if ( self.Toggle && self.Select == mul ) then
 		return self:Switch( !self.On, mul )
 	end
-
+	
 	return self:Switch( true, mul )
 end
 
@@ -48,10 +48,10 @@ end
 
 function ENT:Switch( on, mul )
 	if (!self.Entity:IsValid()) then return false end
-
+	
 	self.On = on
 	self.Select = mul
-
+	
 	if (on && mul == 1) then
 		self:ShowOutput(self.ValueOn)
 		self.Value = self.ValueOn
@@ -62,9 +62,9 @@ function ENT:Switch( on, mul )
 		self:ShowOutput(self.ValueOff)
 		self.Value = self.ValueOff
 	end
-
+	
 	Wire_TriggerOutput(self.Entity, "Out", self.Value)
-
+	
 	return true
 end
 
