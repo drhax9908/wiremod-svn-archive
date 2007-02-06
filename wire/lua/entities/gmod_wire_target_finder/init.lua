@@ -53,9 +53,6 @@ end
 
 function ENT:Think()
 	self.BaseClass.Think(self)
-	
-	local berng = Angle(0, 0, 0)
-	local mindist = self.Range+1
 		
 	if (self.Inputs.Hold) and (self.Inputs.Hold.Value > 0) then
 		if (self.Target) and (not self.Target:IsValid()) then
