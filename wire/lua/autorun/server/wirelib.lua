@@ -319,6 +319,8 @@ end
 
 
 function Wire_TriggerOutput(ent, oname, value, iter)
+	if (not ent) or (not ent:IsValid()) then return end
+
     local output = ent.Outputs[oname]
     if (output) and (value ~= output.Value) then
         if (output.TriggerLimit <= 0) then return end
