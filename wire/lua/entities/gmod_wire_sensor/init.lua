@@ -89,14 +89,6 @@ function ENT:ShowOutput()
 	self:SetOverlayText(txt)
 end
 
-function ENT:OnRestore()
-	//this is to prevent old save breakage
-	if (!self.Outputs.Distance.Value) then
-		self:Setup(self.XYZMode, self.OutDist, self.OutBrng)
-	end 
-	
-	self.BaseClass.OnRestore(self)
-end
 
 function ENT:TriggerOutputs(dist, brng, distc)
     Wire_TriggerOutput(self.Entity, "Distance", dist)
@@ -123,6 +115,14 @@ function ENT:SetBeacon(beacon)
 		self.ToSense = nil
 		self.Active = false
 	end
+end
+
+
+function ENT:OnRestore()
+	//this is to prevent old save breakage
+	self:Setup(self.XYZMode, self.OutDist, self.OutBrng)
+	
+	self.BaseClass.OnRestore(self)
 end
 
 
