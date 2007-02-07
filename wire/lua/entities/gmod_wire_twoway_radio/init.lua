@@ -20,16 +20,16 @@ end
 
 function ENT:Setup( channel )
 	self.Channel = channel
-	self.PrevOutputA = 0
-	self.PrevOutputB = 0
-	self.PrevOutputC = 0
-	self.PrevOutputD = 0
+	self.PrevOutputA = nil
+	self.PrevOutputB = nil
+	self.PrevOutputC = nil
+	self.PrevOutputD = nil
 
 	self:ShowOutput("update", 1)
-	Wire_TriggerOutput(self.Entity, "A", Radio_Receive(channel))
-	Wire_TriggerOutput(self.Entity, "B", Radio_Receive(channel))
-	Wire_TriggerOutput(self.Entity, "C", Radio_Receive(channel))
-	Wire_TriggerOutput(self.Entity, "D", Radio_Receive(channel))
+	Wire_TriggerOutput(self.Entity, "A", self.Outputs.A.Value or 0)
+	Wire_TriggerOutput(self.Entity, "B", self.Outputs.B.Value or 0)
+	Wire_TriggerOutput(self.Entity, "C", self.Outputs.C.Value or 0)
+	Wire_TriggerOutput(self.Entity, "D", self.Outputs.D.Value or 0)
 end
 
 function ENT:TriggerInput(iname, value)
@@ -66,7 +66,11 @@ function ENT:RadioLink(other, id)
 	self.PairID = id
 	self.PeerID = id
 	
-	self:ReceiveRadio("A", 0)
+	self:TriggerInput("A", self.Inputs.A.Value or 0)
+	self:TriggerInput("B", self.Inputs.B.Value or 0)
+	self:TriggerInput("C", self.Inputs.C.Value or 0)
+	self:TriggerInput("D", self.Inputs.D.Value or 0)
+	self:ShowOutput("update", 1)
 end
 
 
@@ -97,9 +101,9 @@ function ENT:ShowOutput(iname, value)
 	end
 	if (changed) then
 		if self.PairID == nil then
-			self:SetOverlayText( "(Not Paired) Transmit: " .. 0 )
+			self:SetOverlayText( "(Not Paired) Transmit: 0, 0, 0, 0" )
 		else
-			self:SetOverlayText( "(Pair ID: " .. self.PairID .. ")\nTransmit A: " .. (self.Inputs.A.Value or 0) .. " B: " .. (self.Inputs.B.Value or 0) ..  " C: " .. (self.Inputs.C.Value or 0) ..  " D: " .. (self.Inputs.D.Value or 0) .. "\nReceive A: " .. self.PrevOutputA .. " B: " .. self.PrevOutputB .. " C: " .. self.PrevOutputC .. " D: " .. self.PrevOutputD )
+			self:SetOverlayText( "(Pair ID: " .. self.PairID .. ")\nTransmit A: " .. (self.Inputs.A.Value or 0) .. " B: " .. (self.Inputs.B.Value or 0) ..  " C: " .. (self.Inputs.C.Value or 0) ..  " D: " .. (self.Inputs.D.Value or 0) .. "\nReceive A: " .. (self.Outputs.A.Value or 0) .. " B: " .. (self.Outputs.B.Value or 0) ..  " C: " .. (self.Outputs.C.Value or 0) ..  " D: " .. (self.Outputs.D.Value or 0) )
 		end
 		
 	end

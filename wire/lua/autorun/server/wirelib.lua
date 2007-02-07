@@ -467,9 +467,6 @@ function Wire_SetPathNames(ent, names)
 end
 
 
-
---  Output Iterator
-
 function Wire_CreateOutputIterator()
 	local iter = {
 		Queue = {}
@@ -498,4 +495,3 @@ function Wire_CreateOutputIterator()
 	
 	return iter
 end
-

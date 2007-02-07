@@ -5,6 +5,7 @@ AddCSLuaFile( "shared.lua" )
 include('shared.lua')
 
 ENT.WireDebugName = "Gate"
+ENT.OverlayDelay = 0
 
 function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
@@ -91,8 +92,6 @@ function ENT:ShowOutput()
 	end
 	
 	self:SetOverlayText(txt)
-
-	return value
 end
 
 
@@ -103,7 +102,7 @@ function ENT:OnRestore()
 end
 
 
-function ENT:GetActionInputs(round)
+function ENT:GetActionInputs(as_names)
 	local Args = {}
 
 	if (self.Action.compact_inputs) then
@@ -113,16 +112,22 @@ function ENT:GetActionInputs(round)
 			    Msg("Missing input! ("..v..")")
 			    return {}
 			end
-			if (input.Src) then
-				if (round) then
-					table.insert(Args, math.Round(input.Value*1000)/1000)
+
+		    if (input.Src) and (input.Src:IsValid()) then
+				if (as_names) then
+					table.insert(Args, input.Src.WireName or input.Src.WireName.WireDebugName or v)
 				else
 					table.insert(Args, input.Value)
 				end
 			end
 		end
-		while (table.getn(Args) < self.Action.compact_inputs) do
-		    table.insert(Args, 0)
+
+		while (#Args < self.Action.compact_inputs) do
+			if (as_names) then
+			    table.insert(Args, self.Action.inputs[#Args+1] or "*Not enough inputs*")
+			else
+			    table.insert(Args, 0)
+			end
 		end
 	else
 	    for k,v in ipairs(self.Action.inputs) do
@@ -131,14 +136,19 @@ function ENT:GetActionInputs(round)
 			    Msg("Missing input! ("..v..")")
 			    return {}
 			end
-			if (input.Src) then
-				if (round) then
-					Args[k] = math.Round((input.Value or 0)*1000)/1000
+			
+			if (as_names) then
+				if (input.Src) and (input.Src:IsValid()) then
+					Args[k] = input.Src.WireName or input.Src.WireName.WireDebugName or v
 				else
-					Args[k] = (input.Value or 0)
+					Args[k] = v
 				end
 			else
-			    Args[k] = 0
+				if (input.Src) and (input.Src:IsValid()) then
+					Args[k] = (input.Value or 0)
+				else
+				    Args[k] = 0
+				end
 			end
 		end
 	end
