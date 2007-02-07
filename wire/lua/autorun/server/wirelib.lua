@@ -378,7 +378,7 @@ local function Wire_Unlink(ent, iname)
 end
 
 function Wire_Link_Start(idx, ent, pos, iname, material, color, width)
-    if (not ent:IsValid()) or (not ent.Inputs) or (not ent.Inputs[iname]) then return end
+    if (not ent) or (not ent:IsValid()) or (not ent.Inputs) or (not ent.Inputs[iname]) then return end
 
 	local input = ent.Inputs[iname]
 
