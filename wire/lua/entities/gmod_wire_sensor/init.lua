@@ -26,13 +26,12 @@ function ENT:Setup(xyz_mode, outdist, outbrng)
 	
 	local onames = {}
 	if (outdist) then
-		if (xyz_mode) then
-	    	table.insert(onames, "X")
-	    	table.insert(onames, "Y")
-	    	table.insert(onames, "Z")
-		else
-	    	table.insert(onames, "Distance")
-		end
+	    table.insert(onames, "Distance")
+	end
+	if (xyz_mode) then
+	    table.insert(onames, "X")
+	    table.insert(onames, "Y")
+	    table.insert(onames, "Z")
 	end
 	if (outbrng) then
     	table.insert(onames, "Bearing")
@@ -40,11 +39,7 @@ function ENT:Setup(xyz_mode, outdist, outbrng)
 	end
 
 	Wire_AdjustOutputs(self.Entity, onames)
-	if (xyz_mode) then
-		self:TriggerOutputs(Vector(0, 0, 0), Angle(0, 0, 0))
-	else
-		self:TriggerOutputs(0, Angle(0, 0, 0))
-	end
+	self:TriggerOutputs(0, Angle(0, 0, 0),Vector(0, 0, 0))
 	self:ShowOutput()
 end
 
@@ -54,23 +49,23 @@ function ENT:Think()
 	if( !self.ToSense or !self.ToSense:IsValid() ) then	return end
 	if (self.Active) then
 	    local dist = 0
+	    local distc = Vector(0, 0, 0)
 	    local brng = Angle(0, 0, 0)
 		local MyPos = self.Entity:GetPos()
 		local BeaconPos = self.ToSense:GetBeaconPos(self.Entity)
 		if (self.OutDist) then
-			if (self.XYZMode) then
-			    local DeltaPos = self.Entity:WorldToLocal(BeaconPos)
-				dist = Vector(-DeltaPos.y, DeltaPos.x, DeltaPos.z)
-			else
-			    dist = (BeaconPos-MyPos):Length()
-			end
+			dist = (BeaconPos-MyPos):Length()
+		end
+		if (self.XYZMode) then
+			local DeltaPos = self.Entity:WorldToLocal(BeaconPos)
+			distc = Vector(-DeltaPos.y, DeltaPos.x, DeltaPos.z)
 		end
 		if (self.OutBrng) then
 		    local DeltaPos = self.Entity:WorldToLocal(BeaconPos)
 		    brng = DeltaPos:Angle()
 		end
 
-		self:TriggerOutputs(dist, brng)
+		self:TriggerOutputs(dist, brng, distc)
 		self:ShowOutput()
 
 		self.Entity:NextThink(CurTime()+0.04)
@@ -82,11 +77,10 @@ end
 function ENT:ShowOutput()
 	local txt = "Beacon Sensor"
 	if (self.OutDist) then
-		if (self.XYZMode) then
-			txt = txt .. "\nOffset = " .. math.Round(self.Outputs.X.Value*1000)/1000 .. "," .. math.Round(self.Outputs.Y.Value*1000)/1000 .. "," .. math.Round(self.Outputs.Z.Value*1000)/1000
-		else
-			txt = txt .. "\nDistance = " .. math.Round(self.Outputs.Distance.Value*1000)/1000
-		end
+		txt = txt .. "\nDistance = " .. math.Round(self.Outputs.Distance.Value*1000)/1000
+	end
+	if (self.XYZMode) then
+		txt = txt .. "\nOffset = " .. math.Round(self.Outputs.X.Value*1000)/1000 .. "," .. math.Round(self.Outputs.Y.Value*1000)/1000 .. "," .. math.Round(self.Outputs.Z.Value*1000)/1000
 	end
 	if (self.OutBrng) then
 		txt = txt .. "\nBearing = " .. math.Round(self.Outputs.Bearing.Value*1000)/1000 .. "," .. math.Round(self.Outputs.Elevation.Value*1000)/1000
@@ -96,14 +90,11 @@ function ENT:ShowOutput()
 end
 
 
-function ENT:TriggerOutputs(dist, brng)
-	if (type(dist) == "number") then
-    	Wire_TriggerOutput(self.Entity, "Distance", dist)
-	else
-    Wire_TriggerOutput(self.Entity, "X", dist.x)
-    Wire_TriggerOutput(self.Entity, "Y", dist.y)
-    Wire_TriggerOutput(self.Entity, "Z", dist.z)
-	end
+function ENT:TriggerOutputs(dist, brng, distc)
+    Wire_TriggerOutput(self.Entity, "Distance", dist)
+    Wire_TriggerOutput(self.Entity, "X", distc.x)
+    Wire_TriggerOutput(self.Entity, "Y", distc.y)
+    Wire_TriggerOutput(self.Entity, "Z", distc.z)
 	
 	local pitch = brng.p
 	local yaw = brng.y
