@@ -102,10 +102,10 @@ function ENT:Think()
 	
 	if (self.Target) then
 		if (self.PaintTarget) then
-			if (self.LastTarget != self.Target) then //not targeting the same as last time
+			if (self.LastTarget != self.Target) then //unpaint last target if it was different
 				self:TargetPainter(self.LastTarget, false)
-				self:TargetPainter(self.Target, true)
 			end
+			self:TargetPainter(self.Target, true) //paint current
 		end
 		
 	    self:ShowOutput(true)
