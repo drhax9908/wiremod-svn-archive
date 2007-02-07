@@ -6,10 +6,7 @@ include('shared.lua')
 
 ENT.WireDebugName = "2W Radio"
 
-local MODEL = Model( "models/props_lab/bindergreen.mdl" )
-
 function ENT:Initialize()
-	self.Entity:SetModel( MODEL )	
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )

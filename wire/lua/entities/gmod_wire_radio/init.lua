@@ -9,7 +9,6 @@ ENT.WireDebugName = "Radio"
 local MODEL = Model( "models/props_lab/binderblue.mdl" )
 
 function ENT:Initialize()
-	self.Entity:SetModel( MODEL )	
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )

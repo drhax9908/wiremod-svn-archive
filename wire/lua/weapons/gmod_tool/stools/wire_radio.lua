@@ -9,6 +9,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_radio_desc", "Spawns a radio for use with the wire system." )
     language.Add( "Tool_wire_radio_0", "Primary: Create/Update Radio" )
     language.Add( "WireRadioTool_channel", "Channel:" )
+	language.Add( "WireRadioTool_model", "Model:" );
 	language.Add( "sboxlimit_wire_radios", "You've hit the radio limit!" )
 	language.Add( "undone_wireradio", "Undone Wire Radio" )
 end
@@ -18,6 +19,11 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "channel" ] = 1
+TOOL.ClientConVar[ "model" ] = "models/props_lab/binderblue.mdl"
+
+if (SERVER) then
+	ModelPlug_Register("radio")
+end
 
 TOOL.Model = "models/props_lab/binderblue.mdl"
 
@@ -34,6 +40,7 @@ function TOOL:LeftClick( trace )
 
 	// Get client's CVars
 	local _channel			= self:GetClientInfo( "channel" )
+	local model             = self:GetClientInfo( "model" )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_radio" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup( _channel )
@@ -43,7 +50,7 @@ function TOOL:LeftClick( trace )
 
 	if ( !self:GetSWEP():CheckLimit( "wire_radioes" ) ) then return false end
 
-	local wire_radio = MakeWireRadio( ply, trace.HitPos, Angle( 90, 0, 0 ), _channel )
+	local wire_radio = MakeWireRadio( ply, model, trace.HitPos, Angle( 90, 0, 0 ), _channel )
 	
 	local min = wire_radio:OBBMins()
 	wire_radio:SetPos( trace.HitPos - trace.HitNormal * (min.z-5) )
@@ -66,13 +73,13 @@ end
 
 if SERVER then
 
-	function MakeWireRadio(pl, Pos, Ang, channel, Vel, aVel, frozen )
+	function MakeWireRadio(pl, Model, Pos, Ang, channel, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_radioes" ) ) then return nil end
 
 		local wire_radio = ents.Create( "gmod_wire_radio" )
 		wire_radio:SetPos( Pos )
 		wire_radio:SetAngles( Ang )
-		wire_radio:SetModel( Model("models/props_lab/binderblue.mdl") )
+		wire_radio:SetModel(Model)
 		wire_radio:Spawn()
 		wire_radio:Activate()
 		
@@ -94,7 +101,7 @@ if SERVER then
 		return wire_radio
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_radio", MakeWireRadio, "Pos", "Ang", "channel", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_radio", MakeWireRadio, "Model", "Pos", "Ang", "channel", "Vel", "aVel", "frozen")
 
 end
 
@@ -121,13 +128,11 @@ function TOOL:UpdateGhostWireRadio( ent, player )
 end
 
 function TOOL:Think()
-
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" )) then
+		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), Angle(0,0,0) )
 	end
 	
 	self:UpdateGhostWireRadio( self.GhostEntity, self:GetOwner() )
-	
 end
 
 function TOOL.BuildCPanel(panel)
@@ -156,4 +161,6 @@ function TOOL.BuildCPanel(panel)
 		Max = "30",
 		Command = "wire_radio_channel"
 	})
+
+	ModelPlug_AddToCPanel(panel, "radio", "wire_radio", "#WireRadioTool_model", nil, "#WireRadioTool_model")
 end

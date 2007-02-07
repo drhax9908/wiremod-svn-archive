@@ -88,4 +88,16 @@
 		"categories"    "detonator"
 		"model"         "models/props_combine/breenclock.mdl"
 	}
+
+	"Blue Binder"
+	{
+		"categories"    "radio"
+		"model"         "models/props_lab/binderblue.mdl"
+	}
+
+	"Green Binder"
+	{
+		"categories"    "radio2"
+		"model"         "models/props_lab/bindergreen.mdl"
+	}
 }

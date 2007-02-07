@@ -9,6 +9,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_twoway_radio_desc", "Spawns a two-way radio for use with the wire system." )
     language.Add( "Tool_wire_twoway_radio_0", "Primary: Create/Update Two-way Radio\nSecondary: Select a two-way radio to pair up with another two-way radio." )
 	language.Add( "Tool_wire_twoway_radio_1", "Select the second two-way radio." );
+	language.Add( "WireRadioTwoWayTool_model", "Model:" );
 	language.Add( "sboxlimit_wire_twoway_radios", "You've hit the two-way radio limit!" )
 	language.Add( "undone_wiretwowayradio", "Undone Wire Two-way Radio" )
 end
@@ -17,7 +18,11 @@ if (SERVER) then
   CreateConVar('sbox_maxwire_twoway_radioes',30)
 end
 
-TOOL.Model = "models/props_lab/bindergreen.mdl"
+TOOL.ClientConVar[ "model" ] = "models/props_lab/bindergreen.mdl"
+
+if (SERVER) then
+	ModelPlug_Register("radio")
+end
 
 TOOL.FirstPeer = nil
 
@@ -31,6 +36,7 @@ function TOOL:LeftClick( trace )
 	
 	local ply = self:GetOwner()
 	
+	local model             = self:GetClientInfo( "model" )
 
 	// Get client's CVars
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_twoway_radio" && trace.Entity.pl == ply ) then
@@ -61,7 +67,7 @@ function TOOL:LeftClick( trace )
 
 	if ( !self:GetSWEP():CheckLimit( "wire_twoway_radioes" ) ) then return false end
 
-	local wire_twoway_radio = MakeWireTwoWay_Radio( ply, trace.HitPos, Angle( 90, 0, 0 ), nil )
+	local wire_twoway_radio = MakeWireTwoWay_Radio( ply, model, trace.HitPos, Angle( 90, 0, 0 ), nil )
 	
 	local min = wire_twoway_radio:OBBMins()
 	wire_twoway_radio:SetPos( trace.HitPos - trace.HitNormal * (min.z-5) )
@@ -95,13 +101,13 @@ end
 
 if SERVER then
 
-	function MakeWireTwoWay_Radio(pl, Pos, Ang, PeerID, Other, Vel, aVel, frozen )
+	function MakeWireTwoWay_Radio(pl, Model, Pos, Ang, PeerID, Other, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_twoway_radioes" ) ) then return nil end
 
 		local wire_twoway_radio = ents.Create( "gmod_wire_twoway_radio" )
 		wire_twoway_radio:SetPos( Pos )
 		wire_twoway_radio:SetAngles( Ang )
-		wire_twoway_radio:SetModel( Model("models/props_lab/bindergreen.mdl") )
+		wire_twoway_radio:SetModel(Model)
 		wire_twoway_radio:Spawn()
 		wire_twoway_radio:Activate()
 		
@@ -124,7 +130,7 @@ if SERVER then
 		return wire_twoway_radio
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_twoway_radio", MakeWireTwoWay_Radio, "Pos", "Ang", "PeerID", "Other", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_twoway_radio", MakeWireTwoWay_Radio, "Model", "Pos", "Ang", "PeerID", "Other", "Vel", "aVel", "frozen")
 
 end
 
@@ -151,15 +157,15 @@ function TOOL:UpdateGhostWireTwoWay_Radio( ent, player )
 end
 
 function TOOL:Think()
-
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" )) then
+		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), Angle(0,0,0) )
 	end
 	
 	self:UpdateGhostWireTwoWay_Radio( self.GhostEntity, self:GetOwner() )
-	
 end
 
 function TOOL.BuildCPanel(panel)
-	panel:AddControl("Header", { Text = "#Tool_wire_radio_name", Description = "#Tool_wire_radio_desc" })
+	panel:AddControl("Header", { Text = "#Tool_wire_twoway_radio_name", Description = "#Tool_wire_twoway_radio_desc" })
+
+	ModelPlug_AddToCPanel(panel, "radio2", "wire_twoway_radio", "#WireRadioTwoWayTool_model", nil, "#WireRadioTwoWayTool_model")
 end

@@ -176,7 +176,7 @@
 			"7"     "materials/cyborgmatt/capacitor.vtf"
 		}
 	}	
-	
+
 	"Capacitor Large"
 	{
 		"categories"	"gate,chip"
@@ -191,6 +191,36 @@
 			"5"     "models/cyborgmatt/capacitor_large.xbox.vtx"
 			"6"     "materials/cyborgmatt/capacitor.vmt"
 			"7"     "materials/cyborgmatt/capacitor.vtf"
+		}
+	}
+
+	"Wireless Router"
+	{
+		"categories"	"radio,radio2"
+		"model"			"models/cheeze/wires/router.mdl"
+		"files"
+		{
+			"0"     "models/cyborgmatt/router.dx80.vtx"
+			"1"     "models/cyborgmatt/router.dx90.vtx"
+			"2"     "models/cyborgmatt/router.phy"
+			"3"     "models/cyborgmatt/router.sw.vtx"
+			"4"     "models/cyborgmatt/router.vvd"
+			"5"     "models/cyborgmatt/router.xbox.vtx"
+		}
+	}
+
+	"Wireless Card"
+	{
+		"categories"	"radio,radio2"
+		"model"			"models/cheeze/wires/wireless_card.mdl"
+		"files"
+		{
+			"0"     "models/cyborgmatt/wireless_card.dx80.vtx"
+			"1"     "models/cyborgmatt/wireless_card.dx90.vtx"
+			"2"     "models/cyborgmatt/wireless_card.phy"
+			"3"     "models/cyborgmatt/wireless_card.sw.vtx"
+			"4"     "models/cyborgmatt/wireless_card.vvd"
+			"5"     "models/cyborgmatt/wireless_card.xbox.vtx"
 		}
 	}
 }
