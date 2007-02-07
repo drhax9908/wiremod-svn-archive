@@ -65,9 +65,7 @@ function ENT:Think()
 		local targets = ents.FindInSphere(self.Entity:GetPos(), self.Range or 10)
 		local mypos = self.Entity:GetPos()
 		
-		if (self.Target) then
-			self.LastTarget = self.Target
-		end
+		self.LastTarget = self.Target
 		
 		self.Target = nil
 		local mindist = self.Range+1
