@@ -77,6 +77,9 @@ end
 function ENT:ShowOutput()
 	local txt = "Beacon Sensor"
 	if (self.OutDist) then
+		if (!self.Outputs.Distance.Value) then //this is to prevent old save breakage
+			self:Setup(self.XYZMode, self.OutDist, self.OutBrng)
+		return end 
 		txt = txt .. "\nDistance = " .. math.Round(self.Outputs.Distance.Value*1000)/1000
 	end
 	if (self.XYZMode) then
