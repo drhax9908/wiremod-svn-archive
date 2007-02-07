@@ -147,7 +147,7 @@
 	"Button 0"
 	{
 		"categories"	"button"
-		"model"			"models/cheeze/buttons/chz_button_0.mdl"
+		"model"			"models/cheeze/buttons/chz_button0.mdl"
 		"files"
 		{
 			"0"     "models/cheeze/buttons/chz_button0.dx80.vtx"
@@ -163,7 +163,7 @@
 	"Button 1"
 	{
 		"categories"	"button"
-		"model"			"models/cheeze/buttons/chz_button_1.mdl"
+		"model"			"models/cheeze/buttons/chz_button1.mdl"
 		"files"
 		{
 			"0"     "models/cheeze/buttons/chz_button1.dx80.vtx"
@@ -179,7 +179,7 @@
 	"Button 2"
 	{
 		"categories"	"button"
-		"model"			"models/cheeze/buttons/chz_button_2.mdl"
+		"model"			"models/cheeze/buttons/chz_button2.mdl"
 		"files"
 		{
 			"0"     "models/cheeze/buttons/chz_button2.dx80.vtx"
@@ -195,7 +195,7 @@
 	"Button 3"
 	{
 		"categories"	"button"
-		"model"			"models/cheeze/buttons/chz_button_3.mdl"
+		"model"			"models/cheeze/buttons/chz_button3.mdl"
 		"files"
 		{
 			"0"     "models/cheeze/buttons/chz_button3.dx80.vtx"
@@ -211,7 +211,7 @@
 	"Button 4"
 	{
 		"categories"	"button"
-		"model"			"models/cheeze/buttons/chz_button_4.mdl"
+		"model"			"models/cheeze/buttons/chz_button4.mdl"
 		"files"
 		{
 			"0"     "models/cheeze/buttons/chz_button4.dx80.vtx"
@@ -227,7 +227,7 @@
 	"Button 5"
 	{
 		"categories"	"button"
-		"model"			"models/cheeze/buttons/chz_button_5.mdl"
+		"model"			"models/cheeze/buttons/chz_button5.mdl"
 		"files"
 		{
 			"0"     "models/cheeze/buttons/chz_button5.dx80.vtx"
@@ -243,7 +243,7 @@
 	"Button 6"
 	{
 		"categories"	"button"
-		"model"			"models/cheeze/buttons/chz_button_6.mdl"
+		"model"			"models/cheeze/buttons/chz_button6.mdl"
 		"files"
 		{
 			"0"     "models/cheeze/buttons/chz_button6.dx80.vtx"
@@ -259,7 +259,7 @@
 	"Button 7"
 	{
 		"categories"	"button"
-		"model"			"models/cheeze/buttons/chz_button_7.mdl"
+		"model"			"models/cheeze/buttons/chz_button7.mdl"
 		"files"
 		{
 			"0"     "models/cheeze/buttons/chz_button7.dx80.vtx"
@@ -275,7 +275,7 @@
 	"Button 8"
 	{
 		"categories"	"button"
-		"model"			"models/cheeze/buttons/chz_button_8.mdl"
+		"model"			"models/cheeze/buttons/chz_button8.mdl"
 		"files"
 		{
 			"0"     "models/cheeze/buttons/chz_button8.dx80.vtx"
@@ -291,7 +291,7 @@
 	"Button 9"
 	{
 		"categories"	"button"
-		"model"			"models/cheeze/buttons/chz_button_9.mdl"
+		"model"			"models/cheeze/buttons/chz_button9.mdl"
 		"files"
 		{
 			"0"     "models/cheeze/buttons/chz_button9.dx80.vtx"
