@@ -77,9 +77,6 @@ end
 function ENT:ShowOutput()
 	local txt = "Beacon Sensor"
 	if (self.OutDist) then
-		if (!self.Outputs.Distance.Value) then //this is to prevent old save breakage
-			self:Setup(self.XYZMode, self.OutDist, self.OutBrng)
-		return end 
 		txt = txt .. "\nDistance = " .. math.Round(self.Outputs.Distance.Value*1000)/1000
 	end
 	if (self.XYZMode) then
@@ -92,6 +89,14 @@ function ENT:ShowOutput()
 	self:SetOverlayText(txt)
 end
 
+function ENT:OnRestore()
+	//this is to prevent old save breakage
+	if (!self.Outputs.Distance.Value) then
+		self:Setup(self.XYZMode, self.OutDist, self.OutBrng)
+	end 
+	
+	self.BaseClass.OnRestore(self)
+end
 
 function ENT:TriggerOutputs(dist, brng, distc)
     Wire_TriggerOutput(self.Entity, "Distance", dist)
