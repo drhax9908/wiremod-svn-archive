@@ -7,7 +7,7 @@ include('shared.lua')
 ENT.WireDebugName = "Relay"
 ENT.OverlayDelay = 0
 
-local MODEL = Model("models/jaanus/wiretool/wiretool_input.mdl")
+local MODEL = Model("models/kobilica/relay.mdl")
 
 function ENT:Initialize()
 	self.Entity:SetModel( MODEL )

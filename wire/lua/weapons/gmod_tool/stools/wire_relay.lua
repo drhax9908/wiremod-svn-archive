@@ -41,7 +41,7 @@ TOOL.ClientConVar[ "toggle" ]		= "1"
 TOOL.ClientConVar[ "normclose" ]	= "0"
 TOOL.ClientConVar[ "poles" ]		= "1"
 TOOL.ClientConVar[ "throws" ]		= "2"
-TOOL.Model							= "models/jaanus/wiretool/wiretool_input.mdl"
+TOOL.Model							= "models/kobilica/relay.mdl"
 
 cleanup.Register( "wire_relays" )
 
