@@ -115,7 +115,7 @@ function ENT:GetActionInputs(as_names)
 
 		    if (input.Src) and (input.Src:IsValid()) then
 				if (as_names) then
-					table.insert(Args, input.Src.WireName or input.Src.WireName.WireDebugName or v)
+					table.insert(Args, input.Src.WireName or input.Src.WireDebugName or v)
 				else
 					table.insert(Args, input.Value)
 				end
