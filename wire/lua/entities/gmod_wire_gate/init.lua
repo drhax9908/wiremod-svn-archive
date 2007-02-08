@@ -139,7 +139,7 @@ function ENT:GetActionInputs(as_names)
 			
 			if (as_names) then
 				if (input.Src) and (input.Src:IsValid()) then
-					Args[k] = input.Src.WireName or input.Src.WireName.WireDebugName or v
+					Args[k] = input.Src.WireName or input.Src.WireDebugName or v
 				else
 					Args[k] = v
 				end
