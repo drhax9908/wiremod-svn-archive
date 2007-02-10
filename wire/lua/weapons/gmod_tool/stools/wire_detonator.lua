@@ -47,8 +47,8 @@ function TOOL:LeftClick( trace )
 	
 	if ( !self:GetSWEP():CheckLimit( "wire_detonators" ) ) then return false end
 
-	if (not util.IsValidModel(self.Model)) then return false end
-	if (not util.IsValidProp(self.Model)) then return false end		// Allow ragdolls to be used?
+	if (not util.IsValidModel(model)) then return false end
+	if (not util.IsValidProp(model)) then return false end		// Allow ragdolls to be used?
 
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90

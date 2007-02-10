@@ -72,7 +72,7 @@ function ENT:Think()
 		
 		for _,target in pairs(targets) do
 		    local tt = nil
-			if (self.TargetNPC) and (string.find(target:GetClass(),"^npc_.*")) then
+			if (self.TargetNPC) and (string.find(target:GetClass(), "^npc_.*")) and (target:GetClass() ~= "npc_heli_avoidsphere") then
 				tt = target
 			elseif (self.TargetPlayer) and (target:GetClass() == "player") then
 				tt = target
