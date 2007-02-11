@@ -1,0 +1,434 @@
+"Out"
+{
+	"const"
+	{
+		"1"
+		{
+			"__name"		"1"
+			"NoCollide"
+			{
+				"__name"		"nocollide"
+				"__type"		"Bool"
+				"V"		"true"
+			}
+			"Bone1"
+			{
+				"__name"		"Bone1"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"Bone2"
+			{
+				"__name"		"Bone2"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"forcelimit"
+			{
+				"__name"		"forcelimit"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"Ent2"
+			{
+				"__name"		"Ent2"
+				"__type"		"Number"
+				"V"		"67"
+			}
+			"Ent1"
+			{
+				"__name"		"Ent1"
+				"__type"		"Number"
+				"V"		"66"
+			}
+			"type"
+			{
+				"__name"		"Type"
+				"__type"		"String"
+				"V"		"Weld"
+			}
+		}
+		"2"
+		{
+			"__name"		"2"
+			"NoCollide"
+			{
+				"__name"		"nocollide"
+				"__type"		"Bool"
+				"V"		"true"
+			}
+			"Bone1"
+			{
+				"__name"		"Bone1"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"Bone2"
+			{
+				"__name"		"Bone2"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"forcelimit"
+			{
+				"__name"		"forcelimit"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"Ent2"
+			{
+				"__name"		"Ent2"
+				"__type"		"Number"
+				"V"		"67"
+			}
+			"Ent1"
+			{
+				"__name"		"Ent1"
+				"__type"		"Number"
+				"V"		"65"
+			}
+			"type"
+			{
+				"__name"		"Type"
+				"__type"		"String"
+				"V"		"Weld"
+			}
+		}
+		"__name"		"const"
+	}
+	"ents"
+	{
+		"65"
+		{
+			"__name"		"65"
+			"keygroup"
+			{
+				"__name"		"keygroup"
+				"__type"		"Number"
+				"V"		"11"
+			}
+			"Vel"
+			{
+				"__name"		"Vel"
+				"__type"		"Vector"
+				"x"		"0"
+			}
+			"class"
+			{
+				"__name"		"Class"
+				"__type"		"String"
+				"V"		"gmod_wire_input"
+			}
+			"value_off"
+			{
+				"__name"		"value_off"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"Pos"
+			{
+				"Y"		"-22.0906"
+				"__type"		"Vector"
+				"z"		"22.7864"
+				"__name"		"Pos"
+				"x"		"-9.46771"
+			}
+			"value_on"
+			{
+				"__name"		"value_on"
+				"__type"		"Number"
+				"V"		"1"
+			}
+			"toggle"
+			{
+				"__name"		"toggle"
+				"__type"		"Number"
+				"V"		"1"
+			}
+			"aVel"
+			{
+				"__name"		"aVel"
+				"__type"		"Vector"
+				"x"		"0"
+			}
+			"Ang"
+			{
+				"Y"		"135.565"
+				"__type"		"Angle"
+				"r"		"247.768"
+				"__name"		"Ang"
+				"p"		"89.8249"
+			}
+			"frozen"
+			{
+				"__name"		"frozen"
+				"__type"		"Bool"
+				"V"		"false"
+			}
+		}
+		"67"
+		{
+			"__name"		"67"
+			"Pos"
+			{
+				"__name"		"Pos"
+				"__type"		"Vector"
+				"z"		"0.321587"
+				"x"		"0"
+			}
+			"Vel"
+			{
+				"__name"		"Vel"
+				"__type"		"Vector"
+				"x"		"0"
+			}
+			"model"
+			{
+				"__name"		"Model"
+				"__type"		"String"
+				"V"		"models//props_phx/construct/metal_tubex2.mdl"
+			}
+			"Ang"
+			{
+				"Y"		"-112.203"
+				"__type"		"Angle"
+				"r"		"359.945"
+				"__name"		"Ang"
+				"p"		"0.0512498"
+			}
+			"aVel"
+			{
+				"__name"		"aVel"
+				"__type"		"Vector"
+				"x"		"0"
+			}
+			"class"
+			{
+				"__name"		"Class"
+				"__type"		"String"
+				"V"		"prop_physics"
+			}
+			"frozen"
+			{
+				"__name"		"frozen"
+				"__type"		"Bool"
+				"V"		"false"
+			}
+		}
+		"66"
+		{
+			"A"
+			{
+				"__name"		"a"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"B"
+			{
+				"__name"		"b"
+				"__type"		"Number"
+				"V"		"1"
+			}
+			"class"
+			{
+				"__name"		"Class"
+				"__type"		"String"
+				"V"		"gmod_wire_indicator"
+			}
+			"ab"
+			{
+				"__name"		"ab"
+				"__type"		"Number"
+				"V"		"43"
+			}
+			"aa"
+			{
+				"__name"		"aa"
+				"__type"		"Number"
+				"V"		"255"
+			}
+			"Ang"
+			{
+				"Y"		"99.6403"
+				"__type"		"Angle"
+				"r"		"211.843"
+				"__name"		"Ang"
+				"p"		"89.922"
+			}
+			"material"
+			{
+				"__name"		"material"
+				"__type"		"String"
+				"V"		"models/shiny"
+			}
+			"bg"
+			{
+				"__name"		"bg"
+				"__type"		"Number"
+				"V"		"249"
+			}
+			"ag"
+			{
+				"__name"		"ag"
+				"__type"		"Number"
+				"V"		"43"
+			}
+			"__name"		"66"
+			"Vel"
+			{
+				"__name"		"Vel"
+				"__type"		"Vector"
+				"x"		"0"
+			}
+			"Pos"
+			{
+				"Y"		"-23.9085"
+				"__type"		"Vector"
+				"z"		"70.7938"
+				"__name"		"Pos"
+				"x"		"-5.23059"
+			}
+			"DupeInfo"
+			{
+				"__name"		"DupeInfo"
+				"Wires"
+				{
+					"A"
+					{
+						"__name"		"A"
+						"SrcPos"
+						{
+							"Y"		"0.388114"
+							"__type"		"Vector"
+							"z"		"5.93105"
+							"__name"		"SrcPos"
+							"x"		"-0.879014"
+						}
+						"color"
+						{
+							"A"
+							{
+								"__name"		"a"
+								"__type"		"Number"
+								"V"		"255"
+							}
+							"r"
+							{
+								"__name"		"r"
+								"__type"		"Number"
+								"V"		"54"
+							}
+							"__name"		"Color"
+							"g"
+							{
+								"__name"		"g"
+								"__type"		"Number"
+								"V"		"249"
+							}
+							"B"
+							{
+								"__name"		"b"
+								"__type"		"Number"
+								"V"		"2"
+							}
+						}
+						"width"
+						{
+							"__name"		"Width"
+							"__type"		"Number"
+							"V"		"1"
+						}
+						"Src"
+						{
+							"__name"		"Src"
+							"__type"		"Number"
+							"V"		"65"
+						}
+						"SrcId"
+						{
+							"__name"		"SrcId"
+							"__type"		"String"
+							"V"		"Out"
+						}
+						"material"
+						{
+							"__name"		"Material"
+							"__type"		"String"
+							"V"		"cable/cable2"
+						}
+						"StartPos"
+						{
+							"Y"		"1.75513"
+							"__type"		"Vector"
+							"z"		"7.82684"
+							"__name"		"StartPos"
+							"x"		"0.506223"
+						}
+						"Path"
+						{
+							"__name"		"Path"
+						}
+					}
+					"__name"		"Wires"
+				}
+			}
+			"bb"
+			{
+				"__name"		"bb"
+				"__type"		"Number"
+				"V"		"2"
+			}
+			"ba"
+			{
+				"__name"		"ba"
+				"__type"		"Number"
+				"V"		"255"
+			}
+			"model"
+			{
+				"__name"		"Model"
+				"__type"		"String"
+				"V"		"models/jaanus/wiretool/wiretool_siren.mdl"
+			}
+			"aVel"
+			{
+				"__name"		"aVel"
+				"__type"		"Vector"
+				"x"		"0"
+			}
+			"ar"
+			{
+				"__name"		"ar"
+				"__type"		"Number"
+				"V"		"43"
+			}
+			"br"
+			{
+				"__name"		"br"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"frozen"
+			{
+				"__name"		"frozen"
+				"__type"		"Bool"
+				"V"		"false"
+			}
+		}
+		"__name"		"ents"
+	}
+	"holdangle"
+	{
+		"Y"		"-146.701"
+		"__type"		"Angle"
+		"r"		"0.0551147"
+		"__name"		"holdangle"
+		"p"		"-0.0512498"
+	}
+	"head"
+	{
+		"__name"		"head"
+		"__type"		"Number"
+		"V"		"67"
+	}
+}

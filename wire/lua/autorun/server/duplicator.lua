@@ -59,154 +59,61 @@ if (!SERVER) then return end
 
 			// Check the entity class is registered with the duplicator
 			if EntType[EntClass] then
-
-				local etable	= {Class = EntClass}
-				local BoneArgs	= nil
-				local EntityTable = Ent:GetTable()
-
-				if EntityTable.BuildDupeInfo then
-					etable.DupeInfo = EntityTable:BuildDupeInfo()
-				end
-
-				// Get the args needed to recreate this ent
-				for _, arg in pairs(EntType[EntClass].Args) do
-
-					// Get args which are stored in the ent's table
-					local Arg = EntityTable[arg]
-
-					// Do special cases
-					if !Arg and type(arg) == "string" then
-						
-						key = string.lower(arg)
-
-						if	key == "ang"	or key == "angle"		then Arg = Ent:GetAngles()
-						elseif	key == "pos"	or key == "position"		then Arg = Ent:GetPos() - offset
-						elseif	key == "vel"	or key == "velocity"		then Arg = Ent:GetPhysicsObject():GetVelocity()
-						elseif	key == "avel"	or key == "anglevelocity"	then Arg = Ent:GetPhysicsObject():GetAngleVelocity()
-						elseif	key == "frozen"	or key == "motiondisabled"	then Arg = !Ent:GetPhysicsObject():IsMoveable()
-						elseif	key == "mdl"	or key == "model"		then Arg = Ent:GetModel()
-						elseif	key == "pl" 	or key == "ply"		then Arg = Arg:SteamID()
-						elseif	key == "class"					then Arg = EntClass
-						end
-					end
-
-					// get bone args
-					if	type(arg) == "table"	then BoneArgs = arg end
-					etable[arg] = Arg
-				end
-
-				// Get bone args
-				if EntityTable.Bones or BoneArgs then
-
-					local Bones = {}
-					BoneArgs = BoneArgs or {}
-
-					// Get args for each bone
-					for Bone = 0,( Ent:GetPhysicsObjectCount() - 1 ) do
-						if Ent:GetPhysicsObjectNum( Bone ):IsValid() then
-							Bones[Bone] = {}
-
-							for _, barg in pairs(BoneArgs) do
-								
-								local bArg = nil
-
-								if  EntityTable.Bones 
-								and EntityTable.Bones[Bone]
-								and EntityTable.Bones[Bone][barg] then
-
-									bArg = EntityTable.Bones[Bone][barg]
-								else
-									// Do special cases
-									local Phys = Ent:GetPhysicsObjectNum(Bone)
-									local barg = string.lower(barg)
-
-									if	barg == "ang"	or barg == "angle"		then bArg = Phys:GetAngle()
-									elseif	barg == "pos"	or barg == "position"		then bArg = Phys:GetPos() - offset
-									elseif	barg == "vel"	or barg == "velocity"		then bArg = Phys:GetVelocity()
-									elseif	barg == "avel"	or barg == "angvelocity"	then bArg = Phys:GetAngleVelocity()
-									elseif	barg == "mass"					then bArg = Phys:GetMass()
-									elseif	barg == "inertia"				then bArg = Phys:GetInertia()
-									elseif	barg == "damping"				then bArg = Phys:GetDamping()
-									elseif	barg == "frozen" or barg == "motionenabled"	then bArg = !Phys:IsMoveable()
-									end
-								end
-
-								Bones[Bone][barg] = bArg
-								
-							end
-
-							for ModifierType, _ in pairs(EntityBoneModifiers) do
-								if  EntityTable.Bones 
-								and EntityTable.Bones[Bone]
-								and EntityTable.Bones[Bone][ModifierType] then
-									Bones[Bone][ModifierType] = EntityTable.Bones[Bone][ModifierType]
-								end
-							end
-
-						end
-					end
-					etable.Bones = Bones
-				end
-
-				for ModifierType, _ in pairs(EntityModifiers) do
-					if EntityTable[ModifierType] then
-						etable[ModifierType] = EntityTable[ModifierType]
-					end
-				end
-
-				// Hack to copy decals
-				if EntityTable.decals then
-					etable.decals = EntityTable.decals
-				end
-
-				ply:GetTable().Duplicator.Ents[EntID] = etable
+				
+				ply:GetTable().Duplicator.Ents[EntID] = duplicator.CopyGetEntArgs( ply, Ent, offset, EntClass)
+				
+				// yeah, just one line now
+				
 			else
 				Msg("Duplicator copy: Unknown class " .. EntClass .. "\n")
 			end
 		end
-
+		
+		
 		// Get info required to re-create each constraint
 		for constID, Constraint in pairs(ConstraintTable) do
-
+			
 			// check the constraint has been registered with the duplicator
 			if ConstraintType[Constraint:GetTable().Type] then
-
-				ctable = {Type = Constraint:GetTable().Type}
 				
-				local doconstraint = true
-				for _,Key in pairs(ConstraintType[Constraint:GetTable().Type].Args) do
-
-					local Arg = Constraint:GetTable()[Key]
-					local len = string.len(Key)
-					      key = string.lower(Key)
-						  
-					if (Arg) then
-
-						// Do special cases
-						if	string.find(key, "lpos")  and ( len == 4 or len == 5 )
-						or	string.find(key, "ang" )  and ( len == 3 or len == 4 )	then Arg = Arg
-						elseif	string.find(key, "wpos")  and ( len == 4 or len == 5 )	then Arg = Arg - offset
-						elseif	key == "pl" or key == "ply"				then Arg = Arg:SteamID()
-						elseif	string.find(key, "ent" )  and ( len == 3 or len == 4 )	then Arg = Arg:EntIndex() 
-							if !EntTable[Arg] then doconstraint = nil end
-						end
-
-						// Nullify zero value args
-						if tostring(Arg) == "0.000 0.000 0.000" or Arg == false then Arg = nil end
-					
-					end
-
-					ctable[Key] = Arg
-				end
+				local ctable, doconstraint = duplicator.CopyGetConstArgs( Constraint, function(id) return EntTable[id] end )
+				
 				if doconstraint then
-				    if (type(constID) == "number") then
-				        ctable.ConstID = constID
-				    end
-				
+					if (type(constID) == "number") then
+						ctable.ConstID = constID
+					end
+					
 					table.insert(ply:GetTable().Duplicator.Constraints, ctable)
 				end
+				
+			else
+				Msg("Duplicator copy: Unknown constraint " .. Constraint:GetTable().Type .. "\n")
 			end
+			
 		end
+		
+		
+		
+		/*Msg("\n--tempents PrepareTableToSave Start--\n")
+		
+		local tempents = {}
+		tempents["ents"] = ply:GetTable().Duplicator.Ents
+		tempents["const"] = ply:GetTable().Duplicator.Constraints
+		tempents["head"] = StartEnt:EntIndex()
+		
+		local temp = duplicator.PrepareTableToSave(tempents)
+		
+		Msg("\n--tempents TableToKeyValues Start--\n")
+		
+		temp = util.TableToKeyValues(temp)
+		Msg(temp)
+		
+		file.Write("test/1b.txt", temp)
+		Msg("\n--tempCopyEnts End--\n")
+		
+		Msg("\n--HeadID--\n")
+		Msg( StartEnt:EntIndex() )*/
+		Msg("\n=======================--Copyed--=======================\n")
 		
 		return EntTable, ConstraintTable
 	end
@@ -220,7 +127,9 @@ if (!SERVER) then return end
 		
 		
 		local HeadEntity = nil
-
+		local tempents = {}
+		local tHeadEntID,tHoldAngle = nil
+		
 		if filename then 
 			// TODO:
 			// load file to ents/constraints tables
@@ -229,6 +138,24 @@ if (!SERVER) then return end
 
 			Ents 			= 	ply:GetTable().Duplicator.Ents
 			Constraints 	=	ply:GetTable().Duplicator.Constraints
+			tHeadEntID		=	ply:GetTable().Duplicator.HeadEntID
+			--tHoldAngle		=	ply:GetTable().Duplicator.HoldAngle or duplicator.HoldAngle
+			
+			/*Msg("\n=======================--Paste_Start--=======================\n--tempEnts--\n")
+			
+			local temp = file.Read("test/1b.txt")
+			Msg(temp)
+			temp = util.KeyValuesToTable(temp)
+			tempents = duplicator.RebuildTableFromLoad(temp)
+			
+			Msg("\n--file end--\n")
+			
+			Msg("\n--head--\n")
+			tHeadEntID = (tempents["head"])
+			Msg(tHeadEntID)
+			
+			Ents = tempents["ents"]
+			Constraints = tempents["const"]*/
 			
 		else
 			return false
@@ -242,165 +169,37 @@ if (!SERVER) then return end
 
 			// Check the antities class is registered with the duplicator
 			if EntClass and EntType[EntClass] then
-
-				local Args, BoneArgs, nBone = {}, nil, nil
-
-				// Get the args that we need from the EntType table
-				for n,Key in pairs(EntType[EntClass].Args) do
-
-					if type(Key) == "string" then
-
-						local Arg = EntTable[Key]
-
-						key = string.lower(Key)
-
-						if	key == "ang"	or key == "angle"		then Arg = Arg or Vector(0,0,0)
-						elseif	key == "pos"	or key == "position"		then Arg = Arg + offset or Vector(0,0,0)
-						elseif	key == "vel"	or key == "velocity"		then Arg = Arg or Vector(0,0,0)
-						elseif	key == "avel"	or key == "anglevelocity"	then Arg = Arg or Vector(0,0,0)
-						elseif	key == "pl" 	or key == "ply"		then Arg = ply // TODO:  Arg = ply.GetBySteamID(Arg)
-						end
-
-						Args[n] = Arg
-
-					elseif type(Key) == "table" then
-
-						BoneArgs = Key
-						nBone	 = n
-					end
-				end
-
-				if EntTable.Bones and BoneArgs then
-
-					Arg = {}
-
-					// Get args for each bone
-					for Bone,Args in pairs(EntTable.Bones) do
-						Arg[Bone] = {}
-
-						for n, bKey in pairs( BoneArgs ) do
-
-							local bArg = EntTable.Bones[Bone][bKey] or tostring(0)
-
-							// Do special cases
-							local bkey = string.lower(bKey)
-
-							if	bkey == "ang"	or bkey == "angle"		then bArg = bArg or Vector(0,0,0)
-							elseif	bkey == "pos"	or bkey == "position"		then bArg = bArg + offset or Vector(0,0,0)
-							elseif	bkey == "vel"	or bkey == "velocity"		then bArg = bArg or Vector(0,0,0)
-							elseif	bkey == "avel"	or bkey == "angvelocity"	then bArg = bArg or Vector(0,0,0)
-							end
-
-							Arg[Bone][n] = bArg
-						end
-					end
-					Args[nBone] = Arg
-				end
-
+				
+				local Args = duplicator.PasteGetEntArgs( ply, EntTable, offset )
+				
 				// make the Entity
 				Ent = EntType[EntClass].Func(ply, unpack(Args))
-
+				
 				if (Ent && Ent:IsValid()) then
-
 					undo.AddEntity( Ent )
 					entIDtable[entID] = Ent
 					table.insert(CreatedEnts,Ent)
 					
-					for ModifierType, Modifier in pairs(EntityModifiers) do
-						if EntTable[ModifierType] then
-							local args = {}
-
-							for n,arg in pairs(Modifier.Args) do
-								args[n] = EntTable[ModifierType][arg]
-							end
-
-							Modifier.Func( ply, Ent, unpack(args))
-						end
-					end
-
-					if EntTable.Bones then
-						for ModifierType, Modifier in pairs(EntityBoneModifiers) do
-							for Bone,Args in pairs(EntTable.Bones) do
-								if Args[ModifierType] then
-									local args = {}
-
-									for n,arg in pairs(Modifier.Args) do
-									args[n] = Args[ModifierType][arg]
-									end
-
-									Modifier.Func( ply, Ent, Bone, unpack(args))
-								end
-							end
-						end
-					end
-					
-					// Hack to paste decals
-					if EntTable.decals then
-
-						Ent:GetTable().decals = EntTable.decals
-						timer.Simple( 0.001, 		// HORRID
-						function( tbl,Ent ) 
-							for n, DecalInfo in pairs(tbl) do
-
-								local decal, Pos1, Pos2 = DecalInfo[1],
-									Ent:LocalToWorld( DecalInfo[2]),
-									Ent:LocalToWorld( DecalInfo[3])
-
-								util.Decal( decal, Pos1, Pos2 )
-							end
-						end
-						,EntTable.decals,Ent )
-					end
+					duplicator.PasteApplyEntMods( ply, Ent, EntTable )
 				end
+				
 			elseif (EntClass) then
 			    Msg("Duplicator Paste: Unknown class " .. EntClass .. "\n")
 			end
 			
-			
-			if ( entID == duplicator.HeadEntID ) then
+			if ( entID == tHeadEntID ) then
 				HeadEntity = Ent
 			end
+			
 		end
 		
 		for _, Constraint in pairs(Constraints) do
 
 			// Check If the constraint type has been registered with the duplicator
 			if Constraint.Type and ConstraintType[Constraint.Type] then
-
-				local Args = {}
-				local DoConstraint = true
-
-				// Get the args that we need from the ConstraintType table
-				for n,key in pairs(ConstraintType[Constraint.Type].Args) do
-
-					local Arg = Constraint[key]
-					local len = string.len(key)
-
-					// DO SPECIAL CASES
-					// If key represents an entity, convert from an entID back to an ent
-					if	string.find(key, "Ent")		and ( len == 3 or len == 4 ) then
-						Arg = entIDtable[Arg]
-						if !Arg or !Arg:IsValid() then DoConstraint = nil end
-
-					// If key represents an Local angle or vector, convert from string, back to a vector
-					elseif	(string.find(key, "LPos")	and ( len == 4 or len == 5 ))
-					or	(string.find(key, "Ang")	and ( len == 3 or len == 4 )) then 
-						Arg = Arg or Vector(0,0,0)
-
-					// If key represents a World Vector or angle, convert from string, back to a vector
-					elseif	(string.find(key, "WPos")	and ( len == 4 or len == 5 )) then
-						Arg = Arg + offset or Vector(0,0,0)
-
-					// If key represents a ply, convert from steamid back to a ply
-					elseif	key == "pl" or key == "ply" or key == "ply" then
-						--Arg = ply.GetBySteamID(Arg)
-						Arg = ply
-						if not Arg:IsValid() then DoConstraint = nil end
-					end
-
-					Args[n] = Arg
-				end
-
+				
+				local Args, DoConstraint = duplicator.PasteGetConstraintArgs( ply, Constraint, entIDtable, offset )
+				
 				// make the constraint
 				if DoConstraint then
 					local const = ConstraintType[Constraint.Type].Func(unpack(Args))
@@ -417,6 +216,421 @@ if (!SERVER) then return end
 		undo.SetPlayer( ply )
 		undo.Finish()
 
+		duplicator.PasteApplyDupeInfo( ply, Ents, entIDtable )
+
+		duplicator.PasteRotate( ply, HeadEntity, CreatedEnts )
+		
+		return CreatedEnts, CreatedConstraints
+	end
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/*---------------------------------------------------------
+   Name: duplicator.PrepareTableToSave( table )
+   Desc: Converts a table in to a lot tables to protect 
+		vectors, angles, bools, numbers, and indexes
+		from being horribly raped by TableToKeyValues
+	---------------------------------------------------------*/
+	function duplicator.PrepareTableToSave( t, done)
+		
+		local done = done or {}
+		local tbl = {}
+		
+		for k, v in pairs ( t ) do
+			if ( type( v ) == "table" and !done[ v ] ) then
+				done[ v ] = true
+				tbl[ k ] = duplicator.PrepareTableToSave ( v, done )
+				tbl[k].__name = k
+			else
+				if ( type(v) == "Vector" ) then
+					local x, y, z = v.x, v.y, v.z
+					if y == 0 then y = nil end
+					if z == 0 then z = nil end
+					tbl[k] = { __type = "Vector", x = x, y = y, z = z, __name = k }
+				elseif ( type(v) == "Angle" ) then
+					local p,y,r = v.pitch, v.yaw, v.roll
+					if p == 0 then p = nil end
+					if y == 0 then y = nil end
+					if r == 0 then r = nil end
+					tbl[k] = { __type = "Angle", p = p, y = y, r = r, __name = k }
+				elseif ( type(v) == "boolean" ) then
+					tbl[k] = { __type = "Bool", v = tostring( v ), __name = k }
+				elseif ( type(v) == "number" ) then
+					tbl[k] = { __type = "Number", v = tostring( v ), __name = k }
+				else
+					tbl[k] = { __type = "String", v = tostring( v ), __name = k }
+				end
+			end
+		end
+		
+		return tbl
+	end
+
+
+	/*---------------------------------------------------------
+	   Name: duplicator.RebuildTableFromLoad( table )
+	   Desc: Removes the protection added by PrepareTableToSave
+			after table is loaded with KeyValuesToTable
+	---------------------------------------------------------*/
+	function duplicator.RebuildTableFromLoad( t, done )
+
+		local done = done or {}
+		local tbl = {}
+		
+		for k, v in pairs ( t ) do
+			if ( type( v ) == "table" and !done[ v ] ) then
+				done[ v ] = true
+				if ( v.__type ) then
+					if ( v.__type == "Vector" ) then
+						tbl[ v.__name ] = Vector( v.x, v.y, v.z )
+					elseif ( v.__type == "Angle" ) then
+						tbl[ v.__name ] = Angle( v.p, v.y, v.r )
+					elseif ( v.__type == "Bool" ) then
+						tbl[ v.__name ] = util.tobool( v.v )
+					elseif ( v.__type == "Number" ) then
+						tbl[ v.__name ] = tonumber( v.v )
+					elseif ( v.__type == "String" ) then
+						tbl[ v.__name ] = tostring( v.v )
+					end
+				else
+					tbl[ v.__name ] = duplicator.RebuildTableFromLoad ( v, done )
+				end
+			else
+				if k != "__name" then //don't add the table names to output
+					tbl[ k ] = v
+				end
+			end
+		end
+		
+		return tbl
+		
+	end
+	
+	
+	
+	
+	
+	/*---------------------------------------------------------
+		Name: duplicator.Paste* sub functions
+		Desc: functions used during duplicator.Paste
+	---------------------------------------------------------*/
+	function duplicator.CopyGetEntArgs( ply, Ent, offset, EntClass )
+		
+		local etable	= {Class = EntClass}
+		local BoneArgs	= nil
+		local EntityTable = Ent:GetTable()
+		
+		if EntityTable.BuildDupeInfo then
+			etable.DupeInfo = EntityTable:BuildDupeInfo()
+		end
+		
+		// Get the args needed to recreate this ent
+		for _, arg in pairs(EntType[EntClass].Args) do
+
+			// Get args which are stored in the ent's table
+			local Arg = EntityTable[arg]
+
+			// Do special cases
+			if !Arg and type(arg) == "string" then
+				
+				key = string.lower(arg)
+
+				if	key == "ang"	or key == "angle"		then
+					Arg = Ent:GetAngles()
+				elseif	key == "pos"	or key == "position"		then
+					Arg = Ent:GetPos() - offset
+				elseif	key == "vel"	or key == "velocity"		then
+					Arg = Ent:GetPhysicsObject():GetVelocity()
+				elseif	key == "avel"	or key == "anglevelocity"	then
+					Arg = Ent:GetPhysicsObject():GetAngleVelocity()
+				elseif	key == "frozen"	or key == "motiondisabled"	then
+					Arg = !Ent:GetPhysicsObject():IsMoveable()
+				elseif	key == "mdl"	or key == "model"		then
+					Arg = Ent:GetModel()
+				elseif	key == "pl" 	or key == "ply"		then
+					Arg = Arg:SteamID()
+				elseif	key == "class"					then
+					Arg = EntClass
+				end
+			end	
+			
+			// get bone args
+			if	type(arg) == "table"	then BoneArgs = arg end
+			etable[arg] = Arg
+		end
+		
+		// Get bone args
+		if EntityTable.Bones or BoneArgs then
+
+			local Bones = {}
+			BoneArgs = BoneArgs or {}
+
+			// Get args for each bone
+			for Bone = 0,( Ent:GetPhysicsObjectCount() - 1 ) do
+				if Ent:GetPhysicsObjectNum( Bone ):IsValid() then
+					Bones[Bone] = {}
+
+					for _, barg in pairs(BoneArgs) do
+						
+						local bArg = nil
+
+						if  EntityTable.Bones 
+						and EntityTable.Bones[Bone]
+						and EntityTable.Bones[Bone][barg] then
+
+							bArg = EntityTable.Bones[Bone][barg]
+						else
+							// Do special cases
+							local Phys = Ent:GetPhysicsObjectNum(Bone)
+							local barg = string.lower(barg)
+
+							if	barg == "ang"	or barg == "angle"		then bArg = Phys:GetAngle()
+							elseif	barg == "pos"	or barg == "position"		then bArg = Phys:GetPos() - offset
+							elseif	barg == "vel"	or barg == "velocity"		then bArg = Phys:GetVelocity()
+							elseif	barg == "avel"	or barg == "angvelocity"	then bArg = Phys:GetAngleVelocity()
+							elseif	barg == "mass"					then bArg = Phys:GetMass()
+							elseif	barg == "inertia"				then bArg = Phys:GetInertia()
+							elseif	barg == "damping"				then bArg = Phys:GetDamping()
+							elseif	barg == "frozen" or barg == "motionenabled"	then bArg = !Phys:IsMoveable()
+							end
+						end
+
+						Bones[Bone][barg] = bArg
+						
+					end
+
+					for ModifierType, _ in pairs(EntityBoneModifiers) do
+						if  EntityTable.Bones 
+						and EntityTable.Bones[Bone]
+						and EntityTable.Bones[Bone][ModifierType] then
+							Bones[Bone][ModifierType] = EntityTable.Bones[Bone][ModifierType]
+						end
+					end
+
+				end
+			end
+			etable.Bones = Bones
+		end
+
+		for ModifierType, _ in pairs(EntityModifiers) do
+			if EntityTable[ModifierType] then
+				etable[ModifierType] = EntityTable[ModifierType]
+			end
+		end
+
+		// Hack to copy decals
+		if EntityTable.decals then
+			etable.decals = EntityTable.decals
+		end
+		
+		return etable
+		
+	end
+	
+	
+	
+	function duplicator.CopyGetConstArgs( Constraint, GetEntByID )
+		
+		ctable = {Type = Constraint:GetTable().Type}
+		local doconstraint = true
+		
+		for _,Key in pairs(ConstraintType[Constraint:GetTable().Type].Args) do
+			
+			local Arg = Constraint:GetTable()[Key]
+			local len = string.len(Key)
+				  key = string.lower(Key)
+				  
+			if (Arg) then
+				
+				// Do special cases
+				if		string.find(key, "lpos")  	and ( len == 4 or len == 5 )
+				or		string.find(key, "ang" )  	and ( len == 3 or len == 4 )	then Arg = Arg
+				elseif	string.find(key, "wpos")	and ( len == 4 or len == 5 )	then Arg = Arg - offset
+				elseif	key == "pl" 				or key == "ply"					then Arg = Arg:SteamID()
+				elseif	string.find(key, "ent" )  	and ( len == 3 or len == 4 )	then Arg = Arg:EntIndex() 
+					if !GetEntByID(Arg) then doconstraint = nil end
+				end
+				
+				// Nullify zero value args
+				if tostring(Arg) == "0.000 0.000 0.000" or Arg == false then Arg = nil end
+				
+			end
+			
+			ctable[Key] = Arg
+		end
+		
+		return ctable, doconstraint
+		
+	end
+	
+	
+	
+	
+	/*---------------------------------------------------------
+		Name: duplicator.Paste* sub functions
+		Desc: functions used during duplicator.Paste
+	---------------------------------------------------------*/
+	function duplicator.PasteGetEntArgs( ply, EntTable, offset )
+		
+		local Args, BoneArgs, nBone = {}, nil, nil
+		
+		for n,Key in pairs(EntType[EntTable.Class].Args) do
+			
+			if type(Key) == "string" then
+				
+				local Arg = EntTable[Key]
+				
+				key = string.lower(Key)
+				
+				if		key == "ang"	or key == "angle"			then Arg = Arg or Vector(0,0,0)
+				elseif	key == "pos"	or key == "position"		then Arg = Arg + offset or Vector(0,0,0)
+				elseif	key == "vel"	or key == "velocity"		then Arg = Arg or Vector(0,0,0)
+				elseif	key == "avel"	or key == "anglevelocity"	then Arg = Arg or Vector(0,0,0)
+				elseif	key == "pl" 	or key == "ply"				then Arg = ply 
+				// TODO:  Arg = ply.GetBySteamID(Arg)
+				end
+				
+				Args[n] = Arg
+				
+			elseif type(Key) == "table" then
+				
+				BoneArgs = Key
+				nBone	 = n
+				
+			end
+		end
+		
+		if EntTable.Bones and BoneArgs then
+			
+			local Arg = {}
+						
+			// Get args for each bone
+			for Bone,Args in pairs(EntTable.Bones) do
+				Arg[Bone] = {}
+				
+				for n, bKey in pairs( BoneArgs ) do
+					
+					local bArg = EntTable.Bones[Bone][bKey] or tostring(0)
+					
+					// Do special cases
+					local bkey = string.lower(bKey)
+					
+					if	bkey == "ang"	or bkey == "angle"				then bArg = bArg or Vector(0,0,0)
+					elseif	bkey == "pos"	or bkey == "position"		then bArg = bArg + offset or Vector(0,0,0)
+					elseif	bkey == "vel"	or bkey == "velocity"		then bArg = bArg or Vector(0,0,0)
+					elseif	bkey == "avel"	or bkey == "angvelocity"	then bArg = bArg or Vector(0,0,0)
+					end
+					
+					Arg[Bone][n] = bArg
+				end
+			end
+			
+			Args[nBone] = Arg
+		end
+		
+		return Args
+		
+	end
+	
+	
+	function duplicator.PasteApplyEntMods( ply, Ent, EntTable )
+	
+		for ModifierType, Modifier in pairs(EntityModifiers) do
+			if EntTable[ModifierType] then
+				local args = {}
+
+				for n,arg in pairs(Modifier.Args) do
+					args[n] = EntTable[ModifierType][arg]
+				end
+
+				Modifier.Func( ply, Ent, unpack(args))
+			end
+		end
+		
+		if EntTable.Bones then
+			for ModifierType, Modifier in pairs(EntityBoneModifiers) do
+				for Bone,Args in pairs(EntTable.Bones) do
+					if Args[ModifierType] then
+						local args = {}
+						
+						for n,arg in pairs(Modifier.Args) do
+						args[n] = Args[ModifierType][arg]
+						end
+						
+						Modifier.Func( ply, Ent, Bone, unpack(args))
+					end
+				end
+			end
+			
+		end
+		
+		if EntTable.decals then
+			// Hack to paste decals
+			Ent:GetTable().decals = EntTable.decals
+			timer.Simple( 0.001, 		// HORRID
+			function( tbl,Ent ) 
+				for n, DecalInfo in pairs(tbl) do
+
+					local decal, Pos1, Pos2 = DecalInfo[1],
+						Ent:LocalToWorld( DecalInfo[2]),
+						Ent:LocalToWorld( DecalInfo[3])
+
+					util.Decal( decal, Pos1, Pos2 )
+				end
+			end
+			,EntTable.decals,Ent )
+		end
+	end
+	
+	
+	// Get the args to make the constraints
+	function duplicator.PasteGetConstraintArgs( ply, Constraint, entIDtable, offset )
+		local Args = {}
+		local DoConstraint = true
+		
+		// Get the args that we need from the ConstraintType table
+		for n,key in pairs(ConstraintType[Constraint.Type].Args) do
+			
+			local Arg = Constraint[key]
+			local len = string.len(key)
+			
+			// DO SPECIAL CASES
+			// If key represents an entity, convert from an entID back to an ent
+			if	string.find(key, "Ent")		and ( len == 3 or len == 4 ) then
+				Arg = entIDtable[Arg]
+				if !Arg or !Arg:IsValid() then DoConstraint = nil end
+				
+			// If key represents an Local angle or vector, convert from string, back to a vector
+			elseif	(string.find(key, "LPos")	and ( len == 4 or len == 5 ))
+			or	(string.find(key, "Ang")	and ( len == 3 or len == 4 )) then 
+				Arg = Arg or Vector(0,0,0)
+				
+			// If key represents a World Vector or angle, convert from string, back to a vector
+			elseif	(string.find(key, "WPos")	and ( len == 4 or len == 5 )) then
+				Arg = Arg + offset or Vector(0,0,0)
+				
+			// If key represents a ply, convert from steamid back to a ply
+			elseif	key == "pl" or key == "ply" or key == "ply" then
+				--Arg = ply.GetBySteamID(Arg)
+				Arg = ply
+				if not Arg:IsValid() then DoConstraint = nil end
+			end
+			
+			Args[n] = Arg
+		end
+		
+		return Args, DoConstraint
+	end
+	
+	
+	// Apply DupeInfo for wire stuff
+	function duplicator.PasteApplyDupeInfo( ply, Ents, entIDtable )
 		for id, entTable in pairs(Ents) do
 			local ent = entIDtable[id]
 			if (ent) and (ent:IsValid()) and (entTable.DupeInfo) and (ent.ApplyDupeInfo) then
@@ -427,8 +641,12 @@ if (!SERVER) then return end
 					)
 			end
 		end
-
-		// Rotate entities relative to the ply's hold angles
+	end
+	
+	
+	// Rotate entities relative to the ply's hold angles
+	function duplicator.PasteRotate( ply, HeadEntity, CreatedEnts )
+		
 		local EntOffsets = {}
 		
 		if (HeadEntity) then
@@ -438,7 +656,7 @@ if (!SERVER) then return end
 				EntOffsets[ ent ] = {}
 				
 				if ( ent != HeadEntity ) then 
-				
+					
 					local Pos = ent:GetPos()
 					local Ang = ent:GetAngles()
 					
@@ -450,11 +668,11 @@ if (!SERVER) then return end
 				// And physics objects (for ragdolls)
 				local Bones = {}
 				for Bone=0, ent:GetPhysicsObjectCount()-1 do
-				
-					local PhysObject = ent:GetPhysicsObjectNum( Bone )
-				
-					if ( PhysObject:IsValid() ) then
 					
+					local PhysObject = ent:GetPhysicsObjectNum( Bone )
+					
+					if ( PhysObject:IsValid() ) then
+						
 						Bones[PhysObject] = {}
 						Bones[PhysObject].Pos = HeadEntity:WorldToLocal( PhysObject:GetPos() )
 						Bones[PhysObject].Ang = PhysObject:GetAngle() - HeadEntity:GetAngles()
@@ -464,14 +682,14 @@ if (!SERVER) then return end
 				end
 				
 				EntOffsets[ ent ].Bones = Bones
-
+				
 			end
 			
 			// Rotate main object
 			local angle = ply:GetAngles()
 			angle.pitch = 0
 			angle.roll 	= 0
-	
+			
 			HeadEntity:SetAngles( angle - duplicator.HoldAngle )
 			
 			for ent, tab in pairs( EntOffsets ) do
@@ -483,29 +701,37 @@ if (!SERVER) then return end
 				
 				// Ragdoll Bones
 				for phys, ptab in pairs( tab.Bones ) do
-
+					
 					phys:SetPos( HeadEntity:LocalToWorld( ptab.Pos ) )
 					phys:SetAngle( HeadEntity:GetAngles() + ptab.Ang )
-
+					
 				end
 				
 			end
-		
+			
 		else
-		
 			Msg("Error! Head Duplicator entity not found!\n")
-		
 		end
-		
-
-
-		return CreatedEnts, CreatedConstraints
 	end
-
-
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/*---------------------------------------------------------
+		Name: duplicator.Make* functions
+		Desc: functions used to make stuff
+	---------------------------------------------------------*/
+	
 	// Function used to create prop physics classes
 	function duplicator.MakeProp( ply, Pos, Ang, Model, Vel, aVel, frozen )
-
+		
 		// check we're allowed to spawn
 		--if ( !gamemode.Call( "plySpawnProp", ply, Model ) ) then return end
 		local Ent = ents.Create( "prop_physics" )
@@ -513,7 +739,7 @@ if (!SERVER) then return end
 			Ent:SetAngles( Ang )
 			Ent:SetPos( Pos )
 		Ent:Spawn()
-
+		
 		// apply velocity If required
 		if ( Ent:GetPhysicsObject():IsValid() ) then
 			Phys = Ent:GetPhysicsObject()
@@ -522,7 +748,7 @@ if (!SERVER) then return end
 			Phys:EnableMotion(frozen != true)
 		end
 		Ent:Activate()
-
+		
 		// tell the gamemode we just spawned something
 		--gamemode.Call( "plySpawnedProp", ply, Model, Ent )
 		return Ent	
@@ -534,8 +760,8 @@ if (!SERVER) then return end
 
 
 	function duplicator.MakeRagdoll( ply, Pos, Ang, Model, Bones )
-
-		if not gamemode.Call( "plySpawnRagdoll", ply, Model ) then return end
+		
+		--if not gamemode.Call( "plySpawnRagdoll", ply, Model ) then return end
 		local Ent = ents.Create( "prop_ragdoll" )
 			Ent:SetModel( Model )
 			Ent:SetAngles( Ang )
@@ -543,23 +769,22 @@ if (!SERVER) then return end
 		Ent:Spawn()
 		
 		for Bone, Args in pairs(Bones) do
-		
-			local Phys = Ent:GetPhysicsObjectNum(Bone)
+			
+			local Phys = Ent:GetPhysicsObjectNum(tonumber(Bone))
 			
 			if (Phys:IsValid()) then	
-
 				
 				Phys:SetPos(Args[1])
 				Phys:SetAngle(Args[2])
 				Phys:SetVelocity(Args[3])
 				Phys:AddAngleVelocity(Args[4])
 				if (Args[5] == true) then Phys:EnableMotion(false) end
-								
+				
 			end
 			
 		end
 		Ent:Activate()
-
+		
 		gamemode.Call( "plySpawnedRagdoll", ply, Model, Ent )
 		return Ent	
 	end
