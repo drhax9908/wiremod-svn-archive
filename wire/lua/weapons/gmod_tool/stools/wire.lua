@@ -211,6 +211,10 @@ function TOOL:Reload(trace)
 	return true
 end
 
+function TOOL:Holster()
+	self:SelectComponent(nil)
+end
+
 
 if (CLIENT) then
 
@@ -372,4 +376,3 @@ function TOOL:SelectComponent(ent)
 	    self.CurrentComponent:SetNetworkedString("BlinkWire", self.CurrentInput)
 	end
 end
-
