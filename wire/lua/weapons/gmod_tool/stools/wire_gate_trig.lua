@@ -121,6 +121,7 @@ function TOOL.BuildCPanel(panel)
 	local Actions = {
 		Label = "#WireGateTrigTool_action",
 		MenuButton = "0",
+		Height = 180,
 		Options = {}
 	}
 	

@@ -123,6 +123,7 @@ function TOOL.BuildCPanel(panel)
 	local Actions = {
 		Label = "#WireGateArithmeticTool_action",
 		MenuButton = "0",
+		Height = 180,
 		Options = {}
 	}
 	
