@@ -13,7 +13,9 @@ function ENT:Initialize()
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Pitch", "Yaw", "Roll" })
 end
 
-function ENT:Setup(xyz_mode)
+function ENT:Setup( out180, xyz_mode )
+	
+	self.Out180 = out180
 	self.XYZMode = xyz_mode
 	self.Value = 0
 	self.PrevOutput = nil
@@ -28,9 +30,10 @@ function ENT:Think()
 	self.BaseClass.Think(self)
 
     local ang = self.Entity:GetAngles()
-    if (ang.p < 0) then ang.p = ang.p + 360 end
-    if (ang.y < 0) then ang.y = ang.y + 360 end
-    if (ang.r < 0) then ang.r = ang.r + 360 end
+	if (ang.p < 0 && !self.Out180) then ang.p = ang.p + 360 end
+	if (ang.y < 0 && !self.Out180) then ang.y = ang.y + 360 end
+	if (ang.r < 0 && !self.Out180) then ang.r = ang.r + 360
+	elseif (ang.r > 180 && self.Out180) then ang.r = ang.r - 360 end
 	Wire_TriggerOutput(self.Entity, "Pitch", ang.p)
 	Wire_TriggerOutput(self.Entity, "Yaw", ang.y)
 	Wire_TriggerOutput(self.Entity, "Roll", ang.r)

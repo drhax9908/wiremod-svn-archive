@@ -7,9 +7,12 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_gyroscope_name", "Gyroscope Tool (Wire)" )
     language.Add( "Tool_wire_gyroscope_desc", "Spawns a gyroscope for use with the wire system." )
     language.Add( "Tool_wire_gyroscope_0", "Primary: Create/Update Gyroscope" )
+    language.Add( "Tool_wire_gyroscope_out180", "Output -180 to 180 instead of 0 to 360" )
 	language.Add( "sboxlimit_wire_gyroscopes", "You've hit gyroscopes limit!" )
 	language.Add( "undone_wiregyroscope", "Undone Wire Gyroscope" )
 end
+
+TOOL.ClientConVar[ "out180" ] = 0
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_gyroscopes', 10)
@@ -21,36 +24,38 @@ cleanup.Register( "wire_gyroscopes" )
 
 function TOOL:LeftClick( trace )
 	if trace.Entity && trace.Entity:IsPlayer() then return false end
-
+	
 	// If there's no physics object then we can't constraint it!
 	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-
+	
 	if (CLIENT) then return true end
-
+	
 	local ply = self:GetOwner()
-
+	
 	// If we shot a wire_gyroscope do nothing
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_gyroscope" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup()
-
+		
 		return true
 	end
-
+	
 	if ( !self:GetSWEP():CheckLimit( "wire_gyroscopes" ) ) then return false end
-
+	
 	if (not util.IsValidModel(self.Model)) then return false end
 	if (not util.IsValidProp(self.Model)) then return false end		// Allow ragdolls to be used?
-
+	
+	local _out180 = self:GetClientNumber( "out180" ) == 1
+	
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
-
-	wire_gyroscope = MakeWireGyroscope( ply, self.Model, Ang, trace.HitPos )
-
+	
+	wire_gyroscope = MakeWireGyroscope( ply, self.Model, Ang, trace.HitPos, _out180 )
+	
 	local min = wire_gyroscope:OBBMins()
 	wire_gyroscope:SetPos( trace.HitPos - trace.HitNormal * min.z )
-
+	
 	local const, nocollide
-
+	
 	// Don't weld to world
 	if ( trace.Entity:IsValid() ) then
 		const = constraint.Weld( wire_gyroscope, trace.Entity, 0, trace.PhysicsBone, 0, true )
@@ -59,23 +64,23 @@ function TOOL:LeftClick( trace )
 		wire_gyroscope:GetPhysicsObject():EnableCollisions( false )
 		wire_gyroscope.nocollide = true
 	end
-
+	
 	undo.Create("WireGyroscope")
 		undo.AddEntity( wire_gyroscope )
 		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
-
+	
 	ply:AddCleanup( "wire_gyroscopes", wire_gyroscope )
 	ply:AddCleanup( "wire_gyroscopes", const )
 	ply:AddCleanup( "wire_gyroscopes", nocollide )
-
+	
 	return true
 end
 
 if (SERVER) then
 
-	function MakeWireGyroscope( pl, Model, Ang, Pos, nocollide, Vel, aVel, frozen )
+	function MakeWireGyroscope( pl, Model, Ang, Pos, out180, nocollide, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_gyroscopes" ) ) then return false end
 
 		local wire_gyroscope = ents.Create( "gmod_wire_gyroscope" )
@@ -86,13 +91,14 @@ if (SERVER) then
 		wire_gyroscope:SetModel(Model)
 		wire_gyroscope:Spawn()
 
-		wire_gyroscope:Setup()
+		wire_gyroscope:Setup( out180 )
 		wire_gyroscope:SetPlayer(pl)
 
 		if ( nocollide == true ) then wire_gyroscope:GetPhysicsObject():EnableCollisions( false ) end
 
 		local ttable = {
 			pl = pl,
+			out180 = out180,
 			}
 
 		table.Merge(wire_gyroscope:GetTable(), ttable )
@@ -142,4 +148,5 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_gyroscope_name", Description = "#Tool_wire_gyroscope_desc" })
+	panel:AddControl( "Checkbox", { Label = "#Tool_wire_gyroscope_out180", Command = "wire_gyroscope_out180" } )
 end
