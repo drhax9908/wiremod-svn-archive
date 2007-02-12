@@ -141,73 +141,145 @@ GateActions = GateActions or {}
 
 GateActions["sin"] = {
 	group = "Trig",
-	name = "Sin",
+	name = "Sin(Rad)",
 	inputs = { "A" },
 	output = function(gate, A)
 	    return math.sin(A)
 	end,
 	label = function(Out, A)
-	    return "sin("..A..") = "..Out
+	    return "sin("..A.."rad) = "..Out
 	end
 }
 
 GateActions["cos"] = {
 	group = "Trig",
-	name = "Cos",
+	name = "Cos(Rad)",
 	inputs = { "A" },
 	output = function(gate, A)
 	    return math.cos(A)
 	end,
 	label = function(Out, A)
-	    return "cos("..A..") = "..Out
+	    return "cos("..A.."rad) = "..Out
 	end
 }
 
 GateActions["tan"] = {
 	group = "Trig",
-	name = "Tan",
+	name = "Tan(Rad)",
 	inputs = { "A" },
 	output = function(gate, A)
 	    return math.tan(A)
 	end,
 	label = function(Out, A)
-	    return "tan("..A..") = "..Out
+	    return "tan("..A.."rad) = "..Out
 	end
 }
 
 GateActions["asin"] = {
 	group = "Trig",
-	name = "Asin",
+	name = "Asin(Rad)",
 	inputs = { "A" },
 	output = function(gate, A)
 	    return math.asin(A)
 	end,
 	label = function(Out, A)
-	    return "asin("..A..") = "..Out
+	    return "asin("..A..") = "..Out.."rad"
 	end
 }
 
 GateActions["acos"] = {
 	group = "Trig",
-	name = "Acos",
+	name = "Acos(Rad)",
 	inputs = { "A" },
 	output = function(gate, A)
 	    return math.acos(A)
 	end,
 	label = function(Out, A)
-	    return "acos("..A..") = "..Out
+	    return "acos("..A..") = "..Out.."rad"
 	end
 }
 
 GateActions["atan"] = {
 	group = "Trig",
-	name = "Atan",
+	name = "Atan(Rad)",
 	inputs = { "A" },
 	output = function(gate, A)
 	    return math.atan(A)
 	end,
 	label = function(Out, A)
-	    return "atan("..A..") = "..Out
+	    return "atan("..A..") = "..Out.."rad"
+	end
+}
+
+GateActions["sin_d"] = {
+	group = "Trig",
+	name = "Sin(Deg)",
+	inputs = { "A" },
+	output = function(gate, A)
+	    return math.sin(A)
+	end,
+	label = function(Out, A)
+	    return "sin("..A.."deg) = "..Out
+	end
+}
+
+GateActions["cos_d"] = {
+	group = "Trig",
+	name = "Cos(Deg)",
+	inputs = { "A" },
+	output = function(gate, A)
+	    return math.cos(A)
+	end,
+	label = function(Out, A)
+	    return "cos("..A.."deg) = "..Out
+	end
+}
+
+GateActions["tan_d"] = {
+	group = "Trig",
+	name = "Tan(Deg)",
+	inputs = { "A" },
+	output = function(gate, A)
+	    return math.tan(A)
+	end,
+	label = function(Out, A)
+	    return "tan("..A.."deg) = "..Out
+	end
+}
+
+GateActions["asin_d"] = {
+	group = "Trig",
+	name = "Asin(Deg)",
+	inputs = { "A" },
+	output = function(gate, A)
+	    return math.asin(A)
+	end,
+	label = function(Out, A)
+	    return "asin("..A..") = "..Out.."deg"
+	end
+}
+
+GateActions["acos_d"] = {
+	group = "Trig",
+	name = "Acos(Deg)",
+	inputs = { "A" },
+	output = function(gate, A)
+	    return math.acos(A)
+	end,
+	label = function(Out, A)
+	    return "acos("..A..") = "..Out.."deg"
+	end
+}
+
+GateActions["atan_d"] = {
+	group = "Trig",
+	name = "Atan(Deg)",
+	inputs = { "A" },
+	output = function(gate, A)
+	    return math.atan(A)
+	end,
+	label = function(Out, A)
+	    return "atan("..A..") = "..Out.."deg"
 	end
 }
 
@@ -232,5 +304,29 @@ GateActions["deg2rad"] = {
 	end,
 	label = function(Out, A)
 	    return A.."deg = "..Out.."rad"
+	end
+}
+
+GateActions["angdiff"] = {
+	group = "Trig",
+	name = "Difference(rad)",
+	inputs = { "A", "B" },
+	output = function(gate, A, B)
+	    return math.rad(math.AngleDifference(math.deg(A), math.deg(B)))
+	end,
+	label = function(Out, A, B)
+	    return A .. "deg - " .. B .. "deg = " .. Out .. "deg"
+	end
+}
+
+GateActions["angdiff_d"] = {
+	group = "Trig",
+	name = "Difference(deg)",
+	inputs = { "A", "B" },
+	output = function(gate, A, B)
+	    return math.AngleDifference(A, B)
+	end,
+	label = function(Out, A, B)
+	    return A .. "deg - " .. B .. "deg = " .. Out .. "deg"
 	end
 }
