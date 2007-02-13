@@ -249,8 +249,8 @@ GateActions["ram8"] = {
         end
     end,
     label = function(Out, Clk, AddrRead, AddrWrite, Data)
-	    return "WriteAddr:"..math.floor(AddrWrite).."  Data:"..Data.."  Clock:"..Clk..
-    	    "\nReadAddr:"..math.floor(AddrRead).." = "..Out
+	    return "WriteAddr:"..AddrWrite.."  Data:"..Data.."  Clock:"..Clk..
+    	    "\nReadAddr:"..AddrRead.." = "..Out
     end
 }
 
@@ -276,8 +276,8 @@ GateActions["ram64"] = {
         end
     end,
     label = function(Out, Clk, AddrRead, AddrWrite, Data)
-        return "WriteAddr:"..math.floor(AddrWrite).."  Data:"..Data.."  Clock:"..Clk..
-        	"\nReadAddr:"..math.floor(AddrRead).." = "..Out
+        return "WriteAddr:"..AddrWrite.."  Data:"..Data.."  Clock:"..Clk..
+        	"\nReadAddr:"..AddrRead.." = "..Out
     end
 }
 
@@ -310,7 +310,7 @@ GateActions["ram64x64"] = {
         end
     end,
     label = function(Out, Clk, AddrReadX, AddrReadY, AddrWriteX, AddrWriteY, Data)
-        return "WriteAddr:"..math.floor(AddrWriteX)..", "..math.floor(AddrWriteY).."  Data:"..Data.."  Clock:"..Clk..
-        "\nReadAddr:"..math.floor(AddrReadX)..", "..math.floor(AddrReadY).." = "..Out
+        return "WriteAddr:"..AddrWriteX..", "..AddrWriteY.."  Data:"..Data.."  Clock:"..Clk..
+        "\nReadAddr:"..AddrReadX..", "..AddrReadY.." = "..Out
     end
 }
