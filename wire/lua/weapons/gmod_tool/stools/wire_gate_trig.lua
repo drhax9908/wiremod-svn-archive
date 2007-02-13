@@ -217,7 +217,7 @@ GateActions["sin_d"] = {
 	name = "Sin(Deg)",
 	inputs = { "A" },
 	output = function(gate, A)
-	    return math.sin(A)
+	    return math.sin(math.rad(A))
 	end,
 	label = function(Out, A)
 	    return "sin("..A.."deg) = "..Out
@@ -229,7 +229,7 @@ GateActions["cos_d"] = {
 	name = "Cos(Deg)",
 	inputs = { "A" },
 	output = function(gate, A)
-	    return math.cos(A)
+	    return math.cos(math.rad(A))
 	end,
 	label = function(Out, A)
 	    return "cos("..A.."deg) = "..Out
@@ -241,7 +241,7 @@ GateActions["tan_d"] = {
 	name = "Tan(Deg)",
 	inputs = { "A" },
 	output = function(gate, A)
-	    return math.tan(A)
+	    return math.tan(math.rad(A))
 	end,
 	label = function(Out, A)
 	    return "tan("..A.."deg) = "..Out
@@ -253,7 +253,7 @@ GateActions["asin_d"] = {
 	name = "Asin(Deg)",
 	inputs = { "A" },
 	output = function(gate, A)
-	    return math.asin(A)
+	    return math.deg(math.asin(A))
 	end,
 	label = function(Out, A)
 	    return "asin("..A..") = "..Out.."deg"
@@ -265,7 +265,7 @@ GateActions["acos_d"] = {
 	name = "Acos(Deg)",
 	inputs = { "A" },
 	output = function(gate, A)
-	    return math.acos(A)
+	    return math.deg(math.acos(A))
 	end,
 	label = function(Out, A)
 	    return "acos("..A..") = "..Out.."deg"
@@ -277,7 +277,7 @@ GateActions["atan_d"] = {
 	name = "Atan(Deg)",
 	inputs = { "A" },
 	output = function(gate, A)
-	    return math.atan(A)
+	    return math.deg(math.atan(A))
 	end,
 	label = function(Out, A)
 	    return "atan("..A..") = "..Out.."deg"
