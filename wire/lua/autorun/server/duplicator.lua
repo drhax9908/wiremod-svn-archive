@@ -26,7 +26,7 @@
 
 // Note: Modified by SatriAli
 // Note: Modified by Erkle
-// Note: Very modified by TAD2020
+// Note: Very modified by TAD2020, added all sorts of stuff
 duplicator = {}
 
 local	ConstraintType,
@@ -219,9 +219,14 @@ if (!SERVER) then return end
    Name: duplicator.SaveToFile( table )
    Desc: 
 	---------------------------------------------------------*/
-	function duplicator.SaveToFile( pl, filename )
+	function duplicator.SaveToFile( pl, filename, desc )
 	
 		local dir = "adv_duplicator" //..string.gsub(pl:SteamID(), ":", "_") //don't think this works right
+		
+		local ndir = "adv_duplicator/"..string.gsub(pl:GetName(), ":", "_")
+		Msg("\nndir = ")
+		Msg(ndir) //testing where this will go
+		
 		if	!file.Exists(dir)	then file.CreateDir(dir) 
 		elseif	!file.IsDir(dir)	then return end
 		
@@ -231,10 +236,6 @@ if (!SERVER) then return end
 		
 		//save to file
 		local temp = {}
-		/*temp["ents"] = pl:GetTable().Duplicator.Ents
-		temp["const"] = pl:GetTable().Duplicator.Constraints
-		temp["head"] = pl:GetTable().Duplicator.HeadEntID*/
-		//temp = pl:GetTable().Duplicator
 		//let's only save the junk we're acctually going to load
 		temp.Ents			= pl:GetTable().Duplicator.Ents
 		temp.Constraints	= pl:GetTable().Duplicator.Constraints
@@ -243,13 +244,13 @@ if (!SERVER) then return end
 		//add file versioning, it will come in handy later if save format changes
 		temp["VersionInfo"] = {}
 		temp["VersionInfo"]["FileVersion"] = "v0.1"
-		temp["VersionInfo"]["info"] = "Advanced Duplicator Save File"
-		//temp["holdangle"] = duplicator.HoldAngle
+		temp["VersionInfo"]["FileInfo"] = "Advanced Duplicator Save File"
+		temp["VersionInfo"]["Creator"] = pl:GetName() or "unknown"
+		temp["VersionInfo"]["Desc"] = desc or "none"
+		//prepare the table and save it to file 
 		temp = duplicator.PrepareTableToSave(temp)
 		temp = util.TableToKeyValues(temp)
 		file.Write(filename, temp)
-		
-		--file.Write(dir.."/Duplicator3.txt", temp)
 		
 		
 	end
@@ -258,9 +259,9 @@ if (!SERVER) then return end
 	function duplicator.LoadFromFile( pl, filename )
 	
 		local dir = "adv_duplicator"
-		//local dir = gdir.."/" //..string.gsub(pl:SteamID(), ":", "_") //don't think this works right
+		local ndir = dir.."/"..string.gsub(pl:GetName(), ":", "_") //don't think this works right
 
-		if !file.Exists(dir.."/"..filename) then // && !file.Exists(gdir.."/"..filename) then
+		if !file.Exists(dir.."/"..filename) && !file.Exists(ndir.."/"..filename) then
 			print("File not found") return end
 		
 		// Clear Ghost entity if one exists
@@ -271,7 +272,7 @@ if (!SERVER) then return end
 		end
 		
 		local filepath
-		//if ( file.Exists(gdir.."/"..filename) ) then filepath = gdir.."/"..filename end
+		if ( file.Exists(ndir.."/"..filename) ) then filepath = ndir.."/"..filename end
 		if ( file.Exists(dir.."/"..filename) ) then filepath = dir.."/"..filename end
 		
 		//load from file

@@ -15,6 +15,7 @@ end
 TOOL.ClientConVar[ "simple" ] = 0
 TOOL.ClientConVar[ "save_filename" ] = ""
 TOOL.ClientConVar[ "load_filename" ] = ""
+TOOL.ClientConVar[ "file_desc" ] = ""
 
 // Saving totally sucks. This whole thing needs to be re-written so don't do anything with it yet.
 // Oops, I added this on my own before I noticed they had tried to do this already
@@ -304,7 +305,7 @@ function TOOL:UpdateList()
 	if (!self:GetOwner():IsPlayer()) then return false end
 	
 	local dir = "adv_duplicator"
-	//local dir = "adv_duplicator/"..string.gsub(self:GetOwner():SteamID(), ":", "_")
+	local ndir = dir.."/"..string.gsub(self:GetOwner():GetName(), ":", "_")
 
 	self:GetOwner():SendLua( "if ( !duplicator ) then duplicator={} end" )
 	self:GetOwner():SendLua( "duplicator.LoadList={}" )
@@ -323,11 +324,11 @@ function TOOL:UpdateList()
 		
 	end
 	
-	/*if ( file.Exists(gdir) && file.IsDir(gdir) ) then
+	if ( file.Exists(ndir) && file.IsDir(ndir) ) then
 	
-		for key, val in pairs( file.Find( gdir.."/*" ) ) do
+		for key, val in pairs( file.Find( ndir.."/*" ) ) do
 		
-			if ( !file.IsDir( gdir.."/"..val ) ) then
+			if ( !file.IsDir( ndir.."/"..val ) ) then
 			
 				self:GetOwner():SendLua( "table.insert(duplicator.LoadList,\"".. val .."\")" )
 				
@@ -335,7 +336,7 @@ function TOOL:UpdateList()
 			
 		end
 		
-	end*/
+	end
 	
 	// Force user to update list
 	self:GetOwner():SendLua( "AdvDuplicator_UpdateControlPanel()" )
@@ -343,11 +344,10 @@ function TOOL:UpdateList()
 end
 
 function TOOL:Deploy()
-	
+	//wiped it out, if there's data load, make the ghost --this may not be a great idea for online
 	if (self:GetOwner():GetTable().Duplicator) then self:StartGhostEntities() end
 	
 	if ( CLIENT ) then return end
-	
 	self:UpdateList()
 	
 end
@@ -364,7 +364,7 @@ if SERVER then
 		then return end
 
 		//save to file
-		duplicator.SaveToFile( pl, tostring(pl:GetInfo( "adv_duplicator_save_filename" )) )
+		duplicator.SaveToFile( pl, tostring(pl:GetInfo( "adv_duplicator_save_filename" )), tostring(pl:GetInfo( "adv_duplicator_file_desc" )) )
 		
 		pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject():UpdateList()
 		
@@ -489,20 +489,6 @@ else	// CLIENT
 			CPanel:AddHeader()
 			CPanel:AddDefaultControls()
 			
-			/*local params = {}
-				params.Label = "#Duplicator_load"
-				params.Height = 180
-				params.Options = {}
-					if ( duplicator.LoadList ) then
-						for k,v in pairs( duplicator.LoadList ) do
-							params.Options[v] = {}
-							params.Options[v].adv_duplicator_load = v
-						end
-					end
-				
-				CPanel:AddControl( "ListBox", params )*/
-			
-			
 			local params = {}
 				params.Label = "#Duplicator_load"
 				params.Height = 180
@@ -513,64 +499,41 @@ else	// CLIENT
 							params.Options[v].adv_duplicator_load_filename = v
 						end
 					end
-				
-				CPanel:AddControl( "ListBox", params )
-				
-				
-			/*local params = {}
-				params.Text = "Reload list"
-				params.Command = "adv_duplicator_updatelist"
-				
-				CPanel:AddControl( "Button", params )*/
+			CPanel:AddControl( "ListBox", params )
 				
 			local params = {}
 				params.Text = "Load File"
 				params.Command = "adv_duplicator_load"
-				CPanel:AddControl( "Button", params )
+			CPanel:AddControl( "Button", params )
 				
 			local params = {}
 				params.Text = "#Duplicator_save"
 				params.Command = "adv_duplicator_save"
 				
-				CPanel:AddControl( "Button", params )
+			CPanel:AddControl( "Button", params )
 				
 			/*local params = {}
 				params.Text = "#Duplicator_save_cl"
 				params.Command = "adv_duplicator_save_cl"
 				
 				CPanel:AddControl( "Button", params )*/
-				
+			
 			CPanel:AddControl("TextBox", {
 				Label = "Filename:",
 				Command = "adv_duplicator_save_filename"})
-				
+			
+			CPanel:AddControl("TextBox", {
+				Label = "Description:",
+				Command = "adv_duplicator_file_desc"})
 		end
 	
 	end
 	
 	
-	
-	local function AdvDuplicator_SaveGUI( pl, command, arguments )
+	//this doesn't do anything apparently
+	/*local function AdvDuplicator_SaveGUI( pl, command, arguments )
 		
-		local filename = {}
-		filename[1] = pl:GetInfo( "adv_duplicator_save_filename" )
-		--filename[1] = "test1.txt"
-		
-		Msg("\nfilename: ")
-		Msg(filename[1])
-		
-		local swep = pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject()
-		if ( !swep:IsValid() ) then return end
-		local tool = swep:GetTable():GetToolObject()
-		tool:UpdateList()
-		
-		
-		SS_Load( pl, command, filename)
-		
-		
-		
-		//this doesn't do anything apparently
-		/*local frame = vgui.Create( "Frame" )
+		local frame = vgui.Create( "Frame" )
 		frame:SetName( "DuplicatorSave" )	
 		
 		// Save Button
@@ -599,16 +562,13 @@ else	// CLIENT
 		frame:LoadControlsFromFile( "resource/ui/duplicatorsave.res" )	
 		frame:SetKeyBoardInputEnabled( true )
 		frame:SetMouseInputEnabled( true )
-		frame:SetVisible( true )*/
-		
+		frame:SetVisible( true )
 	end
 	concommand.Add( "adv_duplicator_save_gui", AdvDuplicator_SaveGUI )
-	
-	
 	
 	local function AdvDuplicator_SaveCLGUI()
 		AdvDuplicator_SaveGUI()
 	end
-	concommand.Add( "adv_duplicator_save_cl_gui", AdvDuplicator_SaveCLGUI )
+	concommand.Add( "adv_duplicator_save_cl_gui", AdvDuplicator_SaveCLGUI )*/
 	
 end
