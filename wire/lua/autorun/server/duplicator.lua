@@ -221,11 +221,9 @@ if (!SERVER) then return end
 	---------------------------------------------------------*/
 	function duplicator.SaveToFile( pl, filename, desc )
 	
-		local dir = "adv_duplicator" //..string.gsub(pl:SteamID(), ":", "_") //don't think this works right
-		
-		local ndir = "adv_duplicator/"..string.gsub(pl:GetName(), ":", "_")
-		Msg("\nndir = ")
-		Msg(ndir) //testing where this will go
+		//local dir = "adv_duplicator"
+		//save to a sub folder for each player
+		local dir = "adv_duplicator/"..string.gsub(pl:GetName(), ":", "_")
 		
 		if	!file.Exists(dir)	then file.CreateDir(dir) 
 		elseif	!file.IsDir(dir)	then return end
@@ -243,7 +241,7 @@ if (!SERVER) then return end
 		temp.HoldAngle		= pl:GetTable().Duplicator.HoldAngle
 		//add file versioning, it will come in handy later if save format changes
 		temp["VersionInfo"] = {}
-		temp["VersionInfo"]["FileVersion"] = "v0.1"
+		temp["VersionInfo"]["FileVersion"] = 0.2
 		temp["VersionInfo"]["FileInfo"] = "Advanced Duplicator Save File"
 		temp["VersionInfo"]["Creator"] = pl:GetName() or "unknown"
 		temp["VersionInfo"]["Desc"] = desc or "none"
@@ -280,7 +278,7 @@ if (!SERVER) then return end
 		temp		= util.KeyValuesToTable(temp)
 		temp		= duplicator.RebuildTableFromLoad(temp)
 		//check the file was loaded and we understand it's version
-		if (temp) and (temp["VersionInfo"]["FileVersion"] == "v0.1") then
+		if (temp) and (temp["VersionInfo"]["FileVersion"] <= 0.2) then
 			if (!pl:GetTable().Duplicator) then 	pl:GetTable().Duplicator = {} end
 			pl:GetTable().Duplicator.Ents			= temp.Ents
 			pl:GetTable().Duplicator.Constraints	= temp.Constraints

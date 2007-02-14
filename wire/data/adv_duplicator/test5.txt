@@ -6,8 +6,8 @@
 		"FileVersion"
 		{
 			"__name"		"FileVersion"
-			"__type"		"String"
-			"V"		"v0.1"
+			"__type"		"Number"
+			"V"		"0.1"
 		}
 		"Info"
 		{
