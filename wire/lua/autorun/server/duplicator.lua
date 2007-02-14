@@ -26,6 +26,7 @@
 
 // Note: Modified by SatriAli
 // Note: Modified by Erkle
+// Note: Very modified by TAD2020
 duplicator = {}
 
 local	ConstraintType,
@@ -43,25 +44,24 @@ function duplicator.RegisterEntityBoneModifier( Type,  func, ... )	EntityBoneMod
 
 
 if (!SERVER) then return end
-
+	
 	// Copy ents & Constraints
 	function duplicator.Copy( ply, StartEnt, offset )
-
+		
 		// Get all the ents & constraints in the system
 		local EntTable, ConstraintTable  = duplicator.GetEnts(StartEnt)
-
+		
 		// Clear plys duplicator table
 		ply:GetTable().Duplicator = { Ents = {}, Constraints = {}, HeadEntID = StartEnt:EntIndex() }
-
-			// Get info required to re-create each entity
+		
+		// Get info required to re-create each entity
 		for EntID, Ent in pairs(EntTable) do
 			local EntClass = Ent:GetClass()
-
+			
 			// Check the entity class is registered with the duplicator
 			if EntType[EntClass] then
 				
 				ply:GetTable().Duplicator.Ents[EntID] = duplicator.CopyGetEntArgs( ply, Ent, offset, EntClass)
-				
 				// yeah, just one line now
 				
 			else
@@ -72,6 +72,7 @@ if (!SERVER) then return end
 		
 		// Get info required to re-create each constraint
 		for constID, Constraint in pairs(ConstraintTable) do
+			
 			
 			// check the constraint has been registered with the duplicator
 			if ConstraintType[Constraint:GetTable().Type] then
@@ -128,7 +129,8 @@ if (!SERVER) then return end
 		
 		local HeadEntity = nil
 		local tempents = {}
-		local tHeadEntID,tHoldAngle = nil
+		
+			Msg("\n=======================--PasteStart--=======================\n")
 		
 		if filename then 
 			// TODO:
@@ -138,24 +140,6 @@ if (!SERVER) then return end
 
 			Ents 			= 	ply:GetTable().Duplicator.Ents
 			Constraints 	=	ply:GetTable().Duplicator.Constraints
-			tHeadEntID		=	ply:GetTable().Duplicator.HeadEntID
-			--tHoldAngle		=	ply:GetTable().Duplicator.HoldAngle or duplicator.HoldAngle
-			
-			/*Msg("\n=======================--Paste_Start--=======================\n--tempEnts--\n")
-			
-			local temp = file.Read("test/1b.txt")
-			Msg(temp)
-			temp = util.KeyValuesToTable(temp)
-			tempents = duplicator.RebuildTableFromLoad(temp)
-			
-			Msg("\n--file end--\n")
-			
-			Msg("\n--head--\n")
-			tHeadEntID = (tempents["head"])
-			Msg(tHeadEntID)
-			
-			Ents = tempents["ents"]
-			Constraints = tempents["const"]*/
 			
 		else
 			return false
@@ -187,7 +171,7 @@ if (!SERVER) then return end
 			    Msg("Duplicator Paste: Unknown class " .. EntClass .. "\n")
 			end
 			
-			if ( entID == tHeadEntID ) then
+			if ( entID == ply:GetTable().Duplicator.HeadEntID ) then
 				HeadEntity = Ent
 			end
 			
@@ -228,6 +212,84 @@ if (!SERVER) then return end
 	
 	
 	
+	
+	
+	
+	/*---------------------------------------------------------
+   Name: duplicator.SaveToFile( table )
+   Desc: 
+	---------------------------------------------------------*/
+	function duplicator.SaveToFile( pl, filename )
+	
+		local dir = "adv_duplicator" //..string.gsub(pl:SteamID(), ":", "_") //don't think this works right
+		if	!file.Exists(dir)	then file.CreateDir(dir) 
+		elseif	!file.IsDir(dir)	then return end
+		
+		//!!TODO!! check the that filename contains no illegal characters
+		local filename = dir.."/"..tostring(pl:GetInfo( "adv_duplicator_save_filename" ))..".txt"
+		Msg("\nsaving to: "..filename)
+		
+		//save to file
+		local temp = {}
+		/*temp["ents"] = pl:GetTable().Duplicator.Ents
+		temp["const"] = pl:GetTable().Duplicator.Constraints
+		temp["head"] = pl:GetTable().Duplicator.HeadEntID*/
+		//temp = pl:GetTable().Duplicator
+		//let's only save the junk we're acctually going to load
+		temp.Ents			= pl:GetTable().Duplicator.Ents
+		temp.Constraints	= pl:GetTable().Duplicator.Constraints
+		temp.HeadEntID		= pl:GetTable().Duplicator.HeadEntID
+		temp.HoldAngle		= pl:GetTable().Duplicator.HoldAngle
+		//add file versioning, it will come in handy later if save format changes
+		temp["VersionInfo"] = {}
+		temp["VersionInfo"]["FileVersion"] = "v0.1"
+		temp["VersionInfo"]["info"] = "Advanced Duplicator Save File"
+		//temp["holdangle"] = duplicator.HoldAngle
+		temp = duplicator.PrepareTableToSave(temp)
+		temp = util.TableToKeyValues(temp)
+		file.Write(filename, temp)
+		
+		--file.Write(dir.."/Duplicator3.txt", temp)
+		
+		
+	end
+	
+	
+	function duplicator.LoadFromFile( pl, filename )
+	
+		local dir = "adv_duplicator"
+		//local dir = gdir.."/" //..string.gsub(pl:SteamID(), ":", "_") //don't think this works right
+
+		if !file.Exists(dir.."/"..filename) then // && !file.Exists(gdir.."/"..filename) then
+			print("File not found") return end
+		
+		// Clear Ghost entity if one exists
+		pl:GetWeapon("gmod_tool"):GetTable():GetToolObject():ReleaseGhostEntity()
+		// This is ridiculous:
+		if ( pl:GetActiveWeapon():GetClass() == "gmod_tool" ) then
+			pl:SendLua(  "LocalPlayer():GetActiveWeapon():GetTable():GetToolObject():ReleaseGhostEntity()" )
+		end
+		
+		local filepath
+		//if ( file.Exists(gdir.."/"..filename) ) then filepath = gdir.."/"..filename end
+		if ( file.Exists(dir.."/"..filename) ) then filepath = dir.."/"..filename end
+		
+		//load from file
+		local temp	= file.Read(filepath)
+		temp		= util.KeyValuesToTable(temp)
+		temp		= duplicator.RebuildTableFromLoad(temp)
+		//check the file was loaded and we understand it's version
+		if (temp) and (temp["VersionInfo"]["FileVersion"] == "v0.1") then
+			if (!pl:GetTable().Duplicator) then 	pl:GetTable().Duplicator = {} end
+			pl:GetTable().Duplicator.Ents			= temp.Ents
+			pl:GetTable().Duplicator.Constraints	= temp.Constraints
+			pl:GetTable().Duplicator.HeadEntID		= temp.HeadEntID
+			pl:GetTable().Duplicator.HoldAngle		= temp.HoldAngle
+		else
+			Msg("\nFILE LOAD FAIL! something is wrong with this file:  "..filepath.."\n")
+		end
+		
+	end
 	
 	
 	
@@ -434,7 +496,6 @@ if (!SERVER) then return end
 	end
 	
 	
-	
 	function duplicator.CopyGetConstArgs( Constraint, GetEntByID )
 		
 		ctable = {Type = Constraint:GetTable().Type}
@@ -471,6 +532,14 @@ if (!SERVER) then return end
 	
 	
 	
+	function duplicator.GetEntClassArgs(entClass)
+		if (EntType[entClass]) then
+			return EntType[entClass].Args
+		else
+			return false
+		end
+	end
+	
 	
 	/*---------------------------------------------------------
 		Name: duplicator.Paste* sub functions
@@ -482,8 +551,10 @@ if (!SERVER) then return end
 		
 		for n,Key in pairs(EntType[EntTable.Class].Args) do
 			
-			if type(Key) == "string" then
-				
+			if type(Key) == "table" then
+				BoneArgs = Key
+				nBone	 = n
+			else
 				local Arg = EntTable[Key]
 				
 				key = string.lower(Key)
@@ -497,12 +568,6 @@ if (!SERVER) then return end
 				end
 				
 				Args[n] = Arg
-				
-			elseif type(Key) == "table" then
-				
-				BoneArgs = Key
-				nBone	 = n
-				
 			end
 		end
 		
@@ -690,7 +755,7 @@ if (!SERVER) then return end
 			angle.pitch = 0
 			angle.roll 	= 0
 			
-			HeadEntity:SetAngles( angle - duplicator.HoldAngle )
+			HeadEntity:SetAngles( angle - ply:GetTable().Duplicator.HoldAngle )
 			
 			for ent, tab in pairs( EntOffsets ) do
 				
@@ -794,7 +859,7 @@ if (!SERVER) then return end
 
 	function duplicator.MakeVehicle( ply, Pos, Ang, Model, Class, Vel, aVel, frozen )
 
-		if not gamemode.Call( "plySpawnVehicle", ply, Model ) then return end
+		--if not gamemode.Call( "plySpawnVehicle", ply, Model ) then return end
 		local Ent = ents.Create( Class )
 			Ent:SetModel( Model )
 			Ent:SetAngles( Ang )

@@ -1,6 +1,22 @@
 "Out"
 {
-	"const"
+	"VersionInfo"
+	{
+		"__name"		"VersionInfo"
+		"FileVersion"
+		{
+			"__name"		"FileVersion"
+			"__type"		"String"
+			"V"		"v0.1"
+		}
+		"Info"
+		{
+			"__name"		"info"
+			"__type"		"String"
+			"V"		"Advanced Duplicator save file"
+		}
+	}	
+	"Constraints"
 	{
 		"1"
 		{
@@ -33,13 +49,13 @@
 			{
 				"__name"		"Ent2"
 				"__type"		"Number"
-				"V"		"67"
+				"V"		"66"
 			}
 			"Ent1"
 			{
 				"__name"		"Ent1"
 				"__type"		"Number"
-				"V"		"66"
+				"V"		"67"
 			}
 			"type"
 			{
@@ -79,7 +95,7 @@
 			{
 				"__name"		"Ent2"
 				"__type"		"Number"
-				"V"		"67"
+				"V"		"66"
 			}
 			"Ent1"
 			{
@@ -94,7 +110,7 @@
 				"V"		"Weld"
 			}
 		}
-		"__name"		"const"
+		"__name"		"Constraints"
 	}
 	"ents"
 	{
@@ -127,11 +143,11 @@
 			}
 			"Pos"
 			{
-				"Y"		"-22.0906"
+				"Y"		"-23.7369"
 				"__type"		"Vector"
-				"z"		"22.7864"
+				"z"		"22.9874"
 				"__name"		"Pos"
-				"x"		"-9.46771"
+				"x"		"-4.0882"
 			}
 			"value_on"
 			{
@@ -153,11 +169,11 @@
 			}
 			"Ang"
 			{
-				"Y"		"135.565"
+				"Y"		"62.4103"
 				"__type"		"Angle"
-				"r"		"247.768"
+				"r"		"160.978"
 				"__name"		"Ang"
-				"p"		"89.8249"
+				"p"		"89.8108"
 			}
 			"frozen"
 			{
@@ -167,55 +183,6 @@
 			}
 		}
 		"67"
-		{
-			"__name"		"67"
-			"Pos"
-			{
-				"__name"		"Pos"
-				"__type"		"Vector"
-				"z"		"0.321587"
-				"x"		"0"
-			}
-			"Vel"
-			{
-				"__name"		"Vel"
-				"__type"		"Vector"
-				"x"		"0"
-			}
-			"model"
-			{
-				"__name"		"Model"
-				"__type"		"String"
-				"V"		"models//props_phx/construct/metal_tubex2.mdl"
-			}
-			"Ang"
-			{
-				"Y"		"-112.203"
-				"__type"		"Angle"
-				"r"		"359.945"
-				"__name"		"Ang"
-				"p"		"0.0512498"
-			}
-			"aVel"
-			{
-				"__name"		"aVel"
-				"__type"		"Vector"
-				"x"		"0"
-			}
-			"class"
-			{
-				"__name"		"Class"
-				"__type"		"String"
-				"V"		"prop_physics"
-			}
-			"frozen"
-			{
-				"__name"		"frozen"
-				"__type"		"Bool"
-				"V"		"false"
-			}
-		}
-		"66"
 		{
 			"A"
 			{
@@ -249,11 +216,11 @@
 			}
 			"Ang"
 			{
-				"Y"		"99.6403"
+				"Y"		"35.8462"
 				"__type"		"Angle"
-				"r"		"211.843"
+				"r"		"134.414"
 				"__name"		"Ang"
-				"p"		"89.922"
+				"p"		"89.7444"
 			}
 			"material"
 			{
@@ -273,7 +240,7 @@
 				"__type"		"Number"
 				"V"		"43"
 			}
-			"__name"		"66"
+			"__name"		"67"
 			"Vel"
 			{
 				"__name"		"Vel"
@@ -282,11 +249,11 @@
 			}
 			"Pos"
 			{
-				"Y"		"-23.9085"
+				"Y"		"-24.5701"
 				"__type"		"Vector"
-				"z"		"70.7938"
+				"z"		"71.0122"
 				"__name"		"Pos"
-				"x"		"-5.23059"
+				"x"		"0.258606"
 			}
 			"DupeInfo"
 			{
@@ -312,11 +279,11 @@
 								"__type"		"Number"
 								"V"		"255"
 							}
-							"r"
+							"B"
 							{
-								"__name"		"r"
+								"__name"		"b"
 								"__type"		"Number"
-								"V"		"54"
+								"V"		"2"
 							}
 							"__name"		"Color"
 							"g"
@@ -325,11 +292,11 @@
 								"__type"		"Number"
 								"V"		"249"
 							}
-							"B"
+							"r"
 							{
-								"__name"		"b"
+								"__name"		"r"
 								"__type"		"Number"
-								"V"		"2"
+								"V"		"54"
 							}
 						}
 						"width"
@@ -415,20 +382,69 @@
 				"V"		"false"
 			}
 		}
-		"__name"		"ents"
+		"66"
+		{
+			"__name"		"66"
+			"Pos"
+			{
+				"__name"		"Pos"
+				"__type"		"Vector"
+				"z"		"0.390017"
+				"x"		"0"
+			}
+			"Vel"
+			{
+				"__name"		"Vel"
+				"__type"		"Vector"
+				"x"		"0"
+			}
+			"model"
+			{
+				"__name"		"Model"
+				"__type"		"String"
+				"V"		"models//props_phx/construct/metal_tubex2.mdl"
+			}
+			"Ang"
+			{
+				"Y"		"-98.5672"
+				"__type"		"Angle"
+				"r"		"0.168429"
+				"__name"		"Ang"
+				"p"		"0.171394"
+			}
+			"aVel"
+			{
+				"__name"		"aVel"
+				"__type"		"Vector"
+				"x"		"0"
+			}
+			"class"
+			{
+				"__name"		"Class"
+				"__type"		"String"
+				"V"		"prop_physics"
+			}
+			"frozen"
+			{
+				"__name"		"frozen"
+				"__type"		"Bool"
+				"V"		"false"
+			}
+		}
+		"__name"		"Ents"
 	}
 	"holdangle"
 	{
-		"Y"		"-146.701"
+		"Y"		"-137.095"
 		"__type"		"Angle"
-		"r"		"0.0551147"
-		"__name"		"holdangle"
-		"p"		"-0.0512498"
+		"r"		"-0.168429"
+		"__name"		"HoldAngle"
+		"p"		"-0.171394"
 	}
-	"head"
+	"HeadEntID"
 	{
-		"__name"		"head"
+		"__name"		"HeadEntID"
 		"__type"		"Number"
-		"V"		"67"
+		"V"		"66"
 	}
 }

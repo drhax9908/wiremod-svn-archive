@@ -14,6 +14,7 @@ end
 
 TOOL.ClientConVar[ "simple" ] = 0
 TOOL.ClientConVar[ "save_filename" ] = ""
+TOOL.ClientConVar[ "load_filename" ] = ""
 
 // Saving totally sucks. This whole thing needs to be re-written so don't do anything with it yet.
 // Oops, I added this on my own before I noticed they had tried to do this already
@@ -40,52 +41,55 @@ end
 
 // Put The stuff we're pointing at in the 'clipboard'
 function TOOL:RightClick( trace )
-
+	
 	if (!trace.Entity) then return false end
 	if (!trace.Entity:IsValid()) then return false end
 	if (trace.Entity:IsPlayer()) then return false end
-
+	
 	local StartPos = trace.Entity:GetPos()
-
+	
 	local offset = {
 			start = StartPos,
 			endpos = StartPos + Vector( 0,0,-1024),
 			mask = MASK_NPCWORLDSTATIC
 			   }
-
+	
 	duplicator.offset = util.TraceLine( offset ).HitPos
-
+	
 	self:ReleaseGhostEntity()
-
+	
 	if ( CLIENT ) then return true end
-
+	
 	// Call the duplicator module to get all the stuff constrained to the trace.ent
 	local Ents, Constraints = duplicator.Copy( self:GetOwner(), trace.Entity, duplicator.offset )
 	local simple = self:GetClientNumber( "simple" ) == 1
-
+	
 	// this should tide us over until the whole thing gets re-written
 	if simple then
-
+		
 		for EntID,Ent in pairs(Ents) do 
 			if Ent != trace.Entity then
 				self:GetOwner():GetTable().Duplicator.Ents[ EntID ] = nil
 			end
 		end
-
+		
 		self:GetOwner():GetTable().Duplicator.Constraints = {}
 		Ents, Constraints = { [ trace.Entity:EntIndex() ] = trace.Entity }, {}
-
+		
 	end
-
+	
 	local angle  = self:GetOwner():GetAngles()
 		angle.pitch = 0
 		angle.roll = 0
-
+	
 	local HoldAngle = angle - trace.Entity:GetAngles()
-
-	duplicator.HeadEntID = trace.Entity:EntIndex()
-	duplicator.HoldAngle = HoldAngle
-
+	
+	//duplicator.HeadEntID = trace.Entity:EntIndex()
+	self:GetOwner():GetTable().Duplicator.HeadEntID = trace.Entity:EntIndex()
+	//duplicator.HoldAngle = HoldAngle
+	self:GetOwner():GetTable().Duplicator.HoldAngle = HoldAngle
+	duplicator.LoadedFile = false
+	
 	if !SinglePlayer() then
 
 			// Send the Ents to the client so we can do ghosts
@@ -103,8 +107,8 @@ function TOOL:RightClick( trace )
 			// Todo! Use umsg to send messages!
 		
 			self:GetOwner():SendLua( "duplicator.GhostEnts={" .. str .. "}")
-			self:GetOwner():SendLua( "duplicator.HeadEntID=" .. duplicator.HeadEntID )
-			self:GetOwner():SendLua( "duplicator.HoldAngle=Angle(" .. HoldAngle.pitch .. ", " .. HoldAngle.yaw .. ", " .. HoldAngle.roll .. ")" )
+			//self:GetOwner():SendLua( "duplicator.HeadEntID=" .. duplicator.HeadEntID )
+			//self:GetOwner():SendLua( "duplicator.HoldAngle=Angle(" .. HoldAngle.pitch .. ", " .. HoldAngle.yaw .. ", " .. HoldAngle.roll .. ")" )
 			self:GetOwner():SendLua( "duplicator.offset=Vector(" .. duplicator.offset.x .. ", " .. duplicator.offset.y .. ", " .. duplicator.offset.z .. ")" )
 		
 		self.Weapon:CallOnClient( "StartGhostEntities", "" )
@@ -201,53 +205,74 @@ function TOOL:StartGhostEntities()
 	self:ReleaseGhostEntity()
 	
 	// set us up some tables
-	self.GhostEntities = {}
-	self.GhostOffset = {}
+	self.GhostEntities	= {}
+	self.GhostOffset	= {}
 	
-	// For each EntID we got sent, check it's still valid and make Ghost if it is.
-	for id, EntID in pairs(duplicator.GhostEnts) do
-
-		local Ent = Entity( EntID )
-
-		if ( Ent:IsValid() ) then
-
-			local GhostEntity = self:MakeGhostEntity_Duplicator( Ent:GetModel(), Ent:GetPos(), Ent:GetAngles() )
+	local pl = self:GetOwner()
+	
+	//get the point where we are currently looking
+	local tr	= utilx.GetPlayerTrace( pl )
+	local trace	= util.TraceLine( tr )
+	if (!trace.Hit) then return end
+	duplicator.offset = trace.HitPos
+	
+	//load and make the ghost
+	for entID, EntTable in pairs(pl:GetTable().Duplicator.Ents) do
+		local entClass = EntTable.Class
+		
+		if entClass then
+			//get the args for this class
+			local entArgs = duplicator.GetEntClassArgs(entClass)
 			
-			if ( GhostEntity ) then
-			
-				self.GhostEntities[id]	= GhostEntity
-				self.GhostOffset[id]		= Ent:GetPos() - duplicator.offset
+			if entArgs then //check that we know how to dupe this class
 				
-				if ( EntID == duplicator.HeadEntID ) then
+				local Args = { model="", pos=Vector(0,0,0), ang=Vector(0,0,0) }
 				
-					self.GhostHead 	= GhostEntity
-					self.GhostHeadOff = Ent:GetPos() - duplicator.offset
-				
+				for n,Key in pairs(entArgs) do
+					if type(Key) != "table" then
+						local Arg = EntTable[Key]
+						key = string.lower(Key)
+						
+						if key == "ang"	or key == "angle" then
+							Args.ang = Arg or Vector(0,0,0)
+						elseif key == "pos"	or key == "position" then
+							Args.pos = Arg + duplicator.offset or Vector(0,0,0)
+						elseif key == "mdl"	or key == "model" or key == "smodel" then 
+							Args.model = Arg
+						end
+					end
 				end
 				
-			end
+				local GhostEntity = self:MakeGhostEntity_Duplicator( Args.model, Args.pos, Args.ang )
+				
+				if ( GhostEntity ) then
+					self.GhostEntities[entID]	= GhostEntity
+					self.GhostOffset[entID]		= Args.pos - duplicator.offset
+					
+					if ( entID == self:GetOwner():GetTable().Duplicator.HeadEntID ) then
+						self.GhostHead		= GhostEntity
+						self.GhostHeadOff	= Args.pos - duplicator.offset
+					end
+				end
 			
+			elseif (EntClass) then
+				Msg("Duplicator Paste: Unknown class " .. EntClass .. "\n")
+			end
 		end
 	end
 	
 	if (!self.GhostHead) then 
-	
-			Msg("Duplicator Error, no head entity!") 
-			self:ReleaseGhostEntity()
-			return
+		Msg("Duplicator Error, no head entity!") 
+		self:ReleaseGhostEntity()
+		return
 	end
 	
 	for k, ent in pairs ( self.GhostEntities ) do
-	
-			if ( self.GhostHead != ent ) then
-			
-				ent:SetParent( self.GhostHead )
-			
-			end
-	
+		if ( self.GhostHead != ent ) then
+			ent:SetParent( self.GhostHead )
+		end
 	end
 	
-
 end
 
 function TOOL:UpdateGhostEntities()
@@ -269,7 +294,7 @@ function TOOL:UpdateGhostEntities()
 	angle.pitch = 0
 	angle.roll 	= 0
 	
-	ent:SetAngles( angle - duplicator.HoldAngle )
+	ent:SetAngles( angle - self:GetOwner():GetTable().Duplicator.HoldAngle )
 	
 end
 
@@ -278,8 +303,8 @@ function TOOL:UpdateList()
 	if (!self:GetOwner():IsValid()) then return false end
 	if (!self:GetOwner():IsPlayer()) then return false end
 	
-	local gdir = "adv_duplicator"
-	local dir = "adv_duplicator/"..string.gsub(self:GetOwner():SteamID(), ":", "_")
+	local dir = "adv_duplicator"
+	//local dir = "adv_duplicator/"..string.gsub(self:GetOwner():SteamID(), ":", "_")
 
 	self:GetOwner():SendLua( "if ( !duplicator ) then duplicator={} end" )
 	self:GetOwner():SendLua( "duplicator.LoadList={}" )
@@ -298,7 +323,7 @@ function TOOL:UpdateList()
 		
 	end
 	
-	if ( file.Exists(gdir) && file.IsDir(gdir) ) then
+	/*if ( file.Exists(gdir) && file.IsDir(gdir) ) then
 	
 		for key, val in pairs( file.Find( gdir.."/*" ) ) do
 		
@@ -310,7 +335,7 @@ function TOOL:UpdateList()
 			
 		end
 		
-	end
+	end*/
 	
 	// Force user to update list
 	self:GetOwner():SendLua( "AdvDuplicator_UpdateControlPanel()" )
@@ -318,7 +343,9 @@ function TOOL:UpdateList()
 end
 
 function TOOL:Deploy()
-
+	
+	if (self:GetOwner():GetTable().Duplicator) then self:StartGhostEntities() end
+	
 	if ( CLIENT ) then return end
 	
 	self:UpdateList()
@@ -336,80 +363,38 @@ if SERVER then
 		or !pl:GetTable().Duplicator 
 		then return end
 
-		local dir = "adv_duplicator/"..string.gsub(pl:SteamID(), ":", "_")
-		if	!file.Exists(dir)	then file.CreateDir(dir) 
-		elseif	!file.IsDir(dir)	then return end
-		
-		//!!TODO!! check the that filename contains no illegal characters
-		local filename = tostring(pl:GetInfo( "adv_duplicator_save_filename" ))..".txt"
-		
-		
 		//save to file
-		local temp = {}
-		temp["ents"] = pl:GetTable().Duplicator.Ents
-		temp["const"] = pl:GetTable().Duplicator.Constraints
-		temp["head"] = pl:GetTable().Duplicator.HeadEntID
-		temp["holdangle"] = duplicator.HoldAngle
-		temp = duplicator.PrepareTableToSave(temp)
-		temp = util.TableToKeyValues(temp)
-		file.Write(dir.."/"..filename, temp)
+		duplicator.SaveToFile( pl, tostring(pl:GetInfo( "adv_duplicator_save_filename" )) )
 		
 		pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject():UpdateList()
-		
 		
 	end
 	
 	
-
 	//Load duplicated ents from file
 	local function AdvDupeSS_Load( pl, command, args )
 		
 		if !pl:IsValid() 
 		or !pl:IsPlayer() 
-		or !args[1]
 		then return end
-
-		local gdir = "adv_duplicator"
-		local dir = gdir.."/"..string.gsub(pl:SteamID(), ":", "_")
-		local filename = tostring(args[1])
-
-		if !file.Exists(dir.."/"..filename) && !file.Exists(gdir.."/"..filename) then print("File not found") return end
 		
-		// Clear Ghost entity if one exists
-		pl:GetWeapon("gmod_tool"):GetTable():GetToolObject():ReleaseGhostEntity()
-		// This is ridiculous:
-		if ( pl:GetActiveWeapon():GetClass() == "gmod_tool" ) then
-			pl:SendLua(  "LocalPlayer():GetActiveWeapon():GetTable():GetToolObject():ReleaseGhostEntity()" )
-		end
+		local filename = ""
+		if !args[1] //if a filename wasn't passed with a arg, then get the selection in the panel
+		then filename = pl:GetInfo( "adv_duplicator_load_filename" )
+		else filename = tostring(args[1]) end
 		
-		local filepath
-		if ( file.Exists(gdir.."/"..filename) ) then filepath = gdir.."/"..filename end
-		if ( file.Exists(dir.."/"..filename) ) then filepath = dir.."/"..filename end
-		
-		
-		//load from file
-		local temp = file.Read(filepath)
-		temp = util.KeyValuesToTable(temp)
-		tempents = duplicator.RebuildTableFromLoad(temp)
-		if (!pl:GetTable().Duplicator) then pl:GetTable().Duplicator = {} end
-		pl:GetTable().Duplicator.Ents = tempents["ents"]
-		pl:GetTable().Duplicator.Constraints = tempents["const"]
-		pl:GetTable().Duplicator.HeadEntID = tempents["head"]
-		duplicator.HoldAngle = tempents["holdangle"]
-		
-		
-		
+		duplicator.LoadFromFile( pl, filename )
 		
 		if ( pl:GetActiveWeapon():GetClass() == "gmod_tool" ) then
+			//pl:SendLua(  "duplicator.LoadedFile = true" )
+			//pl:SendLua(  "LocalPlayer():GetActiveWeapon():GetTable():GetToolObject():StartGhostEntities()" )
+			//pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject():StartGhostEntities()
+			pl:GetActiveWeapon():GetTable():GetToolObject():StartGhostEntities()
 			pl:SendLua(  "LocalPlayer():GetActiveWeapon():GetTable():GetToolObject():UpdateGhostEntities()" )
 		end
 	end
-	
-	
-	
 	concommand.Add( "adv_duplicator_save", AdvDupeSS_Save )
 	concommand.Add( "adv_duplicator_load", AdvDupeSS_Load )
-	
 	
 	
 	
@@ -432,13 +417,13 @@ if SERVER then
 		
 		
 		//build save file
-		local str = {}
+		/*local str = {}
 		str["ents"] = pl:GetTable().Duplicator.Ents
 		str["const"] = pl:GetTable().Duplicator.Constraints
 		str["head"] = pl:GetTable().Duplicator.HeadEntID
 		temp["holdangle"] = duplicator.HoldAngle
 		str = duplicator.PrepareTableToSave(str)
-		str = util.TableToKeyValues(str)
+		str = util.TableToKeyValues(str)*/
 		
 		
 		local filewrite_start = "filex.Append('"..filestr.."','"
@@ -471,7 +456,6 @@ if SERVER then
 		pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject():UpdateList()
 		
 	end
-	
 	concommand.Add( "adv_duplicator_save_cl", AdvDupeCL_Save )
 	
 	
@@ -482,8 +466,14 @@ if SERVER then
 		pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject():UpdateList()
 		
 	end
-	
 	concommand.Add( "adv_duplicator_updatelist", AdvDupeSS_UpdateLoadList )
+	
+	
+	
+	local function AdvDupeSS_StartGhostEntities( pl, command, args )
+		pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject():StartGhostEntities()
+	end
+	concommand.Add( "adv_duplicator_startghost", AdvDupeSS_StartGhostEntities )
 	
 	
 	
@@ -499,7 +489,7 @@ else	// CLIENT
 			CPanel:AddHeader()
 			CPanel:AddDefaultControls()
 			
-			local params = {}
+			/*local params = {}
 				params.Label = "#Duplicator_load"
 				params.Height = 180
 				params.Options = {}
@@ -510,14 +500,34 @@ else	// CLIENT
 						end
 					end
 				
+				CPanel:AddControl( "ListBox", params )*/
+			
+			
+			local params = {}
+				params.Label = "#Duplicator_load"
+				params.Height = 180
+				params.Options = {}
+					if ( duplicator.LoadList ) then
+						for k,v in pairs( duplicator.LoadList ) do
+							params.Options[v] = {}
+							params.Options[v].adv_duplicator_load_filename = v
+						end
+					end
+				
 				CPanel:AddControl( "ListBox", params )
 				
-			local params = {}
+				
+			/*local params = {}
 				params.Text = "Reload list"
 				params.Command = "adv_duplicator_updatelist"
 				
-				CPanel:AddControl( "Button", params )	
-			
+				CPanel:AddControl( "Button", params )*/
+				
+			local params = {}
+				params.Text = "Load File"
+				params.Command = "adv_duplicator_load"
+				CPanel:AddControl( "Button", params )
+				
 			local params = {}
 				params.Text = "#Duplicator_save"
 				params.Command = "adv_duplicator_save"

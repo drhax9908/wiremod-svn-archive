@@ -1,0 +1,758 @@
+"Out"
+{
+	"VersionInfo"
+	{
+		"__name"		"VersionInfo"
+		"FileVersion"
+		{
+			"__name"		"FileVersion"
+			"__type"		"String"
+			"V"		"v0.1"
+		}
+		"Info"
+		{
+			"__name"		"info"
+			"__type"		"String"
+			"V"		"Advanced Duplicator save file"
+		}
+	}
+	"ents"
+	{
+		"91"
+		{
+			"__name"		"91"
+			"Ang"
+			{
+				"Y"		"-39.7078"
+				"__type"		"Angle"
+				"r"		"359.595"
+				"__name"		"Ang"
+				"p"		"0.00911546"
+			}
+			"Smodel"
+			{
+				"__name"		"Smodel"
+				"__type"		"String"
+				"V"		"models/kobilica/wiremonitorbig.mdl"
+			}
+			"class"
+			{
+				"__name"		"Class"
+				"__type"		"String"
+				"V"		"gmod_wire_screen"
+			}
+			"DupeInfo"
+			{
+				"__name"		"DupeInfo"
+				"Wires"
+				{
+					"A"
+					{
+						"__name"		"A"
+						"SrcPos"
+						{
+							"Y"		"1.48767"
+							"__type"		"Vector"
+							"z"		"6.20685"
+							"__name"		"SrcPos"
+							"x"		"-2.02778"
+						}
+						"color"
+						{
+							"A"
+							{
+								"__name"		"a"
+								"__type"		"Number"
+								"V"		"255"
+							}
+							"B"
+							{
+								"__name"		"b"
+								"__type"		"Number"
+								"V"		"2"
+							}
+							"__name"		"Color"
+							"g"
+							{
+								"__name"		"g"
+								"__type"		"Number"
+								"V"		"249"
+							}
+							"r"
+							{
+								"__name"		"r"
+								"__type"		"Number"
+								"V"		"54"
+							}
+						}
+						"width"
+						{
+							"__name"		"Width"
+							"__type"		"Number"
+							"V"		"1"
+						}
+						"Src"
+						{
+							"__name"		"Src"
+							"__type"		"Number"
+							"V"		"95"
+						}
+						"SrcId"
+						{
+							"__name"		"SrcId"
+							"__type"		"String"
+							"V"		"Roll"
+						}
+						"material"
+						{
+							"__name"		"Material"
+							"__type"		"String"
+							"V"		"cable/cable2"
+						}
+						"StartPos"
+						{
+							"Y"		"-1.77506"
+							"__type"		"Vector"
+							"z"		"17.1921"
+							"__name"		"StartPos"
+							"x"		"-0.531242"
+						}
+						"Path"
+						{
+							"__name"		"Path"
+						}
+					}
+					"__name"		"Wires"
+					"B"
+					{
+						"__name"		"B"
+						"SrcPos"
+						{
+							"Y"		"2.05289"
+							"__type"		"Vector"
+							"z"		"4.65026"
+							"__name"		"SrcPos"
+							"x"		"-1.42944"
+						}
+						"color"
+						{
+							"A"
+							{
+								"__name"		"a"
+								"__type"		"Number"
+								"V"		"255"
+							}
+							"B"
+							{
+								"__name"		"b"
+								"__type"		"Number"
+								"V"		"2"
+							}
+							"__name"		"Color"
+							"g"
+							{
+								"__name"		"g"
+								"__type"		"Number"
+								"V"		"249"
+							}
+							"r"
+							{
+								"__name"		"r"
+								"__type"		"Number"
+								"V"		"54"
+							}
+						}
+						"width"
+						{
+							"__name"		"Width"
+							"__type"		"Number"
+							"V"		"1"
+						}
+						"Src"
+						{
+							"__name"		"Src"
+							"__type"		"Number"
+							"V"		"93"
+						}
+						"SrcId"
+						{
+							"__name"		"SrcId"
+							"__type"		"String"
+							"V"		"Roll"
+						}
+						"material"
+						{
+							"__name"		"Material"
+							"__type"		"String"
+							"V"		"cable/cable2"
+						}
+						"StartPos"
+						{
+							"Y"		"-1.06579"
+							"__type"		"Vector"
+							"z"		"7.15932"
+							"__name"		"StartPos"
+							"x"		"-0.531213"
+						}
+						"Path"
+						{
+							"__name"		"Path"
+						}
+					}
+				}
+			}
+			"Pos"
+			{
+				"Y"		"-2.29107"
+				"__type"		"Vector"
+				"z"		"3.75046"
+				"__name"		"Pos"
+				"x"		"41.2427"
+			}
+		}
+		"93"
+		{
+			"__name"		"93"
+			"Pos"
+			{
+				"Y"		"1.07334"
+				"__type"		"Vector"
+				"z"		"3.51605"
+				"__name"		"Pos"
+				"x"		"0.294189"
+			}
+			"Vel"
+			{
+				"__name"		"Vel"
+				"__type"		"Vector"
+				"x"		"0"
+			}
+			"model"
+			{
+				"__name"		"Model"
+				"__type"		"String"
+				"V"		"models/cheeze/wires/gyroscope.mdl"
+			}
+			"Ang"
+			{
+				"Y"		"-80.9563"
+				"__type"		"Angle"
+				"r"		"355.642"
+				"__name"		"Ang"
+				"p"		"3.16402"
+			}
+			"aVel"
+			{
+				"__name"		"aVel"
+				"__type"		"Vector"
+				"x"		"0"
+			}
+			"class"
+			{
+				"__name"		"Class"
+				"__type"		"String"
+				"V"		"gmod_wire_gyroscope"
+			}
+			"frozen"
+			{
+				"__name"		"frozen"
+				"__type"		"Bool"
+				"V"		"false"
+			}
+		}
+		"95"
+		{
+			"__name"		"95"
+			"Pos"
+			{
+				"Y"		"-3.42037"
+				"__type"		"Vector"
+				"z"		"3.28003"
+				"__name"		"Pos"
+				"x"		"6.51404"
+			}
+			"Vel"
+			{
+				"__name"		"Vel"
+				"__type"		"Vector"
+				"x"		"0"
+			}
+			"model"
+			{
+				"__name"		"Model"
+				"__type"		"String"
+				"V"		"models/cheeze/wires/gyroscope.mdl"
+			}
+			"Ang"
+			{
+				"Y"		"-79.0969"
+				"__type"		"Angle"
+				"r"		"0.039527"
+				"__name"		"Ang"
+				"p"		"-0.0248213"
+			}
+			"aVel"
+			{
+				"__name"		"aVel"
+				"__type"		"Vector"
+				"x"		"0"
+			}
+			"class"
+			{
+				"__name"		"Class"
+				"__type"		"String"
+				"V"		"gmod_wire_gyroscope"
+			}
+			"frozen"
+			{
+				"__name"		"frozen"
+				"__type"		"Bool"
+				"V"		"false"
+			}
+		}
+		"92"
+		{
+			"__name"		"92"
+			"Pos"
+			{
+				"__name"		"Pos"
+				"__type"		"Vector"
+				"z"		"0.0778656"
+				"x"		"0"
+			}
+			"Vel"
+			{
+				"__name"		"Vel"
+				"__type"		"Vector"
+				"x"		"0"
+			}
+			"model"
+			{
+				"__name"		"Model"
+				"__type"		"String"
+				"V"		"models//props_phx/construct/metal_plate2x2.mdl"
+			}
+			"Ang"
+			{
+				"Y"		"55.906"
+				"__type"		"Angle"
+				"r"		"0.00249419"
+				"__name"		"Ang"
+				"p"		"-0.00368732"
+			}
+			"aVel"
+			{
+				"__name"		"aVel"
+				"__type"		"Vector"
+				"x"		"0"
+			}
+			"class"
+			{
+				"__name"		"Class"
+				"__type"		"String"
+				"V"		"prop_physics"
+			}
+			"frozen"
+			{
+				"__name"		"frozen"
+				"__type"		"Bool"
+				"V"		"false"
+			}
+		}
+		"94"
+		{
+			"__name"		"94"
+			"Ang"
+			{
+				"Y"		"-34.0614"
+				"__type"		"Angle"
+				"r"		"0.411161"
+				"__name"		"Ang"
+				"p"		"0.0224824"
+			}
+			"Smodel"
+			{
+				"__name"		"Smodel"
+				"__type"		"String"
+				"V"		"models/kobilica/wiremonitorbig.mdl"
+			}
+			"class"
+			{
+				"__name"		"Class"
+				"__type"		"String"
+				"V"		"gmod_wire_screen"
+			}
+			"DupeInfo"
+			{
+				"__name"		"DupeInfo"
+				"Wires"
+				{
+					"A"
+					{
+						"__name"		"A"
+						"SrcPos"
+						{
+							"Y"		"1.64893"
+							"__type"		"Vector"
+							"z"		"6.75936"
+							"__name"		"SrcPos"
+							"x"		"-1.84926"
+						}
+						"color"
+						{
+							"A"
+							{
+								"__name"		"a"
+								"__type"		"Number"
+								"V"		"255"
+							}
+							"B"
+							{
+								"__name"		"b"
+								"__type"		"Number"
+								"V"		"2"
+							}
+							"__name"		"Color"
+							"g"
+							{
+								"__name"		"g"
+								"__type"		"Number"
+								"V"		"249"
+							}
+							"r"
+							{
+								"__name"		"r"
+								"__type"		"Number"
+								"V"		"54"
+							}
+						}
+						"width"
+						{
+							"__name"		"Width"
+							"__type"		"Number"
+							"V"		"1"
+						}
+						"Src"
+						{
+							"__name"		"Src"
+							"__type"		"Number"
+							"V"		"95"
+						}
+						"SrcId"
+						{
+							"__name"		"SrcId"
+							"__type"		"String"
+							"V"		"Yaw"
+						}
+						"material"
+						{
+							"__name"		"Material"
+							"__type"		"String"
+							"V"		"cable/cable2"
+						}
+						"StartPos"
+						{
+							"Y"		"4.62699"
+							"__type"		"Vector"
+							"z"		"14.4988"
+							"__name"		"StartPos"
+							"x"		"-0.531215"
+						}
+						"Path"
+						{
+							"__name"		"Path"
+						}
+					}
+					"__name"		"Wires"
+					"B"
+					{
+						"__name"		"B"
+						"SrcPos"
+						{
+							"Y"		"2.25433"
+							"__type"		"Vector"
+							"z"		"4.92615"
+							"__name"		"SrcPos"
+							"x"		"-1.12223"
+						}
+						"color"
+						{
+							"A"
+							{
+								"__name"		"a"
+								"__type"		"Number"
+								"V"		"255"
+							}
+							"B"
+							{
+								"__name"		"b"
+								"__type"		"Number"
+								"V"		"2"
+							}
+							"__name"		"Color"
+							"g"
+							{
+								"__name"		"g"
+								"__type"		"Number"
+								"V"		"249"
+							}
+							"r"
+							{
+								"__name"		"r"
+								"__type"		"Number"
+								"V"		"54"
+							}
+						}
+						"width"
+						{
+							"__name"		"Width"
+							"__type"		"Number"
+							"V"		"1"
+						}
+						"Src"
+						{
+							"__name"		"Src"
+							"__type"		"Number"
+							"V"		"95"
+						}
+						"SrcId"
+						{
+							"__name"		"SrcId"
+							"__type"		"String"
+							"V"		"Pitch"
+						}
+						"material"
+						{
+							"__name"		"Material"
+							"__type"		"String"
+							"V"		"cable/cable2"
+						}
+						"StartPos"
+						{
+							"Y"		"4.59706"
+							"__type"		"Vector"
+							"z"		"12.2498"
+							"__name"		"StartPos"
+							"x"		"-0.531274"
+						}
+						"Path"
+						{
+							"__name"		"Path"
+						}
+					}
+				}
+			}
+			"Pos"
+			{
+				"Y"		"-26.7957"
+				"__type"		"Vector"
+				"z"		"3.74748"
+				"__name"		"Pos"
+				"x"		"21.1392"
+			}
+		}
+		"__name"		"Ents"
+	}
+	"Constraints"
+	{
+		"1"
+		{
+			"__name"		"1"
+			"NoCollide"
+			{
+				"__name"		"nocollide"
+				"__type"		"Bool"
+				"V"		"true"
+			}
+			"Bone1"
+			{
+				"__name"		"Bone1"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"Bone2"
+			{
+				"__name"		"Bone2"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"forcelimit"
+			{
+				"__name"		"forcelimit"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"Ent2"
+			{
+				"__name"		"Ent2"
+				"__type"		"Number"
+				"V"		"92"
+			}
+			"Ent1"
+			{
+				"__name"		"Ent1"
+				"__type"		"Number"
+				"V"		"95"
+			}
+			"type"
+			{
+				"__name"		"Type"
+				"__type"		"String"
+				"V"		"Weld"
+			}
+		}
+		"2"
+		{
+			"__name"		"2"
+			"NoCollide"
+			{
+				"__name"		"nocollide"
+				"__type"		"Bool"
+				"V"		"false"
+			}
+			"Bone1"
+			{
+				"__name"		"Bone1"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"Bone2"
+			{
+				"__name"		"Bone2"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"forcelimit"
+			{
+				"__name"		"forcelimit"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"Ent2"
+			{
+				"__name"		"Ent2"
+				"__type"		"Number"
+				"V"		"92"
+			}
+			"Ent1"
+			{
+				"__name"		"Ent1"
+				"__type"		"Number"
+				"V"		"94"
+			}
+			"type"
+			{
+				"__name"		"Type"
+				"__type"		"String"
+				"V"		"Weld"
+			}
+		}
+		"3"
+		{
+			"__name"		"3"
+			"NoCollide"
+			{
+				"__name"		"nocollide"
+				"__type"		"Bool"
+				"V"		"true"
+			}
+			"Bone1"
+			{
+				"__name"		"Bone1"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"Bone2"
+			{
+				"__name"		"Bone2"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"forcelimit"
+			{
+				"__name"		"forcelimit"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"Ent2"
+			{
+				"__name"		"Ent2"
+				"__type"		"Number"
+				"V"		"92"
+			}
+			"Ent1"
+			{
+				"__name"		"Ent1"
+				"__type"		"Number"
+				"V"		"93"
+			}
+			"type"
+			{
+				"__name"		"Type"
+				"__type"		"String"
+				"V"		"Weld"
+			}
+		}
+		"4"
+		{
+			"__name"		"4"
+			"NoCollide"
+			{
+				"__name"		"nocollide"
+				"__type"		"Bool"
+				"V"		"false"
+			}
+			"Bone1"
+			{
+				"__name"		"Bone1"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"Bone2"
+			{
+				"__name"		"Bone2"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"forcelimit"
+			{
+				"__name"		"forcelimit"
+				"__type"		"Number"
+				"V"		"0"
+			}
+			"Ent2"
+			{
+				"__name"		"Ent2"
+				"__type"		"Number"
+				"V"		"92"
+			}
+			"Ent1"
+			{
+				"__name"		"Ent1"
+				"__type"		"Number"
+				"V"		"91"
+			}
+			"type"
+			{
+				"__name"		"Type"
+				"__type"		"String"
+				"V"		"Weld"
+			}
+		}
+		"__name"		"Constraints"
+	}
+	"HeadEntID"
+	{
+		"__name"		"HeadEntID"
+		"__type"		"Number"
+		"V"		"92"
+	}
+	"holdangle"
+	{
+		"Y"		"27.5132"
+		"__type"		"Angle"
+		"r"		"-0.00249419"
+		"__name"		"HoldAngle"
+		"p"		"0.00368732"
+	}
+}
