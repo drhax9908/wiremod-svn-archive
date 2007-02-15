@@ -263,8 +263,8 @@ if SERVER then
 		
 	end
 	
-	duplicator.RegisterEntityClass( "gmod_wire_simple_explosive", MakeWireSimpleExplosive, "Pos", "Ang", "key", "damage", "model", "removeafter", "delaytime", "doblastdamage", "radius", "nocollide", "Vel", "aVel", "frozen" )
-		
+	duplicator.RegisterEntityClass( "gmod_wire_simple_explosive", MakeWireSimpleExplosive, "Pos", "Ang", "key", "damage", "model", "removeafter", "doblastdamage", "radius", "nocollide", "Vel", "aVel", "frozen" )
+	
 end
 
 function TOOL:UpdateGhostWireSimpleExplosive( ent, player )
