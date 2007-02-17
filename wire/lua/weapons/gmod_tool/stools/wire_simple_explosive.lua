@@ -65,7 +65,7 @@ if ( CLIENT ) then
 	--language.Add( "WireSimpleExplosiveTool_coloreffect", "Enable color change effect on damage:" )
 	--language.Add( "WireSimpleExplosiveTool_invisibleatzero", "Become invisible when health reaches 0:" )
 	language.Add( "Undone_WireSimpleExplosive", "Wired SimpleExplosive undone" )
-	language.Add( "sbox_maxwire_simple_explosive", "You've hit wired explosives limit!" )
+	language.Add( "sboxlimit_wire_simple_explosive", "You've hit wired explosives limit!" )
 end
 
 if (SERVER) then

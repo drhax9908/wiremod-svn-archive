@@ -43,7 +43,7 @@ if ( CLIENT ) then
 end
 
 if (SERVER) then
-    CreateConVar('sbox_maxwire_turret', 30)
+    CreateConVar('sbox_maxwire_turrets', 30)
 end 
 
 function TOOL:LeftClick( trace, worldweld )
