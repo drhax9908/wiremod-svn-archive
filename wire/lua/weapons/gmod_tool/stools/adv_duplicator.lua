@@ -70,11 +70,11 @@ function TOOL:RightClick( trace )
 		
 		for EntID,Ent in pairs(Ents) do 
 			if Ent != trace.Entity then
-				self:GetOwner():GetTable().Duplicator.Ents[ EntID ] = nil
+				duplicator[self:GetOwner():UniqueID()].Ents[ EntID ] = nil
 			end
 		end
 		
-		self:GetOwner():GetTable().Duplicator.Constraints = {}
+		duplicator[self:GetOwner():UniqueID()].Constraints = {}
 		Ents, Constraints = { [ trace.Entity:EntIndex() ] = trace.Entity }, {}
 		
 	end
@@ -85,47 +85,15 @@ function TOOL:RightClick( trace )
 	
 	local HoldAngle = angle - trace.Entity:GetAngles()
 	
-	//duplicator.HeadEntID = trace.Entity:EntIndex()
-	self:GetOwner():GetTable().Duplicator.HeadEntID = trace.Entity:EntIndex()
-	//duplicator.HoldAngle = HoldAngle
-	self:GetOwner():GetTable().Duplicator.HoldAngle = HoldAngle
+	local pl = self:GetOwner()
+	local pln = pl:UniqueID()
+	duplicator[pln].HeadEntID = trace.Entity:EntIndex()
+	duplicator[pln].HoldAngle = HoldAngle
 	duplicator.LoadedFile = false
 	
 	if !SinglePlayer() then
-
-			// Send the Ents to the client so we can do ghosts
-			local str = ""
-
-			for EntID,Ent in pairs(Ents) do
-			
-				if Ent:IsValid() then
-					str = str .. EntID..","
-					if string.len(str) > 222 then break end		// Don't send too many ents (Will max out at around 50, which should be enough)
-				end
-				
-			end
-		
-			// Todo! Use umsg to send messages!
-		
-			self:GetOwner():SendLua( "duplicator.GhostEnts={" .. str .. "}")
-			//self:GetOwner():SendLua( "duplicator.HeadEntID=" .. duplicator.HeadEntID )
-			//self:GetOwner():SendLua( "duplicator.HoldAngle=Angle(" .. HoldAngle.pitch .. ", " .. HoldAngle.yaw .. ", " .. HoldAngle.roll .. ")" )
-			self:GetOwner():SendLua( "duplicator.offset=Vector(" .. duplicator.offset.x .. ", " .. duplicator.offset.y .. ", " .. duplicator.offset.z .. ")" )
-		
-		self.Weapon:CallOnClient( "StartGhostEntities", "" )
-		
+		self:SendGhostToClient()
 	else
-	
-		duplicator.GhostEnts = {}
-		
-		for EntID, Ent in pairs( Ents ) do
-		
-			if Ent:IsValid() then
-				duplicator.GhostEnts[EntID] = EntID
-			end
-			
-		end
-				
 		self:StartGhostEntities()
 	end
 	
@@ -157,17 +125,18 @@ end
    Make a ghost entity
 ---------------------------------------------------------*/
 function TOOL:MakeGhostEntity_Duplicator( model, pos, angle )
-
+	
+	util.PrecacheModel( model )
+	
 	// We do ghosting serverside in single player
 	// It's done clientside in multiplayer
 	if (SERVER && !SinglePlayer()) then return end
 	if (CLIENT && SinglePlayer()) then return end
 	
-	if ( !model ) then
+	if ( !model or model == "" ) then
 		Msg("Model is NULL!\n")
-		return
+		model = "models/props_junk/watermelon01.mdl"
 	end
-	
 	
 	local GhostEntity = ents.Create( "prop_physics" )
 	
@@ -177,7 +146,7 @@ function TOOL:MakeGhostEntity_Duplicator( model, pos, angle )
 	if ( !util.IsValidProp( model ) ) then
 		model = "models/props_junk/watermelon01.mdl"
 	end
-
+	
 	GhostEntity:SetModel( model )
 	GhostEntity:SetPos( pos )
 	GhostEntity:SetAngles( angle )
@@ -185,6 +154,7 @@ function TOOL:MakeGhostEntity_Duplicator( model, pos, angle )
 	
 	GhostEntity:SetMoveType( MOVETYPE_NONE )
 	GhostEntity:SetSolid( SOLID_NONE );
+	GhostEntity:SetNotSolid( true );
 	GhostEntity:SetRenderMode( RENDERMODE_TRANSALPHA )
 	GhostEntity:SetColor( 255, 255, 255, 150 )
 	
@@ -196,12 +166,16 @@ end
    Starts up the ghost entities
 ---------------------------------------------------------*/
 function TOOL:StartGhostEntities()
-
 	// We do ghosting serverside in single player
 	// It's done clientside in multiplayer
 	if (SERVER && !SinglePlayer()) then return end
 	if (CLIENT && SinglePlayer()) then return end
-
+	if (CLIENT) then return end
+	
+	local pl = self:GetOwner()
+	local pln = self:GetOwner():UniqueID()
+	if (!duplicator[pln]) or (!duplicator[pln].HeadEntID) then return end //gonna need data also seems to stop client ghost in mp
+	
 	// Clear any existing ghosts
 	self:ReleaseGhostEntity()
 	
@@ -209,16 +183,19 @@ function TOOL:StartGhostEntities()
 	self.GhostEntities	= {}
 	self.GhostOffset	= {}
 	
-	local pl = self:GetOwner()
-	
 	//get the point where we are currently looking
 	local tr	= utilx.GetPlayerTrace( pl )
 	local trace	= util.TraceLine( tr )
 	if (!trace.Hit) then return end
 	duplicator.offset = trace.HitPos
 	
+	
+	//local Ents = pl:GetTable().Duplicator.Ents
+	local Ents = duplicator[pln].Ents
+	
+	
 	//load and make the ghost
-	for entID, EntTable in pairs(pl:GetTable().Duplicator.Ents) do
+	for entID, EntTable in pairs(Ents) do
 		local entClass = EntTable.Class
 		
 		if entClass then
@@ -250,7 +227,7 @@ function TOOL:StartGhostEntities()
 					self.GhostEntities[entID]	= GhostEntity
 					self.GhostOffset[entID]		= Args.pos - duplicator.offset
 					
-					if ( entID == self:GetOwner():GetTable().Duplicator.HeadEntID ) then
+					if ( entID == duplicator[pln].HeadEntID ) then
 						self.GhostHead		= GhostEntity
 						self.GhostHeadOff	= Args.pos - duplicator.offset
 					end
@@ -295,9 +272,122 @@ function TOOL:UpdateGhostEntities()
 	angle.pitch = 0
 	angle.roll 	= 0
 	
-	ent:SetAngles( angle - self:GetOwner():GetTable().Duplicator.HoldAngle )
+	if (!CLIENT) then
+		ent:SetAngles( angle - duplicator[self:GetOwner():UniqueID()].HoldAngle )
+	else
+		ent:SetAngles( angle - duplicator.HoldAngle )
+	end
 	
 end
+
+function TOOL:SendGhostToClient(fileload)
+	if (CLIENT) then return end
+	if (SERVER && SinglePlayer()) then return end
+	
+	local pl = self:GetOwner()
+	Msg("=====\nsentghosttoclient pl = ")
+	Msg(tostring(pl))
+	local pln = pl:UniqueID()
+	
+	Msg("\nstart send ghost data\n")
+	if (!duplicator[pln].Ents) then return false end
+	local ents = duplicator[pln].Ents
+	local HeadEntID = duplicator[pln].HeadEntID
+	
+	if (fileload) then
+		//get the point where we are currently looking
+		local tr	= utilx.GetPlayerTrace( pl )
+		local trace	= util.TraceLine( tr )
+		if (!trace.Hit) then return end
+		duplicator.offset = trace.HitPos
+	end
+	
+	local entscount = table.Count(duplicator[pln].Ents)
+	if (entscount > 50) then entscount = 50 end
+	Msg("entscount:  "..entscount.."\n")
+	self:SendGhostDataHeadToClient( HeadEntID, duplicator.offset, duplicator[pln].HoldAngle, entscount )
+	
+	local sendnum = 1
+	local Args = {}
+	
+	Msg("sending headent "..HeadEntID.."\n")
+	Args = self:GetGhostArgsForClient( HeadEntID, ents[HeadEntID] )
+	self:SendGhostDataUMsgToClient( HeadEntID, Args )
+	
+	
+	for entID, EntTable in pairs(ents) do
+		if (entID != HeadEntID) then
+			Args = self:GetGhostArgsForClient( entID, EntTable )
+			self:SendGhostDataUMsgToClient( entID, Args )
+		end
+		
+		sendnum = sendnum + 1
+		if (sendnum == 50) then return end //only send 50
+	end
+end
+
+function TOOL:SendGhostDataHeadToClient( HeadEntID, offset, HoldAngle, entscount )
+	umsg.Start("ClientGhostDataHead", pl)
+		umsg.Short(HeadEntID)
+		umsg.Vector(offset)
+		umsg.Angle(HoldAngle)
+		umsg.Short(entscount)
+	umsg.End()
+end
+
+function TOOL:GetGhostArgsForClient( entID, EntTable )
+	if (CLIENT) then return end
+	local entClass = EntTable.Class
+	Msg("start send ent ( "..entID.." ) data, class: "..(entClass or 0).."\n")
+	
+	if entClass then
+		//get the args for this class
+		local entArgs = duplicator.GetEntClassArgs(entClass)
+		
+		if entArgs then //check that we know how to dupe this class
+			
+			local Args = { model="", pos=Vector(0,0,0), ang=Vector(0,0,0) }
+			
+			for n,Key in pairs(entArgs) do
+				if type(Key) != "table" then
+					local Arg = EntTable[Key]
+					key = string.lower(Key)
+					
+					if key == "ang"	or key == "angle" then
+						Args.ang = Arg or Vector(0,0,0)
+					elseif key == "pos"	or key == "position" then
+						Args.pos = Arg or Vector(0,0,0)
+					elseif key == "mdl"	or key == "model" or key == "smodel" then 
+						Args.model = Model(Arg)
+					end
+				end
+			end
+			
+			return Args
+			
+		end
+	end
+	
+	return false
+	
+end
+
+function TOOL:SendGhostDataUMsgToClient( entID, Args )
+	if (CLIENT) then return end
+	if (Args) then
+		umsg.Start("ClientGhostData", pl)
+			umsg.Short(entID)
+			umsg.String(Args.model)
+			umsg.Vector(Args.pos)
+			umsg.Angle(Args.ang)
+		umsg.End()
+	else
+		umsg.Start("ClientGhostData", pl)
+			umsg.Short(0)
+		umsg.End()
+	end
+end
+
 
 function TOOL:UpdateList()
 
@@ -344,13 +434,15 @@ function TOOL:UpdateList()
 end
 
 function TOOL:Deploy()
-	//wiped it out, if there's data load, make the ghost --this may not be a great idea for online
-	if (self:GetOwner():GetTable().Duplicator) then self:StartGhostEntities() end
 	
 	if ( CLIENT ) then return end
+	
+	if (duplicator[self:GetOwner():UniqueID()]) then self:StartGhostEntities() end
+	
 	self:UpdateList()
 	
 end
+
 
 if SERVER then
 	
@@ -360,7 +452,8 @@ if SERVER then
 
 		if !pl:IsValid() 
 		or !pl:IsPlayer() 
-		or !pl:GetTable().Duplicator 
+		//or !pl:GetTable().Duplicator 
+		or !duplicator[pl:UniqueID()] 
 		then return end
 
 		//save to file
@@ -369,7 +462,7 @@ if SERVER then
 		pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject():UpdateList()
 		
 	end
-	
+	concommand.Add( "adv_duplicator_save", AdvDupeSS_Save )
 	
 	//Load duplicated ents from file
 	local function AdvDupeSS_Load( pl, command, args )
@@ -386,14 +479,12 @@ if SERVER then
 		duplicator.LoadFromFile( pl, filename )
 		
 		if ( pl:GetActiveWeapon():GetClass() == "gmod_tool" ) then
-			//pl:SendLua(  "duplicator.LoadedFile = true" )
-			//pl:SendLua(  "LocalPlayer():GetActiveWeapon():GetTable():GetToolObject():StartGhostEntities()" )
-			//pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject():StartGhostEntities()
+			//pl:SendLua(  "LocalPlayer():GetActiveWeapon():GetTable():GetToolObject():StartGhostEntities()")
 			pl:GetActiveWeapon():GetTable():GetToolObject():StartGhostEntities()
+			pl:GetActiveWeapon():GetTable():GetToolObject():SendGhostToClient(true)
 			pl:SendLua(  "LocalPlayer():GetActiveWeapon():GetTable():GetToolObject():UpdateGhostEntities()" )
 		end
 	end
-	concommand.Add( "adv_duplicator_save", AdvDupeSS_Save )
 	concommand.Add( "adv_duplicator_load", AdvDupeSS_Load )
 	
 	
@@ -477,6 +568,7 @@ if SERVER then
 	
 	
 	
+	
 else	// CLIENT
 
 	function AdvDuplicator_UpdateControlPanel()
@@ -524,51 +616,76 @@ else	// CLIENT
 			
 			CPanel:AddControl("TextBox", {
 				Label = "Description:",
+				Height = 180,
 				Command = "adv_duplicator_file_desc"})
 		end
 	
 	end
 	
 	
-	//this doesn't do anything apparently
-	/*local function AdvDuplicator_SaveGUI( pl, command, arguments )
-		
-		local frame = vgui.Create( "Frame" )
-		frame:SetName( "DuplicatorSave" )	
-		
-		// Save Button
-		
-		local save = function( panel, message, param1, param2 )
-		
-			if (message != "Command") then return end
-			
-		end
-		
-		local button = vgui.Create( "Button", frame, "SaveButton" )
-		button:SetActionFunction( save )
-		button:SetCommand( "rark" )
-		
-		// Text Box
-		
-		local type = function( panel, message, param1, param2 )
-		
-			if (message != "TextChanged") then return end
-			
-		end
-		
-		local textbox = vgui.Create( "TextEntry", frame, "FileName" )
-		textbox:SetActionFunction( type )
-		
-		frame:LoadControlsFromFile( "resource/ui/duplicatorsave.res" )	
-		frame:SetKeyBoardInputEnabled( true )
-		frame:SetMouseInputEnabled( true )
-		frame:SetVisible( true )
-	end
-	concommand.Add( "adv_duplicator_save_gui", AdvDuplicator_SaveGUI )
 	
-	local function AdvDuplicator_SaveCLGUI()
-		AdvDuplicator_SaveGUI()
+	
+	local function AdvDuplicator_ClientGhostDataHead( um )
+		Msg("=========\ngot ghost head data  ==========    ")
+		duplicator.HeadEntID	= um:ReadShort()
+		duplicator.offset		= um:ReadVector()
+		duplicator.HoldAngle	= um:ReadAngle()
+		
+		local tool = LocalPlayer():GetActiveWeapon():GetTable():GetToolObject()	
+		tool:ReleaseGhostEntity()
+		tool.GhostEntities	= {}
+		tool.GhostOffset	= {}
+		tool.NumToRecieve	= um:ReadShort()
+		tool.NumRecieved	= 0
+		Msg("HeadEntID= "..duplicator.HeadEntID.."\nNumToRecieve= "..tool.NumToRecieve.."\n==========\n")
 	end
-	concommand.Add( "adv_duplicator_save_cl_gui", AdvDuplicator_SaveCLGUI )*/
+	usermessage.Hook("ClientGhostDataHead", AdvDuplicator_ClientGhostDataHead)
+	
+	
+	local function AdvDuplicator_ClientGhostData( um )
+		local entID	= um:ReadShort()
+		Msg("getting ghost data  for ent: "..entID.."    ")
+		
+		local tool = LocalPlayer():GetActiveWeapon():GetTable():GetToolObject()
+		tool.NumRecieved = tool.NumRecieved + 1
+		if (entID == 0) then return end
+		
+		local model	= um:ReadString()
+		local pos	= um:ReadVector()
+		local ang	= um:ReadAngle()
+		
+		Msg("model: "..model.."\n")
+		
+		local GhostEntity = tool:MakeGhostEntity_Duplicator( model, (pos + duplicator.offset), ang )
+		
+		if ( GhostEntity ) then
+			//Msg("ghost ent good\n")
+			tool.GhostEntities[entID]	= GhostEntity
+			tool.GhostOffset[entID]		= pos
+			
+			if ( entID == duplicator.HeadEntID ) then
+				Msg("ghost head ent found \n")
+				tool.GhostHead		= GhostEntity
+				tool.GhostHeadOff	= pos
+			end
+		end
+		
+		
+		if (tool.NumToRecieve == tool.NumRecieved) then
+			Msg("client ghost finishing\n")
+			if (!tool.GhostHead) then 
+				Msg("client Duplicator Error, no head entity!\n") 
+				tool:ReleaseGhostEntity()
+				return
+			end
+			for k, ent in pairs ( tool.GhostEntities ) do
+				if ( tool.GhostHead != ent ) then
+					ent:SetParent( tool.GhostHead )
+				end
+			end
+		end
+	end
+	usermessage.Hook("ClientGhostData", AdvDuplicator_ClientGhostData)
+	
 	
 end
