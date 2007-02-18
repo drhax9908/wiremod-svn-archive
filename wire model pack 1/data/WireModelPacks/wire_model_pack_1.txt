@@ -97,6 +97,44 @@
 		}
 	}
 
+	"Mini-AMD"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/cheeze/wires/mini_cpu.mdl"
+		"files"
+		{
+			"0"	"models/cheeze/wires/mini_cpu.dx80.vtx"
+			"1"	"models/cheeze/wires/mini_cpu.dx90.vtx"
+			"2"	"models/cheeze/wires/mini_cpu.phy"
+			"3"	"models/cheeze/wires/mini_cpu.sw.vtx"
+			"4"	"models/cheeze/wires/mini_cpu.vvd"
+			"5"     "materials/models/cheeze/wires/pins.vmt"
+			"6"     "materials/models/cheeze/wires/pins.vtf"
+			"7"     "materials/models/cheeze/wires/x2_logo.vmt"
+			"8"     "materials/models/cheeze/wires/x2_logo.vtf"
+			"9"     "materials/models/cheeze/wires/metal_texture.vmt"
+			"10"     "materials/models/cheeze/wires/metal_texture.vtf"
+		}
+	}
+
+	"Mini-Chip"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/cheeze/wires/mini_chip.mdl"
+		"files"
+		{
+			"0"	"models/cheeze/wires/mini_chip.dx80.vtx"
+			"1"	"models/cheeze/wires/mini_chip.dx90.vtx"
+			"2"	"models/cheeze/wires/mini_chip.phy"
+			"3"	"models/cheeze/wires/mini_chip.sw.vtx"
+			"4"	"models/cheeze/wires/mini_chip.vvd"
+			"5"     "materials/models/cheeze/wires/chip.vmt"
+			"6"     "materials/models/cheeze/wires/chip.vtf"
+			"7"     "materials/models/cheeze/wires/pins.vmt"
+			"8"     "materials/models/cheeze/wires/pins.vtf"
+		}
+	}
+
 	"PC Speaker - Medium"
 	{
 		"categories"    "speaker"
