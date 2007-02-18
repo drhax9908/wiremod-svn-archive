@@ -43,6 +43,7 @@ function duplicator.RegisterEntityModifier( Type,  func, ... )	EntityModifiers[ 
 function duplicator.RegisterEntityBoneModifier( Type,  func, ... )	EntityBoneModifiers[ Type ] =	{ Func = func, Args = {...} }	end
 
 
+
 if (!SERVER) then return end
 	
 	// Copy ents & Constraints
@@ -52,7 +53,7 @@ if (!SERVER) then return end
 		local EntTable, ConstraintTable  = duplicator.GetEnts(StartEnt)
 		
 		// Clear plys duplicator table
-		ply:GetTable().Duplicator = { Ents = {}, Constraints = {}, HeadEntID = StartEnt:EntIndex() }
+		duplicator[ply:UniqueID()] = { Ents = {}, Constraints = {}, HeadEntID = StartEnt:EntIndex() }
 		
 		// Get info required to re-create each entity
 		for EntID, Ent in pairs(EntTable) do
@@ -61,7 +62,7 @@ if (!SERVER) then return end
 			// Check the entity class is registered with the duplicator
 			if EntType[EntClass] then
 				
-				ply:GetTable().Duplicator.Ents[EntID] = duplicator.CopyGetEntArgs( ply, Ent, offset, EntClass)
+				duplicator[ply:UniqueID()].Ents[EntID] = duplicator.CopyGetEntArgs( ply, Ent, offset, EntClass)
 				// yeah, just one line now
 				
 			else
@@ -84,7 +85,7 @@ if (!SERVER) then return end
 						ctable.ConstID = constID
 					end
 					
-					table.insert(ply:GetTable().Duplicator.Constraints, ctable)
+					table.insert(duplicator[ply:UniqueID()].Constraints, ctable)
 				end
 				
 			else
@@ -93,27 +94,6 @@ if (!SERVER) then return end
 			
 		end
 		
-		
-		
-		/*Msg("\n--tempents PrepareTableToSave Start--\n")
-		
-		local tempents = {}
-		tempents["ents"] = ply:GetTable().Duplicator.Ents
-		tempents["const"] = ply:GetTable().Duplicator.Constraints
-		tempents["head"] = StartEnt:EntIndex()
-		
-		local temp = duplicator.PrepareTableToSave(tempents)
-		
-		Msg("\n--tempents TableToKeyValues Start--\n")
-		
-		temp = util.TableToKeyValues(temp)
-		Msg(temp)
-		
-		file.Write("test/1b.txt", temp)
-		Msg("\n--tempCopyEnts End--\n")
-		
-		Msg("\n--HeadID--\n")
-		Msg( StartEnt:EntIndex() )*/
 		Msg("\n=======================--Copyed--=======================\n")
 		
 		return EntTable, ConstraintTable
@@ -130,27 +110,27 @@ if (!SERVER) then return end
 		local HeadEntity = nil
 		local tempents = {}
 		
-			Msg("\n=======================--PasteStart--=======================\n")
+		Msg("\n=======================--PasteStart--=======================\n")
 		
 		if filename then 
 			// TODO:
 			// load file to ents/constraints tables
-
-		elseif  ply:GetTable().Duplicator then 
-
-			Ents 			= 	ply:GetTable().Duplicator.Ents
-			Constraints 	=	ply:GetTable().Duplicator.Constraints
+			
+		elseif  duplicator[ply:UniqueID()] then 
+			
+			Ents 			= 	duplicator[ply:UniqueID()].Ents
+			Constraints 	=	duplicator[ply:UniqueID()].Constraints
 			
 		else
 			return false
 		end
-
+		
 		undo.Create("Duplicator")
 			
 		for entID, EntTable in pairs(Ents) do
-
+			
 			local EntClass = EntTable.Class
-
+			
 			// Check the antities class is registered with the duplicator
 			if EntClass and EntType[EntClass] then
 				
@@ -171,14 +151,14 @@ if (!SERVER) then return end
 			    Msg("Duplicator Paste: Unknown class " .. EntClass .. "\n")
 			end
 			
-			if ( entID == ply:GetTable().Duplicator.HeadEntID ) then
+			if ( entID == duplicator[ply:UniqueID()].HeadEntID ) then
 				HeadEntity = Ent
 			end
 			
 		end
 		
 		for _, Constraint in pairs(Constraints) do
-
+			
 			// Check If the constraint type has been registered with the duplicator
 			if Constraint.Type and ConstraintType[Constraint.Type] then
 				
@@ -189,7 +169,7 @@ if (!SERVER) then return end
 					local const = ConstraintType[Constraint.Type].Func(unpack(Args))
 					table.insert(CreatedConstraints,const)
 					undo.AddEntity( const )
-
+					
 					if (Constraint.ConstID) then
 						constIDtable[Constraint.ConstID] = const
 						Msg("Dupe add constraint ID: " .. Constraint.ConstID .. "\n")
@@ -199,9 +179,9 @@ if (!SERVER) then return end
 		end
 		undo.SetPlayer( ply )
 		undo.Finish()
-
-		duplicator.PasteApplyDupeInfo( ply, Ents, entIDtable )
-
+		
+		duplicator.PasteApplyDupeInfo( ply, duplicator[ply:UniqueID()].Ents, entIDtable )
+		
 		duplicator.PasteRotate( ply, HeadEntity, CreatedEnts )
 		
 		return CreatedEnts, CreatedConstraints
@@ -235,10 +215,10 @@ if (!SERVER) then return end
 		//save to file
 		local temp = {}
 		//let's only save the junk we're acctually going to load
-		temp.Ents			= pl:GetTable().Duplicator.Ents
-		temp.Constraints	= pl:GetTable().Duplicator.Constraints
-		temp.HeadEntID		= pl:GetTable().Duplicator.HeadEntID
-		temp.HoldAngle		= pl:GetTable().Duplicator.HoldAngle
+		temp.Ents			= duplicator[pl:UniqueID()].Ents
+		temp.Constraints	= duplicator[pl:UniqueID()].Constraints
+		temp.HeadEntID		= duplicator[pl:UniqueID()].HeadEntID
+		temp.HoldAngle		= duplicator[pl:UniqueID()].HoldAngle
 		//add file versioning, it will come in handy later if save format changes
 		temp["VersionInfo"] = {}
 		temp["VersionInfo"]["FileVersion"] = 0.2
@@ -280,10 +260,11 @@ if (!SERVER) then return end
 		//check the file was loaded and we understand it's version
 		if (temp) and (temp["VersionInfo"]["FileVersion"] <= 0.2) then
 			if (!pl:GetTable().Duplicator) then 	pl:GetTable().Duplicator = {} end
-			pl:GetTable().Duplicator.Ents			= temp.Ents
-			pl:GetTable().Duplicator.Constraints	= temp.Constraints
-			pl:GetTable().Duplicator.HeadEntID		= temp.HeadEntID
-			pl:GetTable().Duplicator.HoldAngle		= temp.HoldAngle
+			duplicator[pl:UniqueID()] = {}
+			duplicator[pl:UniqueID()].Ents			= temp.Ents
+			duplicator[pl:UniqueID()].Constraints	= temp.Constraints
+			duplicator[pl:UniqueID()].HeadEntID		= temp.HeadEntID
+			duplicator[pl:UniqueID()].HoldAngle		= temp.HoldAngle
 		else
 			Msg("\nFILE LOAD FAIL! something is wrong with this file:  "..filepath.."\n")
 		end
@@ -332,7 +313,7 @@ if (!SERVER) then return end
 		
 		return tbl
 	end
-
+	
 
 	/*---------------------------------------------------------
 	   Name: duplicator.RebuildTableFromLoad( table )
@@ -372,8 +353,6 @@ if (!SERVER) then return end
 		return tbl
 		
 	end
-	
-	
 	
 	
 	
@@ -754,7 +733,7 @@ if (!SERVER) then return end
 			angle.pitch = 0
 			angle.roll 	= 0
 			
-			HeadEntity:SetAngles( angle - ply:GetTable().Duplicator.HoldAngle )
+			HeadEntity:SetAngles( angle - duplicator[ply:UniqueID()].HoldAngle )
 			
 			for ent, tab in pairs( EntOffsets ) do
 				
