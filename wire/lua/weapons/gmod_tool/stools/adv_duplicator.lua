@@ -17,10 +17,6 @@ TOOL.ClientConVar[ "save_filename" ] = ""
 TOOL.ClientConVar[ "load_filename" ] = ""
 TOOL.ClientConVar[ "file_desc" ] = ""
 
-// Saving totally sucks. This whole thing needs to be re-written so don't do anything with it yet.
-// Oops, I added this on my own before I noticed they had tried to do this already
---local ENABLE_SAVING = true
-
 cleanup.Register( "duplicates" )
 
 
@@ -37,6 +33,33 @@ function TOOL:LeftClick( trace )
 	for _, ent in pairs( Constraints )	do self:GetOwner():AddCleanup( "duplicates", ent ) end
 	
 	if (Ents) then return true end
+	
+	//expermental test stuff
+	/*if (self.stage != 0) then return false end
+	
+	local pln = self:GetOwner():UniqueID()
+	if (!duplicator[pln]) then return false end
+	
+	self.Ents,self.Constraints,self.DupeInfo = nil,nil,nil
+	self.constIDtable, self.entIDtable, self.CreatedConstraints, self.CreatedEnts = {}, {}, {}, {}
+	//self.HeadEntity = nil
+	
+	Msg("\n=======================--STOOLPasteStart--=======================\n")
+	
+	self.Ents 			= 	table.Copy(duplicator[pln].Ents)
+	self.Constraints 	=	table.Copy(duplicator[pln].Constraints)
+	self.DupeInfo 		= 	table.Copy(duplicator[pln].DupeInfo)
+	self.offset			=	trace.HitPos
+	
+	if (self.Ents) then
+		self:HideGhost(true)
+		undo.Create("Duplicator")
+		self.thinker = 2
+		self.stage = 1
+		return true
+	else
+		return false
+	end*/
 	
 end
 
@@ -100,6 +123,37 @@ function TOOL:RightClick( trace )
 	return true
 end
 
+//make a paster ent
+function TOOL:Reload( trace )
+	if (CLIENT) then return true end
+	local pl = self:GetOwner()
+	local pln = self:GetOwner():UniqueID()
+	
+	local paster = ents.Create( "gmod_adv_dupe_paster" )
+	if (!paster:IsValid()) then return false end
+	
+	paster:SetPos( pl:GetShootPos() + pl:GetAimVector() * 24 )
+	paster:SetAngles( pl:GetAimVector() )
+	paster:Spawn()
+	paster:SetPlayer( pl )
+	
+	paster:GetPhysicsObject():EnableMotion(false)
+	//paster:SetNotSolid(true)
+
+	local ttable = {pl = pl}
+	table.Merge(paster:GetTable(), ttable )
+	
+	undo.Create("Paster")
+		undo.AddEntity( paster )
+		undo.SetPlayer( pl )
+	undo.Finish()
+	
+	paster:Setup(table.Copy(duplicator[pln].Ents), table.Copy(duplicator[pln].Constraints), table.Copy(duplicator[pln].DupeInfo), trace.HitPos, duplicator[pln].HeadEntID)
+	
+	return true
+end
+
+
 function TOOL.BuildCPanel( CPanel )
 	
 	CPanel:AddControl( "Header", { Text = "#Tool_adv_duplicator_name", Description	= "#Tool_adv_duplicator_desc" }  )
@@ -119,6 +173,146 @@ function TOOL:Think()
 	
 	self:UpdateGhostEntities()
 	
+	//expermental test stuff
+	/*if (SERVER) then
+		if ((self.thinker or 0) < 1) then //skip a few frames
+			self.thinker = self.thinker +1
+			return true
+		end
+		self.thinker = 0
+		
+		if (self.stage == 1) then
+		
+			//Msg("starting ent\n")
+			for entID, EntTable in pairs(self.Ents) do
+				//Msg("doing ent   "..entID.."\n")
+				local EntClass = EntTable.Class
+				
+				// Check the antities class is registered with the duplicator
+				if EntClass and duplicator.GetEntType(EntClass) then
+					
+					local Args = duplicator.PasteGetEntArgs( self:GetOwner(), EntTable, self.offset )
+					
+					// make the Entity
+					Ent = duplicator.GetEntType(EntClass).Func(self:GetOwner(), unpack(Args))
+					
+					if (Ent && Ent:IsValid()) then
+						Ent:GetPhysicsObject():EnableMotion(false)
+						Ent:SetNotSolid(true)
+						undo.AddEntity( Ent )
+						self.entIDtable[entID] = Ent
+						table.insert(self.CreatedEnts,Ent)
+						
+						duplicator.PasteApplyEntMods( self:GetOwner(), Ent, EntTable )
+					end
+					
+				elseif (EntClass) then
+				    Msg("Duplicator Paste: Unknown class " .. EntClass .. "\n")
+				end
+				
+				if ( entID == duplicator[self:GetOwner():UniqueID()].HeadEntID ) then
+					self.HeadEntity = Ent
+				end
+				
+				
+				if (table.Count(self.Ents) >= 1) then 
+					self.Ents[entID] = nil
+					return true
+				end
+			end
+			
+			Msg("going to stage 2\n")
+			self.stage = 2
+			return true
+			
+		elseif (self.stage == 2) then
+			
+			//Msg("starting const\n")
+			local Constraint = table.remove(self.Constraints)
+			
+			if (Constraint) then
+				
+				//Msg("doing const\n")
+				// Check If the constraint type has been registered with the duplicator
+				if Constraint.Type and duplicator.KnownConstraintType(Constraint.Type) then
+					
+					local Args, DoConstraint = duplicator.PasteGetConstraintArgs( self:GetOwner(), Constraint, self.entIDtable, self.offset )
+					
+					// make the constraint
+					if DoConstraint then
+						//Msg("making the const\n")
+						
+						local const = duplicator.ConstraintTypeFunc( Constraint.Type, Args )
+						table.insert(self.CreatedConstraints,const)
+						undo.AddEntity( const )
+						
+						if (Constraint.ConstID) then
+							self.constIDtable[Constraint.ConstID] = const
+							//Msg("Dupe add constraint ID: " .. Constraint.ConstID .. "\n")
+						end
+					end
+				end
+				
+				return true
+			else
+				Msg("going to stage 3\n")
+				self.stage = 3
+				return true
+			end
+			
+		elseif (self.stage == 3) then
+			
+			undo.SetPlayer( self:GetOwner() )
+			undo.Finish()
+			//Msg("starting dupeinfo\n")
+			
+			for id, infoTable in pairs(self.DupeInfo) do
+				local ent = self.entIDtable[id]
+				local isdupeinfo = false
+				if (ent) and (ent:IsValid()) and (infoTable) and (ent.ApplyDupeInfo) then
+					ent:ApplyDupeInfo(
+						self:GetOwner(), ent, infoTable,
+						function(id) return self.entIDtable[id] end,
+						function(id) return self.constIDtable[id] end
+						)
+					isdupeinfo = true
+				end
+				
+				if (table.Count(self.DupeInfo) >= 1) then 
+					self.DupeInfo[id] = nil
+					if (isdupeinfo) then return true end
+				end
+			end
+			
+			Msg("going to stage 4\n")
+			self.stage = 4
+			return true
+			
+		elseif (self.stage == 5) then
+			//this just looks wrong, so no
+			Msg("starting rotate\n")
+			duplicator.PasteRotate( self:GetOwner(), self.HeadEntity, self.CreatedEnts )
+			
+			Msg("going to stage 5\n")
+			self.stage = 4
+			return true
+			
+		elseif (self.stage == 4) then
+			
+			//Msg("starting cleanup\n")
+			for _, ent in pairs( self.CreatedEnts ) do
+				self:GetOwner():AddCleanup( "duplicates", ent )
+				ent:GetPhysicsObject():EnableMotion(true)
+				ent:SetNotSolid(false)
+			end
+			for _, ent in pairs( self.CreatedConstraints )	do self:GetOwner():AddCleanup( "duplicates", ent ) end
+			
+			self.stage = 0
+			Msg("====done====\n")
+			self:HideGhost(false)
+		end
+	end*/
+
 end
 
 /*---------------------------------------------------------
@@ -126,17 +320,17 @@ end
 ---------------------------------------------------------*/
 function TOOL:MakeGhostEntity_Duplicator( model, pos, angle )
 	
+	if ( !model or model == "" ) then
+		//Msg("Model is NULL!\n")
+		model = "models/props_junk/watermelon01.mdl"
+	end
+	
 	util.PrecacheModel( model )
 	
 	// We do ghosting serverside in single player
 	// It's done clientside in multiplayer
 	if (SERVER && !SinglePlayer()) then return end
 	if (CLIENT && SinglePlayer()) then return end
-	
-	if ( !model or model == "" ) then
-		Msg("Model is NULL!\n")
-		model = "models/props_junk/watermelon01.mdl"
-	end
 	
 	local GhostEntity = ents.Create( "prop_physics" )
 	
@@ -204,7 +398,7 @@ function TOOL:StartGhostEntities()
 			
 			if entArgs then //check that we know how to dupe this class
 				
-				local Args = { model="", pos=Vector(0,0,0), ang=Vector(0,0,0) }
+				local Args = { model="models/props_junk/watermelon01.mdl", pos=Vector(0,0,0), ang=Vector(0,0,0) }
 				
 				for n,Key in pairs(entArgs) do
 					if type(Key) != "table" then
@@ -268,7 +462,7 @@ function TOOL:UpdateGhostEntities()
 
 	ent:SetPos( trace.HitPos + self.GhostHeadOff )
 	
-	local angle = self:GetOwner():GetAngles()
+	/*local angle = self:GetOwner():GetAngles()
 	angle.pitch = 0
 	angle.roll 	= 0
 	
@@ -276,7 +470,7 @@ function TOOL:UpdateGhostEntities()
 		ent:SetAngles( angle - duplicator[self:GetOwner():UniqueID()].HoldAngle )
 	else
 		ent:SetAngles( angle - duplicator.HoldAngle )
-	end
+	end*/
 	
 end
 
@@ -322,7 +516,7 @@ function TOOL:SendGhostToClient(fileload)
 		end
 		
 		sendnum = sendnum + 1
-		if (sendnum == 50) then return end //only send 50
+		if (sendnum > 50) then return end //only send 50
 	end
 end
 
@@ -346,7 +540,7 @@ function TOOL:GetGhostArgsForClient( entID, EntTable )
 		
 		if entArgs then //check that we know how to dupe this class
 			
-			local Args = { model="", pos=Vector(0,0,0), ang=Vector(0,0,0) }
+			local Args = { model="models/props_junk/watermelon01.mdl", pos=Vector(0,0,0), ang=Vector(0,0,0) }
 			
 			for n,Key in pairs(entArgs) do
 				if type(Key) != "table" then
@@ -388,6 +582,22 @@ function TOOL:SendGhostDataUMsgToClient( entID, Args )
 	end
 end
 
+//makes the ghost disappear so we can see what we are doing
+function TOOL:HideGhost(hide)
+	
+	if (CLIENT) then return end
+	if (SERVER && !SinglePlayer()) then return end
+	
+	if (hide) then
+		for _, ghostent in pairs( self.GhostEntities ) do
+			ghostent:SetColor( 255, 255, 255, 0 )
+		end
+	else
+		for _, ghostent in pairs( self.GhostEntities ) do
+			ghostent:SetColor( 255, 255, 255, 150 )
+		end
+	end
+end
 
 function TOOL:UpdateList()
 
@@ -436,6 +646,9 @@ end
 function TOOL:Deploy()
 	
 	if ( CLIENT ) then return end
+	
+	self.stage		= 0
+	self.thinker	= 0
 	
 	if (duplicator[self:GetOwner():UniqueID()]) then self:StartGhostEntities() end
 	
@@ -667,11 +880,13 @@ else	// CLIENT
 				Msg("ghost head ent found \n")
 				tool.GhostHead		= GhostEntity
 				tool.GhostHeadOff	= pos
+			elseif (tool.GhostHead) then //cause we send the head first, we can do this
+				GhostEntity:SetParent( tool.GhostHead )
 			end
 		end
 		
 		
-		if (tool.NumToRecieve == tool.NumRecieved) then
+		if (tool.NumRecieved >= tool.NumToRecieve) then
 			Msg("client ghost finishing\n")
 			if (!tool.GhostHead) then 
 				Msg("client Duplicator Error, no head entity!\n") 

@@ -53,7 +53,7 @@ if (!SERVER) then return end
 		local EntTable, ConstraintTable  = duplicator.GetEnts(StartEnt)
 		
 		// Clear plys duplicator table
-		duplicator[ply:UniqueID()] = { Ents = {}, Constraints = {}, HeadEntID = StartEnt:EntIndex() }
+		duplicator[ply:UniqueID()] = { Ents = {}, Constraints = {}, HeadEntID = StartEnt:EntIndex(), DupeInfo = {} }
 		
 		// Get info required to re-create each entity
 		for EntID, Ent in pairs(EntTable) do
@@ -64,6 +64,10 @@ if (!SERVER) then return end
 				
 				duplicator[ply:UniqueID()].Ents[EntID] = duplicator.CopyGetEntArgs( ply, Ent, offset, EntClass)
 				// yeah, just one line now
+				
+				if Ent:GetTable().BuildDupeInfo then
+					duplicator[ply:UniqueID()].DupeInfo[EntID] = Ent:GetTable():BuildDupeInfo()
+				end
 				
 			else
 				Msg("Duplicator copy: Unknown class " .. EntClass .. "\n")
@@ -108,7 +112,6 @@ if (!SERVER) then return end
 		
 		
 		local HeadEntity = nil
-		local tempents = {}
 		
 		Msg("\n=======================--PasteStart--=======================\n")
 		
@@ -120,6 +123,7 @@ if (!SERVER) then return end
 			
 			Ents 			= 	duplicator[ply:UniqueID()].Ents
 			Constraints 	=	duplicator[ply:UniqueID()].Constraints
+			DupeInfo	 	=	duplicator[ply:UniqueID()].DupeInfo
 			
 		else
 			return false
@@ -180,9 +184,9 @@ if (!SERVER) then return end
 		undo.SetPlayer( ply )
 		undo.Finish()
 		
-		duplicator.PasteApplyDupeInfo( ply, duplicator[ply:UniqueID()].Ents, entIDtable )
+		duplicator.PasteApplyDupeInfo( ply, DupeInfo, entIDtable )
 		
-		duplicator.PasteRotate( ply, HeadEntity, CreatedEnts )
+		//duplicator.PasteRotate( ply, HeadEntity, CreatedEnts )
 		
 		return CreatedEnts, CreatedConstraints
 	end
@@ -210,21 +214,25 @@ if (!SERVER) then return end
 		
 		//!!TODO!! check the that filename contains no illegal characters
 		local filename = dir.."/"..tostring(pl:GetInfo( "adv_duplicator_save_filename" ))..".txt"
-		Msg("\nsaving to: "..filename)
+		Msg("\nSaving to file: "..filename.."\n")
 		
 		//save to file
 		local temp = {}
 		//let's only save the junk we're acctually going to load
 		temp.Ents			= duplicator[pl:UniqueID()].Ents
 		temp.Constraints	= duplicator[pl:UniqueID()].Constraints
+		temp.DupeInfo		= duplicator[pl:UniqueID()].DupeInfo
 		temp.HeadEntID		= duplicator[pl:UniqueID()].HeadEntID
 		temp.HoldAngle		= duplicator[pl:UniqueID()].HoldAngle
 		//add file versioning, it will come in handy later if save format changes
 		temp["VersionInfo"] = {}
-		temp["VersionInfo"]["FileVersion"] = 0.2
-		temp["VersionInfo"]["FileInfo"] = "Advanced Duplicator Save File"
-		temp["VersionInfo"]["Creator"] = pl:GetName() or "unknown"
-		temp["VersionInfo"]["Desc"] = desc or "none"
+		temp["VersionInfo"]["FileVersion"]		= 0.3
+		temp["VersionInfo"]["FileInfo"]			= "Advanced Duplicator Save File"
+		temp["VersionInfo"]["Creator"]			= pl:GetName()	or "unknown"
+		temp["VersionInfo"]["Desc"]				= desc 			or "none"
+		temp["VersionInfo"]["NumOfEnts"]		= table.Count(temp.Ents)		or 0
+		temp["VersionInfo"]["NumOfConst"]		= table.Count(temp.Constraints)	or 0
+		temp["VersionInfo"]["NumOfDupeInfo"]	= table.Count(temp.DupeInfo)	or 0
 		//prepare the table and save it to file 
 		temp = duplicator.PrepareTableToSave(temp)
 		temp = util.TableToKeyValues(temp)
@@ -257,14 +265,39 @@ if (!SERVER) then return end
 		local temp	= file.Read(filepath)
 		temp		= util.KeyValuesToTable(temp)
 		temp		= duplicator.RebuildTableFromLoad(temp)
+		
 		//check the file was loaded and we understand it's version
-		if (temp) and (temp["VersionInfo"]["FileVersion"] <= 0.2) then
-			if (!pl:GetTable().Duplicator) then 	pl:GetTable().Duplicator = {} end
-			duplicator[pl:UniqueID()] = {}
-			duplicator[pl:UniqueID()].Ents			= temp.Ents
-			duplicator[pl:UniqueID()].Constraints	= temp.Constraints
-			duplicator[pl:UniqueID()].HeadEntID		= temp.HeadEntID
-			duplicator[pl:UniqueID()].HoldAngle		= temp.HoldAngle
+		local pln = pl:UniqueID()
+		
+		if (temp) and (temp["VersionInfo"]["FileVersion"] >= 0.3) then
+			//current data file, an easy load
+			duplicator[pln]					= {}
+			duplicator[pln].Ents			= temp.Ents
+			duplicator[pln].Constraints		= temp.Constraints
+			duplicator[pln].DupeInfo		= temp.DupeInfo
+			duplicator[pln].HeadEntID		= temp.HeadEntID
+			duplicator[pln].HoldAngle		= temp.HoldAngle
+			
+			Msg("Loaded new file "..filepath.."  version: "..temp["VersionInfo"]["FileVersion"].."\n")
+			
+		elseif (temp) and (temp["VersionInfo"]["FileVersion"] <= 0.2) then
+			//load the an old version data file, this is why file versioning is good
+			duplicator[pln]					= {}
+			duplicator[pln].Ents			= temp.Ents
+			duplicator[pln].Constraints		= temp.Constraints
+			duplicator[pln].HeadEntID		= temp.HeadEntID
+			duplicator[pln].HoldAngle		= temp.HoldAngle
+			
+			//build the new type dupeinfo from the ents table
+			duplicator[pln].DupeInfo = {}
+			for id, entTable in pairs(temp.Ents) do
+				if (entTable.DupeInfo) then
+					duplicator[pln].DupeInfo[id] = entTable.DupeInfo
+				end
+			end
+			
+			Msg("Loaded old file "..filepath.."  version: "..temp["VersionInfo"]["FileVersion"].."\n")
+			
 		else
 			Msg("\nFILE LOAD FAIL! something is wrong with this file:  "..filepath.."\n")
 		end
@@ -366,21 +399,17 @@ if (!SERVER) then return end
 		local BoneArgs	= nil
 		local EntityTable = Ent:GetTable()
 		
-		if EntityTable.BuildDupeInfo then
-			etable.DupeInfo = EntityTable:BuildDupeInfo()
-		end
-		
 		// Get the args needed to recreate this ent
 		for _, arg in pairs(EntType[EntClass].Args) do
-
+			
 			// Get args which are stored in the ent's table
 			local Arg = EntityTable[arg]
-
+			
 			// Do special cases
 			if !Arg and type(arg) == "string" then
 				
 				key = string.lower(arg)
-
+				
 				if	key == "ang"	or key == "angle"		then
 					Arg = Ent:GetAngles()
 				elseif	key == "pos"	or key == "position"		then
@@ -407,23 +436,22 @@ if (!SERVER) then return end
 		
 		// Get bone args
 		if EntityTable.Bones or BoneArgs then
-
+			
 			local Bones = {}
 			BoneArgs = BoneArgs or {}
-
+			
 			// Get args for each bone
 			for Bone = 0,( Ent:GetPhysicsObjectCount() - 1 ) do
 				if Ent:GetPhysicsObjectNum( Bone ):IsValid() then
 					Bones[Bone] = {}
-
+					
 					for _, barg in pairs(BoneArgs) do
 						
 						local bArg = nil
-
+						
 						if  EntityTable.Bones 
 						and EntityTable.Bones[Bone]
 						and EntityTable.Bones[Bone][barg] then
-
 							bArg = EntityTable.Bones[Bone][barg]
 						else
 							// Do special cases
@@ -440,11 +468,11 @@ if (!SERVER) then return end
 							elseif	barg == "frozen" or barg == "motionenabled"	then bArg = !Phys:IsMoveable()
 							end
 						end
-
+						
 						Bones[Bone][barg] = bArg
 						
 					end
-
+					
 					for ModifierType, _ in pairs(EntityBoneModifiers) do
 						if  EntityTable.Bones 
 						and EntityTable.Bones[Bone]
@@ -452,18 +480,18 @@ if (!SERVER) then return end
 							Bones[Bone][ModifierType] = EntityTable.Bones[Bone][ModifierType]
 						end
 					end
-
+					
 				end
 			end
 			etable.Bones = Bones
 		end
-
+		
 		for ModifierType, _ in pairs(EntityModifiers) do
 			if EntityTable[ModifierType] then
 				etable[ModifierType] = EntityTable[ModifierType]
 			end
 		end
-
+		
 		// Hack to copy decals
 		if EntityTable.decals then
 			etable.decals = EntityTable.decals
@@ -472,7 +500,6 @@ if (!SERVER) then return end
 		return etable
 		
 	end
-	
 	
 	function duplicator.CopyGetConstArgs( Constraint, GetEntByID )
 		
@@ -673,12 +700,12 @@ if (!SERVER) then return end
 	
 	
 	// Apply DupeInfo for wire stuff
-	function duplicator.PasteApplyDupeInfo( ply, Ents, entIDtable )
-		for id, entTable in pairs(Ents) do
+	function duplicator.PasteApplyDupeInfo( ply, DupeInfoTable, entIDtable )
+		for id, infoTable in pairs(DupeInfoTable) do
 			local ent = entIDtable[id]
-			if (ent) and (ent:IsValid()) and (entTable.DupeInfo) and (ent.ApplyDupeInfo) then
+			if (ent) and (ent:IsValid()) and (infoTable) and (ent.ApplyDupeInfo) then
 			    ent:ApplyDupeInfo(
-					ply, ent, entTable.DupeInfo,
+					ply, ent, infoTable,
 					function(id) return entIDtable[id] end,
 					function(id) return constIDtable[id] end
 					)
@@ -759,10 +786,22 @@ if (!SERVER) then return end
 	
 	
 	
+	function duplicator.GetEntType( EntClass )
+		return EntType[EntClass]
+	end
 	
 	
-	
-	
+	function duplicator.KnownConstraintType( someConstraintType )
+		if (ConstraintType[someConstraintType])	then 
+			return true
+		else
+			return false
+		end
+	end
+
+	function duplicator.ConstraintTypeFunc( someConstraintType, Args )
+		return ConstraintType[someConstraintType].Func(unpack(Args))
+	end
 	
 	
 	
@@ -842,7 +881,11 @@ if (!SERVER) then return end
 			Ent:SetModel( Model )
 			Ent:SetAngles( Ang )
 			Ent:SetPos( Pos )
-			Ent:SetKeyValue("vehiclescript", "scripts/vehicles/jeep_test.txt")
+			if (Class == "prop_vehicle_prisoner_pod") then
+				Ent:SetKeyValue("vehiclescript", "scripts/vehicles/prisoner_pod.txt")
+			else
+				Ent:SetKeyValue("vehiclescript", "scripts/vehicles/jeep_test.txt")
+			end
 			Ent:SetKeyValue("actionScale",	 1)
 			Ent:SetKeyValue("VehicleLocked", 0)
 			Ent:SetKeyValue("solid",	 6)
@@ -862,6 +905,7 @@ if (!SERVER) then return end
 	end
 	duplicator.RegisterEntityClass( "prop_vehicle_jeep",    duplicator.MakeVehicle, "Pos", "Ang","Model", "Class", "Vel", "aVel", "frozen" )
 	duplicator.RegisterEntityClass( "prop_vehicle_airboat", duplicator.MakeVehicle, "Pos", "Ang","Model", "Class", "Vel", "aVel", "frozen" )
+	duplicator.RegisterEntityClass( "prop_vehicle_prisoner_pod", duplicator.MakeVehicle, "Pos", "Ang","Model", "Class", "Vel", "aVel", "frozen" )
 
 
 
