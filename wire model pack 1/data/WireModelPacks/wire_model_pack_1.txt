@@ -57,7 +57,7 @@
 
 	"AMD64"
 	{
-		"categories"	"gate,chip"
+		"categories"	"gate,chip,value"
 		"model"			"models/cheeze/wires/cpu.mdl"
 		"files"
 		{
@@ -77,7 +77,7 @@
 
 	"RAM"
 	{
-		"categories"	"gate,chip"
+		"categories"	"gate,chip,value"
 		"model"			"models/cheeze/wires/ram.mdl"
 		"files"
 		{
@@ -99,7 +99,7 @@
 
 	"Mini-AMD"
 	{
-		"categories"	"gate,chip"
+		"categories"	"gate,chip,value"
 		"model"			"models/cheeze/wires/mini_cpu.mdl"
 		"files"
 		{
@@ -117,7 +117,7 @@
 
 	"Mini-Chip"
 	{
-		"categories"	"gate,chip"
+		"categories"	"gate,chip,value"
 		"model"			"models/cheeze/wires/mini_chip.mdl"
 		"files"
 		{
@@ -133,7 +133,7 @@
 
 	"Nano-AMD"
 	{
-		"categories"	"gate,chip"
+		"categories"	"gate,chip,value"
 		"model"			"models/cheeze/wires/nano_cpu.mdl"
 		"files"
 		{
@@ -151,7 +151,7 @@
 
 	"Nano-Chip"
 	{
-		"categories"	"gate,chip"
+		"categories"	"gate,chip,value"
 		"model"			"models/cheeze/wires/nano_chip.mdl"
 		"files"
 		{
@@ -291,4 +291,5 @@
 			"5"     "models/cyborgmatt/wireless_card.xbox.vtx"
 		}
 	}
+
 }
