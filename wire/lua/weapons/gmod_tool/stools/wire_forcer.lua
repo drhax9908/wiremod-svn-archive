@@ -19,6 +19,7 @@ end
 
 TOOL.ClientConVar[ "multiplier" ] = "1"
 TOOL.ClientConVar[ "length" ] = "100"
+TOOL.ClientConVar[ "beam" ] = "1"
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
 
@@ -39,8 +40,10 @@ function TOOL:LeftClick( trace )
 
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
-
-	local wire_forcer = MakeWireForcer( ply, trace.HitPos, Ang, self:GetClientNumber( "multiplier" ), self:GetClientNumber( "length" ) )
+	
+	local showbeam = self:GetClientNumber( "beam" ) == 1
+	
+	local wire_forcer = MakeWireForcer( ply, trace.HitPos, Ang, self:GetClientNumber( "multiplier" ), self:GetClientNumber( "length" ), showbeam )
 
 	local min = wire_forcer:OBBMins()
 	wire_forcer:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -74,7 +77,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireForcer( pl, Pos, Ang, Force, Length )
+	function MakeWireForcer( pl, Pos, Ang, Force, Length, showbeam )
 		if ( !pl:CheckLimit( "wire_forcers" ) ) then return false end
 	
 		local wire_forcer = ents.Create( "gmod_wire_forcer" )
@@ -85,7 +88,7 @@ if (SERVER) then
 		wire_forcer:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
 		wire_forcer:Spawn()
 
-		wire_forcer:GetTable():Setup(Force, Length)
+		wire_forcer:GetTable():Setup(Force, Length, showbeam)
 		wire_forcer:GetTable():SetPlayer( pl )
 		
 		local ttable = {
@@ -154,10 +157,11 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_forcer_multiplier"
   }) 
   	panel:AddControl("Slider", {
-		Label = "Force distance (How long away the force get applied)",
+		Label = "Force distance (How long away the force gets applied)",
 		Type = "Float",
 		Min = "1",
 		Max = "10000",
 		Command = "wire_forcer_length"
-  }) 
+  })
+  panel:AddControl( "Checkbox", { Label = "Show Beam", Command = "wire_forcer_beam" } )
 end

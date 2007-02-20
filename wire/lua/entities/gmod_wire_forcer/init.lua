@@ -4,7 +4,8 @@ AddCSLuaFile( "shared.lua" )
 
 include('shared.lua')
 
-ENT.WireDebugName = ""
+ENT.WireDebugName = "Forcer"
+ENT.OverlayDelay = 0
 
 local MODEL = Model("models/jaanus/wiretool/wiretool_siren.mdl")
 
@@ -13,55 +14,61 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-	self.Inputs = Wire_CreateInputs(self.Entity, { "A", "B" })
+	
+	self.Inputs = Wire_CreateInputs(self.Entity, { "A" })
 end
 
-function ENT:OnRemove()
-	Wire_Remove(self.Entity)
-end
-
-function ENT:Setup(force, length)
-	self:TriggerInput("A", 0)
+function ENT:Setup(force, length, showbeam)
 	self.Force = force
 	self.Tlength = length
+	self.value = 0
+	if (showbeam) then
+		self:SetBeamLength(length)	
+	else
+		self:SetBeamLength(0)
+	end
+	self:TriggerInput("A", 0)
 end
 
 function ENT:TriggerInput(iname, value)
 	if (iname == "A") then
-		if (value ~= 0) then
-			 local vStart = self.Entity:GetPos()
-			 local vForward = self.Entity:GetUp()
-			 
-			 local trace = {}
-			 trace.start = vStart
-			 trace.endpos = vStart + (vForward * self.Tlength)
-			 trace.filter = { self.Entity }
-			 --print("Trace")
-			 local trace = util.TraceLine( trace ) 
-			
-			// Bail if we hit world or a player
-			if (  !trace.Entity:IsValid() || trace.Entity:IsPlayer() ) then return end
-			--print("Ent is valid and not player")
-			if ( CLIENT && trace.Entity:GetClass() != "prop_physics" ) then return end
-			--print("Applying force: "..tostring(self.Entity:GetUp() * self.Force * value))
-			trace.Entity:GetPhysicsObject():ApplyForceCenter( self.Entity:GetUp() * self.Force * value )
+		self.value = value
+		self:ShowOutput(value)
+		if (value != 0) then
+			self:Think()
 		end
+	/*elseif (iname == "B") then
+		multiplier = value*/
 	end
-	--[[
-	if (iname == "B") then
-		multiplier = value
+end
+
+function ENT:Think()
+	
+	local vForward = self.Entity:GetUp()
+	local vStart = self.Entity:GetPos() + vForward*self.Entity:OBBMaxs().z
+
+	local trace = {}
+	trace.start = vStart
+	trace.endpos = vStart + (vForward * self.Tlength)
+	trace.filter = { self.Entity }
+	--print("Trace")
+	local trace = util.TraceLine( trace ) 
+
+	// Bail if we hit world or a player
+	if (  !trace.Entity:IsValid() || trace.Entity:IsPlayer() ) then return end
+	--print("Ent is valid and not player")
+	if ( trace.Entity:GetClass() != "prop_physics" ) then return end
+	
+	local phys = trace.Entity:GetPhysicsObject()
+	if (phys:IsValid()) then
+		--print("Applying force: "..tostring(vForward * self.Force * self.value))
+		phys:ApplyForceCenter( vForward * self.Force * self.value )
 	end
-	]]
+	
+	//self.Entity:NextThink(CurTime() + 0.05)
+	//return true
 end
 
 function ENT:ShowOutput(value)
-	if (value ~= self.PrevOutput) then
-		self:SetOverlayText( "Forcer" )
-		self.PrevOutput = value
-	end
+	self:SetOverlayText("Forcer\n"..tostring(math.Round(value * self.Force)))
 end
-
-function ENT:OnRestore()
-    Wire_Restored(self.Entity)
-end
-

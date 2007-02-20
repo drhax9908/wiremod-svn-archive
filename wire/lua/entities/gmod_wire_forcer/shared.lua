@@ -1,7 +1,7 @@
 
 
 ENT.Type 			= "anim"
-ENT.Base 			= "base_gmodentity"
+ENT.Base 			= "base_wire_entity"
 
 ENT.PrintName		= ""
 ENT.Author			= ""
@@ -38,4 +38,13 @@ end
 
 function ENT:GetOffset( name )
 	return self.Entity:GetNetworkedVector( "Offset" )
+end
+
+
+function ENT:SetBeamLength(length)
+	self.Entity:SetNetworkedFloat("BeamLength", length)
+end
+
+function ENT:GetBeamLength()
+	return self.Entity:GetNetworkedFloat("BeamLength") or 0
 end
