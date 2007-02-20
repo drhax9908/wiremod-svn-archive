@@ -19,6 +19,11 @@ function ENT:Initialize()
 	self.Inputs = Wire_CreateInputs( self.Entity, { "Red", "Green", "Blue" } )
 end
 
+function ENT:OnRemove()
+	if (!self.RadiantComponent) then return end
+	if not self.RadiantComponent:IsValid() then return end
+	self.RadiantComponent:Fire("TurnOff","","0")
+end
 
 function ENT:DirectionalOn()
 	
