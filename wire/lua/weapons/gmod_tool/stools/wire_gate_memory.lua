@@ -230,8 +230,8 @@ GateActions["ram8"] = {
     name = "RAM(8 store)",
     inputs = { "Clk", "AddrRead", "AddrWrite", "Data" },
     output = function(gate, Clk, AddrRead, AddrWrite, Data )
-        AddrRead = math.floor(AddrRead)
-        AddrWrite = math.floor(AddrWrite)
+        AddrRead = math.floor(tonumber(AddrRead))
+        AddrWrite = math.floor(tonumber(AddrWrite))
         if (Clk > 0) then
             if (AddrWrite >= 0) and (AddrWrite < 8) then
                 gate.LatchStore[AddrWrite] = Data
@@ -260,8 +260,8 @@ GateActions["ram64"] = {
     name = "RAM(64 store)",
     inputs = { "Clk", "AddrRead", "AddrWrite", "Data" },
     output = function(gate, Clk, AddrRead, AddrWrite, Data )
-        AddrRead = math.floor(AddrRead)
-        AddrWrite = math.floor(AddrWrite)
+        AddrRead = math.floor(tonumber(AddrRead))
+        AddrWrite = math.floor(tonumber(AddrWrite))
         if (Clk > 0) then
             if (AddrWrite < 64) then
                     gate.LatchStore[AddrWrite] = Data
@@ -287,10 +287,10 @@ GateActions["ram64x64"] = {
     name = "RAM(64x64 store)",
     inputs = { "Clk", "AddrReadX", "AddrReadY", "AddrWriteX", "AddrWriteY", "Data" },
     output = function(gate, Clk, AddrReadX, AddrReadY, AddrWriteX, AddrWriteY, Data )
-        AddrReadX = math.floor(AddrReadX)
-        AddrReadY = math.floor(AddrReadY)
-        AddrWriteX = math.floor(AddrWriteX)
-        AddrWriteY = math.floor(AddrWriteY)
+        AddrReadX = math.floor(tonumber(AddrReadX))
+        AddrReadY = math.floor(tonumber(AddrReadY))
+        AddrWriteX = math.floor(tonumber(AddrWriteX))
+        AddrWriteY = math.floor(tonumber(AddrWriteY))
         if (Clk > 0) then
             if (AddrWriteX >= 0) and (AddrWriteX < 64) or (AddrWriteY >= 0) and (AddrWriteY < 64) then
 				gate.LatchStore[AddrWriteX + AddrWriteY*64] = Data
@@ -320,10 +320,10 @@ GateActions["ram512x512"] = {
     name = "RAM(512x512 store)",
     inputs = { "Clk", "AddrReadX", "AddrReadY", "AddrWriteX", "AddrWriteY", "Data" },
     output = function(gate, Clk, AddrReadX, AddrReadY, AddrWriteX, AddrWriteY, Data )
-        AddrReadX = math.floor(AddrReadX)
-        AddrReadY = math.floor(AddrReadY)
-        AddrWriteX = math.floor(AddrWriteX)
-        AddrWriteY = math.floor(AddrWriteY)
+        AddrReadX = math.floor(tonumber(AddrReadX))
+        AddrReadY = math.floor(tonumber(AddrReadY))
+        AddrWriteX = math.floor(tonumber(AddrWriteX))
+        AddrWriteY = math.floor(tonumber(AddrWriteY))
         if (Clk > 0) then
             if (AddrWriteX >= 0) and (AddrWriteX < 512) or (AddrWriteY >= 0) and (AddrWriteY < 512) then
 				gate.LatchStore[AddrWriteX + AddrWriteY*512] = Data
@@ -353,10 +353,10 @@ GateActions["ram1024x1024"] = {
     name = "RAM(1024x1024 store)",
     inputs = { "Clk", "AddrReadX", "AddrReadY", "AddrWriteX", "AddrWriteY", "Data" },
     output = function(gate, Clk, AddrReadX, AddrReadY, AddrWriteX, AddrWriteY, Data )
-        AddrReadX = math.floor(AddrReadX)
-        AddrReadY = math.floor(AddrReadY)
-        AddrWriteX = math.floor(AddrWriteX)
-        AddrWriteY = math.floor(AddrWriteY)
+        AddrReadX = math.floor(tonumber(AddrReadX))
+        AddrReadY = math.floor(tonumber(AddrReadY))
+        AddrWriteX = math.floor(tonumber(AddrWriteX))
+        AddrWriteY = math.floor(tonumber(AddrWriteY))
         if (Clk > 0) then
             if (AddrWriteX >= 0) and (AddrWriteX < 1024) or (AddrWriteY >= 0) and (AddrWriteY < 1024) then
 				gate.LatchStore[AddrWriteX + AddrWriteY*1024] = Data
