@@ -347,36 +347,3 @@ GateActions["ram512x512"] = {
         "\nReadAddr:"..AddrReadX..", "..AddrReadY.." = "..Out
     end
 }
-
-GateActions["ram1024x1024"] = {
-    group = "Memory",
-    name = "RAM(1024x1024 store)",
-    inputs = { "Clk", "AddrReadX", "AddrReadY", "AddrWriteX", "AddrWriteY", "Data" },
-    output = function(gate, Clk, AddrReadX, AddrReadY, AddrWriteX, AddrWriteY, Data )
-        AddrReadX = math.floor(tonumber(AddrReadX))
-        AddrReadY = math.floor(tonumber(AddrReadY))
-        AddrWriteX = math.floor(tonumber(AddrWriteX))
-        AddrWriteY = math.floor(tonumber(AddrWriteY))
-        if (Clk > 0) then
-            if (AddrWriteX >= 0) and (AddrWriteX < 1024) or (AddrWriteY >= 0) and (AddrWriteY < 1024) then
-				gate.LatchStore[AddrWriteX + AddrWriteY*1024] = Data
-            end
-        end
-        
-        if (AddrReadX < 0) or (AddrReadX >= 1024) or (AddrReadY < 0) or (AddrReadY >= 1024) then
-            return 0
-        end
-        
-        return gate.LatchStore[AddrReadX + AddrReadY*1024] or 0
-    end,
-    reset = function(gate)
-        gate.LatchStore = {}
-        for i = 0,10248576 do
-            gate.LatchStore[i] = 0
-        end
-    end,
-    label = function(Out, Clk, AddrReadX, AddrReadY, AddrWriteX, AddrWriteY, Data)
-        return "WriteAddr:"..AddrWriteX..", "..AddrWriteY.."  Data:"..Data.."  Clock:"..Clk..
-        "\nReadAddr:"..AddrReadX..", "..AddrReadY.." = "..Out
-    end
-}
