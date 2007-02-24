@@ -153,7 +153,7 @@ GateActions["="] = {
 	end
 }
 
-GateActions["~="] = {
+GateActions["!="] = {
 	group = "Comparison",
 	name = "Not Equal",
 	inputs = { "A", "B" },
@@ -181,7 +181,7 @@ GateActions["<"] = {
 
 GateActions[">"] = {
 	group = "Comparison",
-	name = "Greater",
+	name = "Greater Then",
 	inputs = { "A", "B" },
 	output = function(gate, A, B)
 	    if (A > B) then return 1 end
