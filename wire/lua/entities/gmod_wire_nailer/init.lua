@@ -1,0 +1,68 @@
+
+AddCSLuaFile( "cl_init.lua" )
+AddCSLuaFile( "shared.lua" )
+
+include('shared.lua')
+
+ENT.WireDebugName = ""
+
+local MODEL = Model("models/jaanus/wiretool/wiretool_siren.mdl")
+
+function ENT:Initialize()
+	self.Entity:SetModel( MODEL )
+	self.Entity:PhysicsInit( SOLID_VPHYSICS )
+	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
+	self.Entity:SetSolid( SOLID_VPHYSICS )
+	self.Inputs = Wire_CreateInputs(self.Entity, { "A" })
+end
+
+function ENT:OnRemove()
+	Wire_Remove(self.Entity)
+end
+
+function ENT:Setup()
+	self:TriggerInput("A", 0)
+end
+
+function ENT:TriggerInput(iname, value)
+	if (iname == "A") then
+		if (value ~= 0) then
+			 local vStart = self.Entity:GetPos()
+			 local vForward = self.Entity:GetUp()
+			 
+			 local trace = {}
+				 trace.start = vStart
+				 trace.endpos = vStart + (vForward * 2048)
+				 trace.filter = { self.Entity }
+			 local trace = util.TraceLine( trace ) 
+			
+			// Bail if we hit world or a player
+			if (  !trace.Entity:IsValid() || trace.Entity:IsPlayer() ) then return end
+			// If there's no physics object then we can't constraint it!
+			if ( !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return end
+		
+			local tr = {}
+				tr.start = trace.HitPos
+				tr.endpos = trace.HitPos + (self.Entity:GetUp() * 50.0)
+				tr.filter = { trace.Entity, self.Entity }
+			local trTwo = util.TraceLine( tr )
+		
+			if ( trTwo.Hit && !trTwo.Entity:IsPlayer() ) then
+				// Weld them!
+				local constraint = constraint.Weld( trace.Entity, trTwo.Entity, trace.PhysicsBone, trTwo.PhysicsBone, 0 )
+			end
+		end
+	end
+end
+
+function ENT:ShowOutput(value)
+	if (value ~= self.PrevOutput) then
+		self:SetOverlayText( "Nailer" )
+		self.PrevOutput = value
+	end
+end
+
+function ENT:OnRestore()
+    Wire_Restored(self.Entity)
+end
+
