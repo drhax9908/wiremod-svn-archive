@@ -111,17 +111,19 @@ function TOOL:LeftClick( trace )
 		explosive:GetPhysicsObject():Sleep() //will freeze the explosive till something touches it
 	end
 	
-	// Don't weld to world
-	if ( trace.Entity:IsValid() && _weld ) then
-		const, nocollide = constraint.Weld( explosive, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0 )
-		if (!_noparentremove) then trace.Entity:DeleteOnRemove( explosive ) end
-	end
-	
 	if (_weight <= 0) then _weight = 1 end
 	explosive.Entity:GetPhysicsObject():SetMass(_weight)
 	
 	undo.Create("WireSimpleExplosive")
 		undo.AddEntity( explosive )
+		
+	// Don't weld to world
+	if ( trace.Entity:IsValid() && _weld ) then
+		local const, nocollide = constraint.Weld( explosive, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0 )
+		undo.AddEntity( const )
+		if (!_noparentremove) then trace.Entity:DeleteOnRemove( explosive ) end
+	end
+	
 		undo.SetPlayer( ply )
 	undo.Finish()
 	
@@ -291,12 +293,11 @@ function TOOL:UpdateGhostWireSimpleExplosive( ent, player )
 end
 
 function TOOL:Think()
-
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetSelModel()) then
-		
-		local _model = self:GetSelModel()
+	
+	local _model = self:GetSelModel()
+	
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != _model) then
 		if (!_model) then return end
-		
 		self:MakeGhostEntity( _model, Vector(0,0,0), Angle(0,0,0) )
 	end
 	

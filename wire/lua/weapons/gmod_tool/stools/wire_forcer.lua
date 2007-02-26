@@ -92,7 +92,11 @@ if (SERVER) then
 		wire_forcer:GetTable():SetPlayer( pl )
 		
 		local ttable = {
-			pl              = pl
+			pl		= pl
+			Force	= Force
+			Length	= Length
+			Length	= Length
+			showbeam = showbeam
 		}
 
 		table.Merge(wire_forcer:GetTable(), ttable )
@@ -101,7 +105,9 @@ if (SERVER) then
 
 		return wire_forcer
 	end
-
+	
+	duplicator.RegisterEntityClass("gmod_wire_forcer", MakeWireForcer, "Pos", "Ang", "Force", "Length", "showbeam", "Vel", "aVel", "frozen")
+	
 end
 
 function TOOL:UpdateGhostWireForcer( ent, player )

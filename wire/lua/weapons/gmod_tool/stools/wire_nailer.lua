@@ -86,8 +86,7 @@ if (SERVER) then
 		wire_nailer:GetTable():SetPlayer( pl )
 
 		local ttable = {
-			nailer			= nailer,
-			pl              = pl
+			pl = pl
 		}
 
 		table.Merge(wire_nailer:GetTable(), ttable )
@@ -96,6 +95,8 @@ if (SERVER) then
 
 		return wire_nailer
 	end
+	
+	duplicator.RegisterEntityClass("gmod_wire_nailer", MakeWireNailer, "Pos", "Ang", "Vel", "aVel", "frozen")
 
 end
 

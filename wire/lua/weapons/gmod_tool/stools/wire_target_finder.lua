@@ -47,26 +47,26 @@ function TOOL:LeftClick(trace)
 	local ply = self:GetOwner()
 	
 	// Get client's CVars
-	local range		= self:GetClientNumber("range")
-	local players	= (self:GetClientNumber("players") ~= 0)
-	local npcs		= (self:GetClientNumber("npcs") ~= 0)
-	local beacons	= (self:GetClientNumber("beacons") ~= 0)
-	local hoverballs = (self:GetClientNumber("hoverballs") ~= 0)
-	local thrusters	= (self:GetClientNumber("thrusters") ~= 0)
-	local rpgs 		= (self:GetClientNumber("rpgs") ~= 0)
-	local painttarget 		= (self:GetClientNumber("painttarget") ~= 0)
+	local range			= self:GetClientNumber("range")
+	local players		= (self:GetClientNumber("players") ~= 0)
+	local npcs			= (self:GetClientNumber("npcs") ~= 0)
+	local beacons		= (self:GetClientNumber("beacons") ~= 0)
+	local hoverballs	= (self:GetClientNumber("hoverballs") ~= 0)
+	local thrusters		= (self:GetClientNumber("thrusters") ~= 0)
+	local rpgs 			= (self:GetClientNumber("rpgs") ~= 0)
+	local painttarget 	= (self:GetClientNumber("painttarget") ~= 0)
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_target_finder" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup(range, players, npcs, beacons, hoverballs, thrusters, rpgs, painttarget)
 
-		trace.Entity:GetTable().range = range
-		trace.Entity:GetTable().players = players
-		trace.Entity:GetTable().npcs = npcs
-		trace.Entity:GetTable().beacons = beacons
-		trace.Entity:GetTable().hoverballs = hoverballs
-		trace.Entity:GetTable().thrusters = thrusters
-		trace.Entity:GetTable().rpgs = rpgs
-		trace.Entity:GetTable().painttarget = painttarget
+		trace.Entity:GetTable().range		= range
+		trace.Entity:GetTable().players		= players
+		trace.Entity:GetTable().npcs		= npcs
+		trace.Entity:GetTable().beacons		= beacons
+		trace.Entity:GetTable().hoverballs	= hoverballs
+		trace.Entity:GetTable().thrusters	= thrusters
+		trace.Entity:GetTable().rpgs		= rpgs
+		trace.Entity:GetTable().painttarget	= painttarget
 
 		return true
 	end	
@@ -79,7 +79,13 @@ function TOOL:LeftClick(trace)
 
 	local min = wire_target_finder:OBBMins()
 	wire_target_finder:SetPos( trace.HitPos - trace.HitNormal*min.z )
-
+	
+	// Don't weld to world
+	if ( trace.Entity:IsValid() ) then
+		const, nocollide = constraint.Weld( wire_target_finder, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0 )
+		trace.Entity:DeleteOnRemove( wire_target_finder )
+	end
+	
 	undo.Create("WireTargetFinder")
 		undo.AddEntity( wire_target_finder )
 		undo.SetPlayer( ply )
