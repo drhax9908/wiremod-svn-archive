@@ -165,6 +165,22 @@
 		}
 	}
 
+	"AMD-Test"
+	{
+		"categories"	"gate,chip,value"
+		"model"			"models/cheeze/wires/amd_test.mdl"
+		"files"
+		{
+			"0"	"models/cheeze/wires/amd_test.dx80.vtx"
+			"1"	"models/cheeze/wires/amd_test.dx90.vtx"
+			"2"	"models/cheeze/wires/amd_test.phy"
+			"3"	"models/cheeze/wires/amd_test.sw.vtx"
+			"4"	"models/cheeze/wires/amd_test.vvd"
+			"7"     "materials/models/cheeze/wires/x2_logo.vmt"
+			"8"     "materials/models/cheeze/wires/x2_logo.vtf"
+		}
+	}
+
 	"PC Speaker - Medium"
 	{
 		"categories"    "speaker"
