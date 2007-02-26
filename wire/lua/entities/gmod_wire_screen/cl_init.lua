@@ -9,6 +9,11 @@ function ENT:Initialize()
 
 	surface.CreateFont( "coolvetica", 80, 400, false, false, "screen_font" )
 
+	// Create new fonts here for Single Value screens
+	// According to the wiki, the font size is capped at 128 (TheApathetic)
+	surface.CreateFont("coolvetica", 128, 400, false, false, "screen_font_single")
+	surface.CreateFont("Trebuchet", 36, 400, false, false, "Trebuchet36")
+
 end
 
 function ENT:Draw()
@@ -79,20 +84,46 @@ function ENT:Draw()
 		surface.SetDrawColor(0,0,0,255)
 		surface.DrawRect(x/RatioX,y,(x+w)/RatioX,y+h)
 		
-		surface.SetDrawColor(100,100,150,255)
-		surface.DrawRect(x/RatioX,y,(x+w)/RatioX,20)
-		
-		surface.SetDrawColor(100,100,150,255)
-		surface.DrawRect(x/RatioX,y+94,(x+w)/RatioX,20)
-		
-		draw.DrawText("Value A","Trebuchet18",(x + 92)/RatioX,y + 2,Color(255,255,255,255),1)
-		draw.DrawText("Value B","Trebuchet18",(x + 92)/RatioX,y + 96,Color(255,255,255,255),1)
-		
-		local DisplayA = self:GetDisplayA( )
-		local DisplayB = self:GetDisplayB( )
-		
-		draw.DrawText(DisplayA,"screen_font",(x + 92)/RatioX,y + 20,Color(255,255,255,255),1)
-		draw.DrawText(DisplayB,"screen_font",(x + 92)/RatioX,y + 114,Color(255,255,255,255),1)
+		// Check for Single Value (TheApathetic)
+		if (self:GetSingleValue()) then
+			local rectheight = 20
+			local fontsize = "18"
+			local sf_suffix = ""
+
+			// Check for Single Bigger Font setting
+			if (self:GetSingleBigFont()) then
+				rectheight = 40
+				fontsize = "36"
+				sf_suffix = "_single"
+			end
+				
+			// Sizes here have been doubled when possible
+			surface.SetDrawColor(100,100,150,255)
+			surface.DrawRect(x/RatioX,y,(x+w)/RatioX,rectheight)
+			
+			draw.DrawText(self:GetTextA(),"Trebuchet"..fontsize,(x + 92)/RatioX,y + 2,Color(255,255,255,255),1)
+				
+			local DisplayA = self:GetDisplayA( )
+			
+			draw.DrawText(DisplayA,"screen_font"..sf_suffix,(x + 92)/RatioX,y + rectheight,Color(255,255,255,255),1)
+		else
+			// Normal two-value Wire Screen
+			surface.SetDrawColor(100,100,150,255)
+			surface.DrawRect(x/RatioX,y,(x+w)/RatioX,20)
+			
+			surface.SetDrawColor(100,100,150,255)
+			surface.DrawRect(x/RatioX,y+94,(x+w)/RatioX,20)
+			
+			// Replaced "Value A" and "Value B" here (TheApathetic)
+			draw.DrawText(self:GetTextA(),"Trebuchet18",(x + 92)/RatioX,y + 2,Color(255,255,255,255),1)
+			draw.DrawText(self:GetTextB(),"Trebuchet18",(x + 92)/RatioX,y + 96,Color(255,255,255,255),1)
+				
+			local DisplayA = self:GetDisplayA( )
+			local DisplayB = self:GetDisplayB( )
+			
+			draw.DrawText(DisplayA,"screen_font",(x + 92)/RatioX,y + 20,Color(255,255,255,255),1)
+			draw.DrawText(DisplayB,"screen_font",(x + 92)/RatioX,y + 114,Color(255,255,255,255),1)
+		end
 		
 	cam.End3D2D()
 	

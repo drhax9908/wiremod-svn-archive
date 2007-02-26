@@ -25,3 +25,43 @@ end
 function ENT:GetDisplayB( )
 	return self.Entity:GetNetworkedFloat( "DisB" )
 end
+
+// Extra stuff for Wire Screen (TheApathetic)
+function ENT:SetSingleValue(singlevalue)
+	self.Entity:SetNetworkedBool("SingleValue",singlevalue)
+
+	// Change inputs if necessary
+	if (singlevalue) then
+		Wire_AdjustInputs(self.Entity, {"A"})
+	else
+		Wire_AdjustInputs(self.Entity, {"A","B"})
+	end
+end
+
+function ENT:GetSingleValue()
+	return self.Entity:GetNetworkedBool("SingleValue")
+end
+
+function ENT:SetSingleBigFont(singlebigfont)
+	self.Entity:SetNetworkedBool("SingleBigFont",singlebigfont)
+end
+
+function ENT:GetSingleBigFont()
+	return self.Entity:GetNetworkedBool("SingleBigFont")
+end
+
+function ENT:SetTextA(text)
+	self.Entity:SetNetworkedString("TextA",text)
+end
+
+function ENT:GetTextA()
+	return self.Entity:GetNetworkedString("TextA")
+end
+
+function ENT:SetTextB(text)
+	self.Entity:SetNetworkedString("TextB",text)
+end
+
+function ENT:GetTextB()
+	return self.Entity:GetNetworkedString("TextB")
+end
