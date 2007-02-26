@@ -1,4 +1,4 @@
-
+//Advanced Duplicator Paster by TAD2020
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
 
@@ -11,9 +11,29 @@ local MODEL = Model( "models/props_lab/powerbox02d.mdl" )
 
 function ENT:Initialize()
 	self.Entity:SetModel( MODEL )
-	self.Entity:PhysicsInit( SOLID_VPHYSICS )
-	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
+	/*self.Entity:PhysicsInit( SOLID_VPHYSICS )
+	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )*/
 	//self.Entity:SetSolid( SOLID_VPHYSICS )
+	
+	self.Entity:SetMoveType( MOVETYPE_NONE )
+	self.Entity:PhysicsInit( SOLID_VPHYSICS )
+	self.Entity:SetCollisionGroup( COLLISION_GROUP_WEAPON )
+	self.Entity:DrawShadow( false )
+
+	local phys = self.Entity:GetPhysicsObject()
+	if (phys:IsValid()) then phys:Wake() end
+	
+	self.UndoListEnts	= {}
+	self.UndoListConsts	= {}
+	self.PropCount	= 0
+
+	// Spawner is "edge-triggered"
+	self.SpawnLastValue	= 0
+	self.UndoLastValue	= 0
+
+	// Add inputs/outputs (TheApathetic)
+	self.Inputs = Wire_CreateInputs(self.Entity, {"Spawn", "Undo", "X", "Y", "Z" })
+	self.Outputs = Wire_CreateOutputs(self.Entity, {"Out"})
 	
 	self.stage = 0
 	self.thinkdelay = 0.05
@@ -23,18 +43,32 @@ function ENT:Initialize()
 	
 end
 
-function ENT:Setup(ents, const, dupeinfo, offset, headentid)
+function ENT:Setup(ents, const, dupeinfo, dorinfo, headentid, delay, undo_delay, max_range, show_beam)
 	
-	self.MyEnts 			= 	ents
-	self.MyConstraints 		=	const
-	self.MyDupeInfo 		= 	dupeinfo
-	self.Myoffset			=	offset
-	self.HeadEntID			= 	headentid
+	self.MyEnts 			= ents
+	self.MyConstraints 		= const
+	self.MyDupeInfo 		= dupeinfo
+	self.MyDORInfo 			= dorinfo
+	self.HeadEntID			= headentid
+	self.delay				= delay
+	self.undo_delay			= undo_delay
+	self.MaxRange			= max_range
+	self.ShowBeam			= show_beam
 	
-	self:Paste()
+	self:ShowOutput()
+	
+	if (show_beam) then
+		self:SetBeamLength(math.min(self.MaxRange, 2000))
+	else
+		self:SetBeamLength(0)
+	end
+	
+	//self:Paste()
 end
 
-function ENT:Use( activator, caller, type, value )
+function ENT:OnTakeDamage( dmginfo )	self.Entity:TakePhysicsDamage( dmginfo ) end
+
+/*function ENT:Use( activator, caller, type, value )
 	
 	local Owner = self:GetPlayer()
 	
@@ -44,23 +78,120 @@ function ENT:Use( activator, caller, type, value )
 	else
 		return false
 	end
-end
+end*/
 
 function ENT:Paste()
 	if (self.stage != 0) then return end
 	Msg("====start====\n")
 	
-	if ( self:GetPlayer():GetActiveWeapon():GetClass() == "gmod_tool" ) then
-		self:GetPlayer():GetActiveWeapon():GetTable():GetToolObject():HideGhost(true)
-	end
+	self:HideGhost(true)
 	
-	self.Ents 			= 	table.Copy(self.MyEnts)
-	self.Constraints 	=	table.Copy(self.MyConstraints)
-	self.DupeInfo 		= 	table.Copy(self.MyDupeInfo)
-	self.offset			=	self.Myoffset
+	self.Ents 			= table.Copy(self.MyEnts)
+	self.Constraints 	= table.Copy(self.MyConstraints)
+	self.DupeInfo 		= table.Copy(self.MyDupeInfo)
+	self.DORInfo 		= table.Copy(self.MyDORInfo)
+	
+	if (self.MaxRange > 0) then
+		local skew		= Vector(self:GetSkewX(), self:GetSkewY(), 1)
+		skew			= skew*((self.MaxRange + self:GetSkewZ())/skew:Length())
+		local beam_x	= self.Entity:GetRight()*skew.x
+		local beam_y	= self.Entity:GetForward()*skew.y
+		local beam_z	= self.Entity:GetUp()*skew.z
+		local trace		= {}
+		trace.start		= self.Entity:GetPos() + self.Entity:GetUp()*self.Entity:OBBMaxs().z
+		trace.endpos	= trace.start + beam_x + beam_y + beam_z
+		local trace		= util.TraceLine(trace)
+		self.offset		= trace.HitPos
+	else
+		self.offset = self.Entity:GetPos() + self.Entity:GetUp() * self.Entity:OBBMaxs().z
+	end
 	
 	Msg("going to stage 1\n")
 	self.stage = 1
+end
+
+
+
+function ENT:TriggerInput(iname, value)
+	local pl = self:GetPlayer()
+	
+	if (iname == "Spawn") then
+		// Spawner is "edge-triggered" (TheApathetic)
+		if ((value > 0) == self.SpawnLastValue) then return end
+		self.SpawnLastValue = (value > 0)
+		
+		if (self.SpawnLastValue) then
+			// Simple copy/paste of old numpad Spawn with a few modifications
+			if (self.delay == 0) then self:Paste() return end
+			
+			local TimedSpawn = 	function ( ent, pl )
+				if (!ent) then return end
+				if (!ent == NULL) then return end
+				ent:GetTable():Paste()
+			end
+			
+			timer.Simple( self.delay, TimedSpawn, self.Entity, pl )
+		end
+	elseif (iname == "Undo") then
+		// Same here
+		if ((value > 0) == self.UndoLastValue) then return end
+		self.UndoLastValue = (value > 0)
+
+		if (self.UndoLastValue) then self:DoUndo(pl) end
+	elseif (iname == "X") then
+		self:SetSkewX(self.Inputs.X.Value or 0)
+	elseif (iname == "Y") then
+		self:SetSkewY(self.Inputs.Y.Value or 0)
+	elseif (iname == "Z") then
+		if (self.ShowBeam) then
+			self:SetBeamLength(math.min((self.MaxRange + value), 2000))
+		end
+		self.SkewZ = math.min(value, -self.MaxRange)
+	end
+end
+
+
+function ENT:ShowOutput()
+	self:SetOverlayText("Spawn Delay: "..self.delay.."\nUndo Delay: "..self.undo_delay.."\nCurrent Props: "..self.PropCount)
+	Wire_TriggerOutput(self.Entity, "Out", self.PropCount)
+end
+
+function ENT:HideGhost(hide)
+	local tool = self:GetPlayer():GetActiveWeapon()
+	if ( tool:GetClass() == "gmod_tool" )
+	and (tool:GetTable():GetToolObject().Name == "Advanced Duplicator") then
+		tool:GetTable():GetToolObject():HideGhost(hide)
+	end
+end
+
+
+
+
+function ENT:DoUndo( pl )
+
+	if (!self.UndoListEnts || #self.UndoListEnts == 0) then return end
+
+	local Ents = table.remove(self.UndoListEnts, 1)
+	
+	for _, entindex in pairs( Ents ) do
+		local ent = ents.GetByIndex( entindex )
+		if (ent && ent:IsValid()) then
+			ent:Remove()
+		end
+	end
+	
+	umsg.Start( "UndoWirePasterProp", pl ) umsg.End()
+	self.PropCount = self.PropCount - 1
+	Wire_TriggerOutput(self.Entity, "Out", self.PropCount)
+	self:ShowOutput()
+end
+
+
+function ENT:UndoPaste(pastenum)
+	
+	//todo: for delay undo
+	//need a way to index a pasted ent and remove it's table from the undolist table and be able to add to the undo list.
+	
 end
 
 
@@ -184,22 +315,26 @@ function ENT:Think()
 		self.Entity:NextThink(CurTime() + self.thinkdelay)
 		return true
 		
-	elseif (self.stage == 5) then
+	elseif (self.stage == 4) then
 		//this just looks wrong, so no
-		Msg("starting rotate\n")
-		duplicator.PasteRotate( self:GetPlayer(), self.HeadEntity, self.CreatedEnts )
+		/*Msg("starting rotate\n")
+		duplicator.PasteRotate( self:GetPlayer(), self.HeadEntity, self.CreatedEnts )*/
+		
+		duplicator.PasteApplyDORInfo( self.DORInfo, function(id) return self.entIDtable[id] end )
 		
 		Msg("going to stage 5\n")
-		self.stage = 4
+		self.stage = 5
 		self.Entity:NextThink(CurTime() + self.thinkdelay)
 		return true
 		
-	elseif (self.stage == 4) then
+	elseif (self.stage == 5) then
 		
 		//Msg("starting cleanup\n")
+		self.PropCount = self.PropCount + 1
 		
 		undo.Create("Duplicator")
 		
+		self.UndoListEnts[self.PropCount] = {}
 		for _, ent in pairs( self.CreatedEnts ) do
 			self:GetPlayer():AddCleanup( "duplicates", ent )
 			//ent:SetMoveType(self.TempMoveTypes[ent:EntIndex()])
@@ -209,6 +344,7 @@ function ENT:Think()
 			ent:SetNotSolid(false)
 			ent:SetParent()
 			undo.AddEntity( ent )
+			table.insert(self.UndoListEnts[self.PropCount], ent:EntIndex())
 		end
 		
 		for _, ent in pairs( self.CreatedConstraints ) do
@@ -221,11 +357,25 @@ function ENT:Think()
 		
 		self.constIDtable, self.entIDtable, self.CreatedConstraints, self.CreatedEnts = {}, {}, {}, {}
 		self.stage = 0
+		
+		
+		//todo
+		/*if (self.undo_delay > 0) then
+			
+			timer.Simple( delay, updopaste )
+			// Update prop count output when prop is deleted (TheApathetic)
+			timer.Simple(delay + 0.25, self:ShowOutput)
+			
+		end*/
+		
+		
+		
+		
 		Msg("====done====\n")
 		
-		if ( self:GetPlayer():GetActiveWeapon():GetClass() == "gmod_tool" ) then
-			self:GetPlayer():GetActiveWeapon():GetTable():GetToolObject():HideGhost(false)
-		end
+		self:HideGhost(false)
+		
+		self:ShowOutput()
 		
 		self.Entity:NextThink(CurTime() + self.thinkdelay)
 		return true

@@ -1,5 +1,5 @@
 
-
+AddCSLuaFile( "autorun/client/cl_dupehelper.lua" )
 
 /*---------------------------------------------------------
    Duplicator module, 
@@ -26,7 +26,7 @@
 
 // Note: Modified by SatriAli
 // Note: Modified by Erkle
-// Note: Very modified by TAD2020, added all sorts of stuff
+// Note: Very modified, rewriten, and added all sorts of stuff by TAD2020
 duplicator = {}
 
 local	ConstraintType,
@@ -43,7 +43,6 @@ function duplicator.RegisterEntityModifier( Type,  func, ... )	EntityModifiers[ 
 function duplicator.RegisterEntityBoneModifier( Type,  func, ... )	EntityBoneModifiers[ Type ] =	{ Func = func, Args = {...} }	end
 
 
-
 if (!SERVER) then return end
 	
 	// Copy ents & Constraints
@@ -53,7 +52,7 @@ if (!SERVER) then return end
 		local EntTable, ConstraintTable  = duplicator.GetEnts(StartEnt)
 		
 		// Clear plys duplicator table
-		duplicator[ply:UniqueID()] = { Ents = {}, Constraints = {}, HeadEntID = StartEnt:EntIndex(), DupeInfo = {} }
+		duplicator[ply:UniqueID()] = { Ents = {}, Constraints = {}, HeadEntID = StartEnt:EntIndex(), DupeInfo = {}, DORInfo = {} }
 		
 		// Get info required to re-create each entity
 		for EntID, Ent in pairs(EntTable) do
@@ -68,6 +67,8 @@ if (!SERVER) then return end
 				if Ent:GetTable().BuildDupeInfo then
 					duplicator[ply:UniqueID()].DupeInfo[EntID] = Ent:GetTable():BuildDupeInfo()
 				end
+				
+				duplicator[ply:UniqueID()].DORInfo[EntID] = Ent:GetDeleteOnRemoveInfo()
 				
 			else
 				Msg("Duplicator copy: Unknown class " .. EntClass .. "\n")
@@ -109,21 +110,21 @@ if (!SERVER) then return end
 
 		local Ents,Constraints = nil,nil
 		local constIDtable, entIDtable, CreatedConstraints, CreatedEnts = {}, {}, {}, {}
-		
-		
 		local HeadEntity = nil
+		local pln = ply:UniqueID()
 		
 		Msg("\n=======================--PasteStart--=======================\n")
 		
 		if filename then 
 			// TODO:
 			// load file to ents/constraints tables
+			// don't really need this any more
+		elseif  duplicator[pln] then 
 			
-		elseif  duplicator[ply:UniqueID()] then 
-			
-			Ents 			= 	duplicator[ply:UniqueID()].Ents
-			Constraints 	=	duplicator[ply:UniqueID()].Constraints
-			DupeInfo	 	=	duplicator[ply:UniqueID()].DupeInfo
+			Ents 			= 	duplicator[pln].Ents
+			Constraints 	=	duplicator[pln].Constraints
+			DupeInfo	 	=	duplicator[pln].DupeInfo
+			DORInfo	 		=	duplicator[pln].DORInfo
 			
 		else
 			return false
@@ -155,7 +156,7 @@ if (!SERVER) then return end
 			    Msg("Duplicator Paste: Unknown class " .. EntClass .. "\n")
 			end
 			
-			if ( entID == duplicator[ply:UniqueID()].HeadEntID ) then
+			if ( entID == duplicator[pln].HeadEntID ) then
 				HeadEntity = Ent
 			end
 			
@@ -186,14 +187,13 @@ if (!SERVER) then return end
 		
 		duplicator.PasteApplyDupeInfo( ply, DupeInfo, entIDtable )
 		
+		duplicator.PasteApplyDORInfo( DORInfo, function(id) return entIDtable[id] end )
+		//duplicator.PasteApplyDORInfo( ply, DORInfo, entIDtable )
+		
 		//duplicator.PasteRotate( ply, HeadEntity, CreatedEnts )
 		
 		return CreatedEnts, CreatedConstraints
 	end
-	
-	
-	
-	
 	
 	
 	
@@ -209,24 +209,26 @@ if (!SERVER) then return end
 		//save to a sub folder for each player
 		local dir = "adv_duplicator/"..string.gsub(pl:GetName(), ":", "_")
 		
-		if	!file.Exists(dir)	then file.CreateDir(dir) 
-		elseif	!file.IsDir(dir)	then return end
-		
 		//!!TODO!! check the that filename contains no illegal characters
-		local filename = dir.."/"..tostring(pl:GetInfo( "adv_duplicator_save_filename" ))..".txt"
+		local filename = tostring(pl:GetInfo( "adv_duplicator_save_filename" ))
+		
+		filename = duplicator.FileNoOverWriteCheck( dir, filename )
+		
 		Msg("\nSaving to file: "..filename.."\n")
 		
 		//save to file
 		local temp = {}
 		//let's only save the junk we're acctually going to load
-		temp.Ents			= duplicator[pl:UniqueID()].Ents
-		temp.Constraints	= duplicator[pl:UniqueID()].Constraints
-		temp.DupeInfo		= duplicator[pl:UniqueID()].DupeInfo
-		temp.HeadEntID		= duplicator[pl:UniqueID()].HeadEntID
-		temp.HoldAngle		= duplicator[pl:UniqueID()].HoldAngle
+		local pln = pl:UniqueID()
+		temp.Ents			= duplicator[pln].Ents
+		temp.Constraints	= duplicator[pln].Constraints
+		temp.DupeInfo		= duplicator[pln].DupeInfo
+		temp.DORInfo		= duplicator[pln].DORInfo
+		temp.HeadEntID		= duplicator[pln].HeadEntID
+		temp.HoldAngle		= duplicator[pln].HoldAngle
 		//add file versioning, it will come in handy later if save format changes
 		temp["VersionInfo"] = {}
-		temp["VersionInfo"]["FileVersion"]		= 0.3
+		temp["VersionInfo"]["FileVersion"]		= 0.4
 		temp["VersionInfo"]["FileInfo"]			= "Advanced Duplicator Save File"
 		temp["VersionInfo"]["Creator"]			= pl:GetName()	or "unknown"
 		temp["VersionInfo"]["Desc"]				= desc 			or "none"
@@ -238,23 +240,28 @@ if (!SERVER) then return end
 		temp = util.TableToKeyValues(temp)
 		file.Write(filename, temp)
 		
-		
+		return filename //for sending to client after saving
 	end
 	
 	
 	function duplicator.LoadFromFile( pl, filename )
-	
+		
 		local dir = "adv_duplicator"
 		local ndir = dir.."/"..string.gsub(pl:GetName(), ":", "_") //don't think this works right
-
+		
 		if !file.Exists(dir.."/"..filename) && !file.Exists(ndir.."/"..filename) then
 			print("File not found") return end
 		
 		// Clear Ghost entity if one exists
-		pl:GetWeapon("gmod_tool"):GetTable():GetToolObject():ReleaseGhostEntity()
-		// This is ridiculous:
-		if ( pl:GetActiveWeapon():GetClass() == "gmod_tool" ) then
-			pl:SendLua(  "LocalPlayer():GetActiveWeapon():GetTable():GetToolObject():ReleaseGhostEntity()" )
+		local tool = pl:GetActiveWeapon()
+		if (tool:GetClass() == "gmod_tool" )
+		and ((tool:GetTable():GetToolObject().Name == "Advanced Duplicator")
+		 or (tool:GetTable():GetToolObject().Name == "Duplicator")) then
+			tool:GetTable():GetToolObject():ReleaseGhostEntity()
+			// This is ridiculous:
+			if ( pl:GetActiveWeapon():GetClass() == "gmod_tool" ) then
+				pl:SendLua("LocalPlayer():GetActiveWeapon():GetTable():GetToolObject():ReleaseGhostEntity()")
+			end
 		end
 		
 		local filepath
@@ -269,27 +276,41 @@ if (!SERVER) then return end
 		//check the file was loaded and we understand it's version
 		local pln = pl:UniqueID()
 		
-		if (temp) and (temp["VersionInfo"]["FileVersion"] >= 0.3) then
+		if (temp) and (temp["VersionInfo"]["FileVersion"] >= 0.4) then
 			//current data file, an easy load
 			duplicator[pln]					= {}
 			duplicator[pln].Ents			= temp.Ents
 			duplicator[pln].Constraints		= temp.Constraints
 			duplicator[pln].DupeInfo		= temp.DupeInfo
+			duplicator[pln].DORInfo			= temp.DORInfo
 			duplicator[pln].HeadEntID		= temp.HeadEntID
 			duplicator[pln].HoldAngle		= temp.HoldAngle
 			
 			Msg("Loaded new file "..filepath.."  version: "..temp["VersionInfo"]["FileVersion"].."\n")
+			
+		elseif (temp) and (temp["VersionInfo"]["FileVersion"] == 0.3) then
+			//last data file, an easy load
+			duplicator[pln]					= {}
+			duplicator[pln].Ents			= temp.Ents
+			duplicator[pln].Constraints		= temp.Constraints
+			duplicator[pln].DupeInfo		= temp.DupeInfo
+			duplicator[pln].DORInfo			= {} //this file verion doesn't have this info
+			duplicator[pln].HeadEntID		= temp.HeadEntID
+			duplicator[pln].HoldAngle		= temp.HoldAngle
+			
+			Msg("Loaded old file "..filepath.."  version: 0.3\n")
 			
 		elseif (temp) and (temp["VersionInfo"]["FileVersion"] <= 0.2) then
 			//load the an old version data file, this is why file versioning is good
 			duplicator[pln]					= {}
 			duplicator[pln].Ents			= temp.Ents
 			duplicator[pln].Constraints		= temp.Constraints
+			duplicator[pln].DupeInfo 		= {}
+			duplicator[pln].DORInfo			= {} //this file verion doesn't have this info
 			duplicator[pln].HeadEntID		= temp.HeadEntID
 			duplicator[pln].HoldAngle		= temp.HoldAngle
 			
 			//build the new type dupeinfo from the ents table
-			duplicator[pln].DupeInfo = {}
 			for id, entTable in pairs(temp.Ents) do
 				if (entTable.DupeInfo) then
 					duplicator[pln].DupeInfo[id] = entTable.DupeInfo
@@ -303,6 +324,184 @@ if (!SERVER) then return end
 		end
 		
 	end
+	
+	
+	
+	
+	
+	
+	function duplicator.RecieveFileContentStart( pl, cmd, args )
+		
+		Msg("DupeRecieveFileContentStart recieving file: "..args[1].."\n")
+		
+		if (!duplicator[pl:UniqueID()]) then duplicator[pl:UniqueID()] = {} end
+		
+		duplicator[pl:UniqueID()].templast		= tonumber(args[1])
+		duplicator[pl:UniqueID()].tempdir		= args[2]
+		duplicator[pl:UniqueID()].tempfilename	= args[3]
+		duplicator[pl:UniqueID()].tempnum		= 0
+		duplicator[pl:UniqueID()].tempfile		= {}
+		
+	end
+	concommand.Add("DupeRecieveFileContentStart", duplicator.RecieveFileContentStart)
+	
+	
+	function duplicator.RecieveFileContent( pl, cmd, args )
+		Msg("recieving piece ")
+		if (args[1] == "") or (!args[1]) then return end
+		duplicator[pl:UniqueID()].tempnum = duplicator[pl:UniqueID()].tempnum + 1
+		
+		Msg(args[1].." / "..duplicator[pl:UniqueID()].templast.." revieved: "..duplicator[pl:UniqueID()].tempnum.."\n")
+		
+		duplicator[pl:UniqueID()].tempfile[tonumber(args[1])] = args[2]
+		
+	end
+	concommand.Add("_DFC", duplicator.RecieveFileContent)
+	
+	
+	function duplicator.RecieveFileContentFinish( pl, cmd, args )
+		local filepath = duplicator.FileNoOverWriteCheck( duplicator[pl:UniqueID()].tempdir, duplicator[pl:UniqueID()].tempfilename )
+		Msg("saving recieved file to "..filepath.."\n")
+		duplicator.RecieveFileContentSave( pl, filepath )
+	end
+	concommand.Add("DupeRecieveFileContentFinish", duplicator.RecieveFileContentFinish)
+	
+	
+	function duplicator.RecieveFileContentSave( pl, filepath )
+		
+		//reassemble the pieces
+		local temp = ""
+		for k, v in pairs(duplicator[pl:UniqueID()].tempfile) do
+			temp = temp..v
+		end
+		
+		//shitty string unprotect/decompression
+		temp = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(temp,"|mn","\t\t\"__name\"\t\t"),"|mt","\t\t\"__type\"\t\t"),"|mv|","\t\t\t\"V\"\t\t"),"|mD","\t\t\t\"DupeInfo\""),"|mN","\"Number\"\n"),"|mS","\"String\"\n"),"|mA","\"Angle\"\n"),"|mV","\"Vector\"\n"),"|mB","\"Bool\"\n"),"|mC","\"Class\""),"|mm","\"material\""),"|mp","\"prop_physics\""),"|VI","\t\t\"VersionInfo\"\n\t\t\"FileVersion\"\n\t\t{\n"),"|wm","\"models"),"|NC","\n\t\t\t\"NoCollide\"\n\t\t\t{\n\t"),"|nc","\"nocollide\"\n"),"|HE","\"HeadEntID\"\n"),"|ha","\n\t}\n\t\"holdangle\"\n\t{\n"),"|qY","\t\t\"Y\"\t\t\""),"|qz","\t\t\"z\"\t\t\""),"|qx","\t\t\"x\"\t\t\""),"|qA","\t\t\"A\"\t\t\""),"|qB","\t\t\"B\"\t\t\""),"|qg","\t\t\"g\"\t\t\""),"|qr","\t\t\"r\"\t\t\""),"|qp","\t\t\"p\"\t\t\""),"|HA","\"HoldAngle\"\n"),"|n","\n"),"|4t","\t\t\t\t"),"|3t","\t\t\t"),"|2t","\t\t"),"|t","\t"),"|N","name"),"|Q","\"")
+		
+		file.Write(filepath, temp)
+		
+		pl:PrintMessage(HUD_PRINTTALK, "Your file: \""..filepath.."\" was uploaded to the server")
+		pl:PrintMessage(HUD_PRINTCONSOLE, "Your file: \""..filepath.."\" was uploaded to the server")
+		
+		Msg("player: \""..(pl:GetName() or "unknown").."\" uploaded file: \""..filepath.."\"")
+		
+		pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject():UpdateList()
+		
+	end
+	
+	
+	
+	
+	
+	
+	function duplicator.SaveAndSendSaveToClient( pl, filename, desc )
+		
+		local filepath = duplicator.SaveToFile( pl, filename, desc )
+		
+		duplicator.SendSaveToClient( pl, filepath )
+		
+		//local dir = "adv_duplicator"
+		//save to a sub folder for each player
+		/*local dir = "adv_duplicator/"..string.gsub(pl:GetName(), ":", "_")
+		
+		if	!file.Exists(dir)	then file.CreateDir(dir) 
+		elseif	!file.IsDir(dir)	then return end
+		
+		//!!TODO!! check the that filename contains no illegal characters
+		local filename = tostring(pl:GetInfo( "adv_duplicator_save_filename" ))
+		local filepath = dir.."/"..filename..".txt"
+		Msg("\nSaving to file: "..filename.."\n")
+		
+		local pln = pl:UniqueID()
+		//save to file
+		local temp = {}
+		//let's only save the junk we're acctually going to load
+		temp.Ents			= duplicator[pln].Ents
+		temp.Constraints	= duplicator[pln].Constraints
+		temp.DupeInfo		= duplicator[pln].DupeInfo
+		temp.HeadEntID		= duplicator[pln].HeadEntID
+		temp.HoldAngle		= duplicator[pln].HoldAngle
+		//add file versioning, it will come in handy later if save format changes
+		temp["VersionInfo"] = {}
+		temp["VersionInfo"]["FileVersion"]		= 0.3
+		temp["VersionInfo"]["FileInfo"]			= "Advanced Duplicator Save File"
+		temp["VersionInfo"]["Creator"]			= pl:GetName()	or "unknown"
+		temp["VersionInfo"]["Desc"]				= desc 			or "none"
+		temp["VersionInfo"]["NumOfEnts"]		= table.Count(temp.Ents)		or 0
+		temp["VersionInfo"]["NumOfConst"]		= table.Count(temp.Constraints)	or 0
+		temp["VersionInfo"]["NumOfDupeInfo"]	= table.Count(temp.DupeInfo)	or 0
+		//prepare the table and save it to file 
+		temp = duplicator.PrepareTableToSave(temp)
+		duplicator[pln].temp = util.TableToKeyValues(temp)
+		file.Write(filepath, duplicator[pln].temp)*/
+		
+	end
+	
+	function duplicator.SendSaveToClient( pl, filename )
+		local filepath = filename
+		local dir = "adv_duplicator"
+		local ndir = dir.."/"..string.gsub(pl:GetName(), ":", "_")
+		
+		if !file.Exists(filepath) then //if filepath was just a file name then try to find the file, for sending from list
+			if !file.Exists(dir.."/"..filename) && !file.Exists(ndir.."/"..filename) then
+				Msg("File not found: \""..filepath.."\"\n") return end
+			
+			if ( file.Exists(ndir.."/"..filename) ) then filepath = ndir.."/"..filename end
+			if ( file.Exists(dir.."/"..filename) ) then filepath = dir.."/"..filename end
+		end
+		
+		filename = duplicator.GetFileFromFilename(filepath)
+		
+		local pln = pl:UniqueID()
+		if (!duplicator[pln]) then duplicator[pln] = {} end
+		
+		duplicator[pln].temp = file.Read(filepath)
+		
+		local len = string.len(duplicator[pln].temp)
+		local last = math.ceil(len / 220) + 1 //+1 because the client counts the first piece recieved as 1 not 0
+		
+		umsg.Start("RecieveSaveStart", pl)
+			umsg.Short(last)
+			umsg.String(filename)
+			umsg.String(ndir)
+		umsg.End()
+		Msg("sending \""..filename.."\" in "..tostring(last).." pieces. len: "..tostring(len).."\n")
+		
+		duplicator.SendSaveToClientData(pl, pln, len, 0, last)
+		
+	end
+	
+	function duplicator.SendSaveToClientData(pl, pln, len, offset, last)
+		
+		for k=0,1 do //sends two pieces
+			
+			if ((offset + k + 1) <= last) then
+				Msg("sending string: "..tostring((offset + k) * 220).." / "..len.." k: "..k.." piece: "..(offset + k + 1).." / "..last.."\n")
+				umsg.Start("RecieveSaveData", pl)
+					umsg.Short(offset + k + 1) //cause sometimes these are reccieved out of order
+					
+					if ((offset + k + 1) == last) then
+						umsg.String(string.Right(duplicator[pln].temp, (len - ((last - 2) * 200))))
+						//umsg.String(string.sub(duplicator[pln].temp, ((offset + k) * 220)))
+					else
+						umsg.String(string.Right(string.Left(duplicator[pln].temp, ((offset + k) * 200)),200))
+						//local pos = ((offset + k) * 220)
+						//umsg.String(string.sub(duplicator[pln].temp, pos, (pos +220) ))
+					end
+					
+				umsg.End()
+			else
+				break
+			end
+		end
+		
+		if (offset + 3) <= last then
+			timer.Simple( 0.1, duplicator.SendSaveToClientData, pl, pln, len, (offset + 2), last )
+		end
+		
+	end
+	
+	
 	
 	
 	
@@ -386,6 +585,66 @@ if (!SERVER) then return end
 		return tbl
 		
 	end
+	
+	
+	/*---------------------------------------------------------
+	   Name: duplicator.FileNoOverWriteCheck( dir, filename )
+	   Desc: Check if dir and filename exist and if so renames
+	   returns filepath (dir.."/"..filename..".txt"), dir, filename
+	---------------------------------------------------------*/
+	function duplicator.FileNoOverWriteCheck( dir, filename )
+		
+		if !file.Exists(dir) then 
+			file.CreateDir(dir)
+		elseif !file.IsDir(dir) then
+			local x = 0
+			while x ~= nil do
+				x = x + 1
+				if not file.Exists(dir.."_"..tostring(x)) then
+					dir = dir.."_"..tostring(x)
+					file.CreateDir(dir)
+					x = nil
+				end
+			end
+		end
+		
+		if file.Exists(dir .. "/" .. filename .. ".txt") then
+			local x = 0
+			while x ~= nil do
+				x = x + 1
+				if not file.Exists(dir.."/"..filename.."_"..tostring(x)..".txt") then
+					filename = filename.."_"..tostring(x)
+					x = nil
+				end
+			end
+		end
+		
+		local filepath = dir .. "/" .. filename .. ".txt"
+		
+		return filepath, filename, dir
+	end
+	
+	
+	/*---------------------------------------------------------
+		cause garry's crashes the server
+	and this one returns the filename without extention
+	---------------------------------------------------------*/
+	function duplicator.GetFileFromFilename(path)
+		
+		for i = string.len(path), 1, -1 do
+			local str = string.sub(path, i, i)
+			Msg("str= "..str.." i= "..i.."\n")
+			if str == "/" or str == "\\" then path = string.sub(path, (i + 1)) end
+		end
+		
+		//removed .txt from the end if its there.
+		if (string.sub(path, -4) == ".txt") then
+			path = string.sub(path, 1, -5)
+		end
+		
+		return path
+	end
+	
 	
 	
 	
@@ -711,6 +970,28 @@ if (!SERVER) then return end
 					)
 			end
 		end
+	end
+	
+	// Apply DORInfo for DeleteOnRemove
+	function duplicator.PasteApplyDORInfo( DORInfoTable, GetentID )
+		
+		for id, DORInfo in pairs(DORInfoTable) do
+			local ent = GetentID(id)
+			if (ent) and (ent:IsValid()) and (DORInfo) then
+				ent:SetDeleteOnRemoveInfo(DORInfo, function(id) return GetentID(id) end)
+				
+				for _,entindex in pairs(DORInfo) do
+					local ent2 = GetentID(entindex)
+					if (ent2 && ent2:IsValid() && ent2:EntIndex() > 0) then
+						// Add the entity
+						
+						ent:DeleteOnRemove(ent2)
+					end
+				end
+				
+			end
+		end
+		
 	end
 	
 	

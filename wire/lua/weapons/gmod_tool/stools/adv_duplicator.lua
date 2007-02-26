@@ -1,4 +1,4 @@
-
+//Advanced Duplicator by TAD2020
 TOOL.Category		= "Construction"
 TOOL.Name			= "Advanced Duplicator"
 TOOL.Command		= nil
@@ -7,15 +7,20 @@ TOOL.ConfigName		= ""
 if ( CLIENT ) then
     language.Add( "Tool_adv_duplicator_name", "Advanced Duplicator" )
     language.Add( "Tool_adv_duplicator_desc", "Duplicate an entity, or group of entities" )
-    language.Add( "Tool_adv_duplicator_0", "Right click to copy a group of entities" )
-    language.Add( "Tool_duplicator_1", "Now left click to paste a copy" )
+    language.Add( "Tool_adv_duplicator_0", "Right click to copy, Reload places Paster" )
+    language.Add( "Tool_duplicator_1", "Now left click to paste, Reload places Paster" )
 end
 
 
-TOOL.ClientConVar[ "simple" ] = 0
-TOOL.ClientConVar[ "save_filename" ] = ""
-TOOL.ClientConVar[ "load_filename" ] = ""
-TOOL.ClientConVar[ "file_desc" ] = ""
+TOOL.ClientConVar[ "simple" ]			= 0
+TOOL.ClientConVar[ "save_filename" ]	= ""
+TOOL.ClientConVar[ "load_filename" ]	= ""
+TOOL.ClientConVar[ "load_filename_cl" ]	= ""
+TOOL.ClientConVar[ "file_desc" ]		= ""
+TOOL.ClientConVar[ "delay" ]			= 0
+TOOL.ClientConVar[ "undo_delay" ]		= 0
+TOOL.ClientConVar[ "range" ]			= "1500"
+TOOL.ClientConVar[ "show_beam" ]		= "1"
 
 cleanup.Register( "duplicates" )
 
@@ -126,18 +131,31 @@ end
 //make a paster ent
 function TOOL:Reload( trace )
 	if (CLIENT) then return true end
+	
 	local pl = self:GetOwner()
 	local pln = self:GetOwner():UniqueID()
+	
+	if (!duplicator[pln].Ents) then return false end
 	
 	local paster = ents.Create( "gmod_adv_dupe_paster" )
 	if (!paster:IsValid()) then return false end
 	
-	paster:SetPos( pl:GetShootPos() + pl:GetAimVector() * 24 )
-	paster:SetAngles( pl:GetAimVector() )
+	//paster:SetPos( pl:GetShootPos() + pl:GetAimVector() * 32 )
+	//paster:SetAngles( pl:GetAimVector() )
+	paster:SetPos( trace.HitPos )
+	
+	local Ang = trace.HitNormal:Angle()
+	Ang.pitch = Ang.pitch + 90
+	paster:SetAngles( Ang )
+	
 	paster:Spawn()
 	paster:SetPlayer( pl )
 	
-	paster:GetPhysicsObject():EnableMotion(false)
+	local min = paster:OBBMins()
+	paster:SetPos( trace.HitPos - trace.HitNormal * min.z )
+	
+	local phys = paster:GetPhysicsObject()
+	if (phys:IsValid()) then phys:EnableMotion(false) end
 	//paster:SetNotSolid(true)
 
 	local ttable = {pl = pl}
@@ -148,7 +166,12 @@ function TOOL:Reload( trace )
 		undo.SetPlayer( pl )
 	undo.Finish()
 	
-	paster:Setup(table.Copy(duplicator[pln].Ents), table.Copy(duplicator[pln].Constraints), table.Copy(duplicator[pln].DupeInfo), trace.HitPos, duplicator[pln].HeadEntID)
+	local delay 		= self:GetClientNumber( "delay" )
+	local undo_delay	= self:GetClientNumber( "undo_delay" )
+	local range			= self:GetClientNumber("range")
+	local show_beam		= (self:GetClientNumber("show_beam") == 1)
+	
+	paster:Setup(table.Copy(duplicator[pln].Ents), table.Copy(duplicator[pln].Constraints), table.Copy(duplicator[pln].DupeInfo), table.Copy(duplicator[pln].DORInfo), duplicator[pln].HeadEntID, delay, undo_delay, range, show_beam)
 	
 	return true
 end
@@ -600,13 +623,13 @@ function TOOL:HideGhost(hide)
 end
 
 function TOOL:UpdateList()
-
 	if (!self:GetOwner():IsValid()) then return false end
 	if (!self:GetOwner():IsPlayer()) then return false end
 	
 	local dir = "adv_duplicator"
 	local ndir = dir.."/"..string.gsub(self:GetOwner():GetName(), ":", "_")
-
+		
+	
 	self:GetOwner():SendLua( "if ( !duplicator ) then duplicator={} end" )
 	self:GetOwner():SendLua( "duplicator.LoadList={}" )
 	
@@ -639,12 +662,11 @@ function TOOL:UpdateList()
 	end
 	
 	// Force user to update list
-	self:GetOwner():SendLua( "AdvDuplicator_UpdateControlPanel()" )
+	self:GetOwner():SendLua( "AdvDuplicator_UpdateControlPanel(\""..ndir.."\")" )
 	
 end
 
 function TOOL:Deploy()
-	
 	if ( CLIENT ) then return end
 	
 	self.stage		= 0
@@ -701,67 +723,39 @@ if SERVER then
 	concommand.Add( "adv_duplicator_load", AdvDupeSS_Load )
 	
 	
-	
 	// Clientside save of duplicated ents
 	local function AdvDupeCL_Save( pl, command, args )
-
+		
 		if !pl:IsValid() 
 		or !pl:IsPlayer() 
-		or !pl:GetTable().Duplicator
+		//or !pl:GetTable().Duplicator 
+		or !duplicator[pl:UniqueID()] 
 		then return end
 
-		local dir = "adv_duplicator"
-		// Make the directory on the client, if it doesn't exist
-		// Jesus fuck this is fucking awful.
-		pl:SendLua(  "if !file.Exists('"..dir.."') then file.CreateDir('"..dir.."') elseif !file.IsDir('"..dir.."') then return end")
-		
-		//!!TODO!! check the that filename contains no illegal characters
-		local filename = tostring(pl:GetInfo( "adv_duplicator_save_filename" ))
-		local filestr = dir.."/"..filename
-		
-		
-		//build save file
-		/*local str = {}
-		str["ents"] = pl:GetTable().Duplicator.Ents
-		str["const"] = pl:GetTable().Duplicator.Constraints
-		str["head"] = pl:GetTable().Duplicator.HeadEntID
-		temp["holdangle"] = duplicator.HoldAngle
-		str = duplicator.PrepareTableToSave(str)
-		str = util.TableToKeyValues(str)*/
-		
-		
-		local filewrite_start = "filex.Append('"..filestr.."','"
-		local filewrite_end = "')"
-		
-		local maxchar = 254 - string.len( filewrite_start..filewrite_end )
-		
-		// Split up the string into groups of X characters
-		local t={}
-		local splitstr = ""
-		for char in string.gmatch(str, "(.)") do
-			if (string.len(splitstr) >= maxchar) then
-				table.insert( t, splitstr )
-				splitstr=""
-			end
-			splitstr = splitstr..char
-		end
-		table.insert( t, splitstr )
-		
-		// Delete the file if it already exists
-		pl:SendLua(  "if ( file.Exists('"..filestr.."') ) then file.Delete('"..filestr.."') end" )
-		
-		// Now iterate over every string and send it to the client
-		for k,v in pairs( t ) do
-			pl:SendLua(  filewrite_start..v..filewrite_end )
-		end
-		
-		print(dir.."/"..filename)
+		//save to file
+		duplicator.SaveAndSendSaveToClient( pl, tostring(pl:GetInfo( "adv_duplicator_save_filename" )), tostring(pl:GetInfo( "adv_duplicator_file_desc" )) )
 		
 		pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject():UpdateList()
 		
 	end
 	concommand.Add( "adv_duplicator_save_cl", AdvDupeCL_Save )
 	
+	//sends the selected file to the client
+	local function AdvDupeCl_Send( pl, command, args )
+		
+		if !pl:IsValid() 
+		or !pl:IsPlayer() 
+		then return end
+		
+		local filename = ""
+		if !args[1] //if a filename wasn't passed with a arg, then get the selection in the panel
+		then filename = pl:GetInfo( "adv_duplicator_load_filename" )
+		else filename = tostring(args[1]) end
+		
+		duplicator.SendSaveToClient( pl, filename )
+		
+	end
+	concommand.Add( "adv_duplicator_send_cl", AdvDupeCl_Send )
 	
 	
 	
@@ -784,8 +778,8 @@ if SERVER then
 	
 else	// CLIENT
 
-	function AdvDuplicator_UpdateControlPanel()
-	
+	function AdvDuplicator_UpdateControlPanel(ndir)
+		
 		local CPanel = GetControlPanel( "adv_duplicator" )
 		
 		if (CPanel != nil) then
@@ -805,23 +799,40 @@ else	// CLIENT
 						end
 					end
 			CPanel:AddControl( "ListBox", params )
+			
+			if (SinglePlayer()) then
+				local params = {}
+					params.Text = "Load Selected File"
+					params.Command = "adv_duplicator_load"
+				CPanel:AddControl( "Button", params )
 				
-			local params = {}
-				params.Text = "Load File"
-				params.Command = "adv_duplicator_load"
-			CPanel:AddControl( "Button", params )
+				local params = {}
+					params.Text = "#Duplicator_save"
+					params.Command = "adv_duplicator_save"
+				CPanel:AddControl( "Button", params )
+			end
+			
+			if (!SinglePlayer()) then
+				local params = {}
+					params.Text = "Load Selected File From Server"
+					params.Command = "adv_duplicator_load"
+				CPanel:AddControl( "Button", params )
 				
-			local params = {}
-				params.Text = "#Duplicator_save"
-				params.Command = "adv_duplicator_save"
+				local params = {}
+					params.Text = "Save To Server"
+					params.Command = "adv_duplicator_save"
+				CPanel:AddControl( "Button", params )
 				
-			CPanel:AddControl( "Button", params )
+				local params = {}
+					params.Text = "Save to Server Then Download"
+					params.Command = "adv_duplicator_save_cl"
+				CPanel:AddControl( "Button", params )
 				
-			/*local params = {}
-				params.Text = "#Duplicator_save_cl"
-				params.Command = "adv_duplicator_save_cl"
-				
-				CPanel:AddControl( "Button", params )*/
+				local params = {}
+					params.Text = "Download Selected File"
+					params.Command = "adv_duplicator_send_cl"
+				CPanel:AddControl( "Button", params )
+			end
 			
 			CPanel:AddControl("TextBox", {
 				Label = "Filename:",
@@ -829,11 +840,86 @@ else	// CLIENT
 			
 			CPanel:AddControl("TextBox", {
 				Label = "Description:",
-				Height = 180,
 				Command = "adv_duplicator_file_desc"})
+			
+			CPanel:AddControl( "Slider", { 
+				Label	= "Spawn Delay",
+				Type	= "Float",
+				Min		= "0",
+				Max		= "100",
+				Command	= "adv_duplicator_delay"})
+
+			CPanel:AddControl( "Slider", { 
+				Label	= "Automatic Undo Delay",
+				Type	= "Float",
+				Min		= "0",
+				Max		= "100",
+				Command	= "adv_duplicator_undo_delay"})
+			
+			CPanel:AddControl("Slider", {
+				Label = "Range",
+				Type = "Float",
+				Min = "0",
+				Max = "1000",
+				Command = "adv_duplicator_range"})
+			
+			CPanel:AddControl("CheckBox", {
+				Label = "Show Beam",
+				Command = "adv_duplicator_show_beam"})
+			
+			if (!SinglePlayer()) then
+				local dir = "adv_duplicator"
+				local ndir = dir.."/"..string.gsub(LocalPlayer():GetName(), ":", "_")
+				
+				local params = {}
+					params.Label = "ClientSide Files"
+					params.Height = 180
+					params.Options = {}
+				
+				if ( file.Exists(dir) && file.IsDir(dir) ) then
+					for key, val in pairs( file.Find( dir.."/*" ) ) do
+						if ( !file.IsDir( dir.."/"..val ) ) then
+							params.Options[val] = {}
+							params.Options[val].adv_duplicator_load_filename_cl = val
+						end
+					end
+				end
+				if (ndir && file.Exists(ndir) && file.IsDir(ndir) ) then
+					for key, val in pairs( file.Find( ndir.."/*" ) ) do
+						if ( !file.IsDir( ndir.."/"..val ) ) then
+							params.Options[val] = {}
+							params.Options[val].adv_duplicator_load_filename_cl = val
+						end
+					end
+				end
+				CPanel:AddControl( "ListBox", params )
+				
+				CPanel:AddControl( "Button", {
+					Text = "Upload File to server",
+					Command = "adv_duplicator_load_cl"})
+			end
+			
 		end
 	
 	end
+	
+	
+	
+	local function AdvDupeCS_UpLoad( pl, command, args )
+		
+		if !pl:IsValid() 
+		or !pl:IsPlayer() 
+		then return end
+		
+		local filename = ""
+		if !args[1] //if a filename wasn't passed with an arg, then get the selection in the panel
+		then filename = pl:GetInfo( "adv_duplicator_load_filename_cl" )
+		else filename = tostring(args[1]) end
+		
+		duplicatorclient.UpLoadFile( pl, filename )
+		
+	end
+	concommand.Add( "adv_duplicator_load_cl", AdvDupeCS_UpLoad )
 	
 	
 	
