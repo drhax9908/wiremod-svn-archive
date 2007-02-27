@@ -481,10 +481,10 @@ if (!SERVER) then return end
 					umsg.Short(offset + k + 1) //cause sometimes these are reccieved out of order
 					
 					if ((offset + k + 1) == last) then
-						umsg.String(string.Right(duplicator[pln].temp, (len - ((last - 2) * 200))))
+						umsg.String(string.Right(duplicator[pln].temp, (len - ((last - 2) * 220))))
 						//umsg.String(string.sub(duplicator[pln].temp, ((offset + k) * 220)))
 					else
-						umsg.String(string.Right(string.Left(duplicator[pln].temp, ((offset + k) * 200)),200))
+						umsg.String(string.Right(string.Left(duplicator[pln].temp, ((offset + k) * 220)),220))
 						//local pos = ((offset + k) * 220)
 						//umsg.String(string.sub(duplicator[pln].temp, pos, (pos +220) ))
 					end
