@@ -92,11 +92,10 @@ if (SERVER) then
 		wire_forcer:GetTable():SetPlayer( pl )
 		
 		local ttable = {
-			pl		= pl
-			Force	= Force
-			Length	= Length
-			Length	= Length
-			showbeam = showbeam
+			pl		= pl,
+			Force	= Force,
+			Length	= Length,
+			showbeam = showbeam,
 		}
 
 		table.Merge(wire_forcer:GetTable(), ttable )
