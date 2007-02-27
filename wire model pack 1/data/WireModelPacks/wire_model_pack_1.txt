@@ -131,24 +131,6 @@
 		}
 	}
 
-	"Nano-AMD"
-	{
-		"categories"	"gate,chip,value"
-		"model"			"models/cheeze/wires/nano_cpu.mdl"
-		"files"
-		{
-			"0"	"models/cheeze/wires/nano_cpu.dx80.vtx"
-			"1"	"models/cheeze/wires/nano_cpu.dx90.vtx"
-			"2"	"models/cheeze/wires/nano_cpu.phy"
-			"3"	"models/cheeze/wires/nano_cpu.sw.vtx"
-			"4"	"models/cheeze/wires/nano_cpu.vvd"
-			"7"     "materials/models/cheeze/wires/x2_logo.vmt"
-			"8"     "materials/models/cheeze/wires/x2_logo.vtf"
-			"9"     "materials/models/cheeze/wires/metal_texture.vmt"
-			"10"     "materials/models/cheeze/wires/metal_texture.vtf"
-		}
-	}
-
 	"Nano-Chip"
 	{
 		"categories"	"gate,chip,value"
@@ -165,7 +147,7 @@
 		}
 	}
 
-	"AMD-Test"
+	"Nano-AMD"
 	{
 		"categories"	"gate,chip,value"
 		"model"			"models/cheeze/wires/amd_test.mdl"
@@ -178,6 +160,134 @@
 			"4"	"models/cheeze/wires/amd_test.vvd"
 			"7"     "materials/models/cheeze/wires/x2_logo.vmt"
 			"8"     "materials/models/cheeze/wires/x2_logo.vtf"
+		}
+	}
+
+	"Nano-Compare"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/cheeze/wires/nano_compare.mdl"
+		"files"
+		{
+			"0"	"models/cheeze/wires/nano_compare.dx80.vtx"
+			"1"	"models/cheeze/wires/nano_compare.dx90.vtx"
+			"2"	"models/cheeze/wires/nano_compare.phy"
+			"3"	"models/cheeze/wires/nano_compare.sw.vtx"
+			"4"	"models/cheeze/wires/nano_compare.vvd"
+			"7"     "materials/models/cheeze/wires/compare.vmt"
+			"8"     "materials/models/cheeze/wires/compare.vtf"
+		}
+	}
+
+	"Nano-Math"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/cheeze/wires/nano_math.mdl"
+		"files"
+		{
+			"0"	"models/cheeze/wires/nano_math.dx80.vtx"
+			"1"	"models/cheeze/wires/nano_math.dx90.vtx"
+			"2"	"models/cheeze/wires/nano_math.phy"
+			"3"	"models/cheeze/wires/nano_math.sw.vtx"
+			"4"	"models/cheeze/wires/nano_math.vvd"
+			"7"     "materials/models/cheeze/wires/math.vmt"
+			"8"     "materials/models/cheeze/wires/math.vtf"
+		}
+	}
+
+	"Nano-Logic"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/cheeze/wires/nano_logic.mdl"
+		"files"
+		{
+			"0"	"models/cheeze/wires/nano_logic.dx80.vtx"
+			"1"	"models/cheeze/wires/nano_logic.dx90.vtx"
+			"2"	"models/cheeze/wires/nano_logic.phy"
+			"3"	"models/cheeze/wires/nano_logic.sw.vtx"
+			"4"	"models/cheeze/wires/nano_logic.vvd"
+			"7"     "materials/models/cheeze/wires/logic.vmt"
+			"8"     "materials/models/cheeze/wires/logic.vtf"
+		}
+	}
+
+	"Nano-Value"
+	{
+		"categories"	"value"
+		"model"			"models/cheeze/wires/nano_value.mdl"
+		"files"
+		{
+			"0"	"models/cheeze/wires/nano_value.dx80.vtx"
+			"1"	"models/cheeze/wires/nano_value.dx90.vtx"
+			"2"	"models/cheeze/wires/nano_value.phy"
+			"3"	"models/cheeze/wires/nano_value.sw.vtx"
+			"4"	"models/cheeze/wires/nano_value.vvd"
+			"7"     "materials/models/cheeze/wires/value.vmt"
+			"8"     "materials/models/cheeze/wires/value.vtf"
+		}
+	}
+
+	"Nano-Trig"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/cheeze/wires/nano_trig.mdl"
+		"files"
+		{
+			"0"	"models/cheeze/wires/nano_trig.dx80.vtx"
+			"1"	"models/cheeze/wires/nano_trig.dx90.vtx"
+			"2"	"models/cheeze/wires/nano_trig.phy"
+			"3"	"models/cheeze/wires/nano_trig.sw.vtx"
+			"4"	"models/cheeze/wires/nano_trig.vvd"
+			"7"     "materials/models/cheeze/wires/trig.vmt"
+			"8"     "materials/models/cheeze/wires/trig.vtf"
+		}
+	}
+
+	"Nano-Memory"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/cheeze/wires/nano_memory.mdl"
+		"files"
+		{
+			"0"	"models/cheeze/wires/nano_memory.dx80.vtx"
+			"1"	"models/cheeze/wires/nano_memory.dx90.vtx"
+			"2"	"models/cheeze/wires/nano_memory.phy"
+			"3"	"models/cheeze/wires/nano_memory.sw.vtx"
+			"4"	"models/cheeze/wires/nano_memory.vvd"
+			"7"     "materials/models/cheeze/wires/memory.vmt"
+			"8"     "materials/models/cheeze/wires/memory.vtf"
+		}
+	}
+
+	"Nano-Select"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/cheeze/wires/nano_select.mdl"
+		"files"
+		{
+			"0"	"models/cheeze/wires/nano_select.dx80.vtx"
+			"1"	"models/cheeze/wires/nano_select.dx90.vtx"
+			"2"	"models/cheeze/wires/nano_select.phy"
+			"3"	"models/cheeze/wires/nano_select.sw.vtx"
+			"4"	"models/cheeze/wires/nano_select.vvd"
+			"7"     "materials/models/cheeze/wires/select.vmt"
+			"8"     "materials/models/cheeze/wires/select.vtf"
+		}
+	}
+
+	"Nano-Timer"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/cheeze/wires/nano_timer.mdl"
+		"files"
+		{
+			"0"	"models/cheeze/wires/nano_timer.dx80.vtx"
+			"1"	"models/cheeze/wires/nano_timer.dx90.vtx"
+			"2"	"models/cheeze/wires/nano_timer.phy"
+			"3"	"models/cheeze/wires/nano_timer.sw.vtx"
+			"4"	"models/cheeze/wires/nano_timer.vvd"
+			"7"     "materials/models/cheeze/wires/timer.vmt"
+			"8"     "materials/models/cheeze/wires/timer.vtf"
 		}
 	}
 
