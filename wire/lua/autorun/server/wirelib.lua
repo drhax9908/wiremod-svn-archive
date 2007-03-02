@@ -1,5 +1,6 @@
 AddCSLuaFile( "autorun/client/cl_wirelib.lua" )
-
+-- Compatibility Global
+WireAddon = 1
 
 -- extra table functions
 
