@@ -2,35 +2,32 @@ if (CLIENT) then
 
 	duplicatorclient={}
 	
+	include( "autorun/shared/dupeshare.lua" )
 	
-	function duplicatorclient.UpLoadFile( pl, filename )
-		//local pl = LocalPlayer() //can't use LocalPlayer() cause it woouldn't do GetName() or something
-		local dir = "adv_duplicator"
-		local ndir = dir.."/"..string.gsub(pl:GetName(), ":", "_") //don't think this works right
+	function duplicatorclient.UpLoadFile( pl, filepath )
 		
-		if !file.Exists(dir.."/"..filename) && !file.Exists(ndir.."/"..filename) then
-			print("File not found") return end
+		if (duplicatorclient.sending) then return end
+		if !file.Exists(filepath)then print("File not found") return end
 		
-		local filepath
-		if ( file.Exists(ndir.."/"..filename) ) then filepath = ndir.."/"..filename end
-		if ( file.Exists(dir.."/"..filename) ) then filepath = dir.."/"..filename end
+		local filename = dupeshare.GetFileFromFilename(filepath)
 		
 		//load from file
 		local temp = file.Read(filepath)
 		
 		//shitty string protection/compression
-		duplicatorclient.temp2 = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(temp,"\t\t\"__name\"\t\t","|mn"),"\t\t\"__type\"\t\t","|mt"),"\t\t\t\"V\"\t\t","|mv|"),"\t\t\t\"DupeInfo\"","|mD"),"\"Number\"\n","|mN"),"\"String\"\n","|mS"),"\"Angle\"\n","|mA"),"\"Vector\"\n","|mV"),"\"Bool\"\n","|mB"),"\"Class\"","|mC"),"\"material\"","|mm"),"\"prop_physics\"","|mp"),"\t\t\"VersionInfo\"\n\t\t\"FileVersion\"\n\t\t{\n","|VI"),"\"models","|wm"),"\n\t\t\t\"NoCollide\"\n\t\t\t{\n\t","|NC"),"\"nocollide\"\n","|nc"),"\"HeadEntID\"\n","|HE"),"\n\t}\n\t\"holdangle\"\n\t{\n","|ha"),"\t\t\"Y\"\t\t\"","|qY"),"\t\t\"z\"\t\t\"","|qz"),"\t\t\"x\"\t\t\"","|qx"),"\t\t\"A\"\t\t\"","|qA"),"\t\t\"B\"\t\t\"","|qB"),"\t\t\"g\"\t\t\"","|qg"),"\t\t\"r\"\t\t\"","|qr"),"\t\t\"p\"\t\t\"","|qp"),"\"HoldAngle\"\n","|HA"),"\n","|n"),"\t\t\t\t","|4t"),"\t\t\t","|3t"),"\t\t","|2t"),"\t","|t"),"name","|N"),"\"","|Q")
+		//duplicatorclient.temp2 = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(temp,"\t\t\"__name\"\t\t","|mn"),"\t\t\"__type\"\t\t","|mt"),"\t\t\t\"V\"\t\t","|mv|"),"\t\t\t\"DupeInfo\"","|mD"),"\"Number\"\n","|mN"),"\"String\"\n","|mS"),"\"Angle\"\n","|mA"),"\"Vector\"\n","|mV"),"\"Bool\"\n","|mB"),"\"Class\"","|mC"),"\"material\"","|mm"),"\"prop_physics\"","|mp"),"\t\t\"VersionInfo\"\n\t\t\"FileVersion\"\n\t\t{\n","|VI"),"\"models","|wm"),"\n\t\t\t\"NoCollide\"\n\t\t\t{\n\t","|NC"),"\"nocollide\"\n","|nc"),"\"HeadEntID\"\n","|HE"),"\n\t}\n\t\"holdangle\"\n\t{\n","|ha"),"\t\t\"Y\"\t\t\"","|qY"),"\t\t\"z\"\t\t\"","|qz"),"\t\t\"x\"\t\t\"","|qx"),"\t\t\"A\"\t\t\"","|qA"),"\t\t\"B\"\t\t\"","|qB"),"\t\t\"g\"\t\t\"","|qg"),"\t\t\"r\"\t\t\"","|qr"),"\t\t\"p\"\t\t\"","|qp"),"\"HoldAngle\"\n","|HA"),"\n","|n"),"\t\t\t\t","|4t"),"\t\t\t","|3t"),"\t\t","|2t"),"\t","|t"),"name","|N"),"\"","|Q")
 		
+		duplicatorclient.temp2 = dupeshare.Compress(temp, true)
 		
 		//this is where we send the data to the serer
 		local len = string.len(duplicatorclient.temp2)
 		local last = math.ceil(len / 250)
 		
-		pl:ConCommand("DupeRecieveFileContentStart "..tostring(last).." \""..ndir.."\"".." \""..string.gsub(filename,".txt","").."\"")
-		//" \""..filepath.."\"")
+		pl:ConCommand("DupeRecieveFileContentStart "..tostring(last).." \""..string.gsub(filename,".txt","").."\"")
 		
 		timer.Simple( 0.2, duplicatorclient.SendSaveDataToServer, len, 1, last )
 		
+		duplicatorclient.sending = true
 	end
 	
 	
@@ -64,8 +61,10 @@ if (CLIENT) then
 		
 	end
 	
-	
-	
+	local function SendFinished( um )
+		duplicatorclient.sending = false
+	end
+	usermessage.Hook("ClientSendFinished", SendFinished)
 	
 	
 	local function ClientRecieveSaveStart( um )
@@ -108,6 +107,10 @@ if (CLIENT) then
 		for k, v in pairs(duplicatorclient.temp.piece) do
 			temp = temp .. v
 		end
+		
+		//temp = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(temp,"|mn","\t\t\"__name\"\t\t"),"|mt","\t\t\"__type\"\t\t"),"|mv|","\t\t\t\"V\"\t\t"),"|mD","\t\t\t\"DupeInfo\""),"|mN","\"Number\"\n"),"|mS","\"String\"\n"),"|mA","\"Angle\"\n"),"|mV","\"Vector\"\n"),"|mB","\"Bool\"\n"),"|mC","\"Class\""),"|mm","\"material\""),"|mp","\"prop_physics\""),"|VI","\t\t\"VersionInfo\"\n\t\t\"FileVersion\"\n\t\t{\n"),"|wm","\"models"),"|NC","\n\t\t\t\"NoCollide\"\n\t\t\t{\n\t"),"|nc","\"nocollide\"\n"),"|HE","\"HeadEntID\"\n"),"|ha","\n\t}\n\t\"holdangle\"\n\t{\n"),"|qY","\t\t\"Y\"\t\t\""),"|qz","\t\t\"z\"\t\t\""),"|qx","\t\t\"x\"\t\t\""),"|qA","\t\t\"A\"\t\t\""),"|qB","\t\t\"B\"\t\t\""),"|qg","\t\t\"g\"\t\t\""),"|qr","\t\t\"r\"\t\t\""),"|qp","\t\t\"p\"\t\t\""),"|HA","\"HoldAngle\"\n"),"|4","\t\t\t\t"),"|3","\t\t\t"),"|N","name")
+		
+		temp = dupeshare.DeCompress(temp, false)
 		
 		file.Write(filepath, temp)
 		

@@ -504,10 +504,16 @@ function TOOL:SendGhostToClient(fileload)
 	local pl = self:GetOwner()
 	Msg("=====\nsentghosttoclient pl = ")
 	Msg(tostring(pl))
+	
+	if (!dupeshare.CurrentToolIsDuplicator(pl:GetActiveWeapon(), true)) then
+		Msg("Player does not have duplicator out!\n")
+		return
+	end
+	
 	local pln = pl:UniqueID()
 	
-	Msg("\nstart send ghost data\n")
-	if (!duplicator[pln].Ents) then return false end
+	Msg("start send ghost data\n")
+	if (!duplicator[pln]) or (!duplicator[pln].Ents) then return false end
 	local ents = duplicator[pln].Ents
 	local HeadEntID = duplicator[pln].HeadEntID
 	
@@ -607,7 +613,6 @@ end
 
 //makes the ghost disappear so we can see what we are doing
 function TOOL:HideGhost(hide)
-	
 	if (CLIENT) then return end
 	if (SERVER && !SinglePlayer()) then return end
 	
@@ -627,7 +632,7 @@ function TOOL:UpdateList()
 	if (!self:GetOwner():IsPlayer()) then return false end
 	
 	local dir = "adv_duplicator"
-	local ndir = dir.."/"..string.gsub(self:GetOwner():GetName(), ":", "_")
+	local ndir = dir.."/"..dupeshare.GetPlayerName(self:GetOwner()) //string.gsub(self:GetOwner():GetName(), ":", "_")
 		
 	
 	self:GetOwner():SendLua( "if ( !duplicator ) then duplicator={} end" )
@@ -694,8 +699,10 @@ if SERVER then
 		//save to file
 		duplicator.SaveToFile( pl, tostring(pl:GetInfo( "adv_duplicator_save_filename" )), tostring(pl:GetInfo( "adv_duplicator_file_desc" )) )
 		
-		pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject():UpdateList()
-		
+		local tool = pl:GetActiveWeapon()
+		if (dupeshare.CurrentToolIsDuplicator(tool, true)) then
+			tool:GetTable():GetToolObject():UpdateList()
+		end
 	end
 	concommand.Add( "adv_duplicator_save", AdvDupeSS_Save )
 	
@@ -713,10 +720,11 @@ if SERVER then
 		
 		duplicator.LoadFromFile( pl, filename )
 		
-		if ( pl:GetActiveWeapon():GetClass() == "gmod_tool" ) then
+		local tool = pl:GetActiveWeapon()
+		if (dupeshare.CurrentToolIsDuplicator(tool, true)) then
 			//pl:SendLua(  "LocalPlayer():GetActiveWeapon():GetTable():GetToolObject():StartGhostEntities()")
-			pl:GetActiveWeapon():GetTable():GetToolObject():StartGhostEntities()
-			pl:GetActiveWeapon():GetTable():GetToolObject():SendGhostToClient(true)
+			tool:GetTable():GetToolObject():StartGhostEntities()
+			tool:GetTable():GetToolObject():SendGhostToClient(true)
 			pl:SendLua(  "LocalPlayer():GetActiveWeapon():GetTable():GetToolObject():UpdateGhostEntities()" )
 		end
 	end
@@ -735,8 +743,10 @@ if SERVER then
 		//save to file
 		duplicator.SaveAndSendSaveToClient( pl, tostring(pl:GetInfo( "adv_duplicator_save_filename" )), tostring(pl:GetInfo( "adv_duplicator_file_desc" )) )
 		
-		pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject():UpdateList()
-		
+		local tool = pl:GetActiveWeapon()
+		if (dupeshare.CurrentToolIsDuplicator(tool, true)) then
+			tool:GetTable():GetToolObject():UpdateList()
+		end
 	end
 	concommand.Add( "adv_duplicator_save_cl", AdvDupeCL_Save )
 	
@@ -760,16 +770,20 @@ if SERVER then
 	
 	
 	local function AdvDupeSS_UpdateLoadList( pl, command, args )
-		
-		pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject():UpdateList()
-		
+		local tool = pl:GetActiveWeapon()
+		if (dupeshare.CurrentToolIsDuplicator(tool, true)) then
+			tool:GetTable():GetToolObject():UpdateList()
+		end
 	end
 	concommand.Add( "adv_duplicator_updatelist", AdvDupeSS_UpdateLoadList )
 	
 	
 	
 	local function AdvDupeSS_StartGhostEntities( pl, command, args )
-		pl:GetWeapon( "gmod_tool" ):GetTable():GetToolObject():StartGhostEntities()
+		local tool = pl:GetActiveWeapon()
+		if (dupeshare.CurrentToolIsDuplicator(tool)) then
+			tool:GetTable():GetToolObject():StartGhostEntities()
+		end
 	end
 	concommand.Add( "adv_duplicator_startghost", AdvDupeSS_StartGhostEntities )
 	
@@ -869,29 +883,50 @@ else	// CLIENT
 			
 			if (!SinglePlayer()) then
 				local dir = "adv_duplicator"
-				local ndir = dir.."/"..string.gsub(LocalPlayer():GetName(), ":", "_")
 				
 				local params = {}
 					params.Label = "ClientSide Files"
 					params.Height = 180
 					params.Options = {}
 				
-				if ( file.Exists(dir) && file.IsDir(dir) ) then
-					for key, val in pairs( file.Find( dir.."/*" ) ) do
-						if ( !file.IsDir( dir.."/"..val ) ) then
-							params.Options[val] = {}
-							params.Options[val].adv_duplicator_load_filename_cl = val
+				//if (dupeshare.MySteamID == "STEAM_ID_LAN") then //if its a lan game then show all local files
+					if ( file.Exists(dir) && file.IsDir(dir) ) then
+						for key, val in pairs( file.Find( dir.."/*" ) ) do
+							if ( !file.IsDir( dir.."/"..val ) ) then
+								params.Options[val] = {}
+								params.Options[val].adv_duplicator_load_filename_cl = dir.."/"..val
+							end
+							if ( file.Exists(dir.."/"..val) && file.IsDir(dir.."/"..val) ) then
+								for key, val2 in pairs( file.Find( dir.."/"..val.."/*" ) ) do
+									if ( !file.IsDir( dir.."/"..val.."/"..val2 ) ) then
+										params.Options[val2] = {}
+										params.Options[val2].adv_duplicator_load_filename_cl = dir.."/"..val.."/"..val2
+									end
+								end
+							end
 						end
 					end
-				end
-				if (ndir && file.Exists(ndir) && file.IsDir(ndir) ) then
-					for key, val in pairs( file.Find( ndir.."/*" ) ) do
-						if ( !file.IsDir( ndir.."/"..val ) ) then
-							params.Options[val] = {}
-							params.Options[val].adv_duplicator_load_filename_cl = val
+				/*else
+					if (dir && file.Exists(ndir) && file.IsDir(dir) ) then
+						for key, val in pairs( file.Find( dir.."/*" ) ) do
+							if ( !file.IsDir( dir.."/"..val ) ) then
+								params.Options[val] = {}
+								params.Options[val].adv_duplicator_load_filename_cl = dir.."/"..val
+							end
 						end
 					end
-				end
+					local ndir = dir.."/"..dupeshare.GetPlayerName(LocalPlayer()) //string.gsub(LocalPlayer():GetName(), ":", "_")
+					if (ndir && file.Exists(ndir) && file.IsDir(ndir) ) then
+						for key, val in pairs( file.Find( ndir.."/*" ) ) do
+							if ( !file.IsDir( ndir.."/"..val ) ) then
+								params.Options[val] = {}
+								params.Options[val].adv_duplicator_load_filename_cl = ndir.."/"..val
+							end
+						end
+					end
+				end*/
+				
+				
 				CPanel:AddControl( "ListBox", params )
 				
 				CPanel:AddControl( "Button", {
@@ -906,10 +941,7 @@ else	// CLIENT
 	
 	
 	local function AdvDupeCS_UpLoad( pl, command, args )
-		
-		if !pl:IsValid() 
-		or !pl:IsPlayer() 
-		then return end
+		if !pl:IsValid() or !pl:IsPlayer() then return end
 		
 		local filename = ""
 		if !args[1] //if a filename wasn't passed with an arg, then get the selection in the panel
@@ -926,10 +958,16 @@ else	// CLIENT
 	
 	local function AdvDuplicator_ClientGhostDataHead( um )
 		Msg("=========\ngot ghost head data  ==========    ")
+		if (!dupeshare.CurrentToolIsDuplicator(LocalPlayer():GetActiveWeapon(), true)) then
+			Msg("current tool is not the duplicator!\n")
+			return
+		end
+		
 		duplicator.HeadEntID	= um:ReadShort()
 		duplicator.offset		= um:ReadVector()
 		duplicator.HoldAngle	= um:ReadAngle()
 		
+		//maybe this should be a gobal table instead, incase the tool is not out while ghost data is being recieved
 		local tool = LocalPlayer():GetActiveWeapon():GetTable():GetToolObject()	
 		tool:ReleaseGhostEntity()
 		tool.GhostEntities	= {}
@@ -944,6 +982,12 @@ else	// CLIENT
 	local function AdvDuplicator_ClientGhostData( um )
 		local entID	= um:ReadShort()
 		Msg("getting ghost data  for ent: "..entID.."    ")
+		
+		//ghost data is still sent in one frame, so the player dose not have a chance to unselecte the duplicator. this check is redundant for now
+		/*if (!dupeshare.CurrentToolIsDuplicator(LocalPlayer():GetActiveWeapon(), true)) then
+			Msg("current tool is not the duplicator!\n")
+			return
+		end*/
 		
 		local tool = LocalPlayer():GetActiveWeapon():GetTable():GetToolObject()
 		tool.NumRecieved = tool.NumRecieved + 1

@@ -250,44 +250,41 @@ function ENT:Think()
 		
 	elseif (self.stage == 2) then
 		
-		//Msg("starting const\n")
-		local Constraint = table.remove(self.Constraints)
-		
-		if (Constraint) then
+		for k=1,4 do //make 4 each time
+			local Constraint = table.remove(self.Constraints)
 			
-			//Msg("doing const\n")
-			// Check If the constraint type has been registered with the duplicator
-			if Constraint.Type and duplicator.KnownConstraintType(Constraint.Type) then
+			if (Constraint) then
 				
-				local Args, DoConstraint = duplicator.PasteGetConstraintArgs( self:GetPlayer(), Constraint, self.entIDtable, self.offset )
-				
-				// make the constraint
-				if DoConstraint then
-					//Msg("making the const\n")
+				// Check If the constraint type has been registered with the duplicator
+				if Constraint.Type and duplicator.KnownConstraintType(Constraint.Type) then
 					
-					local const = duplicator.ConstraintTypeFunc( Constraint.Type, Args )
-					table.insert(self.CreatedConstraints,const)
+					local Args, DoConstraint = duplicator.PasteGetConstraintArgs( self:GetPlayer(), Constraint, self.entIDtable, self.offset )
 					
-					if (Constraint.ConstID) then
-						self.constIDtable[Constraint.ConstID] = const
-						//Msg("Dupe add constraint ID: " .. Constraint.ConstID .. "\n")
+					// make the constraint
+					if DoConstraint then
+						
+						local const = duplicator.ConstraintTypeFunc( Constraint.Type, Args )
+						table.insert(self.CreatedConstraints,const)
+						
+						if (Constraint.ConstID) then
+							self.constIDtable[Constraint.ConstID] = const
+						end
 					end
 				end
+				
+				if (k ==3) then
+					self.Entity:NextThink(CurTime() + self.thinkdelay)
+					return true
+				end
+			else
+				Msg("going to stage 3\n")
+				self.stage = 4
+				self.Entity:NextThink(CurTime() + self.thinkdelay)
+				return true
 			end
-			
-			self.Entity:NextThink(CurTime() + self.thinkdelay)
-			return true
-		else
-			Msg("going to stage 3\n")
-			self.stage = 3
-			self.Entity:NextThink(CurTime() + self.thinkdelay)
-			return true
 		end
 		
 	elseif (self.stage == 3) then
-		
-		
-		//Msg("starting dupeinfo\n")
 		
 		for id, infoTable in pairs(self.DupeInfo) do
 			local ent = self.entIDtable[id]
