@@ -20,8 +20,9 @@ function ENT:OnRemove()
 	Wire_Remove(self.Entity)
 end
 
-function ENT:Setup()
+function ENT:Setup(flim)
 	self:TriggerInput("A", 0)
+	self.Flim = flim
 end
 
 function ENT:TriggerInput(iname, value)
@@ -49,7 +50,7 @@ function ENT:TriggerInput(iname, value)
 		
 			if ( trTwo.Hit && !trTwo.Entity:IsPlayer() ) then
 				// Weld them!
-				local constraint = constraint.Weld( trace.Entity, trTwo.Entity, trace.PhysicsBone, trTwo.PhysicsBone, 0 )
+				local constraint = constraint.Weld( trace.Entity, trTwo.Entity, trace.PhysicsBone, trTwo.PhysicsBone, self.Flim )
 			end
 		end
 	end

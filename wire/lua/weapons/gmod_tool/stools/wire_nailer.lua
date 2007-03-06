@@ -1,12 +1,12 @@
 
-TOOL.Category		= "Wire"
+TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Nailer"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
 if ( CLIENT ) then
     language.Add( "Tool_wire_nailer_name", "Nailer Tool (Wire)" )
-    language.Add( "Tool_wire_nailer_desc", "Spawns a constant nailer prop for use with the wire system. Author: ITSBTH" )
+    language.Add( "Tool_wire_nailer_desc", "Spawns a constant nailer prop for use with the wire system." )
     language.Add( "Tool_wire_nailer_0", "Primary: Create/Update Nailer" )
     language.Add( "WireNailerTool_nailer", "Nailer:" )
 	language.Add( "sboxlimit_wire_nailers", "You've hit nailers limit!" )
@@ -16,6 +16,8 @@ end
 if (SERVER) then
 	CreateConVar('sbox_maxwire_nailers', 20)
 end
+
+TOOL.ClientConVar[ "forcelim" ] = "0"
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
 
@@ -37,7 +39,7 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_nailer = MakeWireNailer( ply, trace.HitPos, Ang )
+	local wire_nailer = MakeWireNailer( ply, trace.HitPos, Ang, self:GetClientNumber( "forcelim" ) )
 
 	local min = wire_nailer:OBBMins()
 	wire_nailer:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -71,7 +73,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireNailer( pl, Pos, Ang )
+	function MakeWireNailer( pl, Pos, Ang, flim )
 		if ( !pl:CheckLimit( "wire_nailers" ) ) then return false end
 	
 		local wire_nailer = ents.Create( "gmod_wire_nailer" )
@@ -82,11 +84,12 @@ if (SERVER) then
 		wire_nailer:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
 		wire_nailer:Spawn()
 
-		wire_nailer:GetTable():Setup()
+		wire_nailer:GetTable():Setup( flim )
 		wire_nailer:GetTable():SetPlayer( pl )
 
 		local ttable = {
-			pl = pl
+			pl = pl,
+			Flim = flim
 		}
 
 		table.Merge(wire_nailer:GetTable(), ttable )
@@ -96,7 +99,7 @@ if (SERVER) then
 		return wire_nailer
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_nailer", MakeWireNailer, "Pos", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_nailer", MakeWireNailer, "Pos", "Ang", "Vel", "aVel", "frozen", "Flim")
 
 end
 
@@ -145,4 +148,11 @@ function TOOL.BuildCPanel(panel)
 		CVars = {
 		}
 	})
+	panel:AddControl("Slider", {
+		Label = "Force Limit",
+		Type = "Float",
+		Min = "0",
+		Max = "10000",
+		Command = "wire_nailer_forcelim"
+  }) 
 end
