@@ -30,7 +30,7 @@ include( "autorun/shared/dupeshare.lua" )
 // Note: Modified by SatriAli
 // Note: Modified by Erkle
 // Note: Very modified, rewriten, and added all sorts of stuff by TAD2020
-duplicator = {}
+--duplicator = {}
 
 local	ConstraintType,
 	EntityModifiers,
