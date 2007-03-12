@@ -99,7 +99,7 @@ if (SERVER) then
 		return wire_nailer
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_nailer", MakeWireNailer, "Pos", "Ang", "Vel", "aVel", "frozen", "Flim")
+	duplicator.RegisterEntityClass("gmod_wire_nailer", MakeWireNailer, "Pos", "Ang", "Flim", "Vel", "aVel", "frozen")
 
 end
 
@@ -156,3 +156,4 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_nailer_forcelim"
   }) 
 end
+
