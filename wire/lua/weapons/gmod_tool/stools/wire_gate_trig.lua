@@ -140,6 +140,22 @@ end
 
 GateActions = GateActions or {}
 
+GateActions["quadratic"] = {
+	group = "Trig",
+	name = "Quadratic Formula",
+	inputs = { "A", "B", "C" },
+	outputs = { "Pos", "Neg" },
+	output = function(gate, A, B, C)
+		return ( -B + ( math.sqrt( math.abs( math.exp( B, 2 ) - ( 4*A )*C ) ) ) / 2*A )
+	end,
+	output = function(gate, A, B, C)
+		return ( -B - ( math.sqrt( math.abs( math.exp( B, 2 ) - ( 4*A )*C ) ) ) / 2*A )
+	end,
+	label = function(Out, A, B, C)
+		return "-" .. A .. " +/- sqrt( " ..  B .. "^2 - ( 4*" .. A .. " )*" .. C .. " )  / 2*" .. A
+	end
+}
+
 GateActions["sin"] = {
 	group = "Trig",
 	name = "Sin(Rad)",

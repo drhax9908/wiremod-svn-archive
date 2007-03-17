@@ -142,6 +142,29 @@ end
 
 GateActions = GateActions or {}
 
+GateActions["increment"] = {
+	group = "Arithmetic",
+	name = "Increment",
+	inputs = { "A", "Clk" },
+	output = function(gate, A, Clk)
+		local clk = ( Clk > 0 )
+		if ( gate.PrevValue ~=  clk ) then
+			gate.PrevValue = clk
+			if ( clk ) then
+				if ( gate.Memory == nil ) then
+					gate.Memory = A
+				else
+					gate.Memory = gate.Memory + 1
+				end
+			end
+		end
+		return gate.Memory
+	end,
+	label = function(Out, A)
+		return "(" .. A .. " + LastNum)++ = " .. Out
+	end
+}
+
 GateActions["identity"] = {
 	group = "Arithmetic",
 	name = "Identity (No change)",
