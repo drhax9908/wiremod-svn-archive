@@ -210,11 +210,11 @@ GateActions["sqrt"] = {
 	    return math.sqrt(math.abs(A)) // Negatives are possible, use absolute value
 	end,
 	label = function(Out, A)
-		if ( A < 0 ) then
+		/*if ( A < 0 ) then
 			return "sqrt("..A..") = i"..Out // Display as imaginary if A is negative
-		else
+		else*/
 			return "sqrt("..A..") = "..Out
-		end
+		//end
 	end
 }
 
