@@ -1,5 +1,5 @@
 
-TOOL.Category		= "Wire - Whatever"
+TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Pod"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
