@@ -34,6 +34,7 @@ function ENT:Setup(maxrange, players, npcs, beacons, hoverballs, thrusters, rpgs
 	self.MaxBogeys			= math.floor(math.Clamp((maxbogeys or 1), self.MaxTargets , server_settings.Int("wire_target_finders_maxbogeys", 30)))
 	
 	self.SelectedTargets = {}
+	self.SelectedTargetsSel = {}
 	
 	local AdjOutputs = {}
 	for i = 1, self.MaxTargets do table.insert(AdjOutputs, tostring(i)) end
@@ -94,15 +95,26 @@ end
 
 function ENT:SelectorNext(ch)
 	if (self.Bogeys) and (#self.Bogeys > 0) then
+		if (!self.SelectedTargetsSel[ch]) then self.SelectedTargetsSel[ch] = 1 end
+		
+		local sel = self.SelectedTargetsSel[ch]
+		if (sel > #self.Bogeys) then sel = 1 end
+		
 		if (self.SelectedTargets[ch]) and (self.SelectedTargets[ch]:IsValid()) then
+			
 			if (self.PaintTarget) then self:TargetPainter(self.SelectedTargets[ch], false) end
 			table.insert(self.Bogeys, self.SelectedTargets[ch]) //put old target back
-			self.SelectedTargets[ch] = table.remove(self.Bogeys, 1) //pull next target
+			self.SelectedTargets[ch] = table.remove(self.Bogeys, sel) //pull next target
 			if (self.PaintTarget) then self:TargetPainter(self.SelectedTargets[ch], true) end
+			
 		else
-			self.SelectedTargets[ch] = table.remove(self.Bogeys, 1) //pull next target
+			
+			self.SelectedTargets[ch] = table.remove(self.Bogeys, sel) //pull next target
 			if (self.PaintTarget) then self:TargetPainter(self.SelectedTargets[ch], true) end
+			
 		end
+		
+		self.SelectedTargetsSel[ch] = sel + 1
 		self.Inputs[ch.."-HoldTarget"].Value = 1 //put the channel on hold so it wont change in the next scan
 	end
 end

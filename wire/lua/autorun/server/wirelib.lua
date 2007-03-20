@@ -423,7 +423,13 @@ end
 
 function Wire_Link_End(idx, ent, pos, oname)
     if (not CurLink[idx].Dst) then return end
-
+	
+	if (CurLink[idx].Dst:GetClass() == "gmod_wire_sensor") and (ent:GetClass() != "gmod_wire_target_finder") then
+		Msg("Wire_link: Beacon Sensor can only be wired to a Target Finder!\n")
+		Wire_Link_Cancel(idx)
+		return
+	end
+	
 	local net_name = "wp_" .. CurLink[idx].DstId
 	local node_idx = CurLink[idx].Dst:GetNetworkedInt(net_name)+1
 	CurLink[idx].Dst:SetNetworkedEntity(net_name .. "_" .. node_idx .. "_ent", ent)
