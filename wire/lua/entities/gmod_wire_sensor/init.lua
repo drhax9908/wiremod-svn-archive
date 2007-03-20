@@ -13,16 +13,20 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-
+	
+	self.Inputs = Wire_CreateInputs(self.Entity, { "Target" })
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Out" })
 end
 
-function ENT:Setup(xyz_mode, outdist, outbrng)
+function ENT:Setup(xyz_mode, outdist, outbrng, gpscord)
 	self.XYZMode = xyz_mode
 	self.PrevOutput = nil
 	self.Value = 0
 	self.OutDist = outdist
 	self.OutBrng = outbrng
+	self.GPSCord = gpscord
+	
+	if !xyz_mode and !outdist and !outbrng and !gpscord then self.OutDist = true end
 	
 	local onames = {}
 	if (outdist) then
@@ -37,21 +41,30 @@ function ENT:Setup(xyz_mode, outdist, outbrng)
     	table.insert(onames, "Bearing")
     	table.insert(onames, "Elevation")
 	end
-
+	if (gpscord) then
+	    table.insert(onames, "World_X")
+	    table.insert(onames, "World_Y")
+	    table.insert(onames, "World_Z")
+	end
+	
 	Wire_AdjustOutputs(self.Entity, onames)
-	self:TriggerOutputs(0, Angle(0, 0, 0),Vector(0, 0, 0))
+	self:TriggerOutputs(0, Angle(0, 0, 0),Vector(0, 0, 0),Vector(0, 0, 0))
 	self:ShowOutput()
 end
 
+
 function ENT:Think()
 	self.BaseClass.Think(self)
-
-	if( !self.ToSense or !self.ToSense:IsValid() ) then	return end
+	
+	//if (!self.Inputs.Target.Src or !self.Inputs.Target.Src:IsValid() ) then return end
+	if (!self.ToSense or !self.ToSense:IsValid() ) then	return end
 	if (self.Active) then
 	    local dist = 0
 	    local distc = Vector(0, 0, 0)
 	    local brng = Angle(0, 0, 0)
+		local gpscords = Vector(0, 0, 0)
 		local MyPos = self.Entity:GetPos()
+		//local BeaconPos = self.Inputs["Target"].Src:GetBeaconPos(self.Entity)
 		local BeaconPos = self.ToSense:GetBeaconPos(self.Entity)
 		if (self.OutDist) then
 			dist = (BeaconPos-MyPos):Length()
@@ -64,10 +77,11 @@ function ENT:Think()
 		    local DeltaPos = self.Entity:WorldToLocal(BeaconPos)
 		    brng = DeltaPos:Angle()
 		end
-
-		self:TriggerOutputs(dist, brng, distc)
+		if (self.GPSCord) then gpscords = BeaconPos end
+		
+		self:TriggerOutputs(dist, brng, distc, gpscords)
 		self:ShowOutput()
-
+		
 		self.Entity:NextThink(CurTime()+0.04)
 		return true
 	end
@@ -85,27 +99,45 @@ function ENT:ShowOutput()
 	if (self.OutBrng) then
 		txt = txt .. "\nBearing = " .. math.Round(self.Outputs.Bearing.Value*1000)/1000 .. "," .. math.Round(self.Outputs.Elevation.Value*1000)/1000
 	end
+	if (self.GPSCord) then
+		txt = txt .. "\nWorldPos = " .. math.Round(self.Outputs.World_X.Value*1000)/1000 .. "," .. math.Round(self.Outputs.World_Y.Value*1000)/1000 .. "," .. math.Round(self.Outputs.World_Z.Value*1000)/1000
+	end
 
 	self:SetOverlayText(txt)
 end
 
 
-function ENT:TriggerOutputs(dist, brng, distc)
-    Wire_TriggerOutput(self.Entity, "Distance", dist)
-    Wire_TriggerOutput(self.Entity, "X", distc.x)
-    Wire_TriggerOutput(self.Entity, "Y", distc.y)
-    Wire_TriggerOutput(self.Entity, "Z", distc.z)
-	
-	local pitch = brng.p
-	local yaw = brng.y
-	
-	if (pitch > 180) then pitch = pitch - 360 end
-	if (yaw > 180) then yaw = yaw - 360 end
-
-    Wire_TriggerOutput(self.Entity, "Bearing", -yaw)
-    Wire_TriggerOutput(self.Entity, "Elevation", -pitch)
+function ENT:TriggerOutputs(dist, brng, distc, gpscords)
+    if (self.OutDist) then
+		Wire_TriggerOutput(self.Entity, "Distance", dist)
+	end
+	if (self.XYZMode) then
+	    Wire_TriggerOutput(self.Entity, "X", distc.x)
+	    Wire_TriggerOutput(self.Entity, "Y", distc.y)
+	    Wire_TriggerOutput(self.Entity, "Z", distc.z)
+	end
+	if (self.GPSCord) then
+	    Wire_TriggerOutput(self.Entity, "World_X", gpscords.x)
+	    Wire_TriggerOutput(self.Entity, "World_Y", gpscords.y)
+	    Wire_TriggerOutput(self.Entity, "World_Z", gpscords.z)
+	end
+	if (self.OutBrng) then
+		local pitch = brng.p
+		local yaw = brng.y
+		
+		if (pitch > 180) then pitch = pitch - 360 end
+		if (yaw > 180) then yaw = yaw - 360 end
+		
+		Wire_TriggerOutput(self.Entity, "Bearing", -yaw)
+	    Wire_TriggerOutput(self.Entity, "Elevation", -pitch)
+	end
 end
 
+function ENT:TriggerInput(iname, value)
+	if (iname == "Target") and ( self.ToSense != self.Inputs.Target.Src ) then
+		self:SetBeacon(self.Inputs.Target.Src)
+	end
+end
 
 function ENT:SetBeacon(beacon)
 	if (beacon) and (beacon:IsValid()) then
@@ -120,7 +152,7 @@ end
 
 function ENT:OnRestore()
 	//this is to prevent old save breakage
-	self:Setup(self.XYZMode, self.OutDist, self.OutBrng)
+	self:Setup(self.XYZMode, self.OutDist, self.OutBrng, self.GPSCord)
 	
 	self.BaseClass.OnRestore(self)
 end
@@ -137,10 +169,13 @@ function ENT:BuildDupeInfo()
 end
 
 
-function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID, GetConstByID)
-	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID, GetConstByID)
+function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
+	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 
 	if (info.to_sense) then
-	    self.ToSense = GetEntByID(info.to_sense)
+		self:SetBeacon(GetEntByID(info.to_sense))
+		if (!self.ToSense) then
+			self:SetBeacon(ents.GetByIndexs(info.to_sense))
+		end
 	end
 end

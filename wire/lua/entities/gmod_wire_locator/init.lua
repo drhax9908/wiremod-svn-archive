@@ -19,3 +19,7 @@ end
 function ENT:GetBeaconPos(sensor)
 	return self.Entity:GetPos()
 end
+
+function ENT:Setup()
+	
+end
