@@ -110,7 +110,7 @@ if (SERVER) then
 		return wire_pod
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_pod", MakeWirePod, "Pos", "Ang", "Pod", "Vel", "aVel", "frozen",)
+	duplicator.RegisterEntityClass("gmod_wire_pod", MakeWirePod, "Pos", "Ang", "Pod", "Vel", "aVel", "frozen")
 
 end
 
