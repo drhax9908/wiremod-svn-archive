@@ -1,0 +1,5 @@
+mov eax,0;
+label infloop;
+inc eax;
+mov port5,eax;
+jmp infloop;

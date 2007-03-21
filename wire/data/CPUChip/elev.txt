@@ -1,0 +1,65 @@
+ //IN:
+ //PORT0 - Button pressed, reversed
+ //PORT1 - Elevator speed
+ //PORT2 - Stop button pressed
+ //OUT:
+ //PORT0 - Motor
+ //PORT5 - Current floor number
+ //PORT6 - Moving LED, and door status
+ //PORT7 - Door open status
+DATA;
+  alloc floor;
+  alloc z;
+  alloc destz;
+CODE;
+  mov #z,0;
+  mov port0,#z;
+  mov port5,1;
+  mov port7,1;
+  mov #floor,1;
+  //wait
+  //Wait for keypress
+  btnloop:
+    mov eax,port0;
+    cmp eax,0;
+    je btnloop;
+  //Key has been pressed
+  mov port6,1;
+  mov port7,0; //Close doors at current floor
+  mul eax,256;
+  sub eax,256;
+  mov #destz,eax;
+  //Move dir selection
+  cmp #destz,#z;
+  je dontmove;
+  jl movedown;
+  moveup:
+  //Move up
+    add #z,port1;
+    mov port0,#z;
+    call calcfloornumber; //Show floor number
+    cmp #destz,#z;
+    jg moveup; jmp dontmove;
+  movedown:
+  //Move down
+    sub #z,port1;
+    mov port0,#z;
+    call calcfloornumber; //Show floor number
+    cmp #destz,#z;
+    jl movedown;
+  //We are at floor. Open doors
+  dontmove:
+  mov #z,#destz;
+  mov port7,1;
+  //wait
+  mov port7,0;
+  mov port6,0;
+  jmp btnloop;
+calcfloornumber:
+  mov eax,#z;
+  add eax,256;
+  div eax,256;
+  rnd eax; //Round up, VERIFY THIS
+  mov #floor,eax;
+  mov port5,eax;
+  ret
