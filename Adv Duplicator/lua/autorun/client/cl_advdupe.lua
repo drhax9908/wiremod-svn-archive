@@ -428,10 +428,6 @@ AdvDupeClient.gui = {}
 
 function AdvDupeClient.SaveGUI( pl, command, args )
 	
-	if AdvDupeClient.gui.save and AdvDupeClient.gui.save.frame and AdvDupeClient.gui.save.frame.Remove then
-		AdvDupeClient.gui.save.frame:Remove()
-	end
-	
 	AdvDupeClient.gui.save = {}
 	AdvDupeClient.gui.save.frame = vgui.Create( "Frame" )
 	//AdvDupeClient.gui.save.frame:SetName( "AdvDuplicatorSave" )	
@@ -490,10 +486,6 @@ concommand.Add( "adv_duplicator_save_gui", AdvDupeClient.SaveGUI )
 
 function AdvDupeClient.MakeDir( pl, command, args )
 	if !args[1] then return end
-	
-	/*if AdvDupeClient.gui.makedir and AdvDupeClient.gui.makedir.frame and AdvDupeClient.gui.makedir.frame.Remove then
-		AdvDupeClient.gui.makedir.frame:Remove()
-	end*/
 	
 	AdvDupeClient.gui.makedir = {}
 	AdvDupeClient.gui.makedir.frame = vgui.Create( "Frame" )
@@ -568,10 +560,6 @@ concommand.Add( "adv_duplicator_makedir_gui", AdvDupeClient.MakeDir )
 function AdvDupeClient.RenameFile( pl, cmd, args )
 	if !args[1] then return end
 	
-	/*if AdvDupeClient.gui.rename and AdvDupeClient.gui.rename.frame and AdvDupeClient.gui.rename.frame.Remove then
-		AdvDupeClient.gui.rename.frame:Remove()
-	end*/
-	
 	AdvDupeClient.gui.rename = {}
 	AdvDupeClient.gui.rename.frame = vgui.Create( "Frame" )
 	AdvDupeClient.gui.rename.frame:SetName( "basic" )
@@ -633,6 +621,68 @@ function AdvDupeClient.RenameFile( pl, cmd, args )
 	
 end
 concommand.Add( "adv_duplicator_renamefile_gui", AdvDupeClient.RenameFile )
+
+
+function AdvDupeClient.ConfirmDelete( pl, cmd, args )
+	if !args[1] then return end
+	
+	AdvDupeClient.gui.delete = {}
+	AdvDupeClient.gui.delete.frame = vgui.Create( "Frame" )
+	AdvDupeClient.gui.delete.frame:SetName( "basic" )
+	AdvDupeClient.gui.delete.frame:LoadControlsFromString(AdvDupeClient.res.gengui("Delete File?"))
+	AdvDupeClient.gui.delete.frame:SetName("AdvDuplicatorDelete")
+	AdvDupeClient.gui.delete.frame:SetSize(320,135)
+	AdvDupeClient.gui.delete.frame:SetPos(400,250)
+	
+	AdvDupeClient.gui.delete.btnDelete = vgui.Create("Button",AdvDupeClient.gui.delete.frame,"btnDelete")
+	AdvDupeClient.gui.delete.btnDelete:SetPos(20,110)
+	AdvDupeClient.gui.delete.btnDelete:SetSize(110,20)
+	AdvDupeClient.gui.delete.btnDelete:SetText("Delete!")
+	
+	AdvDupeClient.gui.delete.btnCancel = vgui.Create("Button",AdvDupeClient.gui.delete.frame,"btnCancel")
+	AdvDupeClient.gui.delete.btnCancel:SetPos(184,110)
+	AdvDupeClient.gui.delete.btnCancel:SetSize(110,20)
+	AdvDupeClient.gui.delete.btnCancel:SetText("Cancel")
+	AdvDupeClient.gui.delete.btnCancel:SetCommand("Cancel")
+	
+	AdvDupeClient.gui.delete.lblFileName = vgui.Create("Label",AdvDupeClient.gui.delete.frame,"lblFileName")
+	AdvDupeClient.gui.delete.lblFileName:SetPos(6,25)
+	AdvDupeClient.gui.delete.lblFileName:SetSize(185,25)
+	
+	
+	if args[1] == "client" then
+		AdvDupeClient.gui.delete.btnDelete:SetCommand("DeleteClient")
+		
+		local oldfilename = dupeshare.GetFileFromFilename(pl:GetInfo( "adv_duplicator_load_filename_cl" ))
+		AdvDupeClient.gui.delete.lblFileName:SetText("Delete this file \""..oldfilename..".txt\" from \""..string.gsub(AdvDupeClient.CLcdir, dupeshare.BaseDir, "").."/ ?")
+	else
+		AdvDupeClient.gui.delete.btnDelete:SetCommand("DeleteServer")
+		
+		local oldfilename = dupeshare.GetFileFromFilename(pl:GetInfo( "adv_duplicator_load_filename" ))
+		AdvDupeClient.gui.delete.lblFileName:SetText("Delete this file \""..oldfilename..".txt\" from \""..string.gsub(AdvDupeClient.SScdir, dupeshare.BaseDir, "").."/ ?")
+	end
+	
+	
+	function AdvDupeClient.gui.delete.frame:ActionSignal(key,value)
+		if key == "DeleteServer" then
+			LocalPlayer():ConCommand("adv_duplicator_fileopts delete")
+			AdvDupeClient.gui.delete.frame:Remove()
+		elseif key == "DeleteClient" then
+			local filename = pl:GetInfo( "adv_duplicator_open_cl" )
+			local dir	= AdvDupeClient.CLcdir
+			AdvDupeClient.FileOpts(pl, "delete", filename, dir)
+			AdvDupeClient.gui.delete.frame:Remove()
+		elseif key == "Cancel" then
+			AdvDupeClient.gui.delete.frame:Remove()
+		end
+	end
+	
+	AdvDupeClient.gui.delete.frame:SetKeyBoardInputEnabled( true )
+	AdvDupeClient.gui.delete.frame:SetMouseInputEnabled( true )
+	AdvDupeClient.gui.delete.frame:SetVisible( true )
+	
+end
+concommand.Add( "adv_duplicator_confirmdelete_gui", AdvDupeClient.ConfirmDelete )
 
 Msg("--- Wire duplicator client module installed! ---\n")
 
