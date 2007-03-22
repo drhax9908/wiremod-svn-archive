@@ -43,24 +43,22 @@ function TOOL:LeftClick( trace )
 	if (not util.IsValidModel(self:GetClientInfo( "model" ))) then return false end
 	if (not util.IsValidProp(self:GetClientInfo( "model" ))) then return false end
 	
-	local ply = self:GetOwner()
-	local Ang = trace.HitNormal:Angle()
-	local Smodel = self:GetClientInfo( "model" )
+	local ply		= self:GetOwner()
+	local Ang		= trace.HitNormal:Angle()
+	local Smodel	= self:GetClientInfo( "model" )
 
 	// Extra stuff for Wire Screen (TheApathetic)
-	local SingleValue = self:GetClientNumber("singlevalue") == 1
-	local SingleBigFont = self:GetClientNumber("singlebigfont") == 1
-	local TextA = self:GetClientInfo("texta")
-	local TextB = self:GetClientInfo("textb")
+	local SingleValue	= self:GetClientNumber("singlevalue") == 1
+	local SingleBigFont	= self:GetClientNumber("singlebigfont") == 1
+	local TextA			= self:GetClientInfo("texta")
+	local TextB			= self:GetClientInfo("textb")
 
 	// Check to update screen if necessary (TheApathetic)
 	if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_screen" && trace.Entity.pl == ply) then
-		trace.Entity:SetSingleValue(SingleValue)
-		trace.Entity:SetSingleBigFont(SingleBigFont)
-		trace.Entity:SetTextA(TextA)
-		trace.Entity:SetTextB(TextB)
-		trace.Entity.SingleValue = SingleValue
-		trace.Entity.SingleBigFont = SingleBigFont
+		trace.Entity:Setup(SingleValue, SingleBigFont, TextA, TextB)
+		
+		trace.Entity.SingleValue	= SingleValue
+		trace.Entity.SingleBigFont	= SingleBigFont
 		trace.Entity.TextA = TextA
 		trace.Entity.TextB = TextB
 		return true
@@ -91,28 +89,21 @@ if (SERVER) then
 		local wire_screen = ents.Create( "gmod_wire_screen" )
 		if (!wire_screen:IsValid()) then return false end
 		wire_screen:SetModel(Smodel)
-
-		// Extra stuff for Wire Screen (TheApathetic)
-		wire_screen:GetTable():SetTextA(TextA)
-		wire_screen:GetTable():SetTextB(TextB)
-		wire_screen:GetTable():SetSingleBigFont(SingleBigFont)
-
 		wire_screen:SetAngles( Ang )
 		wire_screen:SetPos( Pos )
 		wire_screen:Spawn()
-
-		// Put it here to update inputs if necessary (TheApathetic)
-		wire_screen:GetTable():SetSingleValue(SingleValue)
+		
+		wire_screen:Setup(SingleValue, SingleBigFont, TextA, TextB)
 		
 		wire_screen:SetPlayer(pl)
 			
 		local ttable = {
-			pl = pl,
-			Smodel = Smodel,
-			SingleValue = SingleValue,
-			SingleBigFont = SingleBigFont,
-			TextA = TextA,
-			TextB = TextB
+			pl				= pl,
+			Smodel			= Smodel,
+			SingleValue		= SingleValue,
+			SingleBigFont	= SingleBigFont,
+			TextA			= TextA,
+			TextB			= TextB
 		}
 		
 		table.Merge(wire_screen:GetTable(), ttable )

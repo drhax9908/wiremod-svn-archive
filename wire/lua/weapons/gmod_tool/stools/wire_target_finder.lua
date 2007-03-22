@@ -113,8 +113,7 @@ function TOOL:LeftClick(trace)
 	
 	// Don't weld to world
 	if ( trace.Entity:IsValid() ) then
-		const, nocollide = constraint.Weld( wire_target_finder, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0 )
-		trace.Entity:DeleteOnRemove( wire_target_finder )
+		const, nocollide = constraint.Weld( wire_target_finder, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0, true )
 	end
 	
 	undo.Create("WireTargetFinder")

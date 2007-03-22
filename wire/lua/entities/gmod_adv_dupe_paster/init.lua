@@ -82,7 +82,7 @@ end*/
 
 function ENT:Paste()
 	if (self.stage != 0) then return end
-	Msg("====start====\n")
+	--Msg("====start====\n")
 	
 	self:HideGhost(true)
 	
@@ -106,7 +106,7 @@ function ENT:Paste()
 		self.offset = self.Entity:GetPos() + self.Entity:GetUp() * self.Entity:OBBMaxs().z
 	end
 	
-	Msg("going to stage 1\n")
+	--Msg("going to stage 1\n")
 	self.stage = 1
 end
 
@@ -243,7 +243,7 @@ function ENT:Think()
 			end
 		end
 		
-		Msg("going to stage 2\n")
+		--Msg("going to stage 2\n")
 		self.stage = 2
 		self.Entity:NextThink(CurTime() + self.thinkdelay)
 		return true
@@ -277,7 +277,7 @@ function ENT:Think()
 					return true
 				end
 			else
-				Msg("going to stage 3\n")
+				--Msg("going to stage 3\n")
 				self.stage = 4
 				self.Entity:NextThink(CurTime() + self.thinkdelay)
 				return true
@@ -286,7 +286,7 @@ function ENT:Think()
 		
 	elseif (self.stage == 3) then
 		
-		for id, infoTable in pairs(self.DupeInfo) do
+		/*for id, infoTable in pairs(self.DupeInfo) do
 			local ent = self.entIDtable[id]
 			local isdupeinfo = false
 			if (ent) and (ent:IsValid()) and (infoTable) and (ent.ApplyDupeInfo) then
@@ -305,21 +305,32 @@ function ENT:Think()
 					return true
 				end
 			end
+		end*/
+		
+		for id, infoTable in pairs(self.DupeInfo) do
+			local ent = self.entIDtable[id]
+			if (ent) and (ent:IsValid()) and (infoTable) and (ent.ApplyDupeInfo) then
+			    ent:ApplyDupeInfo(
+					self:GetPlayer(), ent, infoTable,
+					function(id) return self.entIDtable[id] end,
+					function(id) return self.constIDtable[id] end
+					)
+			end
 		end
 		
-		Msg("going to stage 4\n")
+		--Msg("going to stage 4\n")
 		self.stage = 4
 		self.Entity:NextThink(CurTime() + self.thinkdelay)
 		return true
 		
 	elseif (self.stage == 4) then
 		//this just looks wrong, so no
-		/*Msg("starting rotate\n")
-		duplicator.PasteRotate( self:GetPlayer(), self.HeadEntity, self.CreatedEnts )*/
+		--Msg("starting rotate\n")
+		duplicator.PasteRotate( self:GetPlayer(), self.HeadEntity, self.CreatedEnts )
 		
 		duplicator.PasteApplyDORInfo( self.DORInfo, function(id) return self.entIDtable[id] end )
 		
-		Msg("going to stage 5\n")
+		--Msg("going to stage 5\n")
 		self.stage = 5
 		self.Entity:NextThink(CurTime() + self.thinkdelay)
 		return true
@@ -368,7 +379,7 @@ function ENT:Think()
 		
 		
 		
-		Msg("====done====\n")
+		--Msg("====done====\n")
 		
 		self:HideGhost(false)
 		

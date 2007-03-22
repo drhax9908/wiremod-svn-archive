@@ -77,7 +77,7 @@ function TOOL:LeftClick( trace )
 	
 	
 	// Create the wheel
-	local wheelEnt = MakeWireWheel( ply, trace.HitPos, Angle(0,0,0), model, nil, nil, nil, fwd, bck, stop )
+	local wheelEnt = MakeWireWheel( ply, trace.HitPos, Angle(0,0,0), model, nil, nil, nil, fwd, bck, stop, toggle )
 	
 	
 	// Make sure we have our wheel angle
@@ -109,18 +109,17 @@ function TOOL:LeftClick( trace )
 	undo.AddEntity( wheelEnt )
 	undo.SetPlayer( ply )
 	undo.Finish()
-
 	
 	ply:AddCleanup( "wire_wheels", axis )
 	ply:AddCleanup( "wire_wheels", constraint )
 	ply:AddCleanup( "wire_wheels", wheelEnt )
 	
-	wheelEnt:GetTable():SetMotor( constraint )
-	wheelEnt:GetTable():SetDirection( constraint:GetTable().direction )
-	wheelEnt:GetTable():SetAxis( trace.HitNormal )
-	wheelEnt:GetTable():SetToggle( toggle )
-	wheelEnt:GetTable():DoDirectionEffect()
-	wheelEnt:GetTable():SetBaseTorque( torque )
+	wheelEnt:SetMotor( constraint )
+	wheelEnt:SetDirection( constraint.direction )
+	wheelEnt:SetAxis( trace.HitNormal )
+	wheelEnt:SetToggle( toggle )
+	wheelEnt:DoDirectionEffect()
+	wheelEnt:SetBaseTorque( torque )
 
 	return true
 
@@ -166,10 +165,10 @@ if ( SERVER ) then
 	/*---------------------------------------------------------
 	   For duplicator, creates the wheel.
 	---------------------------------------------------------*/
-	function MakeWireWheel( pl, Pos, Ang, Model, Vel, aVel, frozen, fwd, bck, stop )
-
+	function MakeWireWheel( pl, Pos, Ang, Model, Vel, aVel, frozen, fwd, bck, stop, toggle, direction, Axis, Data )
+		
 		if ( !pl:CheckLimit( "wire_wheels" ) ) then return false end
-	
+		
 		local wheel = ents.Create( "gmod_wire_wheel" )
 		if ( !wheel:IsValid() ) then return end
 		
@@ -178,39 +177,32 @@ if ( SERVER ) then
 		wheel:SetAngles( Ang )
 		wheel:Spawn()
 		
-		wheel:GetTable():SetPlayer( pl )
-
-		if ( wheel:GetPhysicsObject():IsValid() ) then
+		wheel:SetPlayer( pl )
 		
-			Phys = wheel:GetPhysicsObject()
-			if Vel then Phys:SetVelocity(Vel) end
-			if aVel then Phys:AddAngleVelocity(aVel) end
-			Phys:EnableMotion(frozen != true)
-			
-		end
+		duplicator.DoGenericPhysics( wheel, pl, Data )
+		
 	
-		wheel:GetTable().model = model
-		wheel:GetTable().fwd = fwd
-		wheel:GetTable().bck = bck
-		wheel:GetTable().stop = stop
+		wheel.model = model
+		wheel.fwd = fwd
+		wheel.bck = bck
+		wheel.stop = stop
 		
-		wheel:GetTable():SetFwd( fwd )
-		wheel:GetTable():SetBck( bck )
-		wheel:GetTable():SetStop( stop )
+		wheel:SetFwd( fwd )
+		wheel:SetBck( bck )
+		wheel:SetStop( stop )
+
+		if ( axis ) then
+			wheel.Axis = axis
+		end
 		
-		/*local ttable = {
-			pl			= pl,
-			nocollide	= nocollide,
-			description = description,
-			Pos			= Pos,
-			Ang			= Ang,
-			Model		= Model,
-			fwd			= fwd,
-			bck			= bck,
-			stop		= stop
-		}
+		if ( direction ) then
+			wheel:SetDirection( direction )
+		end
 		
-		table.Merge( wheel:GetTable(), ttable )*/
+		if ( toggle ) then
+			wheel:SetToggle( toggle )
+		end
+		
 		
 		
 		pl:AddCount( "wire_wheels", wheel )
@@ -219,9 +211,9 @@ if ( SERVER ) then
 		
 	end
 
-	duplicator.RegisterEntityClass( "gmod_wire_wheel", MakeWireWheel, "Pos", "Ang", "model", "Vel", "aVel", "frozen", "fwd", "bck", "stop" )
+	duplicator.RegisterEntityClass( "gmod_wire_wheel", MakeWireWheel, "Pos", "Ang", "model", "Vel", "aVel", "frozen", "fwd", "bck", "stop", "Axis", "Data" )
 	
-
+	
 end
 
 function TOOL:UpdateGhostWireWheel( ent, player )

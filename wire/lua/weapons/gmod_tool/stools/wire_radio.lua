@@ -54,10 +54,23 @@ function TOOL:LeftClick( trace )
 	
 	local min = wire_radio:OBBMins()
 	wire_radio:SetPos( trace.HitPos - trace.HitNormal * (min.z-5) )
-
+	
+	// Don't weld to world
+	local const
+	if ( trace.Entity:IsValid() ) then
+		local const = constraint.Weld( wire_radio, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
+		
+		// Don't disable collision if it's not attached to anything
+		if ( collision == 0 ) then 
+			wire_radio:GetPhysicsObject():EnableCollisions( false )
+			wire_radio:GetTable().nocollide = true
+		end
+	end
+	
 	undo.Create("WireRadio")
 		undo.AddEntity( wire_radio )
 		undo.SetPlayer( ply )
+		undo.AddEntity(const)
 	undo.Finish()
 	
 	

@@ -77,7 +77,7 @@ function ENT:BuildDupeInfo()
 	return info
 end
 
-function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID, GetConstByID)
+function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	if (info.Wires) then
 		for k,input in pairs(info.Wires) do
 		    Wire_Link_Start(ply:UniqueID(), ent, input.StartPos, k, input.Material, input.Color, input.Width)
@@ -88,5 +88,23 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID, GetConstByID)
 		    end
 		    Wire_Link_End(ply:UniqueID(), GetEntByID(input.Src), input.SrcPos, input.SrcId)
 		end
+	end
+end
+
+//
+//new duplicator stuff
+//
+function ENT:PreEntityCopy()
+	//build the DupeInfo table and save it as an entity mod
+	local DupeInfo = self:BuildDupeInfo()
+	if DupeInfo then
+		duplicator.StoreEntityModifier( self.Entity, "WireDupeInfo", DupeInfo )
+	end
+end
+
+function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
+	//apply the DupeInfo
+	if (Ent.EntityMods) and (Ent.EntityMods.WireDupeInfo) then
+		Ent:ApplyDupeInfo(Player, Ent, Ent.EntityMods.WireDupeInfo, function(id) return CreatedEntities[id] end)
 	end
 end

@@ -123,9 +123,8 @@ function TOOL:LeftClick( trace, worldweld )
 	
 	// Don't weld to world
 	if ( trace.Entity != NULL && (!trace.Entity:IsWorld() || worldweld) ) then
-	
-		weld = constraint.Weld( trace.Entity, turret, trace.PhysicsBone, 0, 0 )
-		trace.Entity:DeleteOnRemove( turret )
+	Weld( Ent1, Ent2, Bone1, Bone2, forcelimit, nocollide, deleteonbreak )
+		weld = constraint.Weld( trace.Entity, turret, trace.PhysicsBone, 0, 0, true, true )
 		
 		// Don't hit your parents or you will go to jail.
 		

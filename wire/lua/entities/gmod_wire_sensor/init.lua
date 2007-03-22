@@ -175,7 +175,7 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	if (info.to_sense) then
 		self:SetBeacon(GetEntByID(info.to_sense))
 		if (!self.ToSense) then
-			self:SetBeacon(ents.GetByIndexs(info.to_sense))
+			self:SetBeacon(ents.GetByIndex(info.to_sense))
 		end
 	end
 end

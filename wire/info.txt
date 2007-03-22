@@ -1,11 +1,11 @@
 "AddonInfo"
 {
 	"name"				"Wire"
-	"version"			"0.9.5"
-	"up_date"			"4th February 2007"
+	"version"			"0.9.6"
+	"up_date"			"24st March 2007"
 	"author_name"			"Wire Team"
 	"author_email"			"ErkleMad@gmail.com"
-	"author_url"			"http://www.gmodforge.com/projects/wire/"
+	"author_url"			"http://www.wiremod.com/"
 	"info"				"A set of SEnts and STools that communicate through wires."
 	"override"			"0"
 }

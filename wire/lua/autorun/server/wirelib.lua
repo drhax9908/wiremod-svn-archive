@@ -504,3 +504,10 @@ function Wire_CreateOutputIterator()
 	
 	return iter
 end
+
+
+function Wire_AfterPasteMods(ply, Ent, DupeInfo)
+	//this does nothing for now, we need the blank function to get the duplicator to copy the WireDupeInfo into the pasted ent
+end
+duplicator.RegisterEntityModifier( "WireDupeInfo", Wire_AfterPasteMods )
+

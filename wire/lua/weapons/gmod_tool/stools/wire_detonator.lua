@@ -61,8 +61,7 @@ function TOOL:LeftClick( trace )
 		local min = wire_detonator:OBBMins()
 		wire_detonator:SetPos( trace.HitPos - trace.HitNormal * min.z )
 		
-		const = constraint.Weld( wire_detonator, trace.Entity, 0, trace.PhysicsBone, 0, true )
-		trace.Entity:DeleteOnRemove( wire_detonator )
+		const = constraint.Weld( wire_detonator, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
 		
 		// Don't disable collision if it's not attached to anything
 		if ( collision == 0 ) then 

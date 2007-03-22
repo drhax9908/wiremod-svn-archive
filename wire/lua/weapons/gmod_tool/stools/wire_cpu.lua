@@ -78,10 +78,20 @@ function TOOL:LeftClick( trace )
 	wire_cpu = MakeWireCpu( ply, Ang, trace.HitPos, Smodel )
 	local min = wire_cpu:OBBMins()
 	wire_cpu:SetPos( trace.HitPos - trace.HitNormal * min.z )
-
+	
+	local const, nocollide
+	// Don't weld to world
+	if ( trace.Entity:IsValid() ) then
+		const = constraint.Weld( wire_cpu, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
+		// Don't disable collision if it's not attached to anything
+		wire_cpu:GetPhysicsObject():EnableCollisions( false )
+		wire_cpu.nocollide = true
+	end
+	
 	undo.Create("WireCpu")
 		undo.AddEntity( wire_cpu )
 		undo.SetPlayer( ply )
+		undo.AddEntity( const )
 	undo.Finish()
 
 	ply:AddCleanup( "wire_cpus", wire_cpu )

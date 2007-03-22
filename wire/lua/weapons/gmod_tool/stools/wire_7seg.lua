@@ -85,8 +85,7 @@ function TOOL:LeftClick( trace )
 	// Don't weld to world, unless we wanted too
 	if ( trace.Entity:IsValid() || worldweld ) then
 		for x=1, 7 do
-			const[x] = constraint.Weld( wire_indicators[x], trace.Entity, 0, trace.PhysicsBone, 0, true )
-			trace.Entity:DeleteOnRemove( wire_indicators[x] )
+			const[x] = constraint.Weld( wire_indicators[x], trace.Entity, 0, trace.PhysicsBone, 0, true, true )
 			
 			// Don't disable collision if it's not attached to anything
 			if ( collision == 0 ) then 
@@ -175,7 +174,7 @@ if (SERVER) then
 			
 			//weld this segment to eveyone before it
 			for y=1,x do
-				const = constraint.Weld( wire_indicators[x], wire_indicators[y], 0, 0, 0, true )
+				const = constraint.Weld( wire_indicators[x], wire_indicators[y], 0, 0, 0, true, true )
 			end
 			wire_indicators[x-1]:DeleteOnRemove( wire_indicators[x] ) //when one is removed, all are. a linked chain
 		end

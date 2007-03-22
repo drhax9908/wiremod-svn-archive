@@ -4,6 +4,7 @@
 local meta = FindMetaTable("Entity")
 if (!meta) then return end
 
+/*not need any more
 if (!oldDORFunction) then
 oldDORFunction = meta.DeleteOnRemove
 
@@ -46,7 +47,7 @@ function meta:GetDeleteOnRemoveInfo()
 	end
 
 	return DORInfo
-end
+end*/
 
 //Set DeleteOnRemoveInfo
 function meta:SetDeleteOnRemoveInfo(DORInfo, GetEntID)
@@ -67,7 +68,7 @@ function meta:SetDeleteOnRemoveInfo(DORInfo, GetEntID)
 end
 
 // Console Command to print EntIndex() of all attached ents
-local function PrintDOREntities(player,command,arguments)
+/*local function PrintDOREntities(player,command,arguments)
 	local trace = player:GetEyeTrace()
 	if (!trace.HitPos || !trace.Entity || !trace.Entity:IsValid() || trace.Entity:IsPlayer()) then return end
 	if (!trace.Entity.DeleteOnRemoveInfo) then return end
@@ -80,4 +81,4 @@ local function PrintDOREntities(player,command,arguments)
 		Msg(index..": "..ent:EntIndex().."\n")
 	end
 end
-concommand.Add("dor_entities",PrintDOREntities)
+concommand.Add("dor_entities",PrintDOREntities)*/

@@ -121,7 +121,13 @@ function TOOL:LeftClick( trace )
 	if ( trace.Entity:IsValid() && _weld ) then
 		local const, nocollide = constraint.Weld( explosive, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0 )
 		undo.AddEntity( const )
-		if (!_noparentremove) then trace.Entity:DeleteOnRemove( explosive ) end
+		if (_noparentremove) then 
+			local const, nocollide = constraint.Weld( explosive, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0, false )
+			undo.AddEntity( const )
+		else
+			local const, nocollide = constraint.Weld( explosive, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0, true )
+			undo.AddEntity( const )
+		end
 	end
 	
 		undo.SetPlayer( ply )

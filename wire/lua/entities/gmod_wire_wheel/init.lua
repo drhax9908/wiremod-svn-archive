@@ -48,9 +48,9 @@ end
 ---------------------------------------------------------*/
 function ENT:SetAxis( vec )
 
-	self.Axis = self.Entity:GetPos() + (vec * 512)
-	self.Axis = self.Entity:NearestPoint( self.Axis ) + vec
-	self.Axis = self.Entity:WorldToLocal( self.Axis )	
+	self.Axis = self.Entity:GetPos() + vec * 512
+	self.Axis = self.Entity:NearestPoint( self.Axis )
+	self.Axis = self.Entity:WorldToLocal( self.Axis )
 
 end
 
@@ -96,12 +96,18 @@ function ENT:SetMotor( Motor )
 end
 
 function ENT:GetMotor()
-	return self.Motor or NULL
+	
+	if (!self.Motor) then
+		self.Motor = constraint.FindConstraintEntity( self.Entity, "Motor" )
+	end
+	
+	return self.Motor
 end
 
 
 function ENT:SetDirection( dir )
 	self.Entity:SetNetworkedInt( 1, dir )
+	self.Direction = dir
 end
 
 function ENT:SetToggle( bool )
@@ -136,7 +142,8 @@ function ENT:Forward( mul )
 	local Motor = self:GetMotor()
 	if ( !Motor:IsValid() ) then
 		Msg("Wheel doesn't have a motor!\n"); 
-	return false end
+		return false
+	end
 
 	mul = mul or 1
 	local mdir = Motor:GetTable().direction
@@ -228,10 +235,9 @@ function ENT:DoDirectionEffect()
 	if (!Motor || !Motor:IsValid()) then return end
 
 	local effectdata = EffectData()
-		effectdata:SetOrigin( self.Entity:LocalToWorld( self.Axis ) )
-		effectdata:SetStart( self.Axis )
+		effectdata:SetOrigin( self.Axis )
 		effectdata:SetEntity( self.Entity )
-		effectdata:SetScale( Motor:GetTable().direction )
+		effectdata:SetScale( Motor.direction )
 	util.Effect( "wheel_indicator", effectdata, true, true )	
 	
 end

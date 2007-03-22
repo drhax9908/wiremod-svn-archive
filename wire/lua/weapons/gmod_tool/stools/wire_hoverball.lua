@@ -78,9 +78,8 @@ function TOOL:LeftClick( trace )
 	// Don't weld to world
 	if ( trace.Entity != NULL && !trace.Entity:IsWorld() ) then
 	
-		const 		= constraint.Weld( trace.Entity, wire_ball, trace.PhysicsBone, 0, 0, true )
+		const 		= constraint.Weld( trace.Entity, wire_ball, trace.PhysicsBone, 0, 0, true, true )
 		nocollide = constraint.NoCollide( trace.Entity, wire_ball, 0, trace.PhysicsBone )
-		trace.Entity:DeleteOnRemove( wire_ball )
 		
 		wire_ball:GetPhysicsObject():EnableCollisions( false )
 		wire_ball:GetTable().nocollide = true

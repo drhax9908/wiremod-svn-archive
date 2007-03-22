@@ -92,6 +92,19 @@ function ENT:OnTakeDamage( dmginfo )
 end
 
 /*---------------------------------------------------------
+   Name: Think
+---------------------------------------------------------*/
+function ENT:Think()
+
+	self.Entity:NextThink( CurTime() + 0.25 )
+
+	self.Entity:SetNetworkedInt( "TargetZ", self:GetTargetZ() )
+	
+	return true
+	
+end
+
+/*---------------------------------------------------------
    Name: Simulate
 ---------------------------------------------------------*/
 function ENT:PhysicsSimulate( phys, deltatime )
@@ -110,10 +123,11 @@ function ENT:PhysicsSimulate( phys, deltatime )
 		txt = txt.." (on)"
 		self:SetOverlayText( txt )
 		
-		
 		if ( self.ZVelocity != 0 ) then
+			
 			self:SetTargetZ( self:GetTargetZ() + (self.ZVelocity * deltatime * self:GetSpeed()) )
 			self.Entity:GetPhysicsObject():Wake()
+			
 		end
 		
 		phys:Wake()

@@ -23,3 +23,13 @@ function ENT:TriggerInput(iname, value)
 		self:SetDisplayB( string.format("%.2f", value) )
 	end
 end
+
+function ENT:Setup(SingleValue, SingleBigFont, TextA, TextB)
+	// Extra stuff for Wire Screen (TheApathetic)
+	self:SetTextA(TextA)
+	self:SetTextB(TextB)
+	self:SetSingleBigFont(SingleBigFont)
+	
+	// Put it here to update inputs if necessary (TheApathetic)
+	self:SetSingleValue(SingleValue)
+end

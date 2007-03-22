@@ -57,8 +57,7 @@ function TOOL:LeftClick( trace )
 
 	local const, nocollide
 
-	const = constraint.Weld( wire_output, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0 )
-	trace.Entity:DeleteOnRemove( wire_output )
+	const = constraint.Weld( wire_output, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0, true )
 	wire_output:GetPhysicsObject():EnableCollisions( false )
 
 	undo.Create("WireOutput")
