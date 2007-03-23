@@ -567,6 +567,7 @@ function ENT:Compile( pl, line, linenumber, firstpass )
 	local nextorg = false
 	local nextdefine = false
 	local nextalloc = false
+	local nextdb = false
 	local programsize = 0
 	for _,opcode in pairs(opcodetable) do
 		opcode = string.Trim(opcode)
@@ -589,6 +590,16 @@ function ENT:Compile( pl, line, linenumber, firstpass )
 			else
 				pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E335) at line "..linenumber..": Invalid number of parameters in DEFINE macro\n")
 				return false	
+			end
+		elseif (nextdb) then
+			local dbtable = string.Explode(",", opcode )
+			for _,dbvalue in pairs(dbtable) do
+				if self:ValidNumber(dbvalue) then
+					self:Write(dbvalue)
+				else
+					pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E450) at line "..linenumber..": Invalid parameter in DB macro\n")
+					return false
+				end
 			end
 		elseif (nextorg) then
 			if self:ValidNumber(opcode) then
@@ -877,6 +888,8 @@ function ENT:Compile( pl, line, linenumber, firstpass )
 		else
 			if ( opcode == "alloc" ) then
 				nextalloc = true
+			elseif (opcode == "db") then
+				nextdb = true
 			elseif ( opcode == "org" ) then
 				nextorg = true
 			elseif ( opcode == "define" ) then
