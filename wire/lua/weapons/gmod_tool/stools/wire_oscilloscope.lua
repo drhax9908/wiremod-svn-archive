@@ -126,8 +126,8 @@ function TOOL.BuildCPanel(panel)
 			["#Small tv"]		= { wire_oscilloscope_model = "models/props_lab/monitor01b.mdl" },
 			["#Plasma tv"]		= { wire_oscilloscope_model = "models/props/cs_office/TV_plasma.mdl" },
 			["#LCD monitor"]	= { wire_oscilloscope_model = "models/props/cs_office/computer_monitor.mdl" },
-			["#Monitor Big"]	= { wire_screen_model = "models/kobilica/wiremonitorbig.mdl" },
-			["#Monitor Small"]	= { wire_screen_model = "models/kobilica/wiremonitorsmall.mdl" },
+			["#Monitor Big"]	= { wire_oscilloscope_model = "models/kobilica/wiremonitorbig.mdl" },
+			["#Monitor Small"]	= { wire_oscilloscope_model = "models/kobilica/wiremonitorsmall.mdl" },
 		}
 	})
 end
