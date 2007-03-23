@@ -71,6 +71,14 @@ function ENT:ShowOutput(value)
 end
 
 function ENT:OnRestore()
+	keys = { }
+	keys["W"] = IN_FORWARD
+	keys["A"] = IN_MOVELEFT
+	keys["S"] = IN_BACK
+	keys["D"] = IN_MOVERIGHT
+	keys["Mouse1"] = IN_ATTACK
+	keys["R"] = IN_RELOAD
+	
     Wire_Restored(self.Entity)
 end
 
