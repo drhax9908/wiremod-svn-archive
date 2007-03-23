@@ -230,8 +230,6 @@ end
 
 
 
-
-
 //simple error msg display
 function AdvDupeClient.Error( errormsg )
 	if !errormsg or type(errormsg) != "String" then return end
@@ -247,141 +245,7 @@ usermessage.Hook("AdvDupeCLError", AdvDupeCLError)
 
 
 AdvDupeClient.res = {}
-
-AdvDupeClient.res.filesave = [[
-"filesave.res"
-{
-	"AdvDuplicatorSave"
-	{
-		"ControlName"		"Frame"
-		"fieldName"		"AdvDuplicatorSave"
-		"xpos"			"400"
-		"ypos"			"250"
-		"zpos"			"290"
-		"wide"			"320"
-		"tall"			"130"
-		"autoResize"		"0"
-		"pinCorner"		"0"
-		"visible"		"1"
-		"enabled"		"1"
-		"tabPosition"		"0"
-		"settitlebarvisible"	"1"
-		"sizable"		"0"
-		"title"			"#Duplicator_save"
-	}
-	"FileName"
-	{
-		"ControlName"		"TextEntry"
-		"fieldName"		"FileName"
-		"xpos"			"6"
-		"ypos"			"45"
-		"zpos"			"290"
-		"wide"			"289"
-		"tall"			"20"
-		"autoResize"		"0"
-		"pinCorner"		"0"
-		"visible"		"1"
-		"enabled"		"1"
-		"tabPosition"		"0"
-		"labelText"		"#Duplicator_filename"
-		"textAlignment"		"west"
-		"dulltext"		"0"
-		"brighttext"		"0"
-		"font"			"DefaultSmall"
-		"wrap"			"0"
-		"Command"		"null"
-		"Default"		"1"
-	}
-	"Description"
-	{
-		"ControlName"		"TextEntry"
-		"fieldName"		"FileName"
-		"xpos"			"6"
-		"ypos"			"85"
-		"zpos"			"290"
-		"wide"			"289"
-		"tall"			"20"
-		"autoResize"		"0"
-		"pinCorner"		"0"
-		"visible"		"1"
-		"enabled"		"1"
-		"tabPosition"		"0"
-		"labelText"		"Description:"
-		"textAlignment"		"west"
-		"dulltext"		"0"
-		"brighttext"		"0"
-		"font"			"DefaultSmall"
-		"wrap"			"0"
-		"Command"		"null"
-		"Default"		"1"
-	}
-	"SaveButton"
-	{
-		"ControlName"		"Button"
-		"fieldName"		"SaveButton"
-		"xpos"			"184"
-		"ypos"			"110"
-		"zpos"			"290"
-		"wide"			"110"
-		"tall"			"20"
-		"autoResize"		"0"
-		"pinCorner"		"0"
-		"visible"		"1"
-		"enabled"		"1"
-		"tabPosition"		"0"
-		"labelText"		"Save!"
-		"textAlignment"		"west"
-		"dulltext"		"0"
-		"brighttext"		"0"
-		"font"			"DefaultSmall"
-		"wrap"			"0"
-		"Command"		"null"
-		"Default"		"1"
-	}
-	"Label1"
-	{
-		"ControlName"		"Label"
-		"fieldName"		"Label1"
-		"xpos"			"6"
-		"ypos"			"25"
-		"wide"			"185"
-		"tall"			"25"
-		"autoResize"		"0"
-		"pinCorner"		"0"
-		"visible"		"1"
-		"enabled"		"1"
-		"tabPosition"		"0"
-		"labelText"		"Filename:"
-		"textAlignment"		"west"
-		"dulltext"		"0"
-		"brighttext"		"0"
-		"font"			"DefaultSmall"
-		"wrap"			"0"
-	}
-	"Label2"
-	{
-		"ControlName"		"Label"
-		"fieldName"		"Label1"
-		"xpos"			"6"
-		"ypos"			"65"
-		"wide"			"185"
-		"tall"			"25"
-		"autoResize"		"0"
-		"pinCorner"		"0"
-		"visible"		"1"
-		"enabled"		"1"
-		"tabPosition"		"0"
-		"labelText"		"Description:"
-		"textAlignment"		"west"
-		"dulltext"		"0"
-		"brighttext"		"0"
-		"font"			"DefaultSmall"
-		"wrap"			"0"
-	}
-}
-]]
-
-//vgui code partly adapted from Night-Eagle HUD Module
+//vgui code partly adapted from Night-Eagle's HUD Module
 AdvDupeClient.res.Basic = [[
 "basic.res"
 {
@@ -428,53 +292,55 @@ AdvDupeClient.gui = {}
 
 function AdvDupeClient.SaveGUI( pl, command, args )
 	
-	AdvDupeClient.gui.save = {}
-	AdvDupeClient.gui.save.frame = vgui.Create( "Frame" )
-	//AdvDupeClient.gui.save.frame:SetName( "AdvDuplicatorSave" )	
-	//AdvDupeClient.gui.save.frame:LoadControlsFromString(AdvDupeClient.res.filesave)
-	AdvDupeClient.gui.save.frame:SetName( "basic" )
-	AdvDupeClient.gui.save.frame:LoadControlsFromString(AdvDupeClient.res.gengui("Save to File"))
-	AdvDupeClient.gui.save.frame:SetName("AdvDuplicatorSave")
-	AdvDupeClient.gui.save.frame:SetSize(320,135)
-	AdvDupeClient.gui.save.frame:SetPos(400,250)
-	
-	
-	AdvDupeClient.gui.save.lblFile = vgui.Create("Label",AdvDupeClient.gui.save.frame,"lblFile")
-	AdvDupeClient.gui.save.lblFile:SetPos(6,25)
-	AdvDupeClient.gui.save.lblFile:SetSize(185,25)
-	AdvDupeClient.gui.save.lblFile:SetText("Filename:")
-	
-	AdvDupeClient.gui.save.lblDesc = vgui.Create("Label",AdvDupeClient.gui.save.frame,"lblDesc")
-	AdvDupeClient.gui.save.lblDesc:SetPos(6,65)
-	AdvDupeClient.gui.save.lblDesc:SetSize(185,25)
-	AdvDupeClient.gui.save.lblDesc:SetText("Description:")
-	
-	AdvDupeClient.gui.save.btnSave = vgui.Create("Button",AdvDupeClient.gui.save.frame,"btnSave")
-	AdvDupeClient.gui.save.btnSave:SetPos(184,110)
-	AdvDupeClient.gui.save.btnSave:SetSize(110,20)
-	AdvDupeClient.gui.save.btnSave:SetText("Save")
-	AdvDupeClient.gui.save.btnSave:SetCommand("Save")
-	
-	AdvDupeClient.gui.save.txtFile = vgui.Create("TextEntry",AdvDupeClient.gui.save.frame,"txtFile")
-	AdvDupeClient.gui.save.txtFile:SetPos(6,45)
-	AdvDupeClient.gui.save.txtFile:SetSize(289,20)
-	AdvDupeClient.gui.save.txtFile:SetText("")
-	
-	AdvDupeClient.gui.save.txtDesc = vgui.Create("TextEntry",AdvDupeClient.gui.save.frame,"txtDesc")
-	AdvDupeClient.gui.save.txtDesc:SetPos(6,85)
-	AdvDupeClient.gui.save.txtDesc:SetSize(189,20)
-	AdvDupeClient.gui.save.txtDesc:SetText("")
-	
-	function AdvDupeClient.gui.save.frame:ActionSignal(key,value)
-		if key == "Save" then
-			local filename	= AdvDupeClient.gui.save.txtFile:GetValue()
-			local desc		= AdvDupeClient.gui.save.txtDesc:GetValue()
-			
-			LocalPlayer():ConCommand("adv_duplicator_save \""..filename.."\" \""..desc.."\"")
-			
-			AdvDupeClient.gui.save.frame:Remove()
+	if !AdvDupeClient.gui.save or !AdvDupeClient.gui.save.frame then
+		AdvDupeClient.gui.save = {}
+		AdvDupeClient.gui.save.frame = vgui.Create( "Frame" )
+		AdvDupeClient.gui.save.frame:SetName( "basic" )
+		AdvDupeClient.gui.save.frame:LoadControlsFromString(AdvDupeClient.res.gengui("Save to File"))
+		AdvDupeClient.gui.save.frame:SetName("AdvDuplicatorSave")
+		AdvDupeClient.gui.save.frame:SetSize(320,135)
+		AdvDupeClient.gui.save.frame:SetPos(400,250)
+		
+		
+		AdvDupeClient.gui.save.lblFile = vgui.Create("Label",AdvDupeClient.gui.save.frame,"lblFile")
+		AdvDupeClient.gui.save.lblFile:SetPos(6,25)
+		AdvDupeClient.gui.save.lblFile:SetSize(185,25)
+		AdvDupeClient.gui.save.lblFile:SetText("Filename:")
+		
+		AdvDupeClient.gui.save.lblDesc = vgui.Create("Label",AdvDupeClient.gui.save.frame,"lblDesc")
+		AdvDupeClient.gui.save.lblDesc:SetPos(6,65)
+		AdvDupeClient.gui.save.lblDesc:SetSize(185,25)
+		AdvDupeClient.gui.save.lblDesc:SetText("Description:")
+		
+		AdvDupeClient.gui.save.btnSave = vgui.Create("Button",AdvDupeClient.gui.save.frame,"btnSave")
+		AdvDupeClient.gui.save.btnSave:SetPos(184,110)
+		AdvDupeClient.gui.save.btnSave:SetSize(110,20)
+		AdvDupeClient.gui.save.btnSave:SetText("Save")
+		AdvDupeClient.gui.save.btnSave:SetCommand("Save")
+		
+		AdvDupeClient.gui.save.txtFile = vgui.Create("TextEntry",AdvDupeClient.gui.save.frame,"txtFile")
+		AdvDupeClient.gui.save.txtFile:SetPos(6,45)
+		AdvDupeClient.gui.save.txtFile:SetSize(289,20)
+		
+		
+		AdvDupeClient.gui.save.txtDesc = vgui.Create("TextEntry",AdvDupeClient.gui.save.frame,"txtDesc")
+		AdvDupeClient.gui.save.txtDesc:SetPos(6,85)
+		AdvDupeClient.gui.save.txtDesc:SetSize(189,20)
+		
+		function AdvDupeClient.gui.save.frame:ActionSignal(key,value)
+			if key == "Save" then
+				local filename	= AdvDupeClient.gui.save.txtFile:GetValue()
+				local desc		= AdvDupeClient.gui.save.txtDesc:GetValue()
+				
+				LocalPlayer():ConCommand("adv_duplicator_save \""..filename.."\" \""..desc.."\"")
+				
+				AdvDupeClient.gui.save.frame:SetVisible(false)
+			end
 		end
 	end
+	
+	AdvDupeClient.gui.save.txtFile:SetText("")
+	AdvDupeClient.gui.save.txtDesc:SetText("")
 	
 	AdvDupeClient.gui.save.frame:SetKeyBoardInputEnabled( true )
 	AdvDupeClient.gui.save.frame:SetMouseInputEnabled( true )
@@ -482,27 +348,64 @@ function AdvDupeClient.SaveGUI( pl, command, args )
 end
 concommand.Add( "adv_duplicator_save_gui", AdvDupeClient.SaveGUI )
 
-
-
 function AdvDupeClient.MakeDir( pl, command, args )
 	if !args[1] then return end
 	
-	AdvDupeClient.gui.makedir = {}
-	AdvDupeClient.gui.makedir.frame = vgui.Create( "Frame" )
-	AdvDupeClient.gui.makedir.frame:SetName( "basic" )
-	AdvDupeClient.gui.makedir.frame:LoadControlsFromString(AdvDupeClient.res.gengui("Make Dir"))
-	AdvDupeClient.gui.makedir.frame:SetName("AdvDuplicatorMakeDirSS")
-	AdvDupeClient.gui.makedir.frame:SetSize(320,135)
-	AdvDupeClient.gui.makedir.frame:SetPos(400,250)
+	if !AdvDupeClient.gui.makedir or !AdvDupeClient.gui.makedir.frame then
+		AdvDupeClient.gui.makedir = {}
+		AdvDupeClient.gui.makedir.frame = vgui.Create( "Frame" )
+		AdvDupeClient.gui.makedir.frame:SetName( "basic" )
+		AdvDupeClient.gui.makedir.frame:LoadControlsFromString(AdvDupeClient.res.gengui("Make Dir"))
+		AdvDupeClient.gui.makedir.frame:SetName("AdvDuplicatorMakeDirSS")
+		AdvDupeClient.gui.makedir.frame:SetSize(320,135)
+		AdvDupeClient.gui.makedir.frame:SetPos(400,250)
+		
+		AdvDupeClient.gui.makedir.btnMakeDir = vgui.Create("Button",AdvDupeClient.gui.makedir.frame,"btnMakeDir")
+		AdvDupeClient.gui.makedir.btnMakeDir:SetPos(184,110)
+		AdvDupeClient.gui.makedir.btnMakeDir:SetSize(110,20)
+		AdvDupeClient.gui.makedir.btnMakeDir:SetText("Make Folder")
+		
+		AdvDupeClient.gui.makedir.lblDir = vgui.Create("Label",AdvDupeClient.gui.makedir.frame,"lblDir")
+		AdvDupeClient.gui.makedir.lblDir:SetPos(6,25)
+		AdvDupeClient.gui.makedir.lblDir:SetSize(185,25)
+		
+		AdvDupeClient.gui.makedir.txtDir = vgui.Create("TextEntry",AdvDupeClient.gui.makedir.frame,"txtDir")
+		AdvDupeClient.gui.makedir.txtDir:SetPos(6,45)
+		AdvDupeClient.gui.makedir.txtDir:SetSize(289,20)
+		
+		if (dupeshare.UsePWSys) and (!SinglePlayer()) then 
+			AdvDupeClient.gui.makedir.lblPass = vgui.Create("Label",AdvDupeClient.gui.makedir.frame,"lblPass")
+			AdvDupeClient.gui.makedir.lblPass:SetPos(6,65)
+			AdvDupeClient.gui.makedir.lblPass:SetSize(185,25)
+			AdvDupeClient.gui.makedir.lblPass:SetText("Password:")
+			
+			AdvDupeClient.gui.makedir.txtPass = vgui.Create("TextEntry",AdvDupeClient.gui.makedir.frame,"txtPass")
+			AdvDupeClient.gui.makedir.txtPass:SetPos(6,85)
+			AdvDupeClient.gui.makedir.txtPass:SetSize(189,20)
+		end
+		
+		function AdvDupeClient.gui.makedir.frame:ActionSignal(key,value)
+			if key == "MakeDirServer" then
+				local dir	= AdvDupeClient.gui.makedir.txtDir:GetValue()
+				
+				if (dupeshare.UsePWSys) and (!SinglePlayer()) then
+					local pass	= AdvDupeClient.gui.makedir.txtPass:GetValue()
+					LocalPlayer():ConCommand("adv_duplicator_makedir \""..dir.."\" \""..pass.."\"")
+				else
+					LocalPlayer():ConCommand("adv_duplicator_makedir \""..dir.."\"")
+				end
+				
+				AdvDupeClient.gui.makedir.frame:SetVisible(false)
+			elseif key == "MakeDirClient" then
+				local dir	= AdvDupeClient.gui.makedir.txtDir:GetValue()
+				AdvDupeClient.MakeDir(dir)
+				AdvDupeClient.gui.makedir.frame:SetVisible(false)
+			end
+		end
+	end
 	
-	AdvDupeClient.gui.makedir.btnMakeDir = vgui.Create("Button",AdvDupeClient.gui.makedir.frame,"btnMakeDir")
-	AdvDupeClient.gui.makedir.btnMakeDir:SetPos(184,110)
-	AdvDupeClient.gui.makedir.btnMakeDir:SetSize(110,20)
-	AdvDupeClient.gui.makedir.btnMakeDir:SetText("Make Folder")
-	
-	AdvDupeClient.gui.makedir.lblDir = vgui.Create("Label",AdvDupeClient.gui.makedir.frame,"lblDir")
-	AdvDupeClient.gui.makedir.lblDir:SetPos(6,25)
-	AdvDupeClient.gui.makedir.lblDir:SetSize(185,25)
+	AdvDupeClient.gui.makedir.txtDir:SetText("")
+	AdvDupeClient.gui.makedir.txtPass:SetText("")
 	
 	if args[1] == "client" then
 		AdvDupeClient.gui.makedir.btnMakeDir:SetCommand("MakeDirClient")
@@ -512,75 +415,56 @@ function AdvDupeClient.MakeDir( pl, command, args )
 		AdvDupeClient.gui.makedir.lblDir:SetText("Name for new folder in \""..string.gsub(AdvDupeClient.SScdir, dupeshare.BaseDir, "").."\"")
 	end
 	
-	AdvDupeClient.gui.makedir.txtDir = vgui.Create("TextEntry",AdvDupeClient.gui.makedir.frame,"txtDir")
-	AdvDupeClient.gui.makedir.txtDir:SetPos(6,45)
-	AdvDupeClient.gui.makedir.txtDir:SetSize(289,20)
-	AdvDupeClient.gui.makedir.txtDir:SetText("")
-	
-	if (dupeshare.UsePWSys) and (!SinglePlayer()) then 
-		AdvDupeClient.gui.makedir.lblPass = vgui.Create("Label",AdvDupeClient.gui.makedir.frame,"lblPass")
-		AdvDupeClient.gui.makedir.lblPass:SetPos(6,65)
-		AdvDupeClient.gui.makedir.lblPass:SetSize(185,25)
-		AdvDupeClient.gui.makedir.lblPass:SetText("Password:")
-		
-		AdvDupeClient.gui.makedir.txtPass = vgui.Create("TextEntry",AdvDupeClient.gui.makedir.frame,"txtPass")
-		AdvDupeClient.gui.makedir.txtPass:SetPos(6,85)
-		AdvDupeClient.gui.makedir.txtPass:SetSize(189,20)
-		AdvDupeClient.gui.makedir.txtPass:SetText("")
-	end
-	
-	
-	function AdvDupeClient.gui.makedir.frame:ActionSignal(key,value)
-		if key == "MakeDirServer" then
-			local dir	= AdvDupeClient.gui.makedir.txtDir:GetValue()
-			
-			if (dupeshare.UsePWSys) and (!SinglePlayer()) then
-				local pass	= AdvDupeClient.gui.makedir.txtPass:GetValue()
-				LocalPlayer():ConCommand("adv_duplicator_makedir \""..dir.."\" \""..pass.."\"")
-			else
-				LocalPlayer():ConCommand("adv_duplicator_makedir \""..dir.."\"")
-			end
-			
-			AdvDupeClient.gui.makedir.frame:Remove()
-		elseif key == "MakeDirClient" then
-			local dir	= AdvDupeClient.gui.makedir.txtDir:GetValue()
-			AdvDupeClient.MakeDir(dir)
-			AdvDupeClient.gui.makedir.frame:Remove()
-		end
-	end
-	
 	AdvDupeClient.gui.makedir.frame:SetKeyBoardInputEnabled( true )
 	AdvDupeClient.gui.makedir.frame:SetMouseInputEnabled( true )
 	AdvDupeClient.gui.makedir.frame:SetVisible( true )
 end
 concommand.Add( "adv_duplicator_makedir_gui", AdvDupeClient.MakeDir )
 
-
-
 function AdvDupeClient.RenameFile( pl, cmd, args )
 	if !args[1] then return end
 	
-	AdvDupeClient.gui.rename = {}
-	AdvDupeClient.gui.rename.frame = vgui.Create( "Frame" )
-	AdvDupeClient.gui.rename.frame:SetName( "basic" )
-	AdvDupeClient.gui.rename.frame:LoadControlsFromString(AdvDupeClient.res.gengui("Rename File"))
-	AdvDupeClient.gui.rename.frame:SetName("AdvDuplicatorRename")
-	AdvDupeClient.gui.rename.frame:SetSize(320,135)
-	AdvDupeClient.gui.rename.frame:SetPos(400,250)
-	
-	AdvDupeClient.gui.rename.btnRename = vgui.Create("Button",AdvDupeClient.gui.rename.frame,"btnRename")
-	AdvDupeClient.gui.rename.btnRename:SetPos(184,110)
-	AdvDupeClient.gui.rename.btnRename:SetSize(110,20)
-	AdvDupeClient.gui.rename.btnRename:SetText("Rename")
-	
-	AdvDupeClient.gui.rename.lblNewName = vgui.Create("Label",AdvDupeClient.gui.rename.frame,"lblNewName")
-	AdvDupeClient.gui.rename.lblNewName:SetPos(6,25)
-	AdvDupeClient.gui.rename.lblNewName:SetSize(185,25)
-	
-	
-	AdvDupeClient.gui.rename.txtNewName = vgui.Create("TextEntry",AdvDupeClient.gui.rename.frame,"txtNewName")
-	AdvDupeClient.gui.rename.txtNewName:SetPos(6,45)
-	AdvDupeClient.gui.rename.txtNewName:SetSize(289,20)
+	if !AdvDupeClient.gui.rename or !AdvDupeClient.gui.rename.frame then
+		AdvDupeClient.gui.rename = {}
+		AdvDupeClient.gui.rename.frame = vgui.Create( "Frame" )
+		AdvDupeClient.gui.rename.frame:SetName( "basic" )
+		AdvDupeClient.gui.rename.frame:LoadControlsFromString(AdvDupeClient.res.gengui("Rename File"))
+		AdvDupeClient.gui.rename.frame:SetName("AdvDuplicatorRename")
+		AdvDupeClient.gui.rename.frame:SetSize(320,135)
+		AdvDupeClient.gui.rename.frame:SetPos(400,250)
+		
+		AdvDupeClient.gui.rename.btnRename = vgui.Create("Button",AdvDupeClient.gui.rename.frame,"btnRename")
+		AdvDupeClient.gui.rename.btnRename:SetPos(184,110)
+		AdvDupeClient.gui.rename.btnRename:SetSize(110,20)
+		AdvDupeClient.gui.rename.btnRename:SetText("Rename")
+		
+		AdvDupeClient.gui.rename.lblNewName = vgui.Create("Label",AdvDupeClient.gui.rename.frame,"lblNewName")
+		AdvDupeClient.gui.rename.lblNewName:SetPos(6,25)
+		AdvDupeClient.gui.rename.lblNewName:SetSize(185,25)
+		
+		AdvDupeClient.gui.rename.txtNewName = vgui.Create("TextEntry",AdvDupeClient.gui.rename.frame,"txtNewName")
+		AdvDupeClient.gui.rename.txtNewName:SetPos(6,45)
+		AdvDupeClient.gui.rename.txtNewName:SetSize(289,20)
+		
+		function AdvDupeClient.gui.rename.frame:ActionSignal(key,value)
+			if key == "RenameServer" then
+				local newname = AdvDupeClient.gui.rename.txtNewName:GetValue()
+				Msg("newname= "..newname.."\n")
+				
+				LocalPlayer():ConCommand("adv_duplicator_rename \""..newname.."\"")
+				
+				AdvDupeClient.gui.rename.frame:SetVisible(false)
+			elseif key == "RenameClient" then
+				local newname	= dupeshare.ReplaceBadChar(dupeshare.GetFileFromFilename(AdvDupeClient.gui.rename.txtNewName:GetValue()))..".txt"
+				local filename = pl:GetInfo( "adv_duplicator_open_cl" )
+				local dir	= AdvDupeClient.CLcdir
+				
+				AdvDupeClient.FileOpts(pl, "rename", filename, dir, newname)
+				
+				AdvDupeClient.gui.rename.frame:SetVisible(false)
+			end
+		end
+	end
 	
 	if args[1] == "client" then
 		AdvDupeClient.gui.rename.btnRename:SetCommand("RenameClient")
@@ -596,25 +480,6 @@ function AdvDupeClient.RenameFile( pl, cmd, args )
 		AdvDupeClient.gui.rename.txtNewName:SetText(oldfilename)
 	end
 	
-	
-	function AdvDupeClient.gui.rename.frame:ActionSignal(key,value)
-		if key == "RenameServer" then
-			local newname	= dupeshare.ReplaceBadChar(dupeshare.GetFileFromFilename(AdvDupeClient.gui.rename.txtNewName:GetValue()))..".txt"
-			
-			LocalPlayer():ConCommand("adv_duplicator_rename \""..newname.."\"")
-			
-			AdvDupeClient.gui.rename.frame:Remove()
-		elseif key == "RenameClient" then
-			local newname	= dupeshare.ReplaceBadChar(dupeshare.GetFileFromFilename(AdvDupeClient.gui.rename.txtNewName:GetValue()))..".txt"
-			local filename = pl:GetInfo( "adv_duplicator_open_cl" )
-			local dir	= AdvDupeClient.CLcdir
-			
-			AdvDupeClient.FileOpts(pl, "rename", filename, dir, newname)
-			
-			AdvDupeClient.gui.rename.frame:Remove()
-		end
-	end
-	
 	AdvDupeClient.gui.rename.frame:SetKeyBoardInputEnabled( true )
 	AdvDupeClient.gui.rename.frame:SetMouseInputEnabled( true )
 	AdvDupeClient.gui.rename.frame:SetVisible( true )
@@ -622,33 +487,47 @@ function AdvDupeClient.RenameFile( pl, cmd, args )
 end
 concommand.Add( "adv_duplicator_renamefile_gui", AdvDupeClient.RenameFile )
 
-
 function AdvDupeClient.ConfirmDelete( pl, cmd, args )
 	if !args[1] then return end
 	
-	AdvDupeClient.gui.delete = {}
-	AdvDupeClient.gui.delete.frame = vgui.Create( "Frame" )
-	AdvDupeClient.gui.delete.frame:SetName( "basic" )
-	AdvDupeClient.gui.delete.frame:LoadControlsFromString(AdvDupeClient.res.gengui("Delete File?"))
-	AdvDupeClient.gui.delete.frame:SetName("AdvDuplicatorDelete")
-	AdvDupeClient.gui.delete.frame:SetSize(320,135)
-	AdvDupeClient.gui.delete.frame:SetPos(400,250)
-	
-	AdvDupeClient.gui.delete.btnDelete = vgui.Create("Button",AdvDupeClient.gui.delete.frame,"btnDelete")
-	AdvDupeClient.gui.delete.btnDelete:SetPos(20,110)
-	AdvDupeClient.gui.delete.btnDelete:SetSize(110,20)
-	AdvDupeClient.gui.delete.btnDelete:SetText("Delete!")
-	
-	AdvDupeClient.gui.delete.btnCancel = vgui.Create("Button",AdvDupeClient.gui.delete.frame,"btnCancel")
-	AdvDupeClient.gui.delete.btnCancel:SetPos(184,110)
-	AdvDupeClient.gui.delete.btnCancel:SetSize(110,20)
-	AdvDupeClient.gui.delete.btnCancel:SetText("Cancel")
-	AdvDupeClient.gui.delete.btnCancel:SetCommand("Cancel")
-	
-	AdvDupeClient.gui.delete.lblFileName = vgui.Create("Label",AdvDupeClient.gui.delete.frame,"lblFileName")
-	AdvDupeClient.gui.delete.lblFileName:SetPos(6,25)
-	AdvDupeClient.gui.delete.lblFileName:SetSize(185,25)
-	
+	if !AdvDupeClient.gui.delete or !AdvDupeClient.gui.delete.frame then
+		AdvDupeClient.gui.delete = {}
+		AdvDupeClient.gui.delete.frame = vgui.Create( "Frame" )
+		AdvDupeClient.gui.delete.frame:SetName( "basic" )
+		AdvDupeClient.gui.delete.frame:LoadControlsFromString(AdvDupeClient.res.gengui("Delete File?"))
+		AdvDupeClient.gui.delete.frame:SetName("AdvDuplicatorDelete")
+		AdvDupeClient.gui.delete.frame:SetSize(320,135)
+		AdvDupeClient.gui.delete.frame:SetPos(400,250)
+		
+		AdvDupeClient.gui.delete.btnDelete = vgui.Create("Button",AdvDupeClient.gui.delete.frame,"btnDelete")
+		AdvDupeClient.gui.delete.btnDelete:SetPos(20,110)
+		AdvDupeClient.gui.delete.btnDelete:SetSize(110,20)
+		AdvDupeClient.gui.delete.btnDelete:SetText("Delete!")
+		
+		AdvDupeClient.gui.delete.btnCancel = vgui.Create("Button",AdvDupeClient.gui.delete.frame,"btnCancel")
+		AdvDupeClient.gui.delete.btnCancel:SetPos(184,110)
+		AdvDupeClient.gui.delete.btnCancel:SetSize(110,20)
+		AdvDupeClient.gui.delete.btnCancel:SetText("Cancel")
+		AdvDupeClient.gui.delete.btnCancel:SetCommand("Cancel")
+		
+		AdvDupeClient.gui.delete.lblFileName = vgui.Create("Label",AdvDupeClient.gui.delete.frame,"lblFileName")
+		AdvDupeClient.gui.delete.lblFileName:SetPos(6,25)
+		AdvDupeClient.gui.delete.lblFileName:SetSize(185,25)
+		
+		function AdvDupeClient.gui.delete.frame:ActionSignal(key,value)
+			if key == "DeleteServer" then
+				LocalPlayer():ConCommand("adv_duplicator_fileopts delete")
+				AdvDupeClient.gui.delete.frame:SetVisible(false)
+			elseif key == "DeleteClient" then
+				local filename = pl:GetInfo( "adv_duplicator_open_cl" )
+				local dir	= AdvDupeClient.CLcdir
+				AdvDupeClient.FileOpts(pl, "delete", filename, dir)
+				AdvDupeClient.gui.delete.frame:SetVisible(false)
+			elseif key == "Cancel" then
+				AdvDupeClient.gui.delete.frame:SetVisible(false)
+			end
+		end
+	end
 	
 	if args[1] == "client" then
 		AdvDupeClient.gui.delete.btnDelete:SetCommand("DeleteClient")
@@ -662,21 +541,6 @@ function AdvDupeClient.ConfirmDelete( pl, cmd, args )
 		AdvDupeClient.gui.delete.lblFileName:SetText("Delete this file \""..oldfilename..".txt\" from \""..string.gsub(AdvDupeClient.SScdir, dupeshare.BaseDir, "").."/ ?")
 	end
 	
-	
-	function AdvDupeClient.gui.delete.frame:ActionSignal(key,value)
-		if key == "DeleteServer" then
-			LocalPlayer():ConCommand("adv_duplicator_fileopts delete")
-			AdvDupeClient.gui.delete.frame:Remove()
-		elseif key == "DeleteClient" then
-			local filename = pl:GetInfo( "adv_duplicator_open_cl" )
-			local dir	= AdvDupeClient.CLcdir
-			AdvDupeClient.FileOpts(pl, "delete", filename, dir)
-			AdvDupeClient.gui.delete.frame:Remove()
-		elseif key == "Cancel" then
-			AdvDupeClient.gui.delete.frame:Remove()
-		end
-	end
-	
 	AdvDupeClient.gui.delete.frame:SetKeyBoardInputEnabled( true )
 	AdvDupeClient.gui.delete.frame:SetMouseInputEnabled( true )
 	AdvDupeClient.gui.delete.frame:SetVisible( true )
@@ -684,5 +548,6 @@ function AdvDupeClient.ConfirmDelete( pl, cmd, args )
 end
 concommand.Add( "adv_duplicator_confirmdelete_gui", AdvDupeClient.ConfirmDelete )
 
-Msg("--- Wire duplicator client module installed! ---\n")
+
+Msg("--- Wire duplicator v.0.61 client module installed! ---\n")
 

@@ -265,7 +265,8 @@ end
 // Move the world positions
 //
 function AdvDupe.ConvertConstraintPositionsToWorld( Constraints, Offset, HoldAngle )
-
+	if (!Constraints) then return end
+	
 	for k, Constraint in pairs( Constraints ) do
 	
 		if ( Constraint.Entity ) then
@@ -381,148 +382,8 @@ end
 
 
 /*---------------------------------------------------------
-Name: AdvDupe.SaveToFile( table )
-Desc: 
+  Process and save given dupe tables to file
 ---------------------------------------------------------*/
-function AdvDupe.SaveToFile( pl, filename, desc )
-	
-	//save to a sub folder for each player
-	//local dir = "adv_duplicator/"..dupeshare.GetPlayerName(pl)
-	local dir = AdvDupe.GetPlayersFolder(pl)
-	
-	//get and check the that filename contains no illegal characters
-	local filename = dupeshare.ReplaceBadChar(filename)
-	//tostring(pl:GetInfo( "adv_duplicator_save_filename" )))
-	
-	filename = dupeshare.FileNoOverWriteCheck( dir, filename )
-	
-	Msg("\nSaving to file: "..filename.."\n")
-	
-	//save to file
-	local temp = {}
-	
-	//let's only save the junk we're acctually going to load
-	local pln = pl:UniqueID()
-	temp.Ents			= AdvDupe[pln].Ents
-	temp.Constraints	= AdvDupe[pln].Constraints
-	temp.DupeInfo		= AdvDupe[pln].DupeInfo
-	temp.DORInfo		= AdvDupe[pln].DORInfo
-	temp.HeadEntID		= AdvDupe[pln].HeadEntID
-	temp.HoldAngle		= AdvDupe[pln].HoldAngle
-	
-	//add file versioning, it will come in handy later if save format changes
-	temp["VersionInfo"] = {}
-	temp["VersionInfo"]["FileVersion"]		= 0.4
-	temp["VersionInfo"]["FileInfo"]			= "Advanced Duplicator Save File"
-	temp["VersionInfo"]["Creator"]			= pl:GetName()	or "unknown"
-	temp["VersionInfo"]["Desc"]				= desc 			or "none"
-	temp["VersionInfo"]["NumOfEnts"]		= table.Count(temp.Ents)		or 0
-	temp["VersionInfo"]["NumOfConst"]		= table.Count(temp.Constraints)	or 0
-	temp["VersionInfo"]["NumOfDupeInfo"]	= table.Count(temp.DupeInfo)	or 0
-	
-	//prepare the table and save it to file
-	//local temp2 = dupeshare.PrepareTableToSave_test(temp)
-	temp = dupeshare.PrepareTableToSave_test(temp)
-	
-	temp = util.TableToKeyValues(temp)
-	file.Write(filename, temp)
-	
-	//file.Write(filename.."_test.txt", util.TableToKeyValues(temp2))
-	
-	return filename //for sending to client after saving
-end
-
-
-function AdvDupe.LoadFromFile( pl, filename )
-	
-	local filepath = filename
-	if ( !file.Exists(filepath) ) then //backwards compatablity
-		local dir = "adv_duplicator"
-		local ndir = dir.."/"..dupeshare.GetPlayerName(pl)
-		
-		if ( !file.Exists(dir.."/"..filename) && !file.Exists(ndir.."/"..filename) ) then
-			print("File not found") return end
-		
-		if ( file.Exists(ndir.."/"..filename) ) then filepath = ndir.."/"..filename end
-		if ( file.Exists(dir.."/"..filename) ) then filepath = dir.."/"..filename end
-	end
-	
-	// Clear Ghost entity if one exists
-	local tool = pl:GetActiveWeapon()
-	if (dupeshare.CurrentToolIsDuplicator(tool)) then
-		tool:GetTable():GetToolObject():ReleaseGhostEntity()
-		pl:SendLua("LocalPlayer():GetActiveWeapon():GetTable():GetToolObject():ReleaseGhostEntity()")
-	end
-	
-	//load from file
-	local temp	= file.Read(filepath)
-	temp 		= util.KeyValuesToTable(temp)
-	
-	if ( temp["^Version^Info"] ) then //file ueses a different meathod os stroing FullCase
-		Msg("Loading new file type\n")
-		temp = dupeshare.RebuildTableFromLoad_test(temp)
-	else
-		Msg("Loading old file type\n")
-		temp = dupeshare.RebuildTableFromLoad(temp)
-	end
-	
-	
-	//check the file was loaded and we understand it's version then load the data in to the tables
-	local pln = pl:UniqueID()
-	if (temp) and (temp["VersionInfo"]["FileVersion"] >= 0.4) then
-		//current data file, an easy load
-		AdvDupe[pln]				= {}
-		AdvDupe[pln].Ents			= temp.Ents
-		AdvDupe[pln].Constraints	= temp.Constraints
-		AdvDupe[pln].DupeInfo		= temp.DupeInfo
-		AdvDupe[pln].DORInfo		= temp.DORInfo
-		AdvDupe[pln].Wheels			= {}
-		AdvDupe[pln].HeadEntID		= temp.HeadEntID
-		AdvDupe[pln].HoldAngle		= temp.HoldAngle
-		
-		Msg("Loaded new file "..filepath.."  version: "..temp["VersionInfo"]["FileVersion"].."\n")
-		
-	elseif (temp) and (temp["VersionInfo"]["FileVersion"] == 0.3) then
-		//last data file, an easy load
-		AdvDupe[pln]				= {}
-		AdvDupe[pln].Ents			= temp.Ents
-		AdvDupe[pln].Constraints	= temp.Constraints
-		AdvDupe[pln].DupeInfo		= temp.DupeInfo
-		AdvDupe[pln].DORInfo		= {} //this file verion doesn't have this info
-		AdvDupe[pln].Wheels			= {}
-		AdvDupe[pln].HeadEntID		= temp.HeadEntID
-		AdvDupe[pln].HoldAngle		= temp.HoldAngle
-		
-		Msg("Loaded old file "..filepath.."  version: 0.3\n")
-		
-	elseif (temp) and (temp["VersionInfo"]["FileVersion"] <= 0.2) then
-		//load the an old version data file, this is why file versioning is good
-		AdvDupe[pln]				= {}
-		AdvDupe[pln].Ents			= temp.Ents
-		AdvDupe[pln].Constraints	= temp.Constraints
-		AdvDupe[pln].DupeInfo 		= {}
-		AdvDupe[pln].DORInfo		= {} //this file verion doesn't have this info
-		AdvDupe[pln].Wheels			= {}
-		AdvDupe[pln].HeadEntID		= temp.HeadEntID
-		AdvDupe[pln].HoldAngle		= temp.HoldAngle
-		
-		//build the new type dupeinfo from the ents table
-		for id, entTable in pairs(temp.Ents) do
-			if (entTable.DupeInfo) then
-				AdvDupe[pln].DupeInfo[id] = entTable.DupeInfo
-			end
-		end
-		
-		Msg("Loaded very old file "..filepath.."  version: "..temp["VersionInfo"]["FileVersion"].."\n")
-		
-	else
-		Msg("\nFILE LOAD FAIL! something is wrong with this file:  "..filepath.."\n")
-	end
-	
-end
-
-
-
 function AdvDupe.SaveDupeTablesToFile( pl, EntTables, ConstraintTables, DupeInfo, DORInfo, HeadEntityIdx, HoldAngle, HoldPos, filename, desc )
 	
 	//save to a sub folder for each player
@@ -540,98 +401,181 @@ function AdvDupe.SaveDupeTablesToFile( pl, EntTables, ConstraintTables, DupeInfo
 	local temp = {}
 	
 	//let's only save the junk we're acctually going to load
-	temp.EntTables			= EntTables
-	temp.ConstraintTables	= ConstraintTables
 	temp.HeadEntityIdx		= HeadEntityIdx
 	temp.HoldAngle			= HoldAngle
 	temp.HoldPos			= HoldPos
 	
+	//make these tables smaller cause there too fucking huge otherwise
+	temp.EntTables, temp.ConstraintTables = AdvDupe.CompactTables( EntTables, ConstraintTables )
+	//temp.EntTables			= EntTables
+	//temp.ConstraintTables	= ConstraintTables
+	
 	//add file versioning, it will come in handy later if save format changes
 	temp["VersionInfo"] = {}
-	temp["VersionInfo"]["FileVersion"]		= 0.6
+	temp["VersionInfo"]["FileVersion"]		= 0.61
 	temp["VersionInfo"]["FileInfo"]			= "Advanced Duplicator Save File"
+	
 	local Creator							= pl:GetName()	or "unknown"
 	temp["VersionInfo"]["Creator"]			= Creator
+	
 	local desc								= desc 			or "none"
 	temp["VersionInfo"]["Desc"]				= desc
+	
 	local NumOfEnts							= table.Count(EntTables)		or 0
 	temp["VersionInfo"]["NumOfEnts"]		= NumOfEnts
+	
 	local NumOfConst						= table.Count(ConstraintTables)	or 0
 	temp["VersionInfo"]["NumOfConst"]		= NumOfConst
 	
 	//prepare the table and save it to file
-	temp = dupeshare.PrepareTableToSave_test(temp)
+	temp = dupeshare.PrepareTableToSave(temp)
 	
 	temp = util.TableToKeyValues(temp)
 	file.Write(filename, temp)
 	
-	return filename, Creator, desc , NumOfEnts, NumOfConst, 0.6 //for sending to client after saving
+	return filename, Creator, desc , NumOfEnts, NumOfConst, 0.61 //for sending to client after saving
 end
 
-
+/*---------------------------------------------------------
+  Load and return dupe tables from given file
+---------------------------------------------------------*/
 function AdvDupe.LoadDupeTableFromFile( filepath )
 	
 	if ( !file.Exists(filepath) ) then return end
 	
 	//load from file
 	local temp	= file.Read(filepath)
-	temp 			= util.KeyValuesToTable(temp)
+	temp 		= util.KeyValuesToTable(temp)
 	
 	if ( temp["VersionInfo"] or temp["versioninfo"] ) then //file ueses a different meathod os stroing FullCase
 		Msg("Loading old legacy file type\n")
-		temp = dupeshare.RebuildTableFromLoad(temp)
+		temp = dupeshare.RebuildTableFromLoad_Old(temp)
 	else
 		Msg("Loading new file type\n")
-		temp = dupeshare.RebuildTableFromLoad_test(temp)
+		temp = dupeshare.RebuildTableFromLoad(temp)
 	end
 	
 	
-	if (temp) and (temp["VersionInfo"]["FileVersion"] >= 0.6) then
-		
-		Msg("loaded 0.6 file\n")
-		
-		Msg("Loaded new file "..filepath.."  version: "..temp["VersionInfo"]["FileVersion"].."\n")
-		
-		return temp.EntTables, temp.ConstraintTables, temp.DupeInfo, temp.DORInfo, temp.HeadEntityIdx, temp.HoldAngle, temp.HoldPos, false, temp.VersionInfo.Creator, temp.VersionInfo.Desc, temp.VersionInfo.NumOfEnts, temp.VersionInfo.NumOfConst, temp.VersionInfo.FileVersion
-		
-	//Legacy stuff
 	//check the file was loaded and we understand it's version then load the data in to the tables
-	elseif (temp) and (temp["VersionInfo"]["FileVersion"] == 0.4) then
-		//this legacy data file is easy to load
+	if (temp) and (temp["VersionInfo"]["FileVersion"] >= 0.6) then
+		Msg("Loaded new file "..filepath.."  version: "..temp.VersionInfo.FileVersion.."\n")
 		
-		Msg("Loaded old legacy file "..filepath.."  version: 0.4\n")
+		return temp.EntTables, temp.ConstraintTables, {},{}, temp.HeadEntityIdx, temp.HoldAngle, temp.HoldPos, false, temp.VersionInfo.Creator, temp.VersionInfo.Desc, temp.VersionInfo.NumOfEnts, temp.VersionInfo.NumOfConst, temp.VersionInfo.FileVersion
 		
-		return temp.Ents, temp.Constraints, temp.DupeInfo, temp.DORInfo, temp.HeadEntID, temp.HoldAngle, Vector(0,0,0), true, temp.VersionInfo.Creator, temp.VersionInfo.Desc, temp.VersionInfo.NumOfEnts, temp.VersionInfo.NumOfConst, temp.VersionInfo.FileVersion
+	//Legacy versions, there are no version 0.5 files
+	elseif (temp) and (temp["VersionInfo"]["FileVersion"] <= 0.4) then
+		Msg("Loaded old legacy file "..filepath.."  version: "..temp.VersionInfo.FileVersion.."\n")
 		
-	elseif (temp) and (temp["VersionInfo"]["FileVersion"] == 0.3) then
-		//this legacy data file is also easy to load
-		
-		Msg("Loaded older legacy file "..filepath.."  version: 0.3\n")
-		
-		return temp.Ents, temp.Constraints, temp.DupeInfo, {}, temp.HeadEntID, temp.HoldAngle, Vector(0,0,0), true, temp.VersionInfo.Creator, temp.VersionInfo.Desc, temp.VersionInfo.NumOfEnts, temp.VersionInfo.NumOfConst, temp.VersionInfo.FileVersion
-		
-	elseif (temp) and (temp["VersionInfo"]["FileVersion"] <= 0.2) then
-		//load the a very old legacy data file, this is why file versioning is good
-		
-		local DupeInfo 		= {}
-		//build the new type dupeinfo from the ents table
-		for id, entTable in pairs(temp.Ents) do
-			if (entTable.DupeInfo) then
-				DupeInfo[id] = entTable.DupeInfo
+		if (temp["VersionInfo"]["FileVersion"] <= 0.2) then
+			temp.DupeInfo = {}
+			for id, entTable in pairs(temp.Ents) do
+				if (entTable.DupeInfo) then
+					temp.DupeInfo[id] = entTable.DupeInfo
+				end
 			end
 		end
 		
-		Msg("Loaded very old legacy file "..filepath.."  version: "..temp["VersionInfo"]["FileVersion"].."\n")
-		
-		return temp.Ents, temp.Constraints, DupeInfo, {}, temp.HeadEntID, temp.HoldAngle, Vector(0,0,0), true, temp.VersionInfo.Creator, temp.VersionInfo.Desc, temp.VersionInfo.NumOfEnts, temp.VersionInfo.NumOfConst, temp.VersionInfo.FileVersion
+		return temp.Ents, temp.Constraints, temp.DupeInfo, (temp.DORInfo or {}), temp.HeadEntID, temp.HoldAngle, Vector(0,0,0), true, temp.VersionInfo.Creator, temp.VersionInfo.Desc, temp.VersionInfo.NumOfEnts, temp.VersionInfo.NumOfConst, temp.VersionInfo.FileVersion
 		
 	else
-		Msg("\nFILE LOAD FAIL! something is wrong with this file:  "..filepath.."\n")
+		Msg("\nFILE FAILED TO LOAD! something is wrong with this file:  "..filepath.."\n")
 	end
 	
 end
 
 
+/*---------------------------------------------------------
+  Prepreares Tables For Save
+   Compacts the size of the table by
+   returning what will be needed
+---------------------------------------------------------*/
+function AdvDupe.CompactTables( EntityList, ConstraintList )
+
+	local SavableEntities = {}
+	for k, v in pairs( EntityList ) do
+		
+		SavableEntities[ k ] = AdvDupe.SavableEntityFromTable( v )
+		
+		SavableEntities[ k ].BoneMods = table.Copy( v.BoneMods )
+		SavableEntities[ k ].EntityMods = table.Copy( v.EntityMods )
+		SavableEntities[ k ].PhysicsObjects = table.Copy( v.PhysicsObjects )
+		
+	end
+	
+	local SavableConstraints = {}
+	for k, Constraint in pairs( ConstraintList ) do
+		
+		local SavableConst = AdvDupe.SavableConstraintFromTable( Constraint )
+		
+		if ( SavableConst ) then
+			table.insert( SavableConstraints, SavableConst )
+		end
+		
+	end
+	
+	return SavableEntities, SavableConstraints
+	
+end
+
+function AdvDupe.SavableEntityFromTable( EntTable )
+
+	local EntityClass = duplicator.FindEntityClass( EntTable.Class )
+	local SavableEntity = {}
+	SavableEntity.Class = EntTable.Class
+	
+	if ( EntTable.Model ) then SavableEntity.Model = EntTable.Model end
+	if ( EntTable.Angle ) then SavableEntity.Angle = EntTable.Angle end
+	if ( EntTable.Pos ) then SavableEntity.Pos = EntTable.Pos end
+	if ( EntTable.LocalPos ) then SavableEntity.LocalPos = EntTable.LocalPos end
+	if ( EntTable.LocalAngle ) then SavableEntity.LocalAngle = EntTable.LocalAngle end
+	
+	if (!EntityClass) then
+		return SavableEntity
+	end
+	
+	for iNumber, Key in pairs( EntityClass.Args ) do
+		
+		SavableEntity[ Key ] = EntTable[ Key ]
+		
+		/*local Arg = nil
+		
+		// Translate keys from old system
+		if ( Key == "pos" || Key == "position" ) then Key = "Pos" end
+		if ( Key == "ang" || Key == "Ang" || Key == "angle" ) then Key = "Angle" end
+		if ( Key == "model" ) then Key = "Model" end
+		
+		Arg = EntTable[ Key ]
+		
+		// Special keys
+		//if ( Key == "Data" ) then Arg = EntTable end
+		
+		SavableEntity[ Key ] = Arg*/
+		
+	end
+	
+	return SavableEntity
+	
+end
+
+function AdvDupe.SavableConstraintFromTable( Constraint )
+
+	local Factory = duplicator.ConstraintType[ Constraint.Type ]
+	if ( !Factory ) then return end
+	
+	local SavableConst = {}
+	SavableConst.Type = Constraint.Type
+	SavableConst.Entity = table.Copy( Constraint.Entity )
+	
+	for k, Key in pairs( Factory.Args ) do
+		if (!string.find(Key, "Ent") or string.len(Key) != 4) 
+		and (!string.find(Key, "Bone") or string.len(Key) != 5) then
+			SavableConst[ Key ] = Constraint[ Key ]
+		end
+	end
+	
+	return SavableConst
+
+end
 
 
 
@@ -663,7 +607,7 @@ function AdvDupe.MakeDir(pl, cmd, args)
 	if !pl:IsValid() or !pl:IsPlayer() or !args[1] then return end
 	
 	local dir = AdvDupe[pl:UniqueID()].cdir
-	local foldername = dupeshare.ReplaceBadChar(args[1])
+	local foldername = dupeshare.ReplaceBadChar(string.Implode(" ", args))
 	
 	AdvDupe.FileOpts(pl, "makedir", foldername, dir)
 	
@@ -699,19 +643,19 @@ local function FileOptsCommand(pl, cmd, args)
 end
 concommand.Add("adv_duplicator_fileopts", FileOptsCommand)
 
-local function RenameCommand(pl, cmd, args)
+local function FileRenameCommand(pl, cmd, args)
+	Msg("rename cmd\n")
 	if !pl:IsValid() or !pl:IsPlayer() or !args[1] then return end
 	
-	
 	local filename = dupeshare.GetFileFromFilename(pl:GetInfo( "adv_duplicator_load_filename" ))..".txt"
-	//local filename2 = pl:GetInfo( "adv_duplicator_load_filename2" )
 	local dir	= AdvDupe[pl:UniqueID()].cdir
-	local newname = args[1]
-	
+	local newname = string.Implode(" ", args)
+	newname = dupeshare.ReplaceBadChar(dupeshare.GetFileFromFilename(newname))..".txt"
+	Msg("s-newname= "..newname.."\n")
 	AdvDupe.FileOpts(pl, "rename", filename, dir, newname)
 	
 end
-concommand.Add("adv_duplicator_rename", RenameCommand)
+concommand.Add("adv_duplicator_rename", FileRenameCommand)
 
 
 function AdvDupe.FileOpts(pl, action, filename, dir, dir2)
@@ -1674,7 +1618,7 @@ function AdvDupe.PasteApplyDORInfo( DORInfoTable, GetentID )
 	for id, DORInfo in pairs(DORInfoTable) do
 		local ent = GetentID(id)
 		if (ent) and (ent:IsValid()) and (DORInfo) then
-			ent:SetDeleteOnRemoveInfo(DORInfo, function(id) return GetentID(id) end)
+			//ent:SetDeleteOnRemoveInfo(DORInfo, function(id) return GetentID(id) end)
 			
 			for _,entindex in pairs(DORInfo) do
 				local ent2 = GetentID(entindex)
@@ -1983,4 +1927,4 @@ duplicator.RegisterConstraint( "Hydraulic", constraint.Hydraulic, "pl", "Ent1", 
 duplicator.RegisterConstraint( "Muscle", constraint.Muscle, "pl", "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "Length1", "Length2", "width", "key", "fixed", "period", "amplitude" )
 */
 
-Msg("--- Wire duplicator module installed! ---\n")
+Msg("--- Wire duplicator v.0.61 server module installed! ---\n")

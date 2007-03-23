@@ -2,7 +2,7 @@
 {
 	"name"				"Advanced Duplicator"
 	"version"			"0.6.1"
-	"up_date"			"21st March 2007"
+	"up_date"			"22st March 2007"
 	"author_name"			"TAD2020"
 	"author_email"			"TAD@HEPHNET.ORG / someone needs to pay the bill first"
 	"author_url"			"http://www.wiremod.com/"

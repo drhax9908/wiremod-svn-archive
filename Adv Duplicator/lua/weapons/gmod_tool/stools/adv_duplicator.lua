@@ -130,6 +130,8 @@ function TOOL:RightClick( trace )
 	
 	self:GetOwner():SendLua( "AdvDupeClient.FileLoaded=false" )
 	self:GetOwner():SendLua( "AdvDupeClient.Copied=true" )
+	self.FileLoaded=false
+	self.Copied=true
 	
 	self:StartGhostEntities( Entities )
 	
@@ -368,6 +370,7 @@ end
 function TOOL:SaveFile( filename, desc )
 	if ( CLIENT ) then return end
 	if (!filename) or (!self.Entities) then return end
+	if (self.FileLoaded or !self.Copied) then return end
 	
 	local Filename, Creator, Desc, NumOfEnts, NumOfConst, FileVersion = AdvDupe.SaveDupeTablesToFile( self:GetOwner(), 
 		self.Entities, self.Constraints, self.DupeInfo, self.DORInfo,
@@ -377,6 +380,8 @@ function TOOL:SaveFile( filename, desc )
 	
 		self:GetOwner():SendLua( "AdvDupeClient.FileLoaded=true" )
 		self:GetOwner():SendLua( "AdvDupeClient.Copied=false" )
+		self.FileLoaded=true
+		self.Copied=false
 		
 		self:GetOwner():SendLua( "AdvDupeClient.LoadedFilename=\""..Filename.."\"" )
 		self:GetOwner():SendLua( "AdvDupeClient.LocadedCreator=\""..Creator.."\"" )
@@ -410,6 +415,8 @@ function TOOL:LoadFile( filepath )
 		
 		self:GetOwner():SendLua( "AdvDupeClient.FileLoaded=true" )
 		self:GetOwner():SendLua( "AdvDupeClient.Copied=false" )
+		self.FileLoaded=true
+		self.Copied=false
 		
 		self:GetOwner():SendLua( "AdvDupeClient.LoadedFilename=\""..filepath.."\"" )
 		self:GetOwner():SendLua( "AdvDupeClient.LocadedCreator=\""..(Creator or "n/a").."\"" )
@@ -515,41 +522,10 @@ if SERVER then
 		else desc = tostring(args[2]) end
 		
 		//save to file
-		//AdvDupe.SaveToFile( pl, tostring(filename), tostring(desc) )
-		
 		tool:GetTable():GetToolObject():SaveFile( tostring(filename), tostring(desc) )
-		
-		//tool:GetTable():GetToolObject():UpdateList()
 		
 	end
 	concommand.Add( "adv_duplicator_save", AdvDupeSS_Save )
-	
-	//Load duplicated ents from file
-	/*local function AdvDupeSS_Load( pl, command, args )
-		
-		if !pl:IsValid() 
-		or !pl:IsPlayer() 
-		then return end
-		
-		local tool = pl:GetActiveWeapon()
-		if (!dupeshare.CurrentToolIsDuplicator(tool, true)) then return end
-		
-		local filename = ""
-		if !args[1] //if a filename wasn't passed with a arg, then get the selection in the panel
-		then filename = pl:GetInfo( "adv_duplicator_load_filename" )
-		//then filepath = tool:GetTable():GetToolObject().load_filename2
-		else filename = tostring(args[1]) end
-		
-		AdvDupe.LoadFromFile( pl, filename )
-		
-		if (dupeshare.CurrentToolIsDuplicator(tool, true)) then
-			//pl:SendLua(  "LocalPlayer():GetActiveWeapon():GetTable():GetToolObject():StartGhostEntities()")
-			tool:GetTable():GetToolObject():StartGhostEntities()
-			tool:GetTable():GetToolObject():SendGhostToClient(true)
-			pl:SendLua(  "LocalPlayer():GetActiveWeapon():GetTable():GetToolObject():UpdateGhostEntities()" )
-		end
-	end
-	concommand.Add( "adv_duplicator_load", AdvDupeSS_Load )*/
 	
 	
 	//Load duplicated file or open folder
@@ -575,8 +551,6 @@ if SERVER then
 			tool:GetTable():GetToolObject():UpdateList()
 			
 		elseif ( file.Exists(filepath) && !file.IsDir(filepath) ) then
-			
-			//AdvDupe.LoadFromFile( pl, filepath )
 			
 			tool:GetTable():GetToolObject():LoadFile( filepath )
 			
@@ -953,7 +927,8 @@ else	// CLIENT
 			
 			CPanel:AddControl( "Button", {
 				Text = "Delete",
-				Command = "adv_duplicator_fileopts delete" })
+				Command = "adv_duplicator_confirmdelete_gui server" })
+				//Command = "adv_duplicator_fileopts delete" })
 			
 			
 			
@@ -1076,7 +1051,8 @@ else	// CLIENT
 				
 				CPanel:AddControl( "Button", {
 					Text = "Delete",
-					Command = "adv_duplicator_cl_fileopts delete" })
+					Command = "adv_duplicator_confirmdelete_gui client" })
+					//Command = "adv_duplicator_cl_fileopts delete" })
 				
 				CPanel:AddControl( "ListBox", ClientDir2Params )
 				

@@ -203,7 +203,7 @@ Desc: Converts a table in to a lot tables to protect
 	vectors, angles, bools, numbers, and indexes
 	from being horribly raped by TableToKeyValues
 ---------------------------------------------------------*/
-function dupeshare.PrepareTableToSave( t, done)
+function dupeshare.PrepareTableToSave_Old( t, done)
 	
 	local done = done or {}
 	local tbl = {}
@@ -211,7 +211,7 @@ function dupeshare.PrepareTableToSave( t, done)
 	for k, v in pairs ( t ) do
 		if ( type( v ) == "table" and !done[ v ] ) then
 			done[ v ] = true
-			tbl[ k ] = dupeshare.PrepareTableToSave ( v, done )
+			tbl[ k ] = dupeshare.PrepareTableToSave_Old ( v, done )
 			tbl[k].__name = k
 		else
 			if ( type(v) == "Vector" ) then
@@ -237,7 +237,7 @@ function dupeshare.PrepareTableToSave( t, done)
 	
 	return tbl
 end
-function dupeshare.PrepareTableToSave_test( t, done)
+function dupeshare.PrepareTableToSave( t, done)
 	
 	local done = done or {}
 	local tbl = {}
@@ -245,7 +245,7 @@ function dupeshare.PrepareTableToSave_test( t, done)
 	for k, v in pairs ( t ) do
 		if ( type( v ) == "table" and !done[ v ] ) then
 			done[ v ] = true
-			tbl[ dupeshare.ProtectCase(k) ] = dupeshare.PrepareTableToSave_test( v, done )
+			tbl[ dupeshare.ProtectCase(k) ] = dupeshare.PrepareTableToSave( v, done )
 			--tbl[k].__name = k
 		else
 			if ( type(v) == "Vector" ) then
@@ -287,7 +287,7 @@ end
    Desc: Removes the protection added by PrepareTableToSave
 		after table is loaded with KeyValuesToTable
 ---------------------------------------------------------*/
-function dupeshare.RebuildTableFromLoad( t, done )
+function dupeshare.RebuildTableFromLoad_Old( t, done )
 	
 	local done = done or {}
 	local tbl = {}
@@ -308,7 +308,7 @@ function dupeshare.RebuildTableFromLoad( t, done )
 					tbl[ v.__name ] = tostring( v.v )
 				end
 			else
-				tbl[ v.__name ] = dupeshare.RebuildTableFromLoad ( v, done )
+				tbl[ v.__name ] = dupeshare.RebuildTableFromLoad_Old ( v, done )
 			end
 		else
 			if k != "__name" then //don't add the table names to output
@@ -320,7 +320,7 @@ function dupeshare.RebuildTableFromLoad( t, done )
 	return tbl
 	
 end
-function dupeshare.RebuildTableFromLoad_test( t, done )
+function dupeshare.RebuildTableFromLoad( t, done )
 	
 	local done = done or {}
 	local tbl = {}
@@ -328,7 +328,7 @@ function dupeshare.RebuildTableFromLoad_test( t, done )
 	for k, v in pairs ( t ) do
 		if ( type( v ) == "table" and !done[ v ] ) then
 			done[ v ] = true
-			tbl[ dupeshare.UnprotectCase(k) ] = dupeshare.RebuildTableFromLoad_test( v, done )
+			tbl[ dupeshare.UnprotectCase(k) ] = dupeshare.RebuildTableFromLoad( v, done )
 		else
 			local t = string.sub(v,1,1)
 			local d = string.sub(v,2)
@@ -462,7 +462,5 @@ function dupeshare.UpDir(path)
 end
 
 
-Msg("--- Wire duplicator shared module installed! ---\n")
-
-
+Msg("--- Wire duplicator v.0.61 shared module installed! ---\n")
 

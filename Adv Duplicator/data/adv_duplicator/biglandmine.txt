@@ -1,0 +1,715 @@
+"Out"
+{
+	"^Hold^Pos"		"V1021.9 343.013 31.0313"
+	"^Version^Info"
+	{
+		"^Desc"		"Sa simple land mine"
+		"^File^Version"		"N0.61"
+		"^Num^Of^Const"		"N15"
+		"^Creator"		"STAD2020"
+		"^Num^Of^Ents"		"N10"
+		"^File^Info"		"SAdvanced Duplicator Save File"
+	}
+	"^Ent^Tables"
+	{
+		"#66"
+		{
+			"out_pos"		"Bfalse"
+			"^Entity^Mods"
+			{
+				"^Wire^Dupe^Info"
+				{
+				}
+			}
+			"ignore_world"		"Btrue"
+			"show_beam"		"Btrue"
+			"default_zero"		"Btrue"
+			"range"		"N150.172"
+			"^Local^Pos"		"V-13.6912 3.13147 39.7014"
+			"^Class"		"Sgmod_wire_ranger"
+			"^Model"		"Smodels/jaanus/wiretool/wiretool_range.mdl"
+			"out_ang"		"Bfalse"
+			"^Angle"		"A89.7645 -25.867 165.345"
+			"^Physics^Objects"
+			{
+				"#0"
+				{
+					"^Pos"		"V-13.6912 3.13147 39.7014"
+					"^Local^Angle"		"A89.7645 -25.867 165.345"
+					"^Angle"		"A89.7645 -25.867 165.345"
+					"^Frozen"		"Bfalse"
+					"^Local^Pos"		"V-13.6912 3.13147 39.7014"
+				}
+			}
+			"^Pos"		"V-13.6912 3.13147 39.7014"
+			"trace_water"		"Bfalse"
+			"out_vel"		"Bfalse"
+			"out_col"		"Bfalse"
+			"out_val"		"Bfalse"
+			"^Local^Angle"		"A89.7645 -25.867 165.345"
+			"out_dist"		"Btrue"
+		}
+		"#69"
+		{
+			"out_pos"		"Bfalse"
+			"^Entity^Mods"
+			{
+				"^Wire^Dupe^Info"
+				{
+				}
+			}
+			"ignore_world"		"Btrue"
+			"show_beam"		"Btrue"
+			"default_zero"		"Btrue"
+			"range"		"N150.172"
+			"^Local^Pos"		"V13.6885 -2.59143 39.8539"
+			"^Class"		"Sgmod_wire_ranger"
+			"^Model"		"Smodels/jaanus/wiretool/wiretool_range.mdl"
+			"out_ang"		"Bfalse"
+			"^Angle"		"A88.3743 170.359 181.569"
+			"^Physics^Objects"
+			{
+				"#0"
+				{
+					"^Pos"		"V13.6885 -2.59143 39.8539"
+					"^Local^Angle"		"A88.3743 170.359 181.569"
+					"^Angle"		"A88.3743 170.359 181.569"
+					"^Frozen"		"Bfalse"
+					"^Local^Pos"		"V13.6885 -2.59143 39.8539"
+				}
+			}
+			"^Pos"		"V13.6885 -2.59143 39.8539"
+			"trace_water"		"Bfalse"
+			"out_vel"		"Bfalse"
+			"out_col"		"Bfalse"
+			"out_val"		"Bfalse"
+			"^Local^Angle"		"A88.3743 170.359 181.569"
+			"out_dist"		"Btrue"
+		}
+		"#70"
+		{
+			"^Class"		"Sprop_physics"
+			"^Model"		"Smodels/props_c17/oildrum001_explosive.mdl"
+			"^Local^Angle"		"A-0.0670252 123.639 359.945"
+			"^Pos"		"V-16.0881 24.1289 0.31757"
+			"^Angle"		"A-0.0670252 123.639 359.945"
+			"^Physics^Objects"
+			{
+				"#0"
+				{
+					"^Pos"		"V-16.0881 24.1289 0.31757"
+					"^Local^Angle"		"A-0.0670252 123.639 359.945"
+					"^Angle"		"A-0.0670252 123.639 359.945"
+					"^Frozen"		"Bfalse"
+					"^Local^Pos"		"V-16.0881 24.1289 0.31757"
+				}
+			}
+			"^Local^Pos"		"V-16.0881 24.1289 0.31757"
+		}
+		"#74"
+		{
+			"^Class"		"Sgmod_wire_gate"
+			"^Model"		"Smodels/jaanus/wiretool/wiretool_gate.mdl"
+			"^Entity^Mods"
+			{
+				"^Wire^Dupe^Info"
+				{
+					"^Wires"
+					{
+						"^A"
+						{
+							"^Width"		"N1"
+							"^Src^Id"		"SOut"
+							"^Src^Pos"		"V0.0563551 1.24072 1.15992"
+							"^Color"
+							{
+								"A"		"N255"
+								"B"		"N48"
+								"g"		"N43"
+								"r"		"N70"
+							}
+							"^Material"		"Scable/cable2"
+							"^Src"		"N73"
+							"^Start^Pos"		"V1.43994 0.558002 1.16"
+						}
+					}
+				}
+			}
+			"^Local^Angle"		"A89.7973 -20.3719 170.836"
+			"^Angle"		"A89.7973 -20.3719 170.836"
+			"^Physics^Objects"
+			{
+				"#0"
+				{
+					"^Pos"		"V-13.9635 1.51349 26.2784"
+					"^Local^Angle"		"A89.7973 -20.3719 170.836"
+					"^Angle"		"A89.7973 -20.3719 170.836"
+					"^Frozen"		"Bfalse"
+					"^Local^Pos"		"V-13.9635 1.51349 26.2784"
+				}
+			}
+			"^Local^Pos"		"V-13.9635 1.51349 26.2784"
+			"^Pos"		"V-13.9635 1.51349 26.2784"
+			"action"		"S>"
+		}
+		"#72"
+		{
+			"^Class"		"Sgmod_wire_simple_explosive"
+			"NoCollide"		"Bfalse"
+			"^Entity^Mods"
+			{
+				"^Wire^Dupe^Info"
+				{
+					"^Wires"
+					{
+						"^Detonate"
+						{
+							"^Width"		"N1"
+							"^Src^Id"		"SOut"
+							"^Src^Pos"		"V0.544598 0.483782 1.15997"
+							"^Color"
+							{
+								"A"		"N255"
+								"B"		"N48"
+								"g"		"N43"
+								"r"		"N70"
+							}
+							"^Material"		"Scable/cable2"
+							"^Src"		"N74"
+							"^Start^Pos"		"V-1.56994 -1.02794 2.46068"
+						}
+					}
+				}
+			}
+			"^Local^Angle"		"A89.5079 -12.5444 178.37"
+			"^Angle"		"A89.5079 -12.5444 178.37"
+			"^Physics^Objects"
+			{
+				"#0"
+				{
+					"^Pos"		"V-17.2861 2.5795 16.2802"
+					"^Local^Angle"		"A89.5079 -12.5444 178.37"
+					"^Angle"		"A89.5079 -12.5444 178.37"
+					"^Frozen"		"Bfalse"
+					"^Local^Pos"		"V-17.2861 2.5795 16.2802"
+				}
+			}
+			"^Local^Pos"		"V-17.2861 2.5795 16.2802"
+			"^Pos"		"V-17.2861 2.5795 16.2802"
+			"doblastdamage"		"Btrue"
+			"key"		"N1"
+			"removeafter"		"Btrue"
+			"^Model"		"Smodels/props_junk/PopCan01a.mdl"
+			"model"		"Smodels/props_junk/PopCan01a.mdl"
+			"radius"		"N43"
+			"damage"		"N117"
+		}
+		"#67"
+		{
+			"^Class"		"Sprop_physics"
+			"^Model"		"Smodels/props_c17/oildrum001_explosive.mdl"
+			"^Local^Angle"		"A-0.0982759 123.781 359.906"
+			"^Pos"		"V0 0 0.332373"
+			"^Angle"		"A-0.0982759 123.781 359.906"
+			"^Physics^Objects"
+			{
+				"#0"
+				{
+					"^Pos"		"V0 0 0.332373"
+					"^Local^Angle"		"A-0.0982759 123.781 359.906"
+					"^Angle"		"A-0.0982759 123.781 359.906"
+					"^Frozen"		"Bfalse"
+					"^Local^Pos"		"V0 0 0.332373"
+				}
+			}
+			"^Local^Pos"		"V0 0 0.332373"
+		}
+		"#68"
+		{
+			"^Class"		"Sprop_physics"
+			"^Model"		"Smodels/props_c17/oildrum001_explosive.mdl"
+			"^Local^Angle"		"A-0.0518957 123.628 359.946"
+			"^Pos"		"V16.0422 -24.1654 0.32004"
+			"^Angle"		"A-0.0518957 123.628 359.946"
+			"^Physics^Objects"
+			{
+				"#0"
+				{
+					"^Pos"		"V16.0422 -24.1654 0.32004"
+					"^Local^Angle"		"A-0.0518957 123.628 359.946"
+					"^Angle"		"A-0.0518957 123.628 359.946"
+					"^Frozen"		"Bfalse"
+					"^Local^Pos"		"V16.0422 -24.1654 0.32004"
+				}
+			}
+			"^Local^Pos"		"V16.0422 -24.1654 0.32004"
+		}
+		"#71"
+		{
+			"^Class"		"Sprop_physics"
+			"^Model"		"Smodels/props_c17/oildrum001_explosive.mdl"
+			"^Local^Angle"		"A-0.0454749 123.816 359.926"
+			"^Pos"		"V-24.1083 -16.1565 0.3221"
+			"^Angle"		"A-0.0454749 123.816 359.926"
+			"^Physics^Objects"
+			{
+				"#0"
+				{
+					"^Pos"		"V-24.1083 -16.1565 0.3221"
+					"^Local^Angle"		"A-0.0454749 123.816 359.926"
+					"^Angle"		"A-0.0454749 123.816 359.926"
+					"^Frozen"		"Bfalse"
+					"^Local^Pos"		"V-24.1083 -16.1565 0.3221"
+				}
+			}
+			"^Local^Pos"		"V-24.1083 -16.1565 0.3221"
+		}
+		"#73"
+		{
+			"^Class"		"Sgmod_wire_gate"
+			"^Model"		"Smodels/jaanus/wiretool/wiretool_gate.mdl"
+			"^Entity^Mods"
+			{
+				"^Wire^Dupe^Info"
+				{
+					"^Wires"
+					{
+						"^B"
+						{
+							"^Width"		"N1"
+							"^Src^Id"		"SDist"
+							"^Src^Pos"		"V-2.91708 0.925371 1.88225"
+							"^Color"
+							{
+								"A"		"N255"
+								"B"		"N48"
+								"g"		"N43"
+								"r"		"N70"
+							}
+							"^Material"		"Scable/cable2"
+							"^Src"		"N66"
+							"^Start^Pos"		"V-0.224201 -0.426906 1.15998"
+						}
+						"^A"
+						{
+							"^Width"		"N1"
+							"^Src^Id"		"SDist"
+							"^Src^Pos"		"V0.0756481 1.36904 2.47923"
+							"^Color"
+							{
+								"A"		"N255"
+								"B"		"N48"
+								"g"		"N43"
+								"r"		"N70"
+							}
+							"^Material"		"Scable/cable2"
+							"^Src"		"N69"
+							"^Start^Pos"		"V-0.371531 -0.551111 1.15998"
+						}
+					}
+				}
+			}
+			"^Local^Angle"		"A89.6265 -26.8981 343.767"
+			"^Angle"		"A89.6265 -26.8981 343.767"
+			"^Physics^Objects"
+			{
+				"#0"
+				{
+					"^Pos"		"V13.3315 -5.02777 22.0841"
+					"^Local^Angle"		"A89.6265 -26.8981 343.767"
+					"^Angle"		"A89.6265 -26.8981 343.767"
+					"^Frozen"		"Bfalse"
+					"^Local^Pos"		"V13.3315 -5.02777 22.0841"
+				}
+			}
+			"^Local^Pos"		"V13.3315 -5.02777 22.0841"
+			"^Pos"		"V13.3315 -5.02777 22.0841"
+			"action"		"S+"
+		}
+		"#75"
+		{
+			"^Class"		"Sprop_physics"
+			"^Model"		"Smodels/props_c17/oildrum001_explosive.mdl"
+			"^Local^Angle"		"A-0.0946681 123.742 359.917"
+			"^Pos"		"V24.0962 16.1107 0.329592"
+			"^Angle"		"A-0.0946681 123.742 359.917"
+			"^Physics^Objects"
+			{
+				"#0"
+				{
+					"^Pos"		"V24.0962 16.1107 0.329592"
+					"^Local^Angle"		"A-0.0946681 123.742 359.917"
+					"^Angle"		"A-0.0946681 123.742 359.917"
+					"^Frozen"		"Bfalse"
+					"^Local^Pos"		"V24.0962 16.1107 0.329592"
+				}
+			}
+			"^Local^Pos"		"V24.0962 16.1107 0.329592"
+		}
+	}
+	"^Head^Entity^Idx"		"N67"
+	"^Constraint^Tables"
+	{
+		"#13"
+		{
+			"NoCollide"		"Btrue"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N66"
+					"^Entity"		"SEntity [66][gmod_wire_ranger]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N67"
+					"^Entity"		"SEntity [67][prop_physics]"
+				}
+			}
+		}
+		"#15"
+		{
+			"NoCollide"		"Bfalse"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N67"
+					"^Entity"		"SEntity [67][prop_physics]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N71"
+					"^Entity"		"SEntity [71][prop_physics]"
+				}
+			}
+		}
+		"#11"
+		{
+			"NoCollide"		"Bfalse"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N67"
+					"^Entity"		"SEntity [67][prop_physics]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N68"
+					"^Entity"		"SEntity [68][prop_physics]"
+				}
+			}
+		}
+		"#6"
+		{
+			"NoCollide"		"Bfalse"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N67"
+					"^Entity"		"SEntity [67][prop_physics]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N75"
+					"^Entity"		"SEntity [75][prop_physics]"
+				}
+			}
+		}
+		"#7"
+		{
+			"NoCollide"		"Btrue"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N74"
+					"^Entity"		"SEntity [74][gmod_wire_gate]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N67"
+					"^Entity"		"SEntity [67][prop_physics]"
+				}
+			}
+		}
+		"#4"
+		{
+			"NoCollide"		"Bfalse"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N71"
+					"^Entity"		"SEntity [71][prop_physics]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N75"
+					"^Entity"		"SEntity [75][prop_physics]"
+				}
+			}
+		}
+		"#5"
+		{
+			"NoCollide"		"Btrue"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N69"
+					"^Entity"		"SEntity [69][gmod_wire_ranger]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N67"
+					"^Entity"		"SEntity [67][prop_physics]"
+				}
+			}
+		}
+		"#12"
+		{
+			"NoCollide"		"Bfalse"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N68"
+					"^Entity"		"SEntity [68][prop_physics]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N75"
+					"^Entity"		"SEntity [75][prop_physics]"
+				}
+			}
+		}
+		"#14"
+		{
+			"NoCollide"		"Btrue"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N73"
+					"^Entity"		"SEntity [73][gmod_wire_gate]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N67"
+					"^Entity"		"SEntity [67][prop_physics]"
+				}
+			}
+		}
+		"#9"
+		{
+			"NoCollide"		"Bfalse"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N67"
+					"^Entity"		"SEntity [67][prop_physics]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N70"
+					"^Entity"		"SEntity [70][prop_physics]"
+				}
+			}
+		}
+		"#8"
+		{
+			"NoCollide"		"Bfalse"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N70"
+					"^Entity"		"SEntity [70][prop_physics]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N71"
+					"^Entity"		"SEntity [71][prop_physics]"
+				}
+			}
+		}
+		"#1"
+		{
+			"NoCollide"		"Bfalse"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N72"
+					"^Entity"		"SEntity [72][gmod_wire_simple_explosive]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N67"
+					"^Entity"		"SEntity [67][prop_physics]"
+				}
+			}
+		}
+		"#10"
+		{
+			"NoCollide"		"Bfalse"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N70"
+					"^Entity"		"SEntity [70][prop_physics]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N68"
+					"^Entity"		"SEntity [68][prop_physics]"
+				}
+			}
+		}
+		"#3"
+		{
+			"NoCollide"		"Bfalse"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N75"
+					"^Entity"		"SEntity [75][prop_physics]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N70"
+					"^Entity"		"SEntity [70][prop_physics]"
+				}
+			}
+		}
+		"#2"
+		{
+			"NoCollide"		"Bfalse"
+			"forcelimit"		"N0"
+			"deleteonbreak"		"Btrue"
+			"^Type"		"SWeld"
+			"^Entity"
+			{
+				"#1"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N71"
+					"^Entity"		"SEntity [71][prop_physics]"
+				}
+				"#2"
+				{
+					"^World"		"Bfalse"
+					"^Bone"		"N0"
+					"^Index"		"N68"
+					"^Entity"		"SEntity [68][prop_physics]"
+				}
+			}
+		}
+	}
+	"^Hold^Angle"		"A0 72.6361 0"
+}
