@@ -85,24 +85,26 @@ end
 	end
 	
 	return info
-end
+end*/
 
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID, GetConstByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID, GetConstByID)
-
-	if (info.constraint) and (info.constraint > 0) then
-	    local const = GetConstByID(info.constraint)
-		if (const) then
-			self:SetConstraint(const)
-		end
-	end
 	
-	if (info.rope) and (info.rope > 0) then
-	    local rope = GetConstByTable(info.rope)
-		if (rope) then
-			self:SetConstraint(rope)
+	if (GetConstByID) then
+		if (info.constraint) and (info.constraint > 0) then
+		    local const = GetConstByID(info.constraint)
+			if (const) then
+				self:SetConstraint(const)
+			end
+		end
+		
+		if (info.rope) and (info.rope > 0) then
+		    local rope = GetConstByTable(info.rope)
+			if (rope) then
+				self:SetConstraint(rope)
+			end
 		end
 	end
-end*/
+end
 

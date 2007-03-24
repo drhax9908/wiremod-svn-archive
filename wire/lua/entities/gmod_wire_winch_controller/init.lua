@@ -182,7 +182,7 @@ function ENT:SetConstraint( c )
 	
 	self:SetOverlayText( "Winch length : " .. self.current_length )
 	Wire_TriggerOutput(self.Entity, "Length", self.current_length)
-		
+	
 end
 
 
@@ -225,7 +225,7 @@ function ENT:ShowOutput( Length )
 end
 
 
-function ENT:BuildDupeInfo()
+/*function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
 	
 	if (self.constraint) and (self.constraint:IsValid()) then
@@ -236,22 +236,24 @@ function ENT:BuildDupeInfo()
 	end
 	
 	return info
-end
+end*/
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID, GetConstByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID, GetConstByID)
 	
-	if (info.constraint) and (info.constraint > 0) then
-	    local const = GetConstByID(info.constraint)
-		if (const) then
-			self:SetConstraint(const)
+	if (GetConstByID) then
+		if (info.constraint) and (info.constraint > 0) then
+		    local const = GetConstByID(info.constraint)
+			if (const) then
+				self:SetConstraint(const)
+			end
 		end
-	end
-	
-	if (info.rope) and (info.rope > 0) then
-	    local rope = GetConstByTable(info.rope)
-		if (rope) then
-			self:SetConstraint(rope)
+		
+		if (info.rope) and (info.rope > 0) then
+		    local rope = GetConstByTable(info.rope)
+			if (rope) then
+				self:SetConstraint(rope)
+			end
 		end
 	end
 end
@@ -267,81 +269,3 @@ end
 function ENT:IsExpanded()
 	return self.isexpanded
 end
-
-
-
-
-/*----------------------------------------------------------------------
-	HydraulicToggle - Toggle hydraulic on off
-----------------------------------------------------------------------*/
-/*local function HydraulicToggle( pl, hyd )
-	
-	if ( !hyd || !hyd:IsValid() ) then return false end
-	
-	// I hate this, shouldn't we just be calling hyd:GetTable():Toggle()
-	
-	tab = hyd:GetTable()
-	
-	if ( tab:GetDirection() == 0 ) then
-
-		if ( tab:IsExpanded() ) then
-			tab:SetDirection( -1 )
-		else
-			tab:SetDirection( 1 )
-		end
-
-	elseif ( tab:GetDirection() == -1 ) then
-
-		tab:SetDirection( 1 )
-
-	elseif ( tab:GetDirection() == 1 ) then
-
-		tab:SetDirection( - 1)
-
-	end
-
-end
-numpad.Register( "HydraulicToggle", HydraulicToggle )*/
-
-
-/*----------------------------------------------------------------------
-	WinchOn - Called to switch the winch on
-----------------------------------------------------------------------*/
-/*local function WinchOn( pl, winch, dir )
-	if ( !winch || !winch:IsValid() ) then return false end
-	winch:GetTable():SetDirection(dir)
-end
-numpad.Register( "WinchOn", WinchOn )*/
-
-/*----------------------------------------------------------------------
-	WinchOn - Called to switch the winch off
-----------------------------------------------------------------------*/
-/*local function WinchOff( pl, winch )
-	if ( !winch || !winch:IsValid() ) then return false end
-	winch:GetTable():SetDirection(0)
-end
-numpad.Register( "WinchOff", WinchOff )*/
-
-/*----------------------------------------------------------------------
-	WinchToggle - Called to toggle the winch
-----------------------------------------------------------------------*/
-/*local function WinchToggle( pl, winch, dir )
-	if ( !winch || !winch:IsValid() ) then return false end
-	if (winch:GetTable():GetDirection() == dir) then winch:GetTable():SetDirection(0)
-	else winch:GetTable():SetDirection(dir)	end
-end
-numpad.Register( "WinchToggle", WinchToggle )*/
-
-
-/*local function MuscleToggle( pl, hyd )
-	
-	if ( !hyd || !hyd:IsValid() ) then return false end
-	
-	if (hyd:GetTable():GetDirection() == 0) then
-		hyd:GetTable():SetDirection(1)
-	else
-		hyd:GetTable():SetDirection(0)
-	end
-
-end
-numpad.Register( "MuscleToggle", MuscleToggle )*/

@@ -52,14 +52,14 @@ function TOOL:LeftClick( trace )
 		// Attach our Controller to the Elastic constraint
 		local Ang = trace.HitNormal:Angle()
 		Ang.pitch = Ang.pitch + 90
-		local controller = MakeWireWinchController(ply, trace.HitPos, Ang, const, rope)
+		local controller = MakeWireWinchController(ply, trace.HitPos, Ang, nil, const, rope)
 
 		local min = controller:OBBMins()
 		controller:SetPos( trace.HitPos - trace.HitNormal * min.z )
-		controller:SetConstraint( const )
-		controller:SetRope( rope )
-		controller.const = const
-		controller.rope = rope
+		//controller:SetConstraint( const )
+		//controller:SetRope( rope )
+		//controller.const = const
+		//controller.rope = rope
 
 		local const2, nocollide
 
@@ -80,7 +80,7 @@ function TOOL:LeftClick( trace )
 		ply:AddCleanup( "ropeconstraints", controller )
 		ply:AddCleanup( "ropeconstraints", const2 )
 		
-		controller:DeleteOnRemove( const )
+		//controller:DeleteOnRemove( const )
 		if rope then controller:DeleteOnRemove( rope ) end
 		
 		self:ClearObjects()
@@ -89,18 +89,14 @@ function TOOL:LeftClick( trace )
 	elseif ( iNum == 1 ) then
 	
 		if ( CLIENT ) then
-			--self:ClearObjects()
 			return true
 		end
 		
 		// Get client's CVars
 		local material		= self:GetClientInfo( "material" ) or "cable/rope"
 		local width		= self:GetClientNumber( "width" )  or 3
-		--local fwd_bind		= self:GetClientNumber( "fwd_group" )  or 1
-		--local bwd_bind		= self:GetClientNumber( "bwd_group" ) or 1
 		local fwd_speed		= self:GetClientNumber( "fwd_speed" ) or 64
 		local bwd_speed		= self:GetClientNumber( "bwd_speed" ) or 64
-		--local toggle		= false
 
 		// Get information we're about to use
 		local Ent1,  Ent2  = self:GetEnt(1),	 self:GetEnt(2)
@@ -114,17 +110,14 @@ function TOOL:LeftClick( trace )
 		undo.Create("WireWinch")
 		if constraint then undo.AddEntity( const ) end
 		if rope   then undo.AddEntity( rope ) end
-		--if controller then undo.AddEntity( controller ) end
 		undo.SetPlayer( self:GetOwner() )
 		undo.Finish()
 		
 		
 		if const then	self:GetOwner():AddCleanup( "ropeconstraints", const ) end
 		if rope then		self:GetOwner():AddCleanup( "ropeconstraints", rope ) end
-		--if controller then	self:GetOwner():AddCleanup( "ropeconstraints", controller ) end
 		
 		// Clear the objects so we're ready to go again
-		--self:ClearObjects()
 		self:SetStage(2)
 		
 	else
@@ -189,8 +182,6 @@ function TOOL:RightClick( trace )
 	// Get client's CVars
 	local material		= self:GetClientInfo( "material" ) or "cable/rope"
 	local width			= self:GetClientNumber( "width" ) or 3
-	--local fwd_bind		= self:GetClientNumber( "fwd_group" ) or 
-	--local bwd_bind		= self:GetClientNumber( "bwd_group" ) or 1
 	local fwd_speed		= self:GetClientNumber( "fwd_speed" ) or 64
 	local bwd_speed		= self:GetClientNumber( "bwd_speed" ) or 64
 		
@@ -198,8 +189,8 @@ function TOOL:RightClick( trace )
 	local Ent1,  Ent2  = self:GetEnt(1),	 self:GetEnt(2)
 	local Bone1, Bone2 = self:GetBone(1),	 self:GetBone(2)
 	local LPos1, LPos2 = self:GetLocalPos(1),self:GetLocalPos(2)
-
-	local const,rope,controller = MakeWireWinch( self:GetOwner(), Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, width, fwd_speed, bwd_speed, material )
+	
+	local const,rope = MakeWireWinch( self:GetOwner(), Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, width, fwd_speed, bwd_speed, material )
 	
 	self.constraint, self.rope = const,rope
 	
@@ -212,7 +203,6 @@ function TOOL:RightClick( trace )
 	
 	if constraint then	self:GetOwner():AddCleanup( "ropeconstraints", const ) end
 	if rope then		self:GetOwner():AddCleanup( "ropeconstraints", rope ) end
-	if controller then	self:GetOwner():AddCleanup( "ropeconstraints", controller ) end
 	
 	// Clear the objects so we're ready to go again
 	--self:ClearObjects()
@@ -246,22 +236,38 @@ if SERVER then
 		
 		return const, damp
 	end
-
-	function MakeWireWinchController( pl, Pos, Ang )
-		//local controller = ents.Create("gmod_wire_hydraulic")
+	
+	//need for the const to find the controler after being duplicator pasted
+	WireWinchTracking = {}
+	
+	function MakeWireWinchController( pl, Pos, Ang, MyId, const, rope )
 		local controller = ents.Create("gmod_wire_winch_controller")
 		
 		controller:SetPos( Pos )
 		controller:SetAngles( Ang )
 		controller:Setup()
+		controller:SetPlayer(pl)
 		controller:Spawn()
+		
+		if (!const) then
+			WireWinchTracking[ MyId ] = controller
+		else
+			controller.MyId = controller:EntIndex()
+			const.MyCrtl = controller:EntIndex()
+			controller:SetConstraint( const ) 
+			controller:DeleteOnRemove( const )
+		end
+		if (rope) then
+			controller:SetRope( rope )
+			controller:DeleteOnRemove( rope )
+		end
 		
 		return controller
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_winch_controller", MakeWireWinchController, "Pos", "Ang")
+	duplicator.RegisterEntityClass("gmod_wire_winch_controller", MakeWireWinchController, "Pos", "Ang", "MyId")
 	
-	function MakeWireWinch( pl, Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, width, fwd_speed, bwd_speed, material )
+	function MakeWireWinch( pl, Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, width, fwd_speed, bwd_speed, material, MyCrtl )
 		if ( !constraint.CanConstrain( Ent1, Bone1 ) ) then return false end
 		if ( !constraint.CanConstrain( Ent2, Bone2 ) ) then return false end
 		
@@ -280,25 +286,43 @@ if SERVER then
 		
 		local ctable = 
 		{
-				Type 		= "WireWinch",
-				pl			= pl,
-				Ent1		= Ent1,
-				Ent2		= Ent2,
-				Bone1		= Bone1,
-				Bone2		= Bone2,
-				LPos1		= LPos1,
-				LPos2		= LPos2,
-				width		= width,
-				fwd_speed	= fwd_speed,
-				bwd_speed	= bwd_speed,
-				material	= material
+			Type 		= "WireWinch",
+			pl			= pl,
+			Ent1		= Ent1,
+			Ent2		= Ent2,
+			Bone1		= Bone1,
+			Bone2		= Bone2,
+			LPos1		= LPos1,
+			LPos2		= LPos2,
+			width		= width,
+			fwd_speed	= fwd_speed,
+			bwd_speed	= bwd_speed,
+			material	= material
 		}
 		const:SetTable( ctable )
 		
+		if (MyCrtl) then
+			Msg("finding crtl for this wired wnc const\n")
+			local controller = WireWinchTracking[ MyCrtl ]
+			
+			const.MyCrtl = controller:EntIndex()
+			
+			controller:SetConstraint( const )
+			controller:DeleteOnRemove( const )
+			if (rope) then
+				controller:SetRope( rope )
+				controller:DeleteOnRemove( rope )
+			end
+			
+			Ent1:DeleteOnRemove( controller )
+			Ent2:DeleteOnRemove( controller )
+			const:DeleteOnRemove( controller )
+		end
+		
 		return const, rope
-end	
+	end
 
-	duplicator.RegisterConstraint( "WireWinch", MakeWireWinch, "pl", "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "width", "fwd_speed", "bwd_speed", "material" )
+	duplicator.RegisterConstraint( "WireWinch", MakeWireWinch, "pl", "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "width", "fwd_speed", "bwd_speed", "material", "MyCrtl" )
 	
 end
 
@@ -307,7 +331,7 @@ function TOOL:Reload( trace )
 	if (!trace.Entity:IsValid() || trace.Entity:IsPlayer() ) then return false end
 	if ( CLIENT ) then return true end
 	
-	local  bool = constraint.RemoveConstraints( trace.Entity, "Winch" )
+	local  bool = constraint.RemoveConstraints( trace.Entity, "WireWinch" )
 	return bool
 	
 end

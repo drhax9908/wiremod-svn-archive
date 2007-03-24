@@ -30,7 +30,7 @@ function TOOL:LeftClick( trace )
 	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
 	
 	local iNum = self:NumObjects()
-		
+	
 	local Phys = trace.Entity:GetPhysicsObjectNum( trace.PhysicsBone )
 	self:SetObject( iNum + 1, trace.Entity, trace.HitPos, Phys, trace.PhysicsBone, trace.HitNormal )
 	
@@ -186,11 +186,8 @@ function TOOL:RightClick( trace )
 	local Bone1, Bone2 = self:GetBone(1),	 self:GetBone(2)
 	local LPos1, LPos2 = self:GetLocalPos(1),self:GetLocalPos(2)
 	
-	local Ang = trace.HitNormal:Angle()
-	Ang.pitch = Ang.pitch + 90
-	
 	local const,rope = MakeWireHydraulic( self:GetOwner(), Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, width, material, fixed )
-
+	
 	self.constraint, self.rope = const,rope
 	
 	undo.Create("WireHydraulic")
@@ -199,7 +196,6 @@ function TOOL:RightClick( trace )
 	if controller then undo.AddEntity( controller ) end
 	undo.SetPlayer( self:GetOwner() )
 	undo.Finish()
-	
 	
 	if constraint then	self:GetOwner():AddCleanup( "ropeconstraints", const ) end
 	if rope then		self:GetOwner():AddCleanup( "ropeconstraints", rope ) end
@@ -268,8 +264,7 @@ if SERVER then
 	end
 	
 	duplicator.RegisterEntityClass("gmod_wire_hydraulic", MakeWireHydraulicController, "Pos", "Ang", "MyId")
-
-
+	
 	function MakeWireHydraulic( pl, Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, width, material, fixed, MyCrtl )
 		if ( !constraint.CanConstrain( Ent1, Bone1 ) ) then return false end
 		if ( !constraint.CanConstrain( Ent2, Bone2 ) ) then return false end
@@ -310,7 +305,7 @@ if SERVER then
 		const:SetTable( ctable )
 		
 		if (MyCrtl) then
-			Msg("fining crtl for this wired hyd const\n")
+			Msg("finding crtl for this wired hyd const\n")
 			local controller = WireHydraulicTracking[ MyCrtl ]
 			
 			const.MyCrtl = controller:EntIndex()
@@ -331,7 +326,7 @@ if SERVER then
 	end
 
 	duplicator.RegisterConstraint( "WireHydraulic", MakeWireHydraulic, "pl", "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "width", "material", "fixed", "MyCrtl" )
-
+	
 end
 
 function TOOL:Reload( trace )
