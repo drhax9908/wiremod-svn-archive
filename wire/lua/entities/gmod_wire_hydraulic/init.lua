@@ -74,7 +74,7 @@ function ENT:ShowOutput( Length )
 end
 
 
-function ENT:BuildDupeInfo()
+/*function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
 	
 	if (self.constraint) and (self.constraint:IsValid()) then
@@ -83,7 +83,7 @@ function ENT:BuildDupeInfo()
 	if (self.rope) and (self.rope:IsValid()) then
 		info.rope = self.rope:EntIndex()
 	end
-
+	
 	return info
 end
 
@@ -104,4 +104,5 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID, GetConstByID)
 			self:SetConstraint(rope)
 		end
 	end
-end
+end*/
+

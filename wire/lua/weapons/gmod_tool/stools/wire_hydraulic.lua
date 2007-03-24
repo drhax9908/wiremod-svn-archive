@@ -48,14 +48,14 @@ function TOOL:LeftClick( trace )
 		// Attach our Controller to the Elastic constraint
 		local Ang = trace.HitNormal:Angle()
 		Ang.pitch = Ang.pitch + 90
-		local controller = MakeWireHydraulicController(ply, trace.HitPos, Ang, const, rope)
+		local controller = MakeWireHydraulicController(ply, trace.HitPos, Ang, nil, const, rope)
 
 		local min = controller:OBBMins()
 		controller:SetPos( trace.HitPos - trace.HitNormal * min.z )
-		controller:SetConstraint( const )
-		controller:SetRope( rope )
-		controller.const = const
-		controller.rope = rope
+		//controller:SetConstraint( const )
+		//controller:SetRope( rope )
+		//controller.const = const
+		//controller.rope = rope
 
 		local const2, nocollide
 
@@ -76,7 +76,6 @@ function TOOL:LeftClick( trace )
 		ply:AddCleanup( "ropeconstraints", controller )
 		ply:AddCleanup( "ropeconstraints", const2 )
 		
-		controller:DeleteOnRemove( const )
 		if rope then controller:DeleteOnRemove( rope ) end
 		
 		self:ClearObjects()
@@ -180,14 +179,17 @@ function TOOL:RightClick( trace )
 	// Get client's CVars
 	local material		= self:GetClientInfo( "material" ) or "cable/rope"
 	local width			= self:GetClientNumber( "width" ) or 3
-	local fixed		= self:GetClientNumber( "fixed" ) or 0
+	local fixed			= self:GetClientNumber( "fixed" ) or 0
 		
 	// Get information we're about to use
 	local Ent1,  Ent2  = self:GetEnt(1),	 self:GetEnt(2)
 	local Bone1, Bone2 = self:GetBone(1),	 self:GetBone(2)
 	local LPos1, LPos2 = self:GetLocalPos(1),self:GetLocalPos(2)
-
-	local const,rope,controller = MakeWireHydraulic( self:GetOwner(), Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, width, material, fixed )
+	
+	local Ang = trace.HitNormal:Angle()
+	Ang.pitch = Ang.pitch + 90
+	
+	local const,rope = MakeWireHydraulic( self:GetOwner(), Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, width, material, fixed )
 
 	self.constraint, self.rope = const,rope
 	
@@ -201,7 +203,7 @@ function TOOL:RightClick( trace )
 	
 	if constraint then	self:GetOwner():AddCleanup( "ropeconstraints", const ) end
 	if rope then		self:GetOwner():AddCleanup( "ropeconstraints", rope ) end
-	if controller then	self:GetOwner():AddCleanup( "ropeconstraints", controller ) end
+	--if controller then	self:GetOwner():AddCleanup( "ropeconstraints", controller ) end
 	
 	// Clear the objects so we're ready to go again
 	--self:ClearObjects()
@@ -235,22 +237,40 @@ if SERVER then
 		
 		return const, damp
 	end
-
-	function MakeWireHydraulicController( pl, Pos, Ang )
+	
+	//need for the const to find the controler after being duplicator pasted
+	WireHydraulicTracking = {}
+	
+	function MakeWireHydraulicController( pl, Pos, Ang, MyId, const, rope )
 		local controller = ents.Create("gmod_wire_hydraulic")
 		
 		controller:SetPos( Pos )
 		controller:SetAngles( Ang )
 		controller:Setup()
+		controller:SetPlayer(pl)
+		
+		if (!const) then
+			WireHydraulicTracking[ MyId ] = controller
+		else
+			controller.MyId = controller:EntIndex()
+			const.MyCrtl = controller:EntIndex()
+			controller:SetConstraint( const ) 
+			controller:DeleteOnRemove( const )
+		end
+		if (rope) then
+			controller:SetRope( rope )
+			controller:DeleteOnRemove( rope )
+		end
+		
 		controller:Spawn()
 		
 		return controller
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_hydraulic", MakeWireHydraulicController, "Pos", "Ang")
+	duplicator.RegisterEntityClass("gmod_wire_hydraulic", MakeWireHydraulicController, "Pos", "Ang", "MyId")
 
 
-	function MakeWireHydraulic( pl, Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, width, material, fixed )
+	function MakeWireHydraulic( pl, Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, width, material, fixed, MyCrtl )
 		if ( !constraint.CanConstrain( Ent1, Bone1 ) ) then return false end
 		if ( !constraint.CanConstrain( Ent2, Bone2 ) ) then return false end
 		
@@ -275,24 +295,42 @@ if SERVER then
 		
 		local ctable = 
 		{
-				Type 		= "WireHydraulic",
-				pl			= pl,
-				Ent1		= Ent1,
-				Ent2		= Ent2,
-				Bone1		= Bone1,
-				Bone2		= Bone2,
-				LPos1		= LPos1,
-				LPos2		= LPos2,
-				width		= width,
-				material	= material,
-				fixed		= fixed
+			Type 		= "WireHydraulic",
+			pl			= pl,
+			Ent1		= Ent1,
+			Ent2		= Ent2,
+			Bone1		= Bone1,
+			Bone2		= Bone2,
+			LPos1		= LPos1,
+			LPos2		= LPos2,
+			width		= width,
+			material	= material,
+			fixed		= fixed
 		}
 		const:SetTable( ctable )
-				
+		
+		if (MyCrtl) then
+			Msg("fining crtl for this wired hyd const\n")
+			local controller = WireHydraulicTracking[ MyCrtl ]
+			
+			const.MyCrtl = controller:EntIndex()
+			
+			controller:SetConstraint( const )
+			controller:DeleteOnRemove( const )
+			if (rope) then
+				controller:SetRope( rope )
+				controller:DeleteOnRemove( rope )
+			end
+			
+			Ent1:DeleteOnRemove( controller )
+			Ent2:DeleteOnRemove( controller )
+			const:DeleteOnRemove( controller )
+		end
+		
 		return const, rope
 	end
 
-	duplicator.RegisterConstraint( "WireHydraulic", MakeWireHydraulic, "pl", "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "width", "material", "fixed" )
+	duplicator.RegisterConstraint( "WireHydraulic", MakeWireHydraulic, "pl", "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "width", "material", "fixed", "MyCrtl" )
 
 end
 
@@ -301,7 +339,7 @@ function TOOL:Reload( trace )
 	if (!trace.Entity:IsValid() || trace.Entity:IsPlayer() ) then return false end
 	if ( CLIENT ) then return true end
 	
-	local  bool = constraint.RemoveConstraints( trace.Entity, "Winch" )
+	local  bool = constraint.RemoveConstraints( trace.Entity, "WireHydraulic" )
 	return bool
 	
 end
