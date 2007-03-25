@@ -451,7 +451,7 @@ function AdvDupeClient.RenameFile( pl, cmd, args )
 				local newname = AdvDupeClient.gui.rename.txtNewName:GetValue()
 				Msg("newname= "..newname.."\n")
 				
-				LocalPlayer():ConCommand("adv_duplicator_rename \""..newname.."\"")
+				LocalPlayer():ConCommand("adv_duplicator_fileoptsrename \""..newname.."\"")
 				
 				AdvDupeClient.gui.rename.frame:SetVisible(false)
 			elseif key == "RenameClient" then

@@ -643,7 +643,7 @@ local function FileOptsCommand(pl, cmd, args)
 end
 concommand.Add("adv_duplicator_fileopts", FileOptsCommand)
 
-local function FileRenameCommand(pl, cmd, args)
+local function FileOptsRenameCommand(pl, cmd, args)
 	Msg("rename cmd\n")
 	if !pl:IsValid() or !pl:IsPlayer() or !args[1] then return end
 	
@@ -655,7 +655,7 @@ local function FileRenameCommand(pl, cmd, args)
 	AdvDupe.FileOpts(pl, "rename", filename, dir, newname)
 	
 end
-concommand.Add("adv_duplicator_rename", FileRenameCommand)
+concommand.Add("adv_duplicator_fileoptsrename", FileOptsRenameCommand)
 
 
 function AdvDupe.FileOpts(pl, action, filename, dir, dir2)

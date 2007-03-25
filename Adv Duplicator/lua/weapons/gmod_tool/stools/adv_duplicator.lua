@@ -146,11 +146,14 @@ end
 //make a paster ent
 function TOOL:Reload( trace )
 	if (CLIENT) then return true end
-	
-	local pl = self:GetOwner()
-	local pln = self:GetOwner():UniqueID()
-	
-	if (!AdvDupe[pln].Ents) then return false end
+	if self.Legacy then
+		self:GetOwner():SendLua( "GAMEMODE:AddNotify('Paster does not support old saves!', NOTIFY_GENERIC, 7);" )
+		return false
+	end
+	if (!self.Entities) then
+		self:GetOwner():SendLua( "GAMEMODE:AddNotify('No copied data for Paster!', NOTIFY_GENERIC, 7);" )
+		return false
+	end
 	
 	local paster = ents.Create( "gmod_adv_dupe_paster" )
 	if (!paster:IsValid()) then return false end
@@ -164,7 +167,7 @@ function TOOL:Reload( trace )
 	paster:SetAngles( Ang )
 	
 	paster:Spawn()
-	paster:SetPlayer( pl )
+	paster:SetPlayer( self:GetOwner() )
 	
 	local min = paster:OBBMins()
 	paster:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -172,13 +175,10 @@ function TOOL:Reload( trace )
 	local phys = paster:GetPhysicsObject()
 	if (phys:IsValid()) then phys:EnableMotion(false) end
 	//paster:SetNotSolid(true)
-
-	local ttable = {pl = pl}
-	table.Merge(paster:GetTable(), ttable )
 	
 	undo.Create("Paster")
 		undo.AddEntity( paster )
-		undo.SetPlayer( pl )
+		undo.SetPlayer( self:GetOwner() )
 	undo.Finish()
 	
 	local delay 		= self:GetClientNumber( "delay" )
@@ -189,10 +189,8 @@ function TOOL:Reload( trace )
 	paster:Setup(
 		table.Copy(self.Entities),
 		table.Copy(self.Constraints),
-		table.Copy(self.DupeInfo),
-		self.HeadEntityIdx, self.HoldAngle, self.HoldPos, delay, undo_delay, range, show_beam
+		self.HoldAngle, delay, undo_delay, range, show_beam
 	)
-	
 	
 	return true
 end
@@ -437,6 +435,12 @@ function TOOL:UpdateList()
 	if (!self:GetOwner():IsPlayer()) then return false end
 	
 	self:GetOwner():SendLua( "if ( !duplicator ) then AdvDupeClient={} end" )
+	
+	if !AdvDupe[self:GetOwner():UniqueID()] then AdvDupe[self:GetOwner():UniqueID()] = {} end
+	if !AdvDupe[self:GetOwner():UniqueID()].cdir then
+		AdvDupe[self:GetOwner():UniqueID()].cdir = AdvDupe.GetPlayersFolder(self:GetOwner())
+	end
+	
 	
 	local cdir = AdvDupe[self:GetOwner():UniqueID()].cdir
 	--Msg("cdir= "..cdir.."\n")
@@ -866,9 +870,9 @@ else	// CLIENT
 				Command = "adv_duplicator_file_desc" })*/
 			
 			//TODO: fix paster
-			/*CPanel:AddControl( "Button", {
+			CPanel:AddControl( "Button", {
 				Text = "Open Paster Menu",
-				Command = "adv_duplicator_cl_menu paster" })*/
+				Command = "adv_duplicator_cl_menu paster" })
 			
 			
 			
