@@ -15,6 +15,10 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	
+	self.F = 0
+	self.FoO = 0
+	self.V = 0
+	
 	self.Inputs = Wire_CreateInputs(self.Entity, { "Force", "OffsetForce", "Velocity" })
 end
 

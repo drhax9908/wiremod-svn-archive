@@ -128,18 +128,18 @@ if (SERVER) then
 
 	function MakeWireThruster( pl, Model, Ang, Pos, force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, nocollide, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_thrusters" ) ) then return false end
-	
+		
 		local wire_thruster = ents.Create( "gmod_wire_thruster" )
 		if (!wire_thruster:IsValid()) then return false end
 		wire_thruster:SetModel( Model )
-
+		
 		wire_thruster:SetAngles( Ang )
 		wire_thruster:SetPos( Pos )
 		wire_thruster:Spawn()
-
+		
 		wire_thruster:Setup(force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound)
 		wire_thruster:SetPlayer( pl )
-
+		
 		local ttable = {
 			force		= force,
 			force_min	= force_min,
@@ -147,14 +147,19 @@ if (SERVER) then
 			bidir       = bidir,
 			sound       = sound,
 			pl			= pl,
-			effect		= effect,
+			oweffect	= oweffect,
+			uweffect	= uweffect,
+			owater		= owater,
+			uwater		= uwater,
 			nocollide	= nocollide
 			}
-
+		
 		table.Merge(wire_thruster:GetTable(), ttable )
-
+		
 		pl:AddCount( "wire_thrusters", wire_thruster )
-
+		
+		DoPropSpawnedEffect( wire_thruster )
+		
 		return wire_thruster
 	end
 

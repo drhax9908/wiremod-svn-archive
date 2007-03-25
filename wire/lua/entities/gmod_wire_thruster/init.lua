@@ -195,7 +195,7 @@ function ENT:OnRestore()
 	self:SetOffset( self.ThrustOffset )
 	self.Entity:StartMotionController()
 
-	self:Switch(false)
+	//self:Switch(false)
 
     self.BaseClass.OnRestore(self)
 end
