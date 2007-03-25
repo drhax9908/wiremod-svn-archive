@@ -384,7 +384,7 @@ end
 /*---------------------------------------------------------
   Process and save given dupe tables to file
 ---------------------------------------------------------*/
-function AdvDupe.SaveDupeTablesToFile( pl, EntTables, ConstraintTables, DupeInfo, DORInfo, HeadEntityIdx, HoldAngle, HoldPos, filename, desc )
+function AdvDupe.SaveDupeTablesToFile( pl, EntTables, ConstraintTables, DupeInfo, DORInfo, HeadEntityIdx, HoldAngle, HoldPos, filename, desc, debugsave )
 	
 	//save to a sub folder for each player
 	//local dir = "adv_duplicator/"..dupeshare.GetPlayerName(pl)
@@ -406,14 +406,24 @@ function AdvDupe.SaveDupeTablesToFile( pl, EntTables, ConstraintTables, DupeInfo
 	temp.HoldPos			= HoldPos
 	
 	//make these tables smaller cause there too fucking huge otherwise
-	temp.EntTables, temp.ConstraintTables = AdvDupe.CompactTables( EntTables, ConstraintTables )
-	//temp.EntTables			= EntTables
-	//temp.ConstraintTables	= ConstraintTables
+	if (debugsave) then
+		temp.EntTables			= EntTables
+		temp.ConstraintTables	= ConstraintTables
+	else
+		temp.EntTables, temp.ConstraintTables = AdvDupe.CompactTables( EntTables, ConstraintTables )
+	end
 	
-	//add file versioning, it will come in handy later if save format changes
+	//add file versioning, this comes in handy when then save format changes
 	temp["VersionInfo"] = {}
-	temp["VersionInfo"]["FileVersion"]		= 0.61
-	temp["VersionInfo"]["FileInfo"]			= "Advanced Duplicator Save File"
+	
+	local currentfileversion = 0.61
+	if (debugsave) then
+		currentfileversion = 0.601 //set the file version back 0.009 versions
+		temp["VersionInfo"]["FileInfo"]			= "Advanced Duplicator Save File (DebugSave)"
+	else
+		temp["VersionInfo"]["FileInfo"]			= "Advanced Duplicator Save File"
+	end
+	temp["VersionInfo"]["FileVersion"]		= currentfileversion
 	
 	local Creator							= pl:GetName()	or "unknown"
 	temp["VersionInfo"]["Creator"]			= Creator
@@ -433,7 +443,7 @@ function AdvDupe.SaveDupeTablesToFile( pl, EntTables, ConstraintTables, DupeInfo
 	temp = util.TableToKeyValues(temp)
 	file.Write(filename, temp)
 	
-	return filename, Creator, desc , NumOfEnts, NumOfConst, 0.61 //for sending to client after saving
+	return filename, Creator, desc , NumOfEnts, NumOfConst, currentfileversion //for sending to client after saving
 end
 
 /*---------------------------------------------------------

@@ -14,7 +14,6 @@ if ( CLIENT ) then
 end
 
 
-TOOL.ClientConVar[ "simple" ]			= 0
 TOOL.ClientConVar[ "save_filename" ]	= ""
 TOOL.ClientConVar[ "load_filename" ]	= ""
 TOOL.ClientConVar[ "load_filename2" ]	= ""
@@ -24,6 +23,7 @@ TOOL.ClientConVar[ "delay" ]			= 0
 TOOL.ClientConVar[ "undo_delay" ]		= 0
 TOOL.ClientConVar[ "range" ]			= "1500"
 TOOL.ClientConVar[ "show_beam" ]		= "1"
+TOOL.ClientConVar[ "debugsave" ]		= "0"
 
 cleanup.Register( "duplicates" )
 
@@ -373,7 +373,7 @@ function TOOL:SaveFile( filename, desc )
 	local Filename, Creator, Desc, NumOfEnts, NumOfConst, FileVersion = AdvDupe.SaveDupeTablesToFile( self:GetOwner(), 
 		self.Entities, self.Constraints, self.DupeInfo, self.DORInfo,
 		self.HeadEntityIdx, self.HoldAngle, self.HoldPos,
-		filename, desc
+		filename, desc, (self:GetClientNumber( "debugsave" ) == 1)
 	)
 	
 		self:GetOwner():SendLua( "AdvDupeClient.FileLoaded=true" )
@@ -890,6 +890,12 @@ else	// CLIENT
 			else
 				CPanel:AddControl( "Label", { Text = "No Data in Clipboard" })
 			end
+			
+			CPanel:AddControl("CheckBox", {
+				Label = "Debug Save (larger file):",
+				Command = "adv_duplicator_debugsave"
+			})
+			
 			
 		elseif (menu == "serverdir") then
 			
