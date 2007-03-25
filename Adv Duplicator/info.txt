@@ -7,5 +7,5 @@
 	"author_email"			"TAD@HEPHNET.ORG / someone needs to pay the bill first"
 	"author_url"			"http://www.wiremod.com/"
 	"info"				"A tool to save and load files of contraptions."
-	"override"			"1"
+	"override"			"0"
 }
