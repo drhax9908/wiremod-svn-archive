@@ -1,3 +1,4 @@
+
 TOOL.Category		= "Wire - Control"
 TOOL.Name			= "Gate - Arithmetic"
 TOOL.Command		= nil
@@ -18,6 +19,7 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "action" ] = "+"
+TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
 
 if (SERVER) then
@@ -37,10 +39,11 @@ function TOOL:LeftClick( trace )
 
 	// Get client's CVars
 	local action			= self:GetClientInfo( "action" )
+	local noclip			= self:GetClientNumber( "noclip" ) == 1
 	local model             = self:GetClientInfo( "model" )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_gate" && trace.Entity.pl == ply ) then
-		trace.Entity:Setup( GateActions[action] )
+		trace.Entity:Setup( GateActions[action], noclip )
 		trace.Entity:GetTable().action = action
 		return true
 	end
@@ -53,7 +56,7 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_gate_arithmetic = MakeWireGate( ply, trace.HitPos, Ang, model, action )
+	local wire_gate_arithmetic = MakeWireGate( ply, trace.HitPos, Ang, model, action, noclip )
 	
 	local min = wire_gate_arithmetic:OBBMins()
 	wire_gate_arithmetic:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -119,6 +122,11 @@ end
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_gate_arithmetic_name", Description = "#Tool_wire_gate_arithmetic_desc" })
 
+	panel:AddControl("CheckBox", {
+		Label = "#WireGatesTool_noclip",
+		Command = "wire_gate_arithmetic_noclip"
+	})
+	
 	local Actions = {
 		Label = "#WireGateArithmeticTool_action",
 		MenuButton = "0",
@@ -137,298 +145,3 @@ function TOOL.BuildCPanel(panel)
 	ModelPlug_AddToCPanel(panel, "gate", "wire_gate_arithmetic", "#WireGateArithmeticTool_model", nil, "#WireGateArithmeticTool_model")
 end
 
-
-
-GateActions = GateActions or {}
-
-GateActions["increment"] = {
-	group = "Arithmetic",
-	name = "Increment",
-	inputs = { "A", "Clk" },
-	output = function(gate, A, Clk)
-		local clk = ( Clk > 0 )
-		if ( gate.PrevValue ~=  clk ) then
-			gate.PrevValue = clk
-			if ( clk ) then
-				if ( gate.Memory == nil ) then
-					gate.Memory = A
-				else
-					gate.Memory = gate.Memory + 1
-				end
-			end
-		end
-		return gate.Memory
-	end,
-	label = function(Out, A)
-		return "(" .. A .. " + LastNum)++ = " .. Out
-	end
-}
-
-GateActions["identity"] = {
-	group = "Arithmetic",
-	name = "Identity (No change)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return A
-	end,
-	label = function(Out, A)
-	    return A.." = "..Out
-	end
-}
-
-GateActions["negate"] = {
-	group = "Arithmetic",
-	name = "Negate",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return -A
-	end,
-	label = function(Out, A)
-	    return "-"..A.." = "..Out
-	end
-}
-
-GateActions["inverse"] = {
-	group = "Arithmetic",
-	name = "Inverse",
-	inputs = { "A" },
-	output = function(gate, A)
-		if (A) and (math.abs(A) >= 0.0001) then return 1/A end
-	    return 0
-	end,
-	label = function(Out, A)
-	    return "1/"..A.." = "..Out
-	end
-}
-
-GateActions["sqrt"] = {
-	group = "Arithmetic",
-	name = "Square Root",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.sqrt(math.abs(A)) // Negatives are possible, use absolute value
-	end,
-	label = function(Out, A)
-		/*if ( A < 0 ) then
-			return "sqrt("..A..") = i"..Out // Display as imaginary if A is negative
-		else*/
-			return "sqrt("..A..") = "..Out
-		//end
-	end
-}
-
-GateActions["log"] = {
-	group = "Arithmetic",
-	name = "Log",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.log(A)
-	end,
-	label = function(Out, A)
-	    return "log("..A..") = "..Out
-	end
-}
-
-GateActions["log10"] = {
-	group = "Arithmetic",
-	name = "Log 10",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.log10(A)
-	end,
-	label = function(Out, A)
-	    return "log10("..A..") = "..Out
-	end
-}
-
-GateActions["abs"] = {
-	group = "Arithmetic",
-	name = "Absolute",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.abs(A)
-	end,
-	label = function(Out, A)
-	    return "abs("..A..") = "..Out
-	end
-}
-
-GateActions["sgn"] = {
-	group = "Arithmetic",
-	name = "Sign (-1,0,1)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    if (A > 0) then return 1 end
-	    if (A < 0) then return -1 end
-	    return 0
-	end,
-	label = function(Out, A)
-	    return "sgn("..A..") = "..Out
-	end
-}
-
-GateActions["floor"] = {
-	group = "Arithmetic",
-	name = "Floor (Round down)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.floor(A)
-	end,
-	label = function(Out, A)
-	    return "floor("..A..") = "..Out
-	end
-}
-
-GateActions["round"] = {
-	group = "Arithmetic",
-	name = "Round",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.Round(A)
-	end,
-	label = function(Out, A)
-	    return "round("..A..") = "..Out
-	end
-}
-
-GateActions["ceil"] = {
-	group = "Arithmetic",
-	name = "Ceiling (Round up)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.ceil(A)
-	end,
-	label = function(Out, A)
-	    return "ceil("..A..") = "..Out
-	end
-}
-
-GateActions["+"] = {
-	group = "Arithmetic",
-	name = "Add",
-	inputs = { "A", "B", "C", "D", "E", "F", "G", "H" },
-	compact_inputs = 2,
-	output = function(gate, ...)
-	    local result = 0
-	    for k,v in ipairs(arg) do
-		    if (v) then result = result+v end
-		end
-	    return result
-	end,
-	label = function(Out, ...)
-	    local txt = ""
-	    for k,v in ipairs(arg) do
-		    if (v) then txt = txt..v.." + " end
-		end
-	    return string.sub(txt, 1, -4).." = "..Out
-	end
-}
-
-GateActions["-"] = {
-	group = "Arithmetic",
-	name = "Subtract",
-	inputs = { "A", "B" },
-	colors = { Color(255, 0, 0, 255), Color(0, 0, 255, 255) },
-	output = function(gate, A, B)
-	    return A-B
-	end,
-	label = function(Out, A, B)
-	    return A.." - "..B.." = "..Out
-	end
-}
-
-GateActions["*"] = {
-	group = "Arithmetic",
-	name = "Multiply",
-	inputs = { "A", "B", "C", "D", "E", "F", "G", "H" },
-	compact_inputs = 2,
-	output = function(gate, ...)
-	    local result = 1
-	    for k,v in ipairs(arg) do
-		    if (v) then result = result*v end
-		end
-	    return result
-	end,
-	label = function(Out, ...)
-	    local txt = ""
-	    for k,v in ipairs(arg) do
-		    if (v) then txt = txt..v.." * " end
-		end
-	    return string.sub(txt, 1, -4).." = "..Out
-	end
-}
-
-GateActions["/"] = {
-	group = "Arithmetic",
-	name = "Divide",
-	inputs = { "A", "B" },
-	output = function(gate, A, B)
-	    if (math.abs(B) < 0.0001) then return 0 end
-	    return A/B
-	end,
-	label = function(Out, A, B)
-	    return A.." / "..B.." = "..Out
-	end
-}
-
-GateActions["%"] = {
-	group = "Arithmetic",
-	name = "Modulus",
-	inputs = { "A", "B" },
-	output = function(gate, A, B)
-		if ( B == 0 ) then return 0 end
-		return math.fmod(A,B)
-	end,
-	label = function(Out, A, B)
-		return A.." % "..B.." = "..Out
-	end
-}
-
-GateActions["rand"] = {
-	group = "Arithmetic",
-	name = "Random",
-	inputs = { "A", "B" },
-	timed = true,
-	output = function(gate, A, B)
-	    return math.random()*(B-A)+A
-	end,
-	label = function(Out, A, B)
-	    return "random("..A.." - "..B..") = "..Out
-	end
-}
-
-GateActions["PI"] = {
-	group = "Arithmetic",
-	name = "PI",
-	inputs = { },
-	output = function(gate)
-		return math.pi
-	end,
-	label = function(Out)
-		return "PI = "..Out
-	end
-}
-
-GateActions["exp"] = {
-	group = "Arithmetic",
-	name = "Exp",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.exp(A)
-	end,
-	label = function(Out, A)
-	    return "exp("..A..") = "..Out
-	end
-}
-
-GateActions["pow"] = {
-    group = "Arithmetic",
-    name = "Exponential Powers",
-    inputs = { "A", "B" },
-    output = function(gate, A, B)
-        return math.pow(A, B)
-    end,
-    label = function(Out, A, B)
-        return "pow("..A..", "..B..") = "..Out
-    end
-}

@@ -19,6 +19,7 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "action" ] = "<"
+TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
 
 if (SERVER) then
@@ -38,20 +39,24 @@ function TOOL:LeftClick( trace )
 
 	// Get client's CVars
 	local action			= self:GetClientInfo( "action" )
+	local noclip			= self:GetClientNumber( "noclip" ) == 1
 	local model             = self:GetClientInfo( "model" )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_gate" && trace.Entity.pl == ply ) then
-		trace.Entity:Setup( GateActions[action] )
+		trace.Entity:Setup( GateActions[action], noclip )
 		trace.Entity:GetTable().action = action
 		return true
 	end
 
 	if ( !self:GetSWEP():CheckLimit( "wire_gate_comparisons" ) ) then return false end
 
+	if (not util.IsValidModel(model)) then return false end
+	if (not util.IsValidProp(model)) then return false end
+
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_gate_comparison = MakeWireGate( ply, trace.HitPos, Ang, model, action )
+	local wire_gate_comparison = MakeWireGate( ply, trace.HitPos, Ang, model, action, noclip )
 	
 	local min = wire_gate_comparison:OBBMins()
 	wire_gate_comparison:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -117,6 +122,11 @@ end
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_gate_comparison_name", Description = "#Tool_wire_gate_comparison_desc" })
 
+	panel:AddControl("CheckBox", {
+		Label = "#WireGatesTool_noclip",
+		Command = "wire_gate_comparison_noclip"
+	})
+	
 	local Actions = {
 		Label = "#WireGateComparisonTool_action",
 		MenuButton = "0",
@@ -135,84 +145,3 @@ function TOOL.BuildCPanel(panel)
 	ModelPlug_AddToCPanel(panel, "gate", "wire_gate_comparison", "#WireGateComparisonTool_model", nil, "#WireGateComparisonTool_model")
 end
 
-
-
-GateActions = GateActions or {}
-
-GateActions["="] = {
-	group = "Comparison",
-	name = "Equal",
-	inputs = { "A", "B" },
-	output = function(gate, A, B)
-	    if (math.abs(A-B) < 0.001) then return 1 end
-	    return 0
-	end,
-	label = function(Out, A, B)
-	    return A.." == "..B.." = "..Out
-	end
-}
-
-GateActions["!="] = {
-	group = "Comparison",
-	name = "Not Equal",
-	inputs = { "A", "B" },
-	output = function(gate, A, B)
-	    if (math.abs(A-B) < 0.001) then return 0 end
-	    return 1
-	end,
-	label = function(Out, A, B)
-	    return A.." ~= "..B.." = "..Out
-	end
-}
-
-GateActions["<"] = {
-	group = "Comparison",
-	name = "Less Than",
-	inputs = { "A", "B" },
-	output = function(gate, A, B)
-	    if (A < B) then return 1 end
-	    return 0
-	end,
-	label = function(Out, A, B)
-	    return A.." < "..B.." = "..Out
-	end
-}
-
-GateActions[">"] = {
-	group = "Comparison",
-	name = "Greater Then",
-	inputs = { "A", "B" },
-	output = function(gate, A, B)
-	    if (A > B) then return 1 end
-	    return 0
-	end,
-	label = function(Out, A, B)
-	    return A.." > "..B.." = "..Out
-	end
-}
-
-GateActions["<="] = {
-	group = "Comparison",
-	name = "Less or Equal",
-	inputs = { "A", "B" },
-	output = function(gate, A, B)
-	    if (A <= B) then return 1 end
-	    return 0
-	end,
-	label = function(Out, A, B)
-	    return A.." <= "..B.." = "..Out
-	end
-}
-
-GateActions[">="] = {
-	group = "Comparison",
-	name = "Greater or Equal",
-	inputs = { "A", "B" },
-	output = function(gate, A, B)
-	    if (A >= B) then return 1 end
-	    return 0
-	end,
-	label = function(Out, A, B)
-	    return A.." >= "..B.." = "..Out
-	end
-}

@@ -1,3 +1,4 @@
+
 TOOL.Category		= "Wire - Control"
 TOOL.Name			= "Chip - Memory"
 TOOL.Command		= nil
@@ -18,6 +19,7 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "action" ] = "latch"
+TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
 
 if (SERVER) then
@@ -37,20 +39,24 @@ function TOOL:LeftClick( trace )
 
 	// Get client's CVars
 	local action			= self:GetClientInfo( "action" )
+	local noclip			= self:GetClientNumber( "noclip" ) == 1
 	local model             = self:GetClientInfo( "model" )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_gate" && trace.Entity.pl == ply ) then
-		trace.Entity:Setup( GateActions[action] )
+		trace.Entity:Setup( GateActions[action], noclip )
 		trace.Entity:GetTable().action = action
 		return true
 	end
 
 	if ( !self:GetSWEP():CheckLimit( "wire_gate_memorys" ) ) then return false end
 
+	if (not util.IsValidModel(model)) then return false end
+	if (not util.IsValidProp(model)) then return false end
+
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_gate_memory = MakeWireGate( ply, trace.HitPos, Ang, model, action )
+	local wire_gate_memory = MakeWireGate( ply, trace.HitPos, Ang, model, action, noclip )
 	
 	local min = wire_gate_memory:OBBMins()
 	wire_gate_memory:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -116,6 +122,11 @@ end
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_gate_memory_name", Description = "#Tool_wire_gate_memory_desc" })
 
+	panel:AddControl("CheckBox", {
+		Label = "#WireGatesTool_noclip",
+		Command = "wire_gate_memory_noclip"
+	})
+	
 	local Actions = {
 		Label = "#WireGateMemoryTool_action",
 		MenuButton = "0",
@@ -134,182 +145,3 @@ function TOOL.BuildCPanel(panel)
 	ModelPlug_AddToCPanel(panel, "chip", "wire_gate_memory", "#WireGateMemoryTool_model", nil, "#WireGateMemoryTool_model")
 end
 
-
-
-GateActions = GateActions or {}
-
-GateActions["latch"] = {
-	group = "Memory",
-	name = "Latch (Edge triggered)",
-	inputs = { "Data", "Clk" },
-	output = function(gate, Data, Clk)
-		local clk = (Clk > 0)
-		if (gate.PrevValue ~= clk) then
-			gate.PrevValue = clk
-		    if (clk) then
-		        gate.LatchStore = Data
-		    end
-		end
-	    return gate.LatchStore or 0
-	end,
-	reset = function(gate)
-	    gate.LatchStore = 0
-	    gate.PrevValue = nil
-	end,
-	label = function(Out, Data, Clk)
-	    return "Latch Data:"..Data.."  Clock:"..Clk.." = "..Out
-	end
-}
-
-GateActions["dlatch"] = {
-	group = "Memory",
-	name = "D-Latch",
-	inputs = { "Data", "Clk" },
-	output = function(gate, Data, Clk)
-	    if (Clk > 0) then
-			gate.LatchStore = Data
-		end
-	    return gate.LatchStore or 0
-	end,
-	reset = function(gate)
-	    gate.LatchStore = 0
-	end,
-	label = function(Out, Data, Clk)
-	    return "D-Latch Data:"..Data.."  Clock:"..Clk.." = "..Out
-	end
-}
-
-GateActions["srlatch"] = {
-    group = "Memory",
-    name = "SR-Latch",
-    inputs = { "S", "R" },
-    output = function(gate, S, R)
-        if (S > 0) and (R <= 0) then
-            gate.LatchStore = 1
-        elseif (S <= 0) and (R > 0) then
-            gate.LatchStore = 0
-        end
-        return gate.LatchStore
-    end,
-    reset = function(gate)
-        gate.LatchStore = 0
-    end,
-    label = function(Out, S, R)
-        return "S:"..S.." R:"..R.." == "..Out
-    end
-}
-
-GateActions["toggle"] = {
-    group = "Memory",
-    name = "Toggle (Edge triggered)",
-    inputs = { "Clk", "OnValue", "OffValue" },
-    output = function(gate, Clk, OnValue, OffValue)
-        local clk = (Clk > 0)
-        if (gate.PrevValue ~= clk) then
-            gate.PrevValue = clk
-            if (clk) then
-                gate.LatchStore = (not gate.LatchStore)
-            end
-        end
-        
-        if (gate.LatchStore) then return OnValue end
-        return OffValue
-    end,
-    reset = function(gate)
-        gate.LatchStore = 0
-        gate.PrevValue = nil
-    end,
-    label = function(Out, Clk, OnValue, OffValue)
-        return "Off:"..OffValue.."  On:"..OnValue.."  Clock:"..Clk.." = "..Out
-    end
-}
-
-GateActions["ram8"] = {
-    group = "Memory",
-    name = "RAM(8 store)",
-    inputs = { "Clk", "AddrRead", "AddrWrite", "Data" },
-    output = function(gate, Clk, AddrRead, AddrWrite, Data )
-        AddrRead = math.floor(tonumber(AddrRead))
-        AddrWrite = math.floor(tonumber(AddrWrite))
-        if (Clk > 0) then
-            if (AddrWrite >= 0) and (AddrWrite < 8) then
-                gate.LatchStore[AddrWrite] = Data
-            end
-        end
-        
-		if (AddrRead < 0) or (AddrRead >= 8) then return 0 end
-		
-        return gate.LatchStore[AddrRead] or 0
-    end,
-    reset = function(gate)
-        gate.LatchStore = {}
-        for i = 0, 7 do
-            gate.LatchStore[i] = 0
-        end
-    end,
-    label = function(Out, Clk, AddrRead, AddrWrite, Data)
-	    return "WriteAddr:"..AddrWrite.."  Data:"..Data.."  Clock:"..Clk..
-    	    "\nReadAddr:"..AddrRead.." = "..Out
-    end
-}
-
-
-GateActions["ram64"] = {
-    group = "Memory",
-    name = "RAM(64 store)",
-    inputs = { "Clk", "AddrRead", "AddrWrite", "Data" },
-    output = function(gate, Clk, AddrRead, AddrWrite, Data )
-        AddrRead = math.floor(tonumber(AddrRead))
-        AddrWrite = math.floor(tonumber(AddrWrite))
-        if (Clk > 0) then
-            if (AddrWrite < 64) then
-                    gate.LatchStore[AddrWrite] = Data
-            end
-        end
-        return gate.LatchStore[AddrRead] or 0
-    end,
-    reset = function(gate)
-        gate.LatchStore = {}
-        for i = 0,63 do
-            gate.LatchStore[i] = 0
-        end
-    end,
-    label = function(Out, Clk, AddrRead, AddrWrite, Data)
-        return "WriteAddr:"..AddrWrite.."  Data:"..Data.."  Clock:"..Clk..
-        	"\nReadAddr:"..AddrRead.." = "..Out
-    end
-}
-
-
-GateActions["ram64x64"] = {
-    group = "Memory",
-    name = "RAM(64x64 store)",
-    inputs = { "Clk", "AddrReadX", "AddrReadY", "AddrWriteX", "AddrWriteY", "Data" },
-    output = function(gate, Clk, AddrReadX, AddrReadY, AddrWriteX, AddrWriteY, Data )
-        AddrReadX = math.floor(tonumber(AddrReadX))
-        AddrReadY = math.floor(tonumber(AddrReadY))
-        AddrWriteX = math.floor(tonumber(AddrWriteX))
-        AddrWriteY = math.floor(tonumber(AddrWriteY))
-        if (Clk > 0) then
-            if (AddrWriteX >= 0) and (AddrWriteX < 64) or (AddrWriteY >= 0) and (AddrWriteY < 64) then
-				gate.LatchStore[AddrWriteX + AddrWriteY*64] = Data
-            end
-        end
-        
-        if (AddrReadX < 0) or (AddrReadX >= 64) or (AddrReadY < 0) or (AddrReadY >= 64) then
-            return 0
-        end
-        
-        return gate.LatchStore[AddrReadX + AddrReadY*64] or 0
-    end,
-    reset = function(gate)
-        gate.LatchStore = {}
-        for i = 0,4095 do
-            gate.LatchStore[i] = 0
-        end
-    end,
-    label = function(Out, Clk, AddrReadX, AddrReadY, AddrWriteX, AddrWriteY, Data)
-        return "WriteAddr:"..AddrWriteX..", "..AddrWriteY.."  Data:"..Data.."  Clock:"..Clk..
-        "\nReadAddr:"..AddrReadX..", "..AddrReadY.." = "..Out
-    end
-}

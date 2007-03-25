@@ -57,7 +57,7 @@ hook.Add("Think", "WireLib_Think", UpdateWires)
 
 function Wire_CreateInputs(ent, names)
 	local inputs = {}
-	for _,v in pairs(names) do
+	for n,v in pairs(names) do
 		local input = {
 			Entity = ent,
 			Name = v,
@@ -65,6 +65,83 @@ function Wire_CreateInputs(ent, names)
 			Material = "tripmine_laser",
 			Color = Color(255, 255, 255, 255),
 			Width = 1,
+			Num = n,
+			}
+		
+		local idx = 1
+		while (Inputs[idx]) do
+		    idx = idx+1
+		end
+		input.Idx = idx
+		
+		inputs[v] = input
+		Inputs[idx] = input
+	end
+	
+	Wire_SetPathNames(ent, names)
+
+	return inputs
+end
+
+
+function Wire_CreateOutputs(ent, names)
+	local outputs = {}
+	for n,v in pairs(names) do
+		local output = {
+			Entity = ent,
+			Name = v,
+			Value = 0,
+			Connected = {},
+			TriggerLimit = 8,
+			Num = n,
+			}
+		
+		local idx = 1
+		while (Outputs[idx]) do
+		    idx = idx+1
+		end
+		output.Idx = idx
+		
+		outputs[v] = output
+		Outputs[idx] = output
+	end
+
+	return outputs
+end
+
+
+
+-- and array of data types
+WIRE_DT = {
+	"NORMAL",	-- Numbers
+	"VECTOR",
+	"ANGLE",
+	"COLOR",
+	"ENTITY",
+	"STRING",
+	"TABLE",
+}
+WIRE_DT_ZERO = {}
+WIRE_DT_ZERO.NORMAL = 0
+WIRE_DT_ZERO.VECTOR = Vector(0,0,0)
+WIRE_DT_ZERO.ANGLE = Angle(0,0,0)
+WIRE_DT_ZERO.COLOR = Color(0,0,0,0)
+WIRE_DT_ZERO.ENTITY = NULL
+WIRE_DT_ZERO.STRING = ""
+WIRE_DT_ZERO.TABLE = {}
+
+function Wire_CreateSpecialInputs(ent, names)
+	local inputs = {}
+	for n,v in pairs(names) do
+		local input = {
+			Entity = ent,
+			Name = v.Name,
+			Type = v.Type,
+			Value = WIRE_DT_ZERO[v.Type] or WIRE_DT_ZERO.NORMAL,
+			Material = "tripmine_laser",
+			Color = Color(255, 255, 255, 255),
+			Width = 1,
+			Num = n,
 			}
 
 		local idx = 1
@@ -83,15 +160,16 @@ function Wire_CreateInputs(ent, names)
 end
 
 
-function Wire_CreateOutputs(ent, names)
+function Wire_CreateSpecialOutputs(ent, names)
 	local outputs = {}
-	for _,v in pairs(names) do
+	for n,v in pairs(names) do
 		local output = {
 			Entity = ent,
 			Name = v,
 			Value = 0,
 			Connected = {},
 			TriggerLimit = 8,
+			Num = n,
 			}
 
 		local idx = 1
@@ -108,11 +186,13 @@ function Wire_CreateOutputs(ent, names)
 end
 
 
+
 function Wire_AdjustInputs(ent, names)
     local inputs = ent.Inputs
-	for _,v in pairs(names) do
+	for n,v in pairs(names) do
 	    if (inputs[v]) then
 			inputs[v].Keep = true
+			inputs[v].Num = n
 	    else
 			local input = {
 				Entity = ent,
@@ -122,6 +202,7 @@ function Wire_AdjustInputs(ent, names)
 				Color = Color(255, 255, 255, 255),
 				Width = 1,
 				Keep = true,
+				Num = n,
 			}
 
 			local idx = 1
@@ -151,9 +232,10 @@ end
 
 function Wire_AdjustOutputs(ent, names)
     local outputs = ent.Outputs
-	for _,v in pairs(names) do
+	for n,v in pairs(names) do
 	    if (outputs[v]) then
 			outputs[v].Keep = true
+			outputs[v].Num = n
 	    else
 			local output = {
 				Keep = true,
@@ -161,7 +243,8 @@ function Wire_AdjustOutputs(ent, names)
 				Value = 0,
 				Connected = {},
 				TriggerLimit = 8,
-				}
+				Num = n,
+			}
 
 			local idx = 1
 			while (Outputs[idx]) do

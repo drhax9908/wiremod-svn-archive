@@ -19,6 +19,7 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "action" ] = "sin"
+TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
 
 if (SERVER) then
@@ -38,20 +39,24 @@ function TOOL:LeftClick( trace )
 
 	// Get client's CVars
 	local action			= self:GetClientInfo( "action" )
+	local noclip			= self:GetClientNumber( "noclip" ) == 1
 	local model             = self:GetClientInfo( "model" )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_gate" && trace.Entity.pl == ply ) then
-		trace.Entity:Setup( GateActions[action] )
+		trace.Entity:Setup( GateActions[action], noclip )
 		trace.Entity:GetTable().action = action
 		return true
 	end
 
 	if ( !self:GetSWEP():CheckLimit( "wire_gate_trigs" ) ) then return false end
 
+	if (not util.IsValidModel(model)) then return false end
+	if (not util.IsValidProp(model)) then return false end
+
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_gate_trig = MakeWireGate( ply, trace.HitPos, Ang, model, action )
+	local wire_gate_trig = MakeWireGate( ply, trace.HitPos, Ang, model, action, noclip )
 	
 	local min = wire_gate_trig:OBBMins()
 	wire_gate_trig:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -117,6 +122,11 @@ end
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_gate_trig_name", Description = "#Tool_wire_gate_trig_desc" })
 
+	panel:AddControl("CheckBox", {
+		Label = "#WireGatesTool_noclip",
+		Command = "wire_gate_trig_noclip"
+	})
+	
 	local Actions = {
 		Label = "#WireGateTrigTool_action",
 		MenuButton = "0",
@@ -135,214 +145,3 @@ function TOOL.BuildCPanel(panel)
 	ModelPlug_AddToCPanel(panel, "gate", "wire_gate_trig", "#WireGateTrigTool_model", nil, "#WireGateTrigTool_model")
 end
 
-
-
-GateActions = GateActions or {}
-
-GateActions["quadratic"] = {
-	group = "Trig",
-	name = "Quadratic Formula",
-	inputs = { "A", "B", "C" },
-	outputs = { "Pos", "Neg" },
-	output = function(gate, A, B, C)
-		return ( -B + ( math.sqrt( math.abs( math.exp( B, 2 ) - ( 4*A )*C ) ) ) / 2*A )
-	end,
-	output = function(gate, A, B, C)
-		return ( -B - ( math.sqrt( math.abs( math.exp( B, 2 ) - ( 4*A )*C ) ) ) / 2*A )
-	end,
-	label = function(Out, A, B, C)
-		return "-" .. A .. " +/- sqrt( " ..  B .. "^2 - ( 4*" .. A .. " )*" .. C .. " )  / 2*" .. A
-	end
-}
-
-GateActions["sin"] = {
-	group = "Trig",
-	name = "Sin(Rad)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.sin(A)
-	end,
-	label = function(Out, A)
-	    return "sin("..A.."rad) = "..Out
-	end
-}
-
-GateActions["cos"] = {
-	group = "Trig",
-	name = "Cos(Rad)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.cos(A)
-	end,
-	label = function(Out, A)
-	    return "cos("..A.."rad) = "..Out
-	end
-}
-
-GateActions["tan"] = {
-	group = "Trig",
-	name = "Tan(Rad)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.tan(A)
-	end,
-	label = function(Out, A)
-	    return "tan("..A.."rad) = "..Out
-	end
-}
-
-GateActions["asin"] = {
-	group = "Trig",
-	name = "Asin(Rad)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.asin(A)
-	end,
-	label = function(Out, A)
-	    return "asin("..A..") = "..Out.."rad"
-	end
-}
-
-GateActions["acos"] = {
-	group = "Trig",
-	name = "Acos(Rad)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.acos(A)
-	end,
-	label = function(Out, A)
-	    return "acos("..A..") = "..Out.."rad"
-	end
-}
-
-GateActions["atan"] = {
-	group = "Trig",
-	name = "Atan(Rad)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.atan(A)
-	end,
-	label = function(Out, A)
-	    return "atan("..A..") = "..Out.."rad"
-	end
-}
-
-GateActions["sin_d"] = {
-	group = "Trig",
-	name = "Sin(Deg)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.sin(math.rad(A))
-	end,
-	label = function(Out, A)
-	    return "sin("..A.."deg) = "..Out
-	end
-}
-
-GateActions["cos_d"] = {
-	group = "Trig",
-	name = "Cos(Deg)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.cos(math.rad(A))
-	end,
-	label = function(Out, A)
-	    return "cos("..A.."deg) = "..Out
-	end
-}
-
-GateActions["tan_d"] = {
-	group = "Trig",
-	name = "Tan(Deg)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.tan(math.rad(A))
-	end,
-	label = function(Out, A)
-	    return "tan("..A.."deg) = "..Out
-	end
-}
-
-GateActions["asin_d"] = {
-	group = "Trig",
-	name = "Asin(Deg)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.deg(math.asin(A))
-	end,
-	label = function(Out, A)
-	    return "asin("..A..") = "..Out.."deg"
-	end
-}
-
-GateActions["acos_d"] = {
-	group = "Trig",
-	name = "Acos(Deg)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.deg(math.acos(A))
-	end,
-	label = function(Out, A)
-	    return "acos("..A..") = "..Out.."deg"
-	end
-}
-
-GateActions["atan_d"] = {
-	group = "Trig",
-	name = "Atan(Deg)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.deg(math.atan(A))
-	end,
-	label = function(Out, A)
-	    return "atan("..A..") = "..Out.."deg"
-	end
-}
-
-GateActions["rad2deg"] = {
-	group = "Trig",
-	name = "Radians to Degrees",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.deg(A)
-	end,
-	label = function(Out, A)
-	    return A.."rad = "..Out.."deg"
-	end
-}
-
-GateActions["deg2rad"] = {
-	group = "Trig",
-	name = "Degrees to Radians",
-	inputs = { "A" },
-	output = function(gate, A)
-	    return math.rad(A)
-	end,
-	label = function(Out, A)
-	    return A.."deg = "..Out.."rad"
-	end
-}
-
-GateActions["angdiff"] = {
-	group = "Trig",
-	name = "Difference(rad)",
-	inputs = { "A", "B" },
-	output = function(gate, A, B)
-	    return math.rad(math.AngleDifference(math.deg(A), math.deg(B)))
-	end,
-	label = function(Out, A, B)
-	    return A .. "deg - " .. B .. "deg = " .. Out .. "deg"
-	end
-}
-
-GateActions["angdiff_d"] = {
-	group = "Trig",
-	name = "Difference(deg)",
-	inputs = { "A", "B" },
-	output = function(gate, A, B)
-	    return math.AngleDifference(A, B)
-	end,
-	label = function(Out, A, B)
-	    return A .. "deg - " .. B .. "deg = " .. Out .. "deg"
-	end
-}

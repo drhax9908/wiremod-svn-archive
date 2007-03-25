@@ -19,10 +19,10 @@ if ( CLIENT ) then
 	language.Add( "undone_wire", "Undone Wire" )
 end
 
-TOOL.ClientConVar[ "addlength" ] = "4"
+//TOOL.ClientConVar[ "addlength" ] = "4"
 TOOL.ClientConVar[ "width" ] = "2"
-TOOL.ClientConVar[ "rigid" ] = "0"
-TOOL.ClientConVar[ "breakable" ] = "0"
+//TOOL.ClientConVar[ "rigid" ] = "0"
+//TOOL.ClientConVar[ "breakable" ] = "0"
 TOOL.ClientConVar[ "material" ] = "cable/cable2"
 TOOL.ClientConVar[ "color_r" ] = "255"
 TOOL.ClientConVar[ "color_g" ] = "255"
@@ -56,7 +56,7 @@ function TOOL:LeftClick( trace )
 		elseif (self.CurrentInput) then
 			local material	= self:GetClientInfo("material")
 			local width		= self:GetClientNumber("width")
-			local breakable	= (self:GetClientNumber("breakable") ~= 0)
+			//local breakable	= (self:GetClientNumber("breakable") ~= 0)
 			local color     = Color(self:GetClientNumber("color_r"), self:GetClientNumber("color_g"), self:GetClientNumber("color_b"))
 
 			if (Wire_Link_Start(self:GetOwner():UniqueID(), trace.Entity, trace.Entity:WorldToLocal(trace.HitPos), self.CurrentInput, material, color, width)) then
@@ -82,8 +82,14 @@ function TOOL:LeftClick( trace )
 		end
 		
 		self.Outputs = {}
-		for key,_ in pairs(trace.Entity.Outputs) do table.insert(self.Outputs, key) end
-		table.sort(self.Outputs)
+		for key,v in pairs(trace.Entity.Outputs) do
+			if v.Num then 
+				self.Outputs[v.Num] = key
+			else
+				table.insert(self.Outputs, key)
+			end
+		end
+		//table.sort(self.Outputs)
 
 		local oname = nil
 		for k,_ in pairs(trace.Entity.Outputs) do
@@ -257,30 +263,30 @@ function TOOL.BuildCPanel(panel)
 
 		Options = {
 			Default = {
-				wire_addlength = "4",
+				//wire_addlength = "4",
 				wire_material = "cable/rope",
 				wire_width = "3",
-				wire_rigid = "0",
-				wire_breakable = "1"
+				//wire_rigid = "0",
+				//wire_breakable = "1"
 			}
 		},
 
 		CVars = {
-			[0] = "wire_addlength",
-			[1] = "wire_width",
-			[2] = "wire_material",
-			[3] = "wire_rigid",
-			[4] = "wire_breakable"
+			[0] = "wire_width",
+			[1] = "wire_material",
+			//[0] = "wire_addlength",
+			//[3] = "wire_rigid",
+			//[4] = "wire_breakable"
 		}
 	})
 
-	panel:AddControl("Slider", {
+	/*panel:AddControl("Slider", {
 		Label = "#WireTool_addlength",
 		Type = "Float",
 		Min = "-1000",
 		Max = "1000",
 		Command = "wire_addlength"
-	})
+	})*/
 
 	panel:AddControl("Slider", {
 		Label = "#WireTool_width",
@@ -290,7 +296,7 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_width"
 	})
 
-	panel:AddControl("CheckBox", {
+	/*panel:AddControl("CheckBox", {
 		Label = "#WireTool_rigid",
 		Command = "wire_rigid"
 	})
@@ -298,7 +304,7 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("CheckBox", {
 		Label = "#WireTool_breakable",
 		Command = "wire_breakable"
-	})
+	})*/
 
 	panel:AddControl("MaterialGallery", {
 		Label = "#WireTool_material",
@@ -339,11 +345,11 @@ function TOOL:SelectComponent(ent)
 	if (CLIENT) then return end
 
 	if (self.CurrentComponent == ent) then return end
-
+	
     if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) then
  	    self.CurrentComponent:SetNetworkedString("BlinkWire", "")
 	end
-
+	
 	self.CurrentComponent = ent
 	self.CurrentInput = nil
 	self.Inputs = {}
@@ -354,11 +360,15 @@ function TOOL:SelectComponent(ent)
 		for k,v in pairs(ent.Inputs) do
 		    if (not first) then first = k end
 		    if (k == self.LastValidInput) then best = k end
-		    table.insert(self.Inputs, k)
+			if v.Num then 
+				self.Inputs[v.Num] = k
+			else
+				table.insert(self.Inputs, k)
+			end
 		end
 	end
 	
-	table.sort(self.Inputs)
+	//table.sort(self.Inputs)
 	first = self.Inputs[1] or first
 
 	self.CurrentInput = best or first

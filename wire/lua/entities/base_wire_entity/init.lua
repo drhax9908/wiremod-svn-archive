@@ -80,13 +80,29 @@ end
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	if (info.Wires) then
 		for k,input in pairs(info.Wires) do
-		    Wire_Link_Start(ply:UniqueID(), ent, input.StartPos, k, input.Material, input.Color, input.Width)
-		    if (input.Path) then
+		    
+			Wire_Link_Start(ply:UniqueID(), ent, input.StartPos, k, input.Material, input.Color, input.Width)
+		    
+			if (input.Path) then
 		        for _,v in ipairs(input.Path) do
-		        	Wire_Link_Node(ply:UniqueID(), GetEntByID(v.Entity), v.Pos)
+					
+					local ent2 = GetEntByID(v.Entity)
+					if (!ent2) or (!ent2:IsValid()) then ent2 = ents.GetByIndex(v.Entity) end
+					if (ent2) or (ent2:IsValid()) then
+						Wire_Link_Node(ply:UniqueID(), ent2, v.Pos)
+					else
+						Msg("ApplyDupeInfo: Error, Could not find the entity for wire path\n")
+					end
 				end
 		    end
-		    Wire_Link_End(ply:UniqueID(), GetEntByID(input.Src), input.SrcPos, input.SrcId)
+			
+			local ent2 = GetEntByID(input.Src)
+		    if (!ent2) or (!ent2:IsValid()) then ent2 = ents.GetByIndex(input.Src) end
+			if (ent2) or (ent2:IsValid()) then
+				Wire_Link_End(ply:UniqueID(), ent2, input.SrcPos, input.SrcId)
+			else
+				Msg("ApplyDupeInfo: Error, Could not find the output entity\n")
+			end
 		end
 	end
 end

@@ -17,7 +17,7 @@ function ENT:Initialize()
 end
 
 
-function ENT:Setup( action )
+function ENT:Setup( action, noclip )
 	if (action) then
 	    self.WireDebugName = action.name
 	    
@@ -32,7 +32,11 @@ function ENT:Setup( action )
 		    action.reset(self)
 		end
 	end
-
+	
+	if (noclip) then
+		self.Entity:SetCollisionGroup( COLLISION_GROUP_WORLD )
+	end
+	
 	self.Action = action
 	self.PrevValue = nil
 
@@ -173,7 +177,7 @@ end
 
 
 
-function MakeWireGate(pl, Pos, Ang, Model, action, Vel, aVel, frozen, nocollide)
+function MakeWireGate(pl, Pos, Ang, Model, action, noclip, Vel, aVel, frozen, nocollide)
 	if ( !pl:CheckLimit( "wire_gates" ) ) then return nil end
 
 	local wire_gate = ents.Create( "gmod_wire_gate" )
@@ -182,8 +186,8 @@ function MakeWireGate(pl, Pos, Ang, Model, action, Vel, aVel, frozen, nocollide)
 	wire_gate:SetModel( Model )
 	wire_gate:Spawn()
 	wire_gate:Activate()
-
-	wire_gate:Setup( GateActions[action] )
+	
+	wire_gate:Setup( GateActions[action], noclip )
 	wire_gate:SetPlayer( pl )
 
 	if (nocollide) then explosive:GetPhysicsObject():EnableCollision(false) end
@@ -193,6 +197,7 @@ function MakeWireGate(pl, Pos, Ang, Model, action, Vel, aVel, frozen, nocollide)
 		action      = action,
 		pl			= pl,
 		nocollide	= nocollide,
+		noclip		= noclip,
 		description = description
 	}
 
@@ -203,4 +208,4 @@ function MakeWireGate(pl, Pos, Ang, Model, action, Vel, aVel, frozen, nocollide)
 	return wire_gate
 end
 
-duplicator.RegisterEntityClass("gmod_wire_gate", MakeWireGate, "Pos", "Ang", "Model", "action", "Vel", "aVel", "frozen")
+duplicator.RegisterEntityClass("gmod_wire_gate", MakeWireGate, "Pos", "Ang", "Model", "action", "noclip", "Vel", "aVel", "frozen")

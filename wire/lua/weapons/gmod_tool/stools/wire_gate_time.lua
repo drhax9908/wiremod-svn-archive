@@ -19,6 +19,7 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "action" ] = "timer"
+TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
 
 if (SERVER) then
@@ -38,20 +39,24 @@ function TOOL:LeftClick( trace )
 
 	// Get client's CVars
 	local action			= self:GetClientInfo( "action" )
+	local noclip			= self:GetClientNumber( "noclip" ) == 1
 	local model             = self:GetClientInfo( "model" )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_gate" && trace.Entity.pl == ply ) then
-		trace.Entity:Setup( GateActions[action] )
+		trace.Entity:Setup( GateActions[action], noclip )
 		trace.Entity:GetTable().action = action
 		return true
 	end
 
 	if ( !self:GetSWEP():CheckLimit( "wire_gate_times" ) ) then return false end
 
+	if (not util.IsValidModel(model)) then return false end
+	if (not util.IsValidProp(model)) then return false end
+
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_gate_time = MakeWireGate( ply, trace.HitPos, Ang, model, action )
+	local wire_gate_time = MakeWireGate( ply, trace.HitPos, Ang, model, action, noclip )
 	
 	local min = wire_gate_time:OBBMins()
 	wire_gate_time:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -117,6 +122,11 @@ end
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_gate_time_name", Description = "#Tool_wire_gate_time_desc" })
 
+	panel:AddControl("CheckBox", {
+		Label = "#WireGatesTool_noclip",
+		Command = "wire_gate_time_noclip"
+	})
+	
 	local Actions = {
 		Label = "#WireGateTimeTool_action",
 		MenuButton = "0",
@@ -135,79 +145,3 @@ function TOOL.BuildCPanel(panel)
 	ModelPlug_AddToCPanel(panel, "chip", "wire_gate_time", "#WireGateTimeTool_model", nil, "#WireGateTimeTool_model")
 end
 
-
-
-GateActions = GateActions or {}
-
-GateActions["accumulator"] = {
-	group = "Time",
-	name = "Accumulator",
-	inputs = { "A", "Hold", "Reset" },
-	timed = true,
-	output = function(gate, A, Hold, Reset)
-	    local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
-	    gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
-	    if (Reset > 0) then
-	        gate.Accum = 0
-		elseif (Hold <= 0) then
-		    gate.Accum = gate.Accum+A*DeltaTime
-		end
-		return gate.Accum or 0
-	end,
-	reset = function(gate)
-	    gate.PrevTime = CurTime()
-	    gate.Accum = 0
-	end,
-	label = function(Out, A, Hold, Reset)
-	    return "A:"..A.." Hold:"..Hold.." Reset:"..Reset.." = "..Out
-	end
-}
-
-GateActions["smoother"] = {
-	group = "Time",
-	name = "Smoother",
-	inputs = { "A", "Rate" },
-	timed = true,
-	output = function(gate, A, Rate)
-	    local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
-	    gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
-	    local Delta = A-gate.Accum
-	    if (Delta > 0) then
-	        gate.Accum = gate.Accum+math.min(Delta, Rate*DeltaTime)
-	    elseif (Delta < 0) then
-	        gate.Accum = gate.Accum+math.max(Delta, -Rate*DeltaTime)
-	    end
-		return gate.Accum or 0
-	end,
-	reset = function(gate)
-	    gate.PrevTime = CurTime()
-	    gate.Accum = 0
-	end,
-	label = function(Out, A, Rate)
-	    return "A:"..A.." Rate:"..Rate.." = "..Out
-	end
-}
-
-GateActions["timer"] = {
-	group = "Time",
-	name = "Timer",
-	inputs = { "Run", "Reset" },
-	timed = true,
-	output = function(gate, Run, Reset)
-	    local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
-	    gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
-		if ( Reset > 0 ) then
-			gate.Accum = 0
-		elseif ( Run > 0 ) then
-			gate.Accum = gate.Accum+DeltaTime
-		end
-		return gate.Accum or 0
-	end,
-	reset = function(gate)
-	    gate.PrevTime = CurTime()
-	    gate.Accum = 0
-	end,
-	label = function(Out, Run, Reset)
-	    return "Run:"..Run.." Reset:"..Reset.." = "..Out
-	end
-}

@@ -19,6 +19,7 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "action" ] = "and"
+TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
 
 if (SERVER) then
@@ -38,20 +39,24 @@ function TOOL:LeftClick( trace )
 
 	// Get client's CVars
 	local action			= self:GetClientInfo( "action" )
+	local noclip			= self:GetClientNumber( "noclip" ) == 1
 	local model             = self:GetClientInfo( "model" )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_gate" && trace.Entity.pl == ply ) then
-		trace.Entity:Setup( GateActions[action] )
+		trace.Entity:Setup( GateActions[action], noclip )
 		trace.Entity:GetTable().action = action
 		return true
 	end
 
 	if ( !self:GetSWEP():CheckLimit( "wire_gate_logics" ) ) then return false end
 
+	if (not util.IsValidModel(model)) then return false end
+	if (not util.IsValidProp(model)) then return false end
+
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_gate_logic = MakeWireGate( ply, trace.HitPos, Ang, model, action )
+	local wire_gate_logic = MakeWireGate( ply, trace.HitPos, Ang, model, action, noclip )
 	
 	local min = wire_gate_logic:OBBMins()
 	wire_gate_logic:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -117,6 +122,11 @@ end
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_gate_logic_name", Description = "#Tool_wire_gate_logic_desc" })
 
+	panel:AddControl("CheckBox", {
+		Label = "#WireGatesTool_noclip",
+		Command = "wire_gate_logic_noclip"
+	})
+	
 	local Actions = {
 		Label = "#WireGateLogicTool_action",
 		MenuButton = "0",
@@ -135,141 +145,3 @@ function TOOL.BuildCPanel(panel)
 	ModelPlug_AddToCPanel(panel, "gate", "wire_gate_logic", "#WireGateLogicTool_model", nil, "#WireGateLogicTool_model")
 end
 
-
-
-GateActions = GateActions or {}
-
-GateActions["not"] = {
-	group = "Logic",
-	name = "Not (Invert)",
-	inputs = { "A" },
-	output = function(gate, A)
-	    if (A > 0) then return 0 end
-	    return 1
-	end,
-	label = function(Out, A)
-	    return "not "..A.." = "..Out
-	end
-}
-
-GateActions["and"] = {
-	group = "Logic",
-	name = "And (All)",
-	inputs = { "A", "B", "C", "D", "E", "F", "G", "H" },
-	compact_inputs = 2,
-	output = function(gate, ...)
-	    for k,v in ipairs(arg) do
-		    if (v) and (v <= 0) then return 0 end
-		end
-	    return 1
-	end,
-	label = function(Out, ...)
-	    local txt = ""
-	    for k,v in ipairs(arg) do
-		    if (v) then txt = txt..v.." and " end
-		end
-	    return string.sub(txt, 1, -6).." = "..Out
-	end
-}
-
-GateActions["or"] = {
-	group = "Logic",
-	name = "Or (Any)",
-	inputs = { "A", "B", "C", "D", "E", "F", "G", "H" },
-	compact_inputs = 2,
-	output = function(gate, ...)
-	    for k,v in ipairs(arg) do
-		    if (v) and (v > 0) then return 1 end
-		end
-	    return 0
-	end,
-	label = function(Out, ...)
-	    local txt = ""
-	    for k,v in ipairs(arg) do
-		    if (v) then txt = txt..v.." or " end
-		end
-	    return string.sub(txt, 1, -5).." = "..Out
-	end
-}
-
-GateActions["xor"] = {
-	group = "Logic",
-	name = "Exclusive Or (Odd)",
-	inputs = { "A", "B", "C", "D", "E", "F", "G", "H" },
-	compact_inputs = 2,
-	output = function(gate, ...)
-		local result = 0
-	    for k,v in ipairs(arg) do
-		    if (v) and (v > 0) then result = (1-result) end
-		end
-	    return result
-	end,
-	label = function(Out, ...)
-	    local txt = ""
-	    for k,v in ipairs(arg) do
-		    if (v) then txt = txt..v.." xor " end
-		end
-	    return string.sub(txt, 1, -6).." = "..Out
-	end
-}
-
-GateActions["nand"] = {
-	group = "Logic",
-	name = "Not And (Not All)",
-	inputs = { "A", "B", "C", "D", "E", "F", "G", "H" },
-	compact_inputs = 2,
-	output = function(gate, ...)
-	    for k,v in ipairs(arg) do
-		    if (v) and (v <= 0) then return 1 end
-		end
-	    return 0
-	end,
-	label = function(Out, ...)
-	    local txt = ""
-	    for k,v in ipairs(arg) do
-		    if (v) then txt = txt..v.." nand " end
-		end
-	    return string.sub(txt, 1, -7).." = "..Out
-	end
-}
-
-GateActions["nor"] = {
-	group = "Logic",
-	name = "Not Or (None)",
-	inputs = { "A", "B", "C", "D", "E", "F", "G", "H" },
-	compact_inputs = 2,
-	output = function(gate, ...)
-	    for k,v in ipairs(arg) do
-		    if (v) and (v > 0) then return 0 end
-		end
-	    return 1
-	end,
-	label = function(Out, ...)
-	    local txt = ""
-	    for k,v in ipairs(arg) do
-		    if (v) then txt = txt..v.." nor " end
-		end
-	    return string.sub(txt, 1, -6).." = "..Out
-	end
-}
-
-GateActions["xnor"] = {
-	group = "Logic",
-	name = "Exclusive Not Or (Even)",
-	inputs = { "A", "B", "C", "D", "E", "F", "G", "H" },
-	compact_inputs = 2,
-	output = function(gate, ...)
-		local result = 1
-	    for k,v in ipairs(arg) do
-		    if (v) and (v > 0) then result = (1-result) end
-		end
-	    return result
-	end,
-	label = function(Out, ...)
-	    local txt = ""
-	    for k,v in ipairs(arg) do
-		    if (v) then txt = txt..v.." xnor " end
-		end
-	    return string.sub(txt, 1, -7).." = "..Out
-	end
-}
