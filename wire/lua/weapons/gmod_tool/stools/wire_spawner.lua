@@ -76,7 +76,7 @@ function TOOL:LeftClick( trace, attach )
 	undo.SetPlayer( pl )
 	undo.Finish()
 
-	pl:AddCleanup( "wire_spawner", wire_spawner )
+	pl:AddCleanup( "wire_spawners", wire_spawner )
 
 	return true
 

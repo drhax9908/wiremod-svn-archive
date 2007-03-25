@@ -20,6 +20,10 @@ function ENT:Initialize()
 	self.SpawnLastValue = 0
 	self.UndoLastValue = 0
 
+	// Made more efficient by updating the overlay text and
+	// Wire output only when number of active props changes (TheApathetic)
+	self.CurrentPropCount = 0
+
 	// Add inputs/outputs (TheApathetic)
 	self.Inputs = Wire_CreateInputs(self.Entity, {"Spawn", "Undo"})
 	self.Outputs = Wire_CreateOutputs(self.Entity, {"Out"})
@@ -73,10 +77,12 @@ function ENT:DoSpawn( pl, down )
 
 	timer.Simple( delay, function( ent ) if ent:IsValid() then ent:Remove() end end, prop )
 	// Update prop count output when prop is deleted (TheApathetic)
-	timer.Simple(delay + 0.25, function (spawner) Wire_TriggerOutput(spawner, "Out", spawner:GetPropCount()) end, self.Entity)
+	// No longer needed because Think() now updates more often (TheApathetic)
+	//timer.Simple(delay + 0.25, function (spawner) Wire_TriggerOutput(spawner, "Out", spawner:GetPropCount()) end, self.Entity)
 
-	Wire_TriggerOutput(self.Entity, "Out", self:GetPropCount())
-	self:ShowOutput()
+	// Handled by Think() now
+	//Wire_TriggerOutput(self.Entity, "Out", self:GetPropCount())
+	//self:ShowOutput()
 end
 
 function ENT:DoUndo( pl )
@@ -92,19 +98,35 @@ function ENT:DoUndo( pl )
 	
 	ent:Remove()
 	umsg.Start( "UndoWireSpawnerProp", pl ) umsg.End()
-	Wire_TriggerOutput(self.Entity, "Out", self:GetPropCount())
-	self:ShowOutput()
+	
+	// Handled by Think() now (TheApathetic)
+	//Wire_TriggerOutput(self.Entity, "Out", self:GetPropCount())
+	//self:ShowOutput()
 end
 
 function ENT:Think()
 	self.BaseClass.Think(self)
 
-	// Trigger output automatically at least once every 1/4 second
-	Wire_TriggerOutput(self.Entity, "Out", self:GetPropCount())
-	self.Entity:NextThink(CurTime() + 0.25)
+	// Purge list of no longer existing props
+	for i = #self.UndoList,1,-1 do
+		local ent = self.UndoList[i]
+		if (!ent || !ent:IsValid() || ent:EntIndex() == 0) then
+			table.remove(self.UndoList, i)
+		end
+	end
+
+	// Check to see if active prop count has changed
+	if (#self.UndoList != self.CurrentPropCount) then
+		self.CurrentPropCount = #self.UndoList
+		Wire_TriggerOutput(self.Entity, "Out", self.CurrentPropCount)		
+		self:ShowOutput()
+	end
+
+	self.Entity:NextThink(CurTime() + 0.1)
 	return true
 end
 
+/* No longer needed
 function ENT:GetPropCount()
 	local count = 0
 	for _,ent in pairs(self.UndoList) do
@@ -113,6 +135,7 @@ function ENT:GetPropCount()
 
 	return count
 end
+*/
 
 function ENT:TriggerInput(iname, value)
 	local pl = self:GetPlayer()
@@ -145,5 +168,5 @@ function ENT:TriggerInput(iname, value)
 end
 
 function ENT:ShowOutput()
-	self:SetOverlayText("Spawn Delay: "..self:GetCreationDelay().."\nUndo Delay: "..self:GetDeletionDelay().."\nCurrent Props: "..self:GetPropCount())
+	self:SetOverlayText("Spawn Delay: "..self:GetCreationDelay().."\nUndo Delay: "..self:GetDeletionDelay().."\nActive Props: "..self.CurrentPropCount)
 end
