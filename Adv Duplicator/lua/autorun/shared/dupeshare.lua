@@ -3,10 +3,12 @@ dupeshare = {}
 
 dupeshare.BaseDir		= "adv_duplicator"
 dupeshare.PublicDirs	= { "=Public Folder=", "=Team Share Folder="}
-dupeshare.UsePWSys = true //server admins, set this to ture to use the folder password system
+
+//TODO
+dupeshare.UsePWSys = false //server admins, set this to ture to use the folder password system
 
 
-
+//this is only usfull for old saves, it doesn't do much for new ones.
 dupeshare.Dictionary = {
 	[1]		= {"|MCl", "\"\n\t\t\t}\n\t\t\t\"class\"\n\t\t\t{\n\t\t\t\t\"__name\"\t\t\"Class\"\n\t\t\t\t\"__type\"\t\t\"String\"\n\t\t\t\t\"V\"\t\t\""},
 	[2]		= {"|Mfz", "\"\n\t\t\t}\n\t\t\t\"frozen\"\n\t\t\t{\n\t\t\t\t\"__name\"\t\t\"frozen\"\n\t\t\t\t\"__type\"\t\t\"Bool\"\n\t\t\t\t\"V\"\t\t\""},
@@ -155,6 +157,7 @@ function dupeshare.DeCompress(str, FormConCommand)
 end
 
 
+//removes illegal characters from file names
 dupeshare.BadChars = {"\\", "/", ":", "*", "?", "\"", "<", ">", "¦", "|"}
 
 function dupeshare.ReplaceBadChar(str)
@@ -356,7 +359,7 @@ function dupeshare.RebuildTableFromLoad( t, done )
 	
 end
 
-//for later use
+//used by above functions to protect case from evil KeyValuesToTable
 function dupeshare.ProtectCase(str)
 	str2=""
 	
@@ -396,11 +399,9 @@ end
 /*---------------------------------------------------------
 	file and folder util functions
 ---------------------------------------------------------*/
-
 /*---------------------------------------------------------
-   Name: dupeshare.FileNoOverWriteCheck( dir, filename )
-   Desc: Check if dir and filename exist and if so renames
-		returns filepath (dir.."/"..filename..".txt")
+	Check if dir and filename exist and if so renames
+	returns filepath (dir.."/"..filename..".txt")
 ---------------------------------------------------------*/
 function dupeshare.FileNoOverWriteCheck( dir, filename )
 	
