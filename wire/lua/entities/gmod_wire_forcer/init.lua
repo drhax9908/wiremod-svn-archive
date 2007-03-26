@@ -33,7 +33,7 @@ function ENT:Setup(force, length, showbeam)
 	else
 		self:SetBeamLength(0)
 	end
-	self:TriggerInput("F", 0)
+	self:TriggerInput("Force", 0)
 end
 
 function ENT:TriggerInput(iname, value)
@@ -88,4 +88,14 @@ function ENT:ShowOutput()
 		"\nOffset Force= "..tostring(math.Round(self.FoO))..
 		"\nVelocity= "..tostring(math.Round(self.V))
 	)
+end
+
+function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
+	//Moves old "A" input to new "Force" input for older saves
+	if (info.Wires) and (info.Wires.A) then
+		info.Wires.Force = info.Wires.A
+		info.Wires.A = nil
+	end
+	
+	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 end

@@ -405,7 +405,9 @@ function AdvDupeClient.MakeDir( pl, command, args )
 	end
 	
 	AdvDupeClient.gui.makedir.txtDir:SetText("")
-	AdvDupeClient.gui.makedir.txtPass:SetText("")
+	if (dupeshare.UsePWSys) and (!SinglePlayer()) then 
+		AdvDupeClient.gui.makedir.txtPass:SetText("")
+	end
 	
 	if args[1] == "client" then
 		AdvDupeClient.gui.makedir.btnMakeDir:SetCommand("MakeDirClient")

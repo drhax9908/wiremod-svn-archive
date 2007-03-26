@@ -388,7 +388,8 @@ function AdvDupe.SaveDupeTablesToFile( pl, EntTables, ConstraintTables, DupeInfo
 	
 	//save to a sub folder for each player
 	//local dir = "adv_duplicator/"..dupeshare.GetPlayerName(pl)
-	local dir = AdvDupe.GetPlayersFolder(pl)
+	if (!AdvDupe[pl:UniqueID()]) then AdvDupe[pl:UniqueID()] = {} end
+	local dir = AdvDupe[pl:UniqueID()].cdir or AdvDupe.GetPlayersFolder(pl)
 	
 	//get and check the that filename contains no illegal characters
 	local filename = dupeshare.ReplaceBadChar(filename)
@@ -464,7 +465,6 @@ function AdvDupe.LoadDupeTableFromFile( filepath )
 		Msg("Loading new file type\n")
 		temp = dupeshare.RebuildTableFromLoad(temp)
 	end
-	
 	
 	//check the file was loaded and we understand it's version then load the data in to the tables
 	if (temp) and (temp["VersionInfo"]["FileVersion"] >= 0.6) then

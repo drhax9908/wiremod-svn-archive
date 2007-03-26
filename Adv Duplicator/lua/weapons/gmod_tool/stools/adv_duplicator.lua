@@ -409,6 +409,13 @@ function TOOL:LoadFile( filepath )
 		self.DupeInfo		= DupeInfo
 		self.DORInfo		= DORInfo
 		
+		//hack for constraints with "pl" keys
+		for k, Constraint in pairs( self.Constraints ) do
+			if ( Constraint && Constraint.pl ) then
+				Constraint.pl = self:GetOwner()
+			end
+		end
+		
 		self.Legacy			= Legacy
 		
 		self:GetOwner():SendLua( "AdvDupeClient.FileLoaded=true" )
@@ -501,12 +508,7 @@ if SERVER then
 	
 	//Serverside save of duplicated ents
 	local function AdvDupeSS_Save( pl, _, args )
-
-		if !pl:IsValid() 
-		or !pl:IsPlayer() 
-		//or !pl:GetTable().Duplicator 
-		//or !AdvDupe[pl:UniqueID()] 
-		then return end
+		if !pl:IsValid() or !pl:IsPlayer() then return end
 		
 		local tool = pl:GetActiveWeapon()
 		if !dupeshare.CurrentToolIsDuplicator(tool, true) then return end
