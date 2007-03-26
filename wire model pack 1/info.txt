@@ -1,11 +1,11 @@
 "AddonInfo"
 {
 	"name"				"Wire Model Pack 1"
-	"version"			"0.2"
-	"up_date"			"5th February 2007"
+	"version"			"0.3"
+	"up_date"			"25st March 2007"
 	"author_name"			"Team Wire"
 	"author_email"			"ErkleMad@gmail.com"
-	"author_url"			""
+	"author_url"			"http://www.wiremod.com/"
 	"info"				"Alternative models for the Wire addon."
 	"override"			"0"
 }

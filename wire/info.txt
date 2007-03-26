@@ -2,7 +2,7 @@
 {
 	"name"				"Wire"
 	"version"			"0.9.6"
-	"up_date"			"24st March 2007"
+	"up_date"			"25st March 2007"
 	"author_name"			"Wire Team"
 	"author_email"			"ErkleMad@gmail.com"
 	"author_url"			"http://www.wiremod.com/"
