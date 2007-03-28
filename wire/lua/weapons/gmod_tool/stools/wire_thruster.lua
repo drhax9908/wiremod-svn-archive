@@ -94,7 +94,7 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	wire_thruster = MakeWireThruster( ply, model, Ang, trace.HitPos, force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, nil, collision )
+	wire_thruster = MakeWireThruster( ply, model, Ang, trace.HitPos, force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, collision )
 	
 	local min = wire_thruster:OBBMins()
 	wire_thruster:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -110,6 +110,7 @@ function TOOL:LeftClick( trace )
 			wire_thruster.nocollide = true
 		end
 	end
+	local const = WireLib.Weld(wire_twoway_radio, trace.Entity, trace.PhysicsBone, true, collision)
 
 	undo.Create("WireThruster")
 		undo.AddEntity( wire_thruster )

@@ -65,7 +65,7 @@ function TOOL:LeftClick( trace )
 	local min = wire_dual_input:OBBMins()
 	wire_dual_input:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	local const, nocollide
+	/*local const, nocollide
 
 	// Don't weld to world
 	if ( trace.Entity:IsValid() ) then
@@ -73,7 +73,8 @@ function TOOL:LeftClick( trace )
 		// Don't disable collision if it's not attached to anything
 		wire_dual_input:GetPhysicsObject():EnableCollisions( false )
 		wire_dual_input.nocollide = true
-	end
+	end*/
+	local const = WireLib.Weld(wire_dual_input, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireDualInput")
 		undo.AddEntity( wire_dual_input )

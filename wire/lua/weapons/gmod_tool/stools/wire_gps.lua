@@ -49,7 +49,7 @@ function TOOL:LeftClick( trace )
 	local min = wire_gps:OBBMins()
 	wire_gps:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	local const, nocollide
+	/*local const, nocollide
 
 	// Don't weld to world
 	if ( trace.Entity:IsValid() ) then
@@ -57,7 +57,8 @@ function TOOL:LeftClick( trace )
 		// Don't disable collision if it's not attached to anything
 		wire_gps:GetPhysicsObject():EnableCollisions( false )
 		wire_gps.nocollide = true
-	end
+	end*/
+	local const = WireLib.Weld(wire_gps, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireGPS")
 		undo.AddEntity( wire_gps )

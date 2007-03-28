@@ -83,7 +83,7 @@ function TOOL:LeftClick( trace )
 	local const = {}, nocollide
 	
 	// Don't weld to world, unless we wanted too
-	if ( trace.Entity:IsValid() || worldweld ) then
+	/*if ( trace.Entity:IsValid() || worldweld ) then
 		for x=1, 7 do
 			const[x] = constraint.Weld( wire_indicators[x], trace.Entity, 0, trace.PhysicsBone, 0, true, true )
 			
@@ -93,6 +93,10 @@ function TOOL:LeftClick( trace )
 				wire_indicators[x]:GetTable().nocollide = true
 			end
 		end
+	end*/
+	
+	for x=1, 7 do
+		const[x] = WireLib.Weld(wire_indicators[x], trace.Entity, trace.PhysicsBone, true, false, worldweld)
 	end
 	
 	undo.Create("Wire7Seg")

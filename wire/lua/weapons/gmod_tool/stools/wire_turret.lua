@@ -119,7 +119,7 @@ function TOOL:LeftClick( trace, worldweld )
 	*/
 	turret:SetAngles( trace.HitNormal:Angle() )
 	
-	local weld
+	/*local weld
 	
 	// Don't weld to world
 	if ( trace.Entity != NULL && (!trace.Entity:IsWorld() || worldweld) ) then
@@ -131,7 +131,8 @@ function TOOL:LeftClick( trace, worldweld )
 		turret:GetPhysicsObject():EnableCollisions( false )
 		turret:GetTable().nocollide = true
 		
-	end
+	end*/
+	local weld = WireLib.Weld(wire_twoway_radio, trace.Entity, trace.PhysicsBone, true, false, worldweld)
 	
 	undo.Create("WireTurret")
 		undo.AddEntity( turret )

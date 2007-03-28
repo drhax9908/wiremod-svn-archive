@@ -65,7 +65,7 @@ function TOOL:LeftClick(trace)
 	local min = wire_sensor:OBBMins()
 	wire_sensor:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
-	local const, nocollide
+	/*local const, nocollide
 	
 	// Don't weld to world
 	if ( trace.Entity:IsValid() ) then
@@ -73,7 +73,8 @@ function TOOL:LeftClick(trace)
 		// Don't disable collision if it's not attached to anything
 		wire_sensor:GetPhysicsObject():EnableCollisions( false )
 		wire_sensor.nocollide = true
-	end
+	end*/
+	local const = WireLib.Weld(wire_sensor, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireSensor")
 		undo.AddEntity( wire_sensor )

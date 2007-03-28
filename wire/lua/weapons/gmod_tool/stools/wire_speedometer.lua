@@ -57,7 +57,7 @@ function TOOL:LeftClick( trace )
 	local min = wire_speedometer:OBBMins()
 	wire_speedometer:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	local const, nocollide
+	/*local const, nocollide
 
 	// Don't weld to world
 	if ( trace.Entity:IsValid() ) then
@@ -65,7 +65,8 @@ function TOOL:LeftClick( trace )
 		// Don't disable collision if it's not attached to anything
 		wire_speedometer:GetPhysicsObject():EnableCollisions( false )
 		wire_speedometer.nocollide = true
-	end
+	end*/
+	local const = WireLib.Weld(wire_speedometer, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireSpeedometer")
 		undo.AddEntity( wire_speedometer )

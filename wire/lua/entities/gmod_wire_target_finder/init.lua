@@ -79,7 +79,10 @@ end
 
 
 function ENT:GetBeaconPos(sensor)
-	local ch = tonumber(sensor.Inputs.Target.SrcId)
+	local ch = 1
+	if (sensor.Inputs.Target.SrcId) then
+		ch = tonumber(sensor.Inputs.Target.SrcId)
+	end
 	if self.SelectedTargets[ch] then
 		if (not self.SelectedTargets[ch]:IsValid()) then
 	        self.SelectedTargets[ch] = nil

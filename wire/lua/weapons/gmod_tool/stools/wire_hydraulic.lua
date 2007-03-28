@@ -57,7 +57,7 @@ function TOOL:LeftClick( trace )
 		//controller.const = const
 		//controller.rope = rope
 
-		local const2, nocollide
+		/*local const2, nocollide
 
 		// Don't weld to world
 		if ( trace.Entity:IsValid() ) then
@@ -65,7 +65,8 @@ function TOOL:LeftClick( trace )
 			// Don't disable collision if it's not attached to anything
 			controller:GetPhysicsObject():EnableCollisions( false )
 			controller.nocollide = true
-		end
+		end*/
+		local const2 = WireLib.Weld(controller, trace.Entity, trace.PhysicsBone, true)
 
 		undo.Create("WireHydraulic")
 			undo.AddEntity( controller )

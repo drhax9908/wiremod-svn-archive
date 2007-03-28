@@ -61,7 +61,7 @@ function TOOL:LeftClick( trace )
 	local min = wire_gate_arithmetic:OBBMins()
 	wire_gate_arithmetic:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	local const, nocollide
+	/*local const, nocollide
 
 	// Don't weld to world
 	if ( trace.Entity:IsValid() ) then
@@ -69,7 +69,8 @@ function TOOL:LeftClick( trace )
 		// Don't disable collision if it's not attached to anything
 		wire_gate_arithmetic:GetPhysicsObject():EnableCollisions( false )
 		wire_gate_arithmetic.nocollide = true
-	end
+	end*/
+	local const = WireLib.Weld(wire_gate_arithmetic, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireGateArithmetic")
 		undo.AddEntity( wire_gate_arithmetic )

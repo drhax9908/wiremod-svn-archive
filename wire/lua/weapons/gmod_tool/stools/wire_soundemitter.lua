@@ -64,7 +64,7 @@ function TOOL:LeftClick( trace )
 	local min = wire_emitter:OBBMins()
 	wire_emitter:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
-	local const, nocollide
+	/*local const, nocollide
 	
 	// Don't weld to world
 	if ( trace.Entity:IsValid() ) then
@@ -72,7 +72,8 @@ function TOOL:LeftClick( trace )
 		// Don't disable collision if it's not attached to anything
 		wire_emitter:GetPhysicsObject():EnableCollisions( false )
 		wire_emitter.nocollide = true
-	end
+	end*/
+	local const = WireLib.Weld(wire_emitter, trace.Entity, trace.PhysicsBone, true, collision)
 
 	undo.Create("WireSoundEmitter")
 		undo.AddEntity( wire_emitter )

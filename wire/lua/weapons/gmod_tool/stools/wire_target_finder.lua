@@ -112,9 +112,10 @@ function TOOL:LeftClick(trace)
 	wire_target_finder:SetPos( trace.HitPos - trace.HitNormal*min.z )
 	
 	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
+	/*if ( trace.Entity:IsValid() ) then
 		const, nocollide = constraint.Weld( wire_target_finder, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0, true )
-	end
+	end*/
+	local const = WireLib.Weld(wire_target_finder, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireTargetFinder")
 		undo.AddEntity( wire_target_finder )

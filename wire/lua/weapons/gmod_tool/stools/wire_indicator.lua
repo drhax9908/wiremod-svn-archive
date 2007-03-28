@@ -100,7 +100,7 @@ function TOOL:LeftClick( trace )
 	local const, nocollide
 	
 	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
+	/*if ( trace.Entity:IsValid() ) then
 		const = constraint.Weld( wire_indicator, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
 		
 		// Don't disable collision if it's not attached to anything
@@ -108,7 +108,8 @@ function TOOL:LeftClick( trace )
 			wire_indicator:GetPhysicsObject():EnableCollisions( false )
 			wire_indicator.nocollide = true
 		end
-	end
+	end*/
+	local const = WireLib.Weld(wire_input, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireIndicator")
 		undo.AddEntity( wire_indicator )
@@ -128,7 +129,7 @@ if (SERVER) then
 
 	function MakeWireIndicator( pl, Model, Ang, Pos, a, ar, ag, ab, aa, b, br, bg, bb, ba, material, nocollide, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_indicators" ) ) then return false end
-	
+		
 		local wire_indicator = ents.Create( "gmod_wire_indicator" )
 		if (!wire_indicator:IsValid()) then return false end
 		
@@ -137,12 +138,12 @@ if (SERVER) then
 		wire_indicator:SetAngles( Ang )
 		wire_indicator:SetPos( Pos )
 		wire_indicator:Spawn()
-
+		
 		wire_indicator:Setup(a, ar, ag, ab, aa, b, br, bg, bb, ba)
 		wire_indicator:SetPlayer(pl)
-
-		if (nocollide) then explosive:GetPhysicsObject():EnableCollision(false) end
-
+		
+		if (nocollide) then wire_indicator:GetPhysicsObject():EnableCollision(false) end
+		
 		local ttable = {
 			a	= a,
 			ar	= ar,
@@ -158,11 +159,11 @@ if (SERVER) then
 			pl	= pl,
 			nocollide = nocollide
 			}
-
+		
 		table.Merge(wire_indicator:GetTable(), ttable )
-
+		
 		pl:AddCount( "wire_indicators", wire_indicator )
-
+		
 		return wire_indicator
 	end
 

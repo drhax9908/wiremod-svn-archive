@@ -42,7 +42,7 @@ function TOOL:LeftClick( trace )
 	local min = wire_pod:OBBMins()
 	wire_pod:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	local const, nocollide
+	/*local const, nocollide
 
 	// Don't weld to world
 	if ( trace.Entity:IsValid() ) then
@@ -50,7 +50,8 @@ function TOOL:LeftClick( trace )
 		// Don't disable collision if it's not attached to anything
 		wire_pod:GetPhysicsObject():EnableCollisions( false )
 		wire_pod:GetTable().nocollide = true
-	end
+	end*/
+	local const = WireLib.Weld(wire_pod, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("Wire Pod")
 		undo.AddEntity( wire_pod )

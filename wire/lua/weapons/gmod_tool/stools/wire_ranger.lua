@@ -92,7 +92,7 @@ function TOOL:LeftClick( trace )
 	local min = wire_ranger:OBBMins()
 	wire_ranger:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	local const, nocollide
+	/*local const, nocollide
 
 	// Don't weld to world
 	if ( trace.Entity:IsValid() ) then
@@ -100,7 +100,8 @@ function TOOL:LeftClick( trace )
 		// Don't disable collision if it's not attached to anything
 		wire_ranger:GetPhysicsObject():EnableCollisions( false )
 		wire_ranger.nocollide = true
-	end
+	end*/
+	local const = WireLib.Weld(wire_ranger, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireRanger")
 		undo.AddEntity( wire_ranger )

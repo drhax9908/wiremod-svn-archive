@@ -78,7 +78,7 @@ function TOOL:LeftClick( trace )
 	//local min = wire_socket:OBBMins()
 	//wire_socket:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	local const, nocollide
+	/*local const, nocollide
 
 	const = constraint.Weld( wire_socket, trace.Entity, 0, trace.PhysicsBone, 0, true )
 
@@ -92,7 +92,9 @@ function TOOL:LeftClick( trace )
 			wire_plug:GetPhysicsObject():EnableCollisions( false )
 			wire_plug.nocollide = true
 		end
-	end
+	end*/
+	
+	local const = WireLib.Weld(wire_socket, trace.Entity, trace.PhysicsBone, true, false, true)
 
 	undo.Create("WireSocket")
 		undo.AddEntity( wire_socket )

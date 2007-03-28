@@ -73,7 +73,7 @@ function TOOL:LeftClick( trace )
 	wire_twoway_radio:SetPos( trace.HitPos - trace.HitNormal * (min.z-5) )
 	
 	// Don't weld to world
-	local const
+	/*local const
 	if ( trace.Entity:IsValid() ) then
 		local const = constraint.Weld( wire_twoway_radio, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
 		
@@ -82,7 +82,8 @@ function TOOL:LeftClick( trace )
 			wire_twoway_radio:GetPhysicsObject():EnableCollisions( false )
 			wire_twoway_radio:GetTable().nocollide = true
 		end
-	end
+	end*/
+	local const = WireLib.Weld(wire_twoway_radio, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireTwoWay_Radio")
 		undo.AddEntity( wire_twoway_radio )

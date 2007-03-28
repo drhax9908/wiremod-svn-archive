@@ -48,7 +48,7 @@ function TOOL:LeftClick( trace )
 	local min = wire_forcer:OBBMins()
 	wire_forcer:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	local const, nocollide
+	/*local const, nocollide
 
 	// Don't weld to world
 	if ( trace.Entity:IsValid() ) then
@@ -56,7 +56,8 @@ function TOOL:LeftClick( trace )
 		// Don't disable collision if it's not attached to anything
 		wire_forcer:GetPhysicsObject():EnableCollisions( false )
 		wire_forcer:GetTable().nocollide = true
-	end
+	end*/
+	local const = WireLib.Weld(wire_forcer, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireForcer")
 		undo.AddEntity( wire_forcer )

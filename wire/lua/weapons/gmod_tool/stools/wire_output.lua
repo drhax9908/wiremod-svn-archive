@@ -55,10 +55,11 @@ function TOOL:LeftClick( trace )
 	local min = wire_output:OBBMins()
 	wire_output:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	local const, nocollide
-
+	/*local const, nocollide
 	const = constraint.Weld( wire_output, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0, true )
-	wire_output:GetPhysicsObject():EnableCollisions( false )
+	wire_output:GetPhysicsObject():EnableCollisions( false )*/
+	
+	local const = WireLib.Weld(wire_output, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireOutput")
 		undo.AddEntity( wire_output )

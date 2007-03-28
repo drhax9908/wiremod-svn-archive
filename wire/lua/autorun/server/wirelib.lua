@@ -1,4 +1,7 @@
 AddCSLuaFile( "autorun/client/cl_wirelib.lua" )
+
+WireLib = {}
+
 -- Compatibility Global
 WireAddon = 1
 
@@ -112,7 +115,7 @@ end
 
 
 -- and array of data types
-WIRE_DT = {
+WireLib.DT = {
 	"NORMAL",	-- Numbers
 	"VECTOR",
 	"ANGLE",
@@ -121,23 +124,23 @@ WIRE_DT = {
 	"STRING",
 	"TABLE",
 }
-WIRE_DT_ZERO = {}
-WIRE_DT_ZERO.NORMAL = 0
-WIRE_DT_ZERO.VECTOR = Vector(0,0,0)
-WIRE_DT_ZERO.ANGLE = Angle(0,0,0)
-WIRE_DT_ZERO.COLOR = Color(0,0,0,0)
-WIRE_DT_ZERO.ENTITY = NULL
-WIRE_DT_ZERO.STRING = ""
-WIRE_DT_ZERO.TABLE = {}
+WireLib.DT_ZERO = {}
+WireLib.DT_ZERO.NORMAL = 0
+WireLib.DT_ZERO.VECTOR = Vector(0,0,0)
+WireLib.DT_ZERO.ANGLE = Angle(0,0,0)
+WireLib.DT_ZERO.COLOR = Color(0,0,0,0)
+WireLib.DT_ZERO.ENTITY = NULL
+WireLib.DT_ZERO.STRING = ""
+WireLib.DT_ZERO.TABLE = {}
 
-function Wire_CreateSpecialInputs(ent, names)
+function WireLib.CreateSpecialInputs(ent, names)
 	local inputs = {}
 	for n,v in pairs(names) do
 		local input = {
 			Entity = ent,
 			Name = v.Name,
 			Type = v.Type,
-			Value = WIRE_DT_ZERO[v.Type] or WIRE_DT_ZERO.NORMAL,
+			Value = WireLib.DT_ZERO[v.Type] or WireLib.DT_ZERO.NORMAL,
 			Material = "tripmine_laser",
 			Color = Color(255, 255, 255, 255),
 			Width = 1,
@@ -160,7 +163,7 @@ function Wire_CreateSpecialInputs(ent, names)
 end
 
 
-function Wire_CreateSpecialOutputs(ent, names)
+function WireLib.CreateSpecialOutputs(ent, names)
 	local outputs = {}
 	for n,v in pairs(names) do
 		local output = {
@@ -594,3 +597,34 @@ function Wire_AfterPasteMods(ply, Ent, DupeInfo)
 end
 duplicator.RegisterEntityModifier( "WireDupeInfo", Wire_AfterPasteMods )
 
+
+function WireLib.Weld(ent, traceEntity, tracePhysicsBone, DOR, collision, AllowWorldWeld)
+	local const
+	if ( traceEntity:IsValid() ) or ( trace.Entity:IsWorld() and AllowWorldWeld ) then
+		local const = constraint.Weld( ent, traceEntity, 0, tracePhysicsBone, 0, (not collision), DOR )
+		// Don't disable collision if it's not attached to anything
+		if (!collision) then
+			ent:GetPhysicsObject():EnableCollisions( false )
+			ent.nocollide = true
+		end
+	else
+		ent:GetPhysicsObject:EnableMotion( false )
+	end
+	return const
+end
+
+WireLib.CreateInputs			= Wire_CreateInputs
+WireLib.CreateOutputs			= Wire_CreateOutputs
+WireLib.AdjustInputs			= Wire_AdjustInputs
+WireLib.AdjustOutputs			= Wire_AdjustOutputs
+WireLib.Restored				= Wire_Restored
+WireLib.Remove					= Wire_Remove
+WireLib.TriggerOutput			= Wire_TriggerOutput
+WireLib.Link_Start				= Wire_Link_Start
+WireLib.Link_Node				= Wire_Link_Node
+WireLib.Link_End				= Wire_Link_End
+WireLib.Link_Cancel				= Wire_Link_Cancel
+WireLib.Link_Clear				= Wire_Link_Clear
+WireLib.SetPathNames			= Wire_SetPathNames
+WireLib.CreateOutputIterator	= Wire_CreateOutputIterator
+WireLib.AfterPasteMods			= Wire_AfterPasteMods

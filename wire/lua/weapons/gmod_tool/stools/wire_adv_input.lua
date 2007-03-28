@@ -69,13 +69,14 @@ function TOOL:LeftClick( trace )
 	wire_adv_input:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
 	// Don't weld to world
-	local const, nocollide
+	/*local const, nocollide
 	if ( trace.Entity:IsValid() ) then
 		const = constraint.Weld( wire_adv_input, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
 		// Don't disable collision if it's not attached to anything
 		wire_adv_input:GetPhysicsObject():EnableCollisions( false )
 		wire_adv_input.nocollide = true
-	end
+	end*/
+	local const = WireLib.Weld(wire_adv_input, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireInput")
 		undo.AddEntity( wire_adv_input )

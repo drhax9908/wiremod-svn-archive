@@ -73,7 +73,7 @@ function TOOL:LeftClick( trace )
 
 	local wire_ball = MakeWireHoverBall( ply, trace.HitPos, speed, resistance, strength )
 	
-	local const, nocollide
+	/*local const, nocollide
 	
 	// Don't weld to world
 	if ( trace.Entity != NULL && !trace.Entity:IsWorld() ) then
@@ -84,6 +84,13 @@ function TOOL:LeftClick( trace )
 		wire_ball:GetPhysicsObject():EnableCollisions( false )
 		wire_ball:GetTable().nocollide = true
 		
+	end*/
+	
+	local const = WireLib.Weld(wire_ball, trace.Entity, trace.PhysicsBone, true)
+	
+	local nocollide
+	if ( !trace.Entity:IsWorld() ) then
+		nocollide = constraint.NoCollide( trace.Entity, wire_ball, 0, trace.PhysicsBone )
 	end
 	
 	if (!starton) then wire_ball:GetTable():DisableHover() end
@@ -91,6 +98,7 @@ function TOOL:LeftClick( trace )
 	undo.Create("WireHoverBall")
 		undo.AddEntity( wire_ball )
 		undo.AddEntity( const )
+		undo.AddEntity( nocollide )
 		undo.SetPlayer( ply )
 	undo.Finish()
 	
