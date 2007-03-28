@@ -462,7 +462,8 @@ function TOOL:UpdateList()
 	if ( file.Exists(cdir) && file.IsDir(cdir)) then
 		for key, val in pairs( file.Find( cdir.."/*" ) ) do
 			if ( !file.IsDir( cdir.."/"..val ) ) then
-				self:GetOwner():SendLua( "AdvDupeClient.LoadListFiles[\""..val.."\"] = \""..cdir.."/"..val.."\"" )
+				//self:GetOwner():SendLua( "AdvDupeClient.LoadListFiles[\""..val.."\"] = \""..cdir.."/"..val.."\"" )
+				self:GetOwner():SendLua( "AdvDupeClient.LoadListFiles[\""..val.."\"] = \""..val.."\"" )
 			elseif  ( file.IsDir( cdir.."/"..val ) ) then
 				self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs[\"/"..val.."\"] = \""..cdir.."/"..val.. "\"" )
 			end
@@ -544,12 +545,13 @@ if SERVER then
 		local tool = pl:GetActiveWeapon()
 		if (!dupeshare.CurrentToolIsDuplicator(tool, true)) then return end
 		
-		local filename = ""
+		local filepath = ""
 		if !args[1] //if a filename wasn't passed with a arg, then get the selection in the panel
 		//then filepath = tool:GetTable():GetToolObject().load_filename2
 		then filepath = pl:GetInfo( "adv_duplicator_load_filename" )
 		else filepath = tostring(args[1]) end
 		
+		filepath = AdvDupe[pl:UniqueID()].cdir.."/"..filepath
 		
 		if ( file.Exists(filepath) && file.IsDir(filepath) ) then
 			//dupeshare.UsePWSys
@@ -658,6 +660,8 @@ if SERVER then
 		if !args[1] //if a filename wasn't passed with a arg, then get the selection in the panel
 		then filename = pl:GetInfo( "adv_duplicator_load_filename" )
 		else filename = tostring(args[1]) end
+		
+		filename = AdvDupe[pl:UniqueID()].cdir.."/"..filename
 		
 		AdvDupe.SendSaveToClient( pl, filename )
 		
