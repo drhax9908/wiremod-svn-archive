@@ -464,4 +464,4 @@ end
 
 
 Msg("--- Wire duplicator v.0.61 shared module installed! ---\n")
-if (!duplicator.DoGenericPhysics) then Msg("==Error: Your gmod is out of date!==\n==You'll want to fix that or the Advanced Duplicator is not going to work.==\n") end
+if (!duplicator.EntityClasses) then Msg("===Error: Your gmod is out of date!===\n===You'll want to fix that or the Advanced Duplicator is not going to work.===\n") end

@@ -598,17 +598,19 @@ end
 duplicator.RegisterEntityModifier( "WireDupeInfo", Wire_AfterPasteMods )
 
 
+//used for welding wired stuff, if trace is worl, the ent is not welded and is froze instead
 function WireLib.Weld(ent, traceEntity, tracePhysicsBone, DOR, collision, AllowWorldWeld)
+	if (!ent) then return end
 	local const
-	if ( traceEntity:IsValid() ) or ( trace.Entity:IsWorld() and AllowWorldWeld ) then
-		local const = constraint.Weld( ent, traceEntity, 0, tracePhysicsBone, 0, (not collision), DOR )
+	if ( traceEntity:IsValid() ) or ( traceEntity:IsWorld() and AllowWorldWeld ) then
+		const = constraint.Weld( ent, traceEntity, 0, tracePhysicsBone, 0, (not collision), DOR )
 		// Don't disable collision if it's not attached to anything
 		if (!collision) then
 			ent:GetPhysicsObject():EnableCollisions( false )
 			ent.nocollide = true
 		end
 	else
-		ent:GetPhysicsObject:EnableMotion( false )
+		ent:GetPhysicsObject():EnableMotion( false )
 	end
 	return const
 end

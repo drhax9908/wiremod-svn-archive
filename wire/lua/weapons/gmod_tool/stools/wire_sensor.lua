@@ -13,6 +13,7 @@ if ( CLIENT ) then
     language.Add( "WireSensorTool_outdist", "Ouput distance:" )
     language.Add( "WireSensorTool_outbrng", "Output bearing:" )
     language.Add( "WireSensorTool_gpscord", "Output world position (gps cords):" )
+    language.Add( "WireSensorTool_swapyz", "Swap Y and Z cords:" )
 	language.Add( "sboxlimit_wire_sensors", "You've hit sensors limit!" )
 	language.Add( "undone_wiresensor", "Undone Wire Sensor" )
 end
@@ -25,6 +26,7 @@ TOOL.ClientConVar[ "xyz_mode" ] = "0"
 TOOL.ClientConVar[ "outdist" ] = "1"
 TOOL.ClientConVar[ "outbrng" ] = "0"
 TOOL.ClientConVar[ "gpscord" ] = "0"
+TOOL.ClientConVar[ "SwapYZ" ] = "0"
 
 TOOL.Model = "models/props_lab/huladoll.mdl"
 
@@ -44,6 +46,7 @@ function TOOL:LeftClick(trace)
 	local outdist = (self:GetClientNumber("outdist") ~= 0)
 	local outbrng = (self:GetClientNumber("outbrng") ~= 0)
 	local gpscord = (self:GetClientNumber("gpscord") ~= 0)
+	local swapyz = (self:GetClientNumber("SwapYZ") ~= 0)
 	
 	if (self:GetStage() == 1) then
 		if ( trace.Entity:IsValid() && trace.Entity.GetBeaconPos ) then
@@ -60,7 +63,7 @@ function TOOL:LeftClick(trace)
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 	
-	local wire_sensor = MakeWireSensor( ply, trace.HitPos, Ang, xyz_mode, outdist, outbrng, gpscord )
+	local wire_sensor = MakeWireSensor( ply, trace.HitPos, Ang, xyz_mode, outdist, outbrng, gpscord, swapyz )
 	
 	local min = wire_sensor:OBBMins()
 	wire_sensor:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -102,7 +105,7 @@ end
 
 if SERVER then
 	
-	function MakeWireSensor(pl, Pos, Ang, xyz_mode, outdist, outbrng, gpscord, Vel, aVel, frozen )
+	function MakeWireSensor(pl, Pos, Ang, xyz_mode, outdist, outbrng, gpscord, swapyz, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_sensors" ) ) then return nil end
 		
 		local wire_sensor = ents.Create( "gmod_wire_sensor" )
@@ -112,7 +115,7 @@ if SERVER then
 		wire_sensor:Spawn()
 		wire_sensor:Activate()
 		
-		wire_sensor:Setup(xyz_mode, outdist, outbrng, gpscord)
+		wire_sensor:Setup( xyz_mode, outdist, outbrng, gpscord, swapyz )
 		wire_sensor:SetPlayer( pl )
 		
 		local ttable = 
@@ -121,6 +124,7 @@ if SERVER then
             outdist		= outdist,
 			outbrng		= outbrng,
 			gpscord		= gpscord,
+			swapyz		= swapyz,
 			pl			= pl,
 		}
 		
@@ -131,7 +135,7 @@ if SERVER then
 		return wire_sensor
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_sensor", MakeWireSensor, "Pos", "Ang", "xyz_mode", "outdist", "outbrng", "gpscord", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_sensor", MakeWireSensor, "Pos", "Ang", "xyz_mode", "outdist", "outbrng", "gpscord", "swapyz", "Vel", "aVel", "frozen")
 	
 end
 

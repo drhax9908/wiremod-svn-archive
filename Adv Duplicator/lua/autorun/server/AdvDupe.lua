@@ -3,7 +3,7 @@ AddCSLuaFile( "autorun/client/cl_advdupe.lua" )
 AddCSLuaFile( "autorun/shared/dupeshare.lua" )
 
 include( "autorun/shared/dupeshare.lua" )
-
+if (!dupeshare) then Msg("===ADVDupe: Error! dupeshare module not loaded") end
 /*---------------------------------------------------------
    Advanced Duplicator module
    Author: TAD2020
@@ -14,219 +14,6 @@ AdvDupe = {}
 
 
 if (CLIENT) then return end
-
-/*AdvDupe.AfterPasteModifiers = AdvDupe.AfterPasteModifiers or {}
-function AdvDupe.RegisterAfterPasteModifier( _name_, _function_ )	AdvDupe.AfterPasteModifiers[ _name_ ] 			= _function_ end
-
-function AdvDupe.StoreAfterPasteModifier( Entity, Type, Data )
-
-	if (!Entity) then return end
-	if (!Entity:IsValid()) then return end
-
-	// Copy the data
-	NewData = {}
-	table.Merge( NewData , Data )
-	
-	// Add it to the entity
-	Entity.AfterPasteMods = Entity.AfterPasteMods or {}
-	Entity.AfterPasteMods[ Type ] = NewData
-
-end
-*/
-/*---------------------------------------------------------
-   Copy this entity, and all of its constraints and entities 
-   and put them in a table.
----------------------------------------------------------*/
-/*function AdvDupe.Copy( Ent )
-
-	local Ents = {}
-	local Constraints = {}
-	local DupeInfoTables = {}
-	local DORInfoTables = {}
-	
-	duplicator.GetAllConstrainedEntitiesAndConstraints( Ent, Ents, Constraints )
-	
-	local EntTables = {}
-	for k, v in pairs(Ents) do
-		EntTables[ k ] = AdvDupe.CopyEntTable( v )
-		
-		//get the wire DupeInfo if it has any
-		//if v.BuildDupeInfo then
-		//	DupeInfoTables[ k ] = v:BuildDupeInfo()
-		//end
-		
-		DORInfoTables[ k ] = Ent:GetDeleteOnRemoveInfo()
-		
-	end
-	
-	local ConstraintTables = {}
-	for k, v in pairs(Constraints) do
-		table.insert( ConstraintTables, v )
-	end
-	
-	return EntTables, ConstraintTables, DupeInfoTables, DORInfoTables
-
-end*/
-
-/*---------------------------------------------------------
-	Returns a copy of the passed entity's table
----------------------------------------------------------*/
-/*function AdvDupe.CopyEntTable( Ent )
-
-	local Tab = {}
-
-	if ( Ent.PreEntityCopy ) then
-		Ent:PreEntityCopy()
-	end
-	
-	table.Merge( Tab, Ent:GetTable() )
-	
-	if ( Ent.PostEntityCopy ) then
-		Ent:PostEntityCopy()
-	end
-	
-	Tab.Pos = Ent:GetPos()
-	Tab.Angle = Ent:GetAngles()
-	Tab.Class = Ent:GetClass()
-	Tab.Model = Ent:GetModel()
-	
-	Tab.PhysicsObjects = Tab.PhysicsObjects or {}
-	
-	// Physics Objects
-	local iNumPhysObjects = Ent:GetPhysicsObjectCount()
-	for Bone = 0, iNumPhysObjects-1 do 
-	
-		local PhysObj = Ent:GetPhysicsObjectNum( Bone )
-		if ( PhysObj:IsValid() ) then
-		
-			Tab.PhysicsObjects[ Bone ] = Tab.PhysicsObjects[ Bone ] or {}
-			Tab.PhysicsObjects[ Bone ].Pos = PhysObj:GetPos()
-			Tab.PhysicsObjects[ Bone ].Angle = PhysObj:GetAngle()
-			Tab.PhysicsObjects[ Bone ].Frozen = !PhysObj:IsMoveable()
-			
-		end
-	
-	end
-	
-	// Flexes
-	local FlexNum = Ent:GetFlexNum()
-	for i = 0, FlexNum do
-	
-		Tab.Flex = Tab.Flex or {}
-		Tab.Flex[ i ] = Ent:GetFlexWeight( i )
-	
-	end
-	
-	Tab.FlexScale = Ent:GetFlexScale()
-	
-	// Make this function on your SENT if you want to modify the
-	//  returned table specifically for your entity.
-	if ( Ent.OnEntityCopyTableFinish ) then
-		Ent:OnEntityCopyTableFinish( Tab )
-	end
-
-	return Tab
-
-end*/
-
-
-
-/*---------------------------------------------------------
-   Given entity list and constranit list, create all entities
-   and return their tables
----------------------------------------------------------*/
-/*function AdvDupe.Paste( Player, EntityList, ConstraintList, DupeInfoList, DORInfoList )
-	
-	local CreatedEntities = {}
-	
-	//
-	// Create the Entities
-	//
-	for k, v in pairs( EntityList ) do
-		
-		CreatedEntities[ k ] = duplicator.CreateEntityFromTable( Player, v )
-		
-		CreatedEntities[ k ].BoneMods = table.Copy( v.BoneMods )
-		CreatedEntities[ k ].EntityMods = table.Copy( v.EntityMods )
-		CreatedEntities[ k ].PhysicsObjects = table.Copy( v.PhysicsObjects )
-		CreatedEntities[ k ].AfterPasteMods = table.Copy( v.AfterPasteMods )
-		
-	end
-	
-	
-	//
-	// Apply modifiers to the created entities
-	//
-	for EntID, Ent in pairs( CreatedEntities ) do	
-		
-		duplicator.ApplyEntityModifiers ( Player, Ent )
-		duplicator.ApplyBoneModifiers ( Player, Ent )
-		AdvDupe.ApplyAfterPasteModifiers( Player, Ent, CreatedEntities )
-		
-		if (EntityList.DORInfo) and (Ent) and (Ent:IsValid()) then
-			Ent:SetDeleteOnRemoveInfo(EntityList.DORInfo, function(id) return CreatedEntities[id] end)
-			for _,entindex in pairs(EntityList.DORInfo) do
-				local Ent2 = CreatedEntities[entindex]
-				if (Ent2 && Ent2:IsValid() && Ent2:EntIndex() > 0) then
-					// Add the entity
-					Ent:DeleteOnRemove(ent2)
-				end
-			end
-		end
-		
-	end
-	
-	
-	local CreatedConstraints = {}
-	
-	//
-	// Create constraints
-	//
-	for k, Constraint in pairs( ConstraintList ) do
-		
-		local Entity = duplicator.CreateConstraintFromTable( Constraint, CreatedEntities )
-		
-		if ( Entity && Entity:IsValid() ) then
-			table.insert( CreatedConstraints, Entity )
-		end
-		
-	end
-	
-	
-	//
-	//Apply the wire DORInfo
-	//
-	if DORInfoList then
-		AdvDupe.PasteApplyDORInfo( DORInfoList, function(id) return CreatedEntities[id] end )
-	end
-	
-	
-	return CreatedEntities, CreatedConstraints
-	
-end
-
-
-
-function AdvDupe.ApplyAfterPasteModifiers( Player, Ent, CreatedEntities )
- 
-    if ( !Ent ) then return end
-    if ( !Ent.AfterPasteMods ) then return end
-	Msg("AfterPasteMods\n")
-    for Type, ModFunction in pairs( AdvDupe.AfterPasteModifiers ) do
-		
-        if ( Ent.AfterPasteMods[ Type ] ) then
-			Msg("AfterPasteMods= "..Type.."\n")
-            ModFunction( Player, Ent, Ent.AfterPasteMods[ Type ], CreatedEntities )
-           
-        end
-    end
- 
-end */
-
-
-
-
-
 
 
 
@@ -575,10 +362,12 @@ function AdvDupe.SavableConstraintFromTable( Constraint )
 	local SavableConst = {}
 	SavableConst.Type = Constraint.Type
 	SavableConst.Entity = table.Copy( Constraint.Entity )
+	if (Constraint.Entity1) then SavableConst.Entity1 = table.Copy( Constraint.Entity1 ) end
 	
 	for k, Key in pairs( Factory.Args ) do
-		if (!string.find(Key, "Ent") or string.len(Key) != 4) 
-		and (!string.find(Key, "Bone") or string.len(Key) != 5) then
+		if (!string.find(Key, "Ent") or string.len(Key) != 4)
+		and (!string.find(Key, "Bone") or string.len(Key) != 5)
+		and (Key != "Ent") and (Key != "Bone") then
 			SavableConst[ Key ] = Constraint[ Key ]
 		end
 	end
@@ -590,9 +379,11 @@ end
 
 
 
-AdvDupe.PublicDirs = {}
-for k, v in pairs(dupeshare.PublicDirs) do
-	AdvDupe.PublicDirs[v] = dupeshare.BaseDir.."/"..v
+if (dupeshare and dupeshare.PublicDirs) then
+	AdvDupe.PublicDirs = {}
+	for k, v in pairs(dupeshare.PublicDirs) do
+		AdvDupe.PublicDirs[v] = dupeshare.BaseDir.."/"..v
+	end
 end
 
 
@@ -643,7 +434,8 @@ local function FileOptsCommand(pl, cmd, args)
 	if !pl:IsValid() or !pl:IsPlayer() or !args[1] then return end
 	
 	local action = args[1]
-	local filename = dupeshare.GetFileFromFilename(pl:GetInfo( "adv_duplicator_load_filename" ))..".txt"
+	//local filename = dupeshare.GetFileFromFilename(pl:GetInfo( "adv_duplicator_load_filename" ))..".txt"
+	local filename = pl:GetInfo( "adv_duplicator_load_filename" )
 	//local filename2 = pl:GetInfo( "adv_duplicator_load_filename2" )
 	local dir	= AdvDupe[pl:UniqueID()].cdir
 	local dir2	= AdvDupe[pl:UniqueID()].cdir2
@@ -657,7 +449,8 @@ local function FileOptsRenameCommand(pl, cmd, args)
 	Msg("rename cmd\n")
 	if !pl:IsValid() or !pl:IsPlayer() or !args[1] then return end
 	
-	local filename = dupeshare.GetFileFromFilename(pl:GetInfo( "adv_duplicator_load_filename" ))..".txt"
+	//local filename = dupeshare.GetFileFromFilename(pl:GetInfo( "adv_duplicator_load_filename" ))..".txt"
+	local filename = pl:GetInfo( "adv_duplicator_load_filename" )
 	local dir	= AdvDupe[pl:UniqueID()].cdir
 	local newname = string.Implode(" ", args)
 	newname = dupeshare.ReplaceBadChar(dupeshare.GetFileFromFilename(newname))..".txt"
@@ -1716,140 +1509,6 @@ end
 end
 */
 
-
-
-/*---------------------------------------------------------
-	Name: AdvDupe.Make* functions
-	Desc: functions used to make stuff
----------------------------------------------------------*/
-
-// Function used to create prop physics classes
-/*function AdvDupe.MakeProp( ply, Pos, Ang, Model, Vel, aVel, frozen )
-	
-	// check we're allowed to spawn
-	--if ( !gamemode.Call( "plySpawnProp", ply, Model ) ) then return end
-	//if ( !LimitReachedProcess( ply, "props" ) ) then return end
-	if ( !ply:CheckLimit( "props" ) ) then return end
-	local Ent = ents.Create( "prop_physics" )
-		Ent:SetModel( Model )
-		Ent:SetAngles( Ang )
-		Ent:SetPos( Pos )
-	Ent:Spawn()
-	
-	// apply velocity If required
-	if ( Ent:GetPhysicsObject():IsValid() ) then
-		Phys = Ent:GetPhysicsObject()
-		Phys:SetVelocity(Vel)
-		Phys:AddAngleVelocity(aVel)
-		Phys:EnableMotion(frozen != true)
-	end
-	Ent:Activate()
-	
-	// tell the gamemode we just spawned something
-	//gamemode.Call( "plySpawnedProp", ply, Model, Ent )
-	ply:AddCount( "props", Ent )
-	
-	local ed = EffectData()
-		ed:SetEntity( Ent )
-	util.Effect( "propspawn", ed )
-	
-	return Ent	
-end
-
-// Register the "prop_physics" class with the duplicator, so it knows which args to retrive when copying, 
-//	and what to send back to the MakeProp Function when pasting
-duplicator.RegisterEntityClass( "prop_physics", AdvDupe.MakeProp, "Pos", "Ang", "Model", "Vel", "aVel", "frozen" )
-*/
-
-/*	function duplicator.MakeRagdoll( ply, Pos, Ang, Model, Bones )
-	
-	//if not gamemode.Call( "plySpawnRagdoll", ply, Model ) then return end
-	//if !LimitReachedProcess( ply, "ragdolls" ) then return end
-	if !ply:CheckLimit( "ragdolls" ) then return end
-	local Ent = ents.Create( "prop_ragdoll" )
-		Ent:SetModel( Model )
-		Ent:SetAngles( Ang )
-		Ent:SetPos( Pos )
-	Ent:Spawn()
-	
-	for Bone, Args in pairs(Bones) do
-		
-		local Phys = Ent:GetPhysicsObjectNum(tonumber(Bone))
-		
-		if (Phys:IsValid()) then	
-			
-			Phys:SetPos(Args[1])
-			Phys:SetAngle(Args[2])
-			Phys:SetVelocity(Args[3])
-			Phys:AddAngleVelocity(Args[4])
-			if (Args[5] == true) then Phys:EnableMotion(false) end
-			
-		end
-		
-	end
-	Ent:Activate()
-	
-	//gamemode.Call( "plySpawnedRagdoll", ply, Model, Ent )
-	ply:AddCount( "ragdolls", Ent )
-	return Ent	
-end
-// Register the "prop_ragdoll" class with the duplicator, (Args in brackets will be retreived for every bone)
-duplicator.RegisterEntityClass( "prop_ragdoll", duplicator.MakeRagdoll, "Pos", "Ang", "Model", {"Pos", "Ang", "Vel", "aVel", "frozen"} )
-*/
-/*
-function AdvDupe.MakeVehicle( ply, Pos, Ang, Model, Class, Vel, aVel, frozen )
-
-	//if not gamemode.Call( "plySpawnVehicle", ply, Model ) then return end
-	//if !LimitReachedProcess( ply, "vehicles" ) then return end
-	if !ply:CheckLimit( "vehicles" ) then return end
-	local Ent = ents.Create( Class )
-		Ent:SetModel( Model )
-		Ent:SetAngles( Ang )
-		Ent:SetPos( Pos )
-		if (Class == "prop_vehicle_prisoner_pod") then
-			Ent:SetKeyValue("vehiclescript", "scripts/vehicles/prisoner_pod.txt")
-		else
-			Ent:SetKeyValue("vehiclescript", "scripts/vehicles/jeep_test.txt")
-		end
-		Ent:SetKeyValue("actionScale",	 1)
-		Ent:SetKeyValue("VehicleLocked", 0)
-		Ent:SetKeyValue("solid",	 6)
-	Ent:Spawn()
-
-	if Ent:GetPhysicsObject():IsValid() then
-		Phys = Ent:GetPhysicsObject()
-		Phys:SetVelocity(Vel)
-		Phys:AddAngleVelocity(aVel)
-		Phys:EnableMotion(frozen != true)
-	end
-
-	Ent:Activate()
-
-	//gamemode.Call( "plySpawnedVehicle", ply, Ent )
-	ply:AddCount( "vehicles", Ent )
-	return Ent	
-end
-duplicator.RegisterEntityClass( "prop_vehicle_jeep",    AdvDupe.MakeVehicle, "Pos", "Ang","Model", "Class", "Vel", "aVel", "frozen" )
-duplicator.RegisterEntityClass( "prop_vehicle_airboat", AdvDupe.MakeVehicle, "Pos", "Ang","Model", "Class", "Vel", "aVel", "frozen" )
-duplicator.RegisterEntityClass( "prop_vehicle_prisoner_pod", AdvDupe.MakeVehicle, "Pos", "Ang","Model", "Class", "Vel", "aVel", "frozen" )
-*/
-/*	local function LimitReachedProcess( ply, str )
-	
-	// Always allow in single player
-	if (SinglePlayer()) then return true end
-	
-	local c = server_settings.Int( "sbox_max"..str, 0 )
-	
-	if ( ply:GetCount( str ) < c || c < 0 ) then return true end 
-	
-	ply:LimitHit( str ) 
-	return false
-	
-end
-*/
-
-
-
 // Returns all ents & constraints in a system
 /*	function duplicator.GetEnts(ent, EntTable, ConstraintTable)
 
@@ -1897,44 +1556,160 @@ end
 end
 */
 
-/*local function SpawnProp( Player, data, vOffset )
+
+//while Keepupright doesn't get it's table saved rigth, replace the functions that don't
+if duplicator.ConstraintType.Keepupright.Args[1] == "Ent" then
+	Msg("==AdvDupe: Keepupright Ent not Ent1==\n")
+
+	/*----------------------------------------------------------------------
+		Returns this entities constraints table
+		This is for the future, because ideally the constraints table will eventually look like this - and we won't have to build it every time.
+	----------------------------------------------------------------------*/
+	function constraint.GetTable( ent )
+
+		if ( !constraint.HasConstraints( ent ) ) then return {} end
+
+		local RetTable = {}
+
+		for key, ConstraintEntity in pairs( ent.Constraints ) do
+			
+			local con = {}
+			
+			table.Merge( con, ConstraintEntity:GetTable() )
+			
+			con.Constraint = ConstraintEntity
+			con.Entity = {}
+			
+			for i=1, 6 do
+				
+				if ( con[ "Ent"..i ] && ( con[ "Ent"..i ]:IsWorld() || con[ "Ent"..i ]:IsValid() ) ) then
+					
+					con.Entity[ i ] = {}
+					con.Entity[ i ].Index	 	= con[ "Ent"..i ]:EntIndex()
+					con.Entity[ i ].Entity	 	= con[ "Ent"..i ]
+					con.Entity[ i ].Bone 		= con[ "Bone"..i ]
+					con.Entity[ i ].LPos 		= con[ "LPos"..i ]
+					con.Entity[ i ].WPos 		= con[ "WPos"..i ]
+					con.Entity[ i ].Length 		= con[ "Length"..i ]
+					con.Entity[ i ].World		= con[ "Ent"..i ]:IsWorld()
+					
+				end
+				
+			end
+			
+			if ( con[ "Ent" ] && ( con[ "Ent" ]:IsWorld() || con[ "Ent" ]:IsValid() ) ) then
+				
+				con.Entity1 = {}
+				con.Entity1.Index	 	= con[ "Ent" ]:EntIndex()
+				con.Entity1.Entity	 	= con[ "Ent" ]
+				con.Entity1.World		= con[ "Ent" ]:IsWorld()
+				con.Entity1.Bone 		= con[ "Bone" ]
+				
+			end
+			
+			table.insert( RetTable, con )
+			
+		end
+		
+		return RetTable
+
+	end
+
+
+	/*---------------------------------------------------------
+	  Make a constraint from a constraint table
+	---------------------------------------------------------*/
+	function duplicator.CreateConstraintFromTable( Constraint, EntityList )
+
+		local Factory = duplicator.ConstraintType[ Constraint.Type ]
+		if ( !Factory ) then return end
+		
+		local Args = {}
+		for k, Key in pairs( Factory.Args ) do
+		
+			local Val = Constraint[ Key ]
+			
+			if (Constraint.Entity) then
+				for i=1, 6 do 
+					if ( Constraint.Entity[ i ] ) then
+						if ( Key == "Ent"..i ) then	
+							Val = EntityList[ Constraint.Entity[ i ].Index ] 
+							if ( Constraint.Entity[ i ].World ) then
+								Val = GetWorldEntity()
+							end
+						end
+						if ( Key == "Bone"..i ) then Val = Constraint.Entity[ i ].Bone end
+						if ( Key == "LPos"..i ) then Val = Constraint.Entity[ i ].LPos end
+						if ( Key == "WPos"..i ) then Val = Constraint.Entity[ i ].WPos end
+						if ( Key == "Length"..i ) then Val = Constraint.Entity[ i ].Length end
+					end
+				end
+			end
+			
+			if ( Constraint.Entity1 ) then
+				if ( Key == "Ent" ) then
+					Val = EntityList[ Constraint.Entity1.Index ] 
+					if ( Constraint.Entity1.World ) then
+						Val = GetWorldEntity()
+					end
+				end
+				if ( Key == "Bone" ) then Val = Constraint.Entity1.Bone end
+			end
+			
+			// If there's a missing argument then unpack will stop sending at that argument
+			if ( Val == nil ) then Val = false end
+			
+			table.insert( Args, Val )
+		
+		end
+		
+		local Entity = Factory.Func( unpack(Args) )
+		
+		return Entity
+
+	end
+
+end
+
+/*function constraint.Keepupright( Ent, Ang, Bone, angularlimit )
+
+	if ( !CanConstrain( Ent, Bone ) ) then return false end
+	if ( Ent:GetClass() != "prop_physics" && Ent:GetClass() != "prop_ragdoll" ) then return false end
+	if ( !angularlimit or angularlimit < 0 ) then return end
 	
-	// Make sure this is allowed
-	if ( !gamemode.Call( "PlayerSpawnProp", Player, data.Model ) ) then return end
+	local Phys = Ent:GetPhysicsObjectNum(Bone)
+
+	// Remove any KU's already on entity
+	constraint.RemoveConstraints( Ent, "Keepupright" )
 	
-	local Prop = ents.Create( "prop_physics" )
-		Prop:SetModel( data.Model )
-	Prop:Spawn()
+	onStartConstraint( Ent )
+
+		local Constraint = ents.Create( "phys_keepupright" )
+			Constraint:SetAngles( Ang )
+			Constraint:SetKeyValue( "angularlimit", angularlimit )
+			Constraint:SetPhysConstraintObjects( Phys, Phys )
+		Constraint:Spawn()
+		Constraint:Activate()
 	
-	duplicator.DoGeneric( Prop, data, vOffset )
+	onFinishConstraint( Ent )
+	AddConstraintTable( Ent, Constraint )
 	
-	Prop:Activate()
+	local ctable = 
+	{
+		Type 			= "Keepupright",
+		Ent1 			= Ent1,
+		Bone1 			= Bone1,
+		Ang 			= Ang,
+		angularlimit 	= angularlimit
+	}
+	Constraint:SetTable( ctable )
 	
-	timer.Simple( 0.01, CheckPropSolid, Prop, COLLISION_GROUP_NONE, COLLISION_GROUP_WORLD )
-	
-	// tell the gamemode we just spawned something
-	gamemode.Call( "PlayerSpawnedProp", Player, data.Model, Prop )
-	DoPropSpawnedEffect( Prop )
-	
-	return Prop
+	return Constraint
 	
 end
-duplicator.RegisterEntity( "prop_physics", SpawnProp )*/
 
-/*duplicator.RegisterConstraint( "Weld", constraint.Weld, "Ent1", "Ent2", "Bone1", "Bone2", "forcelimit", "nocollide" )
-duplicator.RegisterConstraint( "Rope", constraint.Rope, "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "length", "addlength", "forcelimit", "width", "material", "rigid" )
-duplicator.RegisterConstraint( "Elastic", constraint.Elastic, "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "constant", "damping", "rdamping", "material", "width", "stretchonly")
-duplicator.RegisterConstraint( "Keepupright", constraint.Keepupright, "Ent", "Ang", "Bone", "angularlimit" )
-duplicator.RegisterConstraint( "Slider", constraint.Slider, "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "width" )
-duplicator.RegisterConstraint( "Axis", constraint.Axis, "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "forcelimit", "torquelimit", "friction", "nocollide" )
-duplicator.RegisterConstraint( "AdvBallsocket", constraint.AdvBallsocket, "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "forcelimit", "torquelimit", "xmin", "ymin", "zmin", "xmax", "ymax", "zmax", "xfric", "yfric", "zfric", "onlyrotation", "nocollide")
-duplicator.RegisterConstraint( "NoCollide", constraint.NoCollide, "Ent1", "Ent2", "Bone1", "Bone2" )
-duplicator.RegisterConstraint( "Motor", constraint.Motor, "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "friction", "torque", "forcetime", "nocollide", "toggle", "pl", "forcelimit", "numpadkey_fwd", "numpadkey_bwd" )
-duplicator.RegisterConstraint( "Pulley", constraint.Pulley, "Ent1", "Ent4", "Bone1", "Bone4", "LPos1", "LPos4", "WPos2", "WPos3", "forcelimit", "rigid", "width", "material" )
-duplicator.RegisterConstraint( "Ballsocket", constraint.Ballsocket, "Ent1", "Ent2", "Bone1", "Bone2", "LPos", "forcelimit", "torquelimit", "nocollide" )
-duplicator.RegisterConstraint( "Winch", constraint.Winch, "pl", "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "width", "fwd_bind", "bwd_bind", "fwd_speed", "bwd_speed", "material", "toggle" )
-duplicator.RegisterConstraint( "Hydraulic", constraint.Hydraulic, "pl", "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "Length1", "Length2", "width", "key", "fixed", "fwd_speed" )
-duplicator.RegisterConstraint( "Muscle", constraint.Muscle, "pl", "Ent1", "Ent2", "Bone1", "Bone2", "LPos1", "LPos2", "Length1", "Length2", "width", "key", "fixed", "period", "amplitude" )
-*/
+duplicator.RegisterConstraint( "Keepupright", constraint.Keepupright, "Ent", "Ang", "Bone", "angularlimit" )*/
+
+
 
 Msg("--- Wire duplicator v.0.61 server module installed! ---\n")

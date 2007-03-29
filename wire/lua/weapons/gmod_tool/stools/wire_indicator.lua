@@ -109,7 +109,7 @@ function TOOL:LeftClick( trace )
 			wire_indicator.nocollide = true
 		end
 	end*/
-	local const = WireLib.Weld(wire_input, trace.Entity, trace.PhysicsBone, true)
+	local const = WireLib.Weld(wire_indicator, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireIndicator")
 		undo.AddEntity( wire_indicator )

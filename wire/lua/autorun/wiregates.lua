@@ -1027,30 +1027,54 @@ GateActions["pulser"] = {
 GateActions["delay"] = {
 	group = "Time",
 	name = "Delay",
-	inputs = { "Data", "Delay", "Hold", "Reset" },
+	inputs = { "Clk", "Delay", "Hold", "Reset" },
+	outputs = { "Out", "TimeElapsed" },
 	timed = true,
-	output = function(gate, Data, Delay, Hold, Reset)
+	output = function(gate, Clk, Delay, Hold, Reset)
 		local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
-		
 		gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
+		local out = 0
 		
 		if ( Reset > 0 ) then
+			gate.Stage = 0
 			gate.Accum = 0
-		elseif ( Run > 0 ) then
-			gate.Accum = gate.Accum+DeltaTime
 		end
 		
-		return Gate.Data or 0
+		if ( gate.Stage == 1 ) then
+			if ( gate.Accum >= Delay ) then
+				gate.Stage = 2
+				gate.Accum = 0
+				out = 1
+			else
+				gate.Accum = gate.Accum+DeltaTime
+			end
+		elseif ( gate.Stage == 2 ) then
+			if ( gate.Accum >= Hold ) then
+				gate.Stage = 0
+				gate.Accum = 0
+				out = 0
+			else
+				out = 1
+				gate.Accum = gate.Accum+DeltaTime
+			end
+		else
+			if ( Clk > 0 ) then
+				gate.Stage = 1
+				gate.Accum = 0
+			end
+		end
+		
+		return out, gate.Accum
 	end,
 	reset = function(gate)
 	    gate.PrevTime = CurTime()
 	    gate.Accum = 0
-		gate.Active = 0
-		gate.OnHold = 0
-		Gate.Data = 0
+		gate.Stage = 0
 	end,
-	label = function(Out, Run, Reset)
-	    return "Run:"..Run.." Reset:"..Reset.." = "..Out
+	label = function(Out, Clk, Delay, Hold, Reset)
+	    return "Clk: "..Clk.." Delay: "..Delay..
+		"\nHold: "..Hold.." Reset: "..Reset..
+		"\nTime Elapsed: "..Out.TimeElapsed.." = "..Out.Out
 	end
 }
 

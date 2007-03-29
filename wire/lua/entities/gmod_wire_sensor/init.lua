@@ -18,13 +18,14 @@ function ENT:Initialize()
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Out" })
 end
 
-function ENT:Setup(xyz_mode, outdist, outbrng, gpscord)
+function ENT:Setup( xyz_mode, outdist, outbrng, gpscord, swapyz )
 	self.XYZMode = xyz_mode
 	self.PrevOutput = nil
 	self.Value = 0
 	self.OutDist = outdist
 	self.OutBrng = outbrng
 	self.GPSCord = gpscord
+	self.SwapYZ = swapyz
 	
 	if !xyz_mode and !outdist and !outbrng and !gpscord then self.OutDist = true end
 	
@@ -71,7 +72,11 @@ function ENT:Think()
 		end
 		if (self.XYZMode) then
 			local DeltaPos = self.Entity:WorldToLocal(BeaconPos)
-			distc = Vector(-DeltaPos.y, DeltaPos.x, DeltaPos.z)
+			if (self.SwapYZ) then
+				distc = Vector(DeltaPos.z, DeltaPos.x, -DeltaPos.y)
+			else
+				distc = Vector(-DeltaPos.y, DeltaPos.x, DeltaPos.z)
+			end
 		end
 		if (self.OutBrng) then
 		    local DeltaPos = self.Entity:WorldToLocal(BeaconPos)
@@ -152,7 +157,7 @@ end
 
 function ENT:OnRestore()
 	//this is to prevent old save breakage
-	self:Setup(self.XYZMode, self.OutDist, self.OutBrng, self.GPSCord)
+	self:Setup(self.XYZMode, self.OutDist, self.OutBrng, self.GPSCord, self.SwapYZ)
 	
 	self.BaseClass.OnRestore(self)
 end
