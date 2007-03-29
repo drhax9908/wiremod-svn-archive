@@ -264,6 +264,12 @@ function Wire_AdjustOutputs(ent, names)
 	    if (v.Keep) then
 	        v.Keep = nil
 	    else
+			//fix by Syranide: unlinks wires of removed outputs
+			for i,v in ipairs(outputs[k].Connected) do
+				if (v.Entity:IsValid()) then
+					Wire_Link_Clear(v.Entity, v.Name)
+				end
+			end
 			outputs[k] = nil
 	    end
 	end
