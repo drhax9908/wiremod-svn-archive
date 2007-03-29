@@ -50,7 +50,10 @@ function TOOL:LeftClick( trace )
 
 	if ( !self:GetSWEP():CheckLimit( "wire_radioes" ) ) then return false end
 
-	local wire_radio = MakeWireRadio( ply, model, trace.HitPos, Angle( 90, 0, 0 ), _channel )
+	local Ang = trace.HitNormal:Angle()
+	Ang.pitch = Ang.pitch + 90
+
+	local wire_radio = MakeWireRadio( ply, model, trace.HitPos, Ang, _channel )
 	
 	local min = wire_radio:OBBMins()
 	wire_radio:SetPos( trace.HitPos - trace.HitNormal * (min.z-5) )
@@ -131,7 +134,8 @@ function TOOL:UpdateGhostWireRadio( ent, player )
 		return
 	end
 	
-	local Ang = Angle( 90, 0, 0 )
+	local Ang = trace.HitNormal:Angle()
+	Ang.pitch = Ang.pitch + 90
 	ent:SetAngles( Ang )	
 
 	local min = ent:OBBMins()

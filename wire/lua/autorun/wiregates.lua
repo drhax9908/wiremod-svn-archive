@@ -417,6 +417,43 @@ GateActions[">="] = {
 	end
 }
 
+GateActions["inrangei"] = {
+	group = "Comparison",
+	name = "Is In Range (Inclusive)",
+	inputs = { "Min", "Max", "Value" },
+	output = function(gate, Min, Max, Value)
+	    if (Max < Min) then
+		local temp = Max
+		Max = Min
+		Min = temp
+	    end
+	    if ((Value >= Min) && (Value <= Max)) then return 1 end
+	    return 0
+	end,
+	label = function(Out, Min, Max, Value)
+	    return Min.." <= "..Value.." <= "..Max.." = "..Out
+	end
+}
+
+GateActions["inrangee"] = {
+	group = "Comparison",
+	name = "Is In Range (Exclusive)",
+	inputs = { "Min", "Max", "Value" },
+	output = function(gate, Min, Max, Value)
+	    if (Max < Min) then
+		local temp = Max
+		Max = Min
+		Min = temp
+	    end
+	    if ((Value > Min) && (Value < Max)) then return 1 end
+	    return 0
+	end,
+	label = function(Out, Min, Max, Value)
+	    return Min.." < "..Value.." < "..Max.." = "..Out
+	end
+}
+
+
 
 
 /***********************************************************
@@ -953,6 +990,64 @@ GateActions["timer"] = {
 	reset = function(gate)
 	    gate.PrevTime = CurTime()
 	    gate.Accum = 0
+	end,
+	label = function(Out, Run, Reset)
+	    return "Run:"..Run.." Reset:"..Reset.." = "..Out
+	end
+}
+
+GateActions["pulser"] = {
+	group = "Time",
+	name = "Pulser",
+	inputs = { "Run", "Reset", "TickTime" },
+	timed = true,
+	output = function(gate, Run, Reset, TickTime)
+	    local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
+	    gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
+		if ( Reset > 0 ) then
+			gate.Accum = 0
+		elseif ( Run > 0 ) then
+			gate.Accum = gate.Accum+DeltaTime
+			if (gate.Accum >= TickTime) then
+				gate.Accum = gate.Accum - TickTime
+				return 1
+			end
+		end
+		return 0
+	end,
+	reset = function(gate)
+	    gate.PrevTime = CurTime()
+	    gate.Accum = 0
+	end,
+	label = function(Out, Run, Reset, TickTime)
+	    return "Run:"..Run.." Reset:"..Reset.."TickTime:"..TickTime.." = "..Out
+	end
+}
+
+GateActions["delay"] = {
+	group = "Time",
+	name = "Delay",
+	inputs = { "Data", "Delay", "Hold", "Reset" },
+	timed = true,
+	output = function(gate, Data, Delay, Hold, Reset)
+		local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
+		
+		gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
+		
+		if ( Reset > 0 ) then
+			gate.Accum = 0
+		elseif ( Run > 0 ) then
+			gate.Accum = gate.Accum+DeltaTime
+		end
+		
+		return Gate.Data or 0
+	end,
+	reset = function(gate)
+	    gate.PrevTime = CurTime()
+	    gate.Accum = 0
+		gate.Active = 0
+		gate.OnHold = 0
+		Gate.Data = 0
 	end,
 	label = function(Out, Run, Reset)
 	    return "Run:"..Run.." Reset:"..Reset.." = "..Out

@@ -39,6 +39,7 @@ function ENT:Setup( damage, delaytime, removeafter, doblastdamage, radius, nocol
 	self.NoCollide		= nocollide
 	self.DoBlastDamage	= doblastdamage
 	self.Exploded		= false
+	self.Removeafter		= removeafter
 	
 	if (self.NoCollide) then
 		self.Entity:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)

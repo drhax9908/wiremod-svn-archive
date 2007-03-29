@@ -119,8 +119,9 @@ function TOOL:LeftClick( trace )
 		
 	// Don't weld to world
 	if ( trace.Entity:IsValid() && _weld ) then
-		local const, nocollide = constraint.Weld( explosive, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0 )
-		undo.AddEntity( const )
+		// Why is this here? (TheApathetic)
+		//local const, nocollide = constraint.Weld( explosive, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0 )
+		//undo.AddEntity( const )
 		if (_noparentremove) then 
 			local const, nocollide = constraint.Weld( explosive, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0, false )
 			undo.AddEntity( const )

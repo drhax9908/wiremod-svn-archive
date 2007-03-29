@@ -67,7 +67,9 @@ function TOOL:LeftClick( trace )
 
 	if ( !self:GetSWEP():CheckLimit( "wire_twoway_radioes" ) ) then return false end
 
-	local wire_twoway_radio = MakeWireTwoWay_Radio( ply, model, trace.HitPos, Angle( 90, 0, 0 ), nil )
+	local Ang = trace.HitNormal:Angle()
+	Ang.pitch = Ang.pitch + 90
+	local wire_twoway_radio = MakeWireTwoWay_Radio( ply, model, trace.HitPos, Ang, nil )
 	
 	local min = wire_twoway_radio:OBBMins()
 	wire_twoway_radio:SetPos( trace.HitPos - trace.HitNormal * (min.z-5) )
@@ -160,7 +162,8 @@ function TOOL:UpdateGhostWireTwoWay_Radio( ent, player )
 		return
 	end
 	
-	local Ang = Angle( 90, 0, 0 )
+	local Ang = trace.HitNormal:Angle()
+	Ang.pitch = Ang.pitch + 90
 	ent:SetAngles( Ang )	
 
 	local min = ent:OBBMins()
