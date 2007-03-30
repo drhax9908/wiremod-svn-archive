@@ -9,7 +9,24 @@ function ENT:Initialize()
 
 	surface.CreateFont( "coolvetica", 80, 400, false, false, "screen_font" ) 
 
+	self.Memory = {}
+
+	for i = 0, 1023 do
+		self.Memory[i] = 0
+	end
 end
+
+function DigitalScreen_DataMessage( um )
+	Msg("DSCR - Got message:\n")
+	local ent = ents.GetByIndex( um:ReadLong() )
+	local address = um:ReadLong()
+	local value = um:ReadFloat()
+	if (ent) then
+		ent.Memory[address] = value
+		Msg("DSCR - GOT pixel "..address.." with value "..value.."\n")
+	end
+end
+usermessage.Hook("digitalscreen_datamessage", DigitalScreen_DataMessage) 
 
 function ENT:Draw()
 	self.Entity:DrawModel()
@@ -67,15 +84,12 @@ function ENT:Draw()
 		
 		surface.SetDrawColor(0,0,0,255)
 		surface.DrawRect(x/RatioX,y,(x+w)/RatioX,y+h)
-		
-		//local PW = math.ceil((w / self:GetPixelsW( )) / 2)
-		//local PH = math.ceil((h / self:GetPixelsH( )) / 2)
 
 		
 		for ty = 0, 31 do
 			for tx = 0, 31 do
 				local a = tx + ty*32
-				local c = self.Entity:GetNetworkedFloat( "DispData"..a )
+				local c = self.Memory[a]
 				surface.SetDrawColor(c,c,c,255)
 				surface.DrawRect(x/RatioX + tx*6/RatioX,y + ty*6/RatioX,6/RatioX,6/RatioX)
 			end
