@@ -1580,30 +1580,32 @@ if duplicator.ConstraintType.Keepupright.Args[1] == "Ent" then
 			con.Constraint = ConstraintEntity
 			con.Entity = {}
 			
-			for i=1, 6 do
-				
-				if ( con[ "Ent"..i ] && ( con[ "Ent"..i ]:IsWorld() || con[ "Ent"..i ]:IsValid() ) ) then
-					
-					con.Entity[ i ] = {}
-					con.Entity[ i ].Index	 	= con[ "Ent"..i ]:EntIndex()
-					con.Entity[ i ].Entity	 	= con[ "Ent"..i ]
-					con.Entity[ i ].Bone 		= con[ "Bone"..i ]
-					con.Entity[ i ].LPos 		= con[ "LPos"..i ]
-					con.Entity[ i ].WPos 		= con[ "WPos"..i ]
-					con.Entity[ i ].Length 		= con[ "Length"..i ]
-					con.Entity[ i ].World		= con[ "Ent"..i ]:IsWorld()
-					
-				end
-				
-			end
-			
 			if ( con[ "Ent" ] && ( con[ "Ent" ]:IsWorld() || con[ "Ent" ]:IsValid() ) ) then
 				
-				con.Entity1 = {}
-				con.Entity1.Index	 	= con[ "Ent" ]:EntIndex()
-				con.Entity1.Entity	 	= con[ "Ent" ]
-				con.Entity1.World		= con[ "Ent" ]:IsWorld()
-				con.Entity1.Bone 		= con[ "Bone" ]
+				con.Entity[ 1 ] = {}
+				con.Entity[ 1 ].Index	 	= con[ "Ent" ]:EntIndex()
+				con.Entity[ 1 ].Entity		= con[ "Ent" ]
+				con.Entity[ 1 ].World		= con[ "Ent" ]:IsWorld()
+				con.Entity[ 1 ].Bone 		= con[ "Bone" ]
+				
+			else
+				
+				for i=1, 6 do
+					
+					if ( con[ "Ent"..i ] && ( con[ "Ent"..i ]:IsWorld() || con[ "Ent"..i ]:IsValid() ) ) then
+						
+						con.Entity[ i ] = {}
+						con.Entity[ i ].Index	 	= con[ "Ent"..i ]:EntIndex()
+						con.Entity[ i ].Entity	 	= con[ "Ent"..i ]
+						con.Entity[ i ].Bone 		= con[ "Bone"..i ]
+						con.Entity[ i ].LPos 		= con[ "LPos"..i ]
+						con.Entity[ i ].WPos 		= con[ "WPos"..i ]
+						con.Entity[ i ].Length 		= con[ "Length"..i ]
+						con.Entity[ i ].World		= con[ "Ent"..i ]:IsWorld()
+						
+					end
+					
+				end
 				
 			end
 			
@@ -1624,36 +1626,26 @@ if duplicator.ConstraintType.Keepupright.Args[1] == "Ent" then
 		local Factory = duplicator.ConstraintType[ Constraint.Type ]
 		if ( !Factory ) then return end
 		
+		Msg("CreateConstraint.Type= "..Constraint.Type.."\n")
+		
 		local Args = {}
 		for k, Key in pairs( Factory.Args ) do
 		
 			local Val = Constraint[ Key ]
 			
-			if (Constraint.Entity) then
-				for i=1, 6 do 
-					if ( Constraint.Entity[ i ] ) then
-						if ( Key == "Ent"..i ) then	
-							Val = EntityList[ Constraint.Entity[ i ].Index ] 
-							if ( Constraint.Entity[ i ].World ) then
-								Val = GetWorldEntity()
-							end
+			for i=1, 6 do 
+				if ( Constraint.Entity[ i ] ) then
+					if ( Key == "Ent"..i ) or ( Key == "Ent" ) then	
+						Val = EntityList[ Constraint.Entity[ i ].Index ] 
+						if ( Constraint.Entity[ i ].World ) then
+							Val = GetWorldEntity()
 						end
-						if ( Key == "Bone"..i ) then Val = Constraint.Entity[ i ].Bone end
-						if ( Key == "LPos"..i ) then Val = Constraint.Entity[ i ].LPos end
-						if ( Key == "WPos"..i ) then Val = Constraint.Entity[ i ].WPos end
-						if ( Key == "Length"..i ) then Val = Constraint.Entity[ i ].Length end
 					end
+					if ( Key == "Bone"..i ) or ( Key == "Bone" ) then Val = Constraint.Entity[ i ].Bone end
+					if ( Key == "LPos"..i ) then Val = Constraint.Entity[ i ].LPos end
+					if ( Key == "WPos"..i ) then Val = Constraint.Entity[ i ].WPos end
+					if ( Key == "Length"..i ) then Val = Constraint.Entity[ i ].Length end
 				end
-			end
-			
-			if ( Constraint.Entity1 ) then
-				if ( Key == "Ent" ) then
-					Val = EntityList[ Constraint.Entity1.Index ] 
-					if ( Constraint.Entity1.World ) then
-						Val = GetWorldEntity()
-					end
-				end
-				if ( Key == "Bone" ) then Val = Constraint.Entity1.Bone end
 			end
 			
 			// If there's a missing argument then unpack will stop sending at that argument
@@ -1668,7 +1660,73 @@ if duplicator.ConstraintType.Keepupright.Args[1] == "Ent" then
 		return Entity
 
 	end
-
+	
+	
+	function duplicator.GenericDuplicatorFunction( Player, data )
+		if (!data) or (!data.Class) then return false end
+		
+		Msg("GenDupe.data.Class= "..data.Class.."\n")
+		
+		local Entity = ents.Create( data.Class )
+		if (!Entity:IsValid()) then return false end
+		Entity:SetModel( data.Model )
+		Entity:Spawn()
+		
+		duplicator.DoGeneric( Entity, data )
+		
+		Entity:Activate()
+		
+		table.Add( Entity:GetTable(), data )
+		
+		return Entity
+		
+	end
+	
+	
+	function duplicator.CreateEntityFromTable( Player, EntTable )
+		
+		local EntityClass = duplicator.FindEntityClass( EntTable.Class )
+		
+		// This class is unregistered. Instead of failing try using a generic
+		// Duplication function to make a new copy..
+		if (!EntityClass) then
+			
+			return duplicator.GenericDuplicatorFunction( Player, EntTable )
+			
+		end
+		
+		Msg("CreateEntity.Class= "..EntTable.Class.."\n")
+		
+		// Build the argument list
+		local ArgList = {}
+		
+		for iNumber, Key in pairs( EntityClass.Args ) do
+			
+			local Arg = nil
+			
+			// Translate keys from old system
+			if ( Key == "pos" || Key == "position" ) then Key = "Pos" end
+			if ( Key == "ang" || Key == "Ang" || Key == "angle" ) then Key = "Angle" end
+			if ( Key == "model" ) then Key = "Model" end
+			
+			Arg = EntTable[ Key ]
+			
+			// Special keys
+			if ( Key == "Data" ) then Arg = EntTable end
+			
+			// If there's a missing argument then unpack will stop sending at that argument
+			if ( Arg == nil ) then Arg = false end
+			
+			ArgList[ iNumber ] = Arg
+			
+		end
+		
+		
+		// Create and return the entity
+		return EntityClass.Func( Player, unpack(ArgList) )
+		
+	end
+	
 end
 
 /*function constraint.Keepupright( Ent, Ang, Bone, angularlimit )

@@ -773,6 +773,34 @@ GateActions["ram64x64"] = {
     end
 }
 
+GateActions["udcounter"] = {
+	group = "Memory",
+	name = "Up/Down Counter",
+	inputs = { "Increment", "Decrement", "Clk", "Reset"},
+	output = function(gate, Inc, Dec, Clk, Reset)
+		local lInc = (Inc > 0)
+		local lDec = (Dec > 0)
+		local lClk = (Clk > 0)
+		local lReset = (Reset > 0)
+		if ((gate.PrevInc ~= lInc || gate.PrevDec ~= lDec || gate.PrevClk ~= lClk) && gate.lClk) then
+			if (lInc) and (!lDec) and (!lReset) then
+				gate.countStore = gate.countStore + 1
+			elseif (!lInc) and (lDec) and (!lReset) then
+				gate.countStore = gate.countStore - 1
+			end
+			gate.PrevInc = lInc
+			gate.PrevDec = lDec
+			gate.PrevClk = lClk
+		end
+		if (lReset) then
+			gate.countStore = 0
+		end
+		return gate.countStore
+	end,
+	label = function(Out, Inc, Dec, Clk, Reset)
+		return "Increment:"..Inc.." Decrement:"..Dec.." Clk:"..Clk.." Reset:"..Reset.." = "..Out
+	end
+}
 
 
 
