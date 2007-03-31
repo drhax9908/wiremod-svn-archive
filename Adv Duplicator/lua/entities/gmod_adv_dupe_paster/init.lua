@@ -30,10 +30,12 @@ function ENT:Initialize()
 	// Spawner is "edge-triggered"
 	self.SpawnLastValue	= 0
 	self.UndoLastValue	= 0
-
-	// Add inputs/outputs (TheApathetic)
-	self.Inputs = Wire_CreateInputs(self.Entity, {"Spawn", "Undo", "X", "Y", "Z" })
-	self.Outputs = Wire_CreateOutputs(self.Entity, {"Out"})
+	
+	if WireAddon then
+		// Add inputs/outputs (TheApathetic)
+		self.Inputs = Wire_CreateInputs(self.Entity, {"Spawn", "Undo", "X", "Y", "Z" })
+		self.Outputs = Wire_CreateOutputs(self.Entity, {"Out"})
+	end
 	
 	self.stage = 0
 	self.thinkdelay = 0.05
@@ -113,26 +115,26 @@ function ENT:Paste()
 	AdvDupe.ConvertConstraintPositionsToWorld( self.MyConstraints, self.offset, angle - self.MyHoldAngle )
 	
 	Msg("===doing paster paste===\n")
-	local Ents, Constraints = duplicator.Paste( self:GetPlayer(), self.MyEnts, self.MyConstraints )
+	//local Ents, Constraints = duplicator.Paste( self:GetPlayer(), self.MyEnts, self.MyConstraints )
+	local Ents, Constraints = DebugDuplicator.Paste( self:GetPlayer(), self.MyEnts, self.MyConstraints )
 	
 	AdvDupe.ResetPositions( self.MyEnts, self.MyConstraints )
 	
 	// Add all of the created entities
 	//  to the undo system under one undo.
+	self.PropCount = self.PropCount + 1
+	self.UndoListEnts[self.PropCount] = {}
 	undo.Create( "Duplicator" )
 		
-		self.UndoListEnts[self.PropCount] = {}
 		for k, ent in pairs( Ents ) do
 			undo.AddEntity( ent )
 			self:GetPlayer():AddCleanup( "duplicates", ent )
-			table.insert(self.UndoListEnts[self.PropCount], ent:EntIndex())
+			table.insert(self.UndoListEnts[self.PropCount], ent)//:EntIndex()
 		end
 		
 		undo.SetPlayer( self:GetPlayer() )
 		
 	undo.Finish()
-	
-	self.PropCount = self.PropCount + 1
 	
 	self:ShowOutput()
 	
@@ -201,17 +203,28 @@ function ENT:DoUndo( pl )
 
 	if (!self.UndoListEnts || #self.UndoListEnts == 0) then return end
 
-	local Ents = table.remove(self.UndoListEnts, 1)
+	local Ents = {}
+	local FoundOne = false
 	
-	for _, entindex in pairs( Ents ) do
-		local ent = ents.GetByIndex( entindex )
-		if (ent && ent:IsValid()) then
-			ent:Remove()
+	repeat 
+		
+		Ents = table.remove(self.UndoListEnts, 1)
+		
+		if Ents then
+			for _, ent in pairs( Ents ) do //entindex
+				//local ent = ents.GetByIndex( entindex )
+				if (ent && ent:IsValid()) then
+					ent:Remove()
+					FoundOne = true
+				end
+			end
 		end
-	end
+		self.PropCount = self.PropCount - 1
+		
+	until FoundOne
 	
 	umsg.Start( "UndoWirePasterProp", pl ) umsg.End()
-	self.PropCount = self.PropCount - 1
+	
 	Wire_TriggerOutput(self.Entity, "Out", self.PropCount)
 	self:ShowOutput()
 end
@@ -224,6 +237,14 @@ function ENT:UndoPaste(pastenum)
 	
 end
 
+
+function ENT:OnRemove()
+	Wire_Remove(self.Entity)
+end
+
+function ENT:OnRestore()
+    Wire_Restored(self.Entity)
+end
 
 
 /*function ENT:Think()
@@ -420,3 +441,28 @@ end
 	end
 	
 end*/
+
+
+
+local function Paste( pl, ent )
+	if (!ent:IsValid()) then return end
+	
+	local delay = ent:GetTable().delay
+	if (delay == 0) then ent:GetTable():Paste() return end
+	
+	local TimedSpawn = 	function ( ent, pl ) 
+							if (!ent) then return end
+							if (!ent == NULL) then return end
+							ent:GetTable():Paste()
+						end
+	timer.Simple( delay, TimedSpawn, ent, pl )
+end
+
+local function Undo( pl, ent )
+	if (!ent:IsValid()) then return end
+	ent:GetTable():DoUndo( pl )
+end
+
+numpad.Register( "PasterCreate",	Paste )
+numpad.Register( "PasterUndo",		Undo  )
+

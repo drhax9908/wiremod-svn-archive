@@ -24,7 +24,8 @@ TOOL.ClientConVar[ "undo_delay" ]		= 0
 TOOL.ClientConVar[ "range" ]			= "1500"
 TOOL.ClientConVar[ "show_beam" ]		= "1"
 TOOL.ClientConVar[ "debugsave" ]		= "0"
-
+TOOL.ClientConVar[ "pasterkey" ]		= -1
+TOOL.ClientConVar[ "pasterundo_key" ]	= -1
 cleanup.Register( "duplicates" )
 
 
@@ -53,7 +54,8 @@ function TOOL:LeftClick( trace )
 		AdvDupe.ConvertConstraintPositionsToWorld( self.Constraints, trace.HitPos, angle - self.HoldAngle )
 		
 		Msg("===doing new paste===\n")
-		Ents, Constraints = duplicator.Paste( self:GetOwner(), self.Entities, self.Constraints )//, self.DupeInfo, self.DORInfo )
+		//Ents, Constraints = duplicator.Paste( self:GetOwner(), self.Entities, self.Constraints )//, self.DupeInfo, self.DORInfo )
+		Ents, Constraints = DebugDuplicator.Paste( self:GetOwner(), self.Entities, self.Constraints )//, self.DupeInfo, self.DORInfo )
 		
 		AdvDupe.ResetPositions( self.Entities, self.Constraints )
 		
@@ -111,7 +113,8 @@ function TOOL:RightClick( trace )
 	end
 	
 	// Copy the entities
-	local Entities, Constraints = duplicator.Copy( trace.Entity )
+	//local Entities, Constraints = duplicator.Copy( trace.Entity )
+	local Entities, Constraints = DebugDuplicator.Copy( trace.Entity )
 	
 	local angle  = self:GetOwner():GetAngles()
 	angle.pitch = 0
@@ -183,14 +186,19 @@ function TOOL:Reload( trace )
 	
 	local delay 		= self:GetClientNumber( "delay" )
 	local undo_delay	= self:GetClientNumber( "undo_delay" )
-	local range			= self:GetClientNumber("range")
-	local show_beam		= (self:GetClientNumber("show_beam") == 1)
+	local range			= self:GetClientNumber( "range" )
+	local show_beam		= self:GetClientNumber( "show_beam" ) == 1
+	local key			= self:GetClientNumber( "pasterkey" )
+	local undo_key 		= self:GetClientNumber( "pasterundo_key" )
 	
 	paster:Setup(
 		table.Copy(self.Entities),
 		table.Copy(self.Constraints),
 		self.HoldAngle, delay, undo_delay, range, show_beam
 	)
+	
+	if key > -1 then numpad.OnDown( self:GetOwner(), key, "PasterCreate", paster, true ) end
+	if undo_key > -1 then numpad.OnDown( self:GetOwner(), undo_key, "PasterUndo", paster, true ) end
 	
 	return true
 end
@@ -989,6 +997,14 @@ else	// CLIENT
 				Label = "Show Beam",
 				Command = "adv_duplicator_show_beam"})
 			
+			local params = { 
+				Label		= "#Spawn Key",
+				Label2		= "#Undo Key",
+				Command		= "adv_duplicator_pasterkey",
+				Command2	= "adv_duplicator_pasterundo_key",
+				ButtonSize	= "22",
+			}
+			CPanel:AddControl( "Numpad",  params )
 			
 			
 		elseif (menu == "clientupload") then

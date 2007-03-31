@@ -1558,13 +1558,9 @@ end
 
 
 //while Keepupright doesn't get it's table saved rigth, replace the functions that don't
-if duplicator.ConstraintType.Keepupright.Args[1] == "Ent" then
+/*if duplicator.ConstraintType.Keepupright.Args[1] == "Ent" then
 	Msg("==AdvDupe: Keepupright Ent not Ent1==\n")
-
-	/*----------------------------------------------------------------------
-		Returns this entities constraints table
-		This is for the future, because ideally the constraints table will eventually look like this - and we won't have to build it every time.
-	----------------------------------------------------------------------*/
+	
 	function constraint.GetTable( ent )
 
 		if ( !constraint.HasConstraints( ent ) ) then return {} end
@@ -1617,10 +1613,6 @@ if duplicator.ConstraintType.Keepupright.Args[1] == "Ent" then
 
 	end
 
-
-	/*---------------------------------------------------------
-	  Make a constraint from a constraint table
-	---------------------------------------------------------*/
 	function duplicator.CreateConstraintFromTable( Constraint, EntityList )
 
 		local Factory = duplicator.ConstraintType[ Constraint.Type ]
@@ -1728,46 +1720,7 @@ if duplicator.ConstraintType.Keepupright.Args[1] == "Ent" then
 	end
 	
 end
-
-/*function constraint.Keepupright( Ent, Ang, Bone, angularlimit )
-
-	if ( !CanConstrain( Ent, Bone ) ) then return false end
-	if ( Ent:GetClass() != "prop_physics" && Ent:GetClass() != "prop_ragdoll" ) then return false end
-	if ( !angularlimit or angularlimit < 0 ) then return end
-	
-	local Phys = Ent:GetPhysicsObjectNum(Bone)
-
-	// Remove any KU's already on entity
-	constraint.RemoveConstraints( Ent, "Keepupright" )
-	
-	onStartConstraint( Ent )
-
-		local Constraint = ents.Create( "phys_keepupright" )
-			Constraint:SetAngles( Ang )
-			Constraint:SetKeyValue( "angularlimit", angularlimit )
-			Constraint:SetPhysConstraintObjects( Phys, Phys )
-		Constraint:Spawn()
-		Constraint:Activate()
-	
-	onFinishConstraint( Ent )
-	AddConstraintTable( Ent, Constraint )
-	
-	local ctable = 
-	{
-		Type 			= "Keepupright",
-		Ent1 			= Ent1,
-		Bone1 			= Bone1,
-		Ang 			= Ang,
-		angularlimit 	= angularlimit
-	}
-	Constraint:SetTable( ctable )
-	
-	return Constraint
-	
-end
-
-duplicator.RegisterConstraint( "Keepupright", constraint.Keepupright, "Ent", "Ang", "Bone", "angularlimit" )*/
-
+*/
 
 
 Msg("--- Wire duplicator v.0.61 server module installed! ---\n")
