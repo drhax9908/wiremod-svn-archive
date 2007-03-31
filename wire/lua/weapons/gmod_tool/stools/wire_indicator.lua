@@ -142,7 +142,10 @@ if (SERVER) then
 		wire_indicator:Setup(a, ar, ag, ab, aa, b, br, bg, bb, ba)
 		wire_indicator:SetPlayer(pl)
 		
-		if (nocollide) then wire_indicator:GetPhysicsObject():EnableCollision(false) end
+		if (nocollide) then
+			local phys = wire_indicator:GetPhysicsObject()
+			if ( phys:IsValid() ) then phys:EnableCollisions(false) end
+		end
 		
 		local ttable = {
 			a	= a,
