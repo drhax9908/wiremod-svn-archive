@@ -86,6 +86,7 @@ function ENT:GetBeaconPos(sensor)
 	if self.SelectedTargets[ch] then
 		if (not self.SelectedTargets[ch]:IsValid()) then
 	        self.SelectedTargets[ch] = nil
+			Wire_TriggerOutput(self.Entity, tostring(ch), 0)
 	        return sensor:GetPos()
 	    end
 	
@@ -119,6 +120,7 @@ function ENT:SelectorNext(ch)
 		
 		self.SelectedTargetsSel[ch] = sel + 1
 		self.Inputs[ch.."-HoldTarget"].Value = 1 //put the channel on hold so it wont change in the next scan
+		Wire_TriggerOutput(self.Entity, tostring(ch), 1)
 	end
 end
 
@@ -183,15 +185,15 @@ function ENT:Think()
 				if (#self.Bogeys > 0) then
 					self.SelectedTargets[i] = table.remove(self.Bogeys, 1)
 					if (self.PaintTarget) then self:TargetPainter(self.SelectedTargets[i], true) end
+					Wire_TriggerOutput(self.Entity, tostring(i), 1)
 				else
 					self.SelectedTargets[i] = nil
+					Wire_TriggerOutput(self.Entity, tostring(i), 0)
 				end
 			end
 		end
 		
 	end
-	
-	//Wire_TriggerOutput(self.Entity, "Out", targetnum)
 	
 	//temp hack
 	if self.SelectedTargets[1] then
