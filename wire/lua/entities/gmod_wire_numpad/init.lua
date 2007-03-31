@@ -30,7 +30,7 @@ end
 
 function ENT:NumpadActivate( key )
 	if ( self.Toggle ) then
-		return self:Switch( !self.On, mul )
+		return self:Switch( !self.On[ key ], mul )
 	end
 
 	return self:Switch( true, key )
