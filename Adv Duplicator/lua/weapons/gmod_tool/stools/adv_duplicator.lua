@@ -254,7 +254,8 @@ end
 
 // Make the ghost entities
 function TOOL:MakeGhostFromTable( EntTable, pParent )
-
+	if ( !EntTable ) then return end
+	
 	local GhostEntity = nil
 	
 	if ( EntTable.Model:sub( 1, 1 ) == "*" ) then
@@ -418,9 +419,11 @@ function TOOL:LoadFile( filepath )
 		self.DORInfo		= DORInfo
 		
 		//hack for constraints with "pl" keys
-		for k, Constraint in pairs( self.Constraints ) do
-			if ( Constraint && Constraint.pl ) then
-				Constraint.pl = self:GetOwner()
+		if self.Constraints then
+			for k, Constraint in pairs( self.Constraints ) do
+				if ( Constraint && Constraint.pl ) then
+					Constraint.pl = self:GetOwner()
+				end
 			end
 		end
 		
@@ -463,8 +466,12 @@ function TOOL:UpdateList()
 	self:GetOwner():SendLua( "AdvDupeClient.LoadListFiles={}" )
 	self:GetOwner():SendLua( "AdvDupeClient.SScdir=\""..cdir.."\"" )
 	
-	if (cdir != AdvDupe.GetPlayersFolder(self:GetOwner())) then
+	if ( cdir == dupeshare.BaseDir.."/=Public Folder=" ) then
+		self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs[\"/..\"] = \""..AdvDupe.GetPlayersFolder(self:GetOwner()).."\"" )
+	elseif ( cdir != AdvDupe.GetPlayersFolder(self:GetOwner()) ) then
 		self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs[\"/..\"] = \""..dupeshare.UpDir(cdir).."\"" )
+	else
+		self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs[\"/=Public Folder=\"] = \""..dupeshare.BaseDir.."/=Public Folder=\"" )
 	end
 	
 	if ( file.Exists(cdir) && file.IsDir(cdir)) then
@@ -685,16 +692,6 @@ if SERVER then
 		AdvDupe.UpdateList(pl)
 	end
 	concommand.Add( "adv_duplicator_updatelist", AdvDupeSS_UpdateLoadList )
-	
-	
-	
-	/*local function AdvDupeSS_StartGhostEntities( pl, command, args )
-		local tool = pl:GetActiveWeapon()
-		if (dupeshare.CurrentToolIsDuplicator(tool)) then
-			tool:GetTable():GetToolObject():StartGhostEntities()
-		end
-	end
-	concommand.Add( "adv_duplicator_startghost", AdvDupeSS_StartGhostEntities )*/
 	
 	
 	
@@ -1155,366 +1152,4 @@ else	// CLIENT
 	concommand.Add( "adv_duplicator_upload_cl", AdvDupeCL_UpLoad )
 	
 	
-	
-	
-	/*local function AdvDupeCL_ClientGhostDataHead( um )
-		Msg("=========\ngot ghost head data  ==========    ")
-		if (!dupeshare.CurrentToolIsDuplicator(LocalPlayer():GetActiveWeapon(), true)) then
-			Msg("current tool is not the duplicator!\n")
-			return
-		end
-		
-		AdvDupeClient.ghost.HeadEntID	= um:ReadShort()
-		AdvDupeClient.ghost.offset		= um:ReadVector()
-		AdvDupeClient.ghost.HoldAngle	= um:ReadAngle()
-		
-		//maybe this should be a gobal table instead, incase the tool is not out while ghost data is being recieved
-		local tool = LocalPlayer():GetActiveWeapon():GetTable():GetToolObject()	
-		tool:ReleaseGhostEntity()
-		tool.GhostEntities	= {}
-		tool.GhostOffset	= {}
-		tool.NumToRecieve	= um:ReadShort()
-		tool.NumRecieved	= 0
-		Msg("HeadEntID= "..AdvDupeClient.ghost.HeadEntID.."\nNumToRecieve= "..tool.NumToRecieve.."\n==========\n")
-	end
-	usermessage.Hook("ClientGhostDataHead", AdvDupeCL_ClientGhostDataHead)
-	
-	
-	local function AdvDupeCL_ClientGhostData( um )
-		local entID	= um:ReadShort()
-		--Msg("getting ghost data  for ent: "..entID.."    ")
-		
-		local tool = LocalPlayer():GetActiveWeapon():GetTable():GetToolObject()
-		tool.NumRecieved = tool.NumRecieved + 1
-		if (entID == 0) then return end
-		
-		local model	= um:ReadString()
-		local pos	= um:ReadVector()
-		local ang	= um:ReadAngle()
-		
-		--Msg("model: "..model.."\n")
-		
-		local GhostEntity = tool:MakeGhostEntity_Duplicator( model, (pos + AdvDupeClient.ghost.offset), ang )
-		
-		if ( GhostEntity ) then
-			//Msg("ghost ent good\n")
-			tool.GhostEntities[entID]	= GhostEntity
-			tool.GhostOffset[entID]		= pos
-			
-			if ( entID == AdvDupeClient.ghost.HeadEntID ) then
-				--Msg("ghost head ent found \n")
-				tool.GhostHead		= GhostEntity
-				tool.GhostHeadOff	= pos
-			elseif (tool.GhostHead) then //cause we send the head first, we can do this
-				GhostEntity:SetParent( tool.GhostHead )
-			end
-		end
-		
-		
-		if (tool.NumRecieved >= tool.NumToRecieve) then
-			Msg("client ghost finishing\n")
-			if (!tool.GhostHead) then 
-				Msg("client Duplicator Error, no head entity!\n") 
-				tool:ReleaseGhostEntity()
-				return
-			end
-			for k, ent in pairs ( tool.GhostEntities ) do
-				if ( tool.GhostHead != ent ) then
-					ent:SetParent( tool.GhostHead )
-				end
-			end
-		end
-	end
-	usermessage.Hook("ClientGhostData", AdvDupeCL_ClientGhostData)*/
-	
 end
-
-/*old functions
-/*---------------------------------------------------------
-   Make a ghost entity
----------------------------------------------------------*
-/*function TOOL:MakeGhostEntity_Duplicator( model, pos, angle )
-	
-	if ( !model or model == "" ) then
-		//Msg("Model is NULL!\n")
-		model = "models/props_junk/watermelon01.mdl"
-	end
-	
-	util.PrecacheModel( model )
-	
-	// We do ghosting serverside in single player
-	// It's done clientside in multiplayer
-	if (SERVER && !SinglePlayer()) then return end
-	if (CLIENT && SinglePlayer()) then return end
-	
-	local GhostEntity = ents.Create( "prop_physics" )
-	
-	// If there's too many entities we might not spawn..
-	if ( !GhostEntity || GhostEntity == NULL ) then return end
-	
-	if ( !util.IsValidProp( model ) ) then
-		model = "models/props_junk/watermelon01.mdl"
-	end
-	
-	GhostEntity:SetModel( model )
-	GhostEntity:SetPos( pos )
-	GhostEntity:SetAngles( angle )
-	GhostEntity:Spawn()
-	
-	GhostEntity:SetMoveType( MOVETYPE_NONE )
-	GhostEntity:SetSolid( SOLID_NONE );
-	GhostEntity:SetNotSolid( true );
-	GhostEntity:SetRenderMode( RENDERMODE_TRANSALPHA )
-	GhostEntity:SetColor( 255, 255, 255, 150 )
-	
-	return GhostEntity
-	
-end
-*
-/*---------------------------------------------------------
-   Starts up the ghost entities
----------------------------------------------------------*
-/*function TOOL:StartGhostEntities()
-	// We do ghosting serverside in single player
-	// It's done clientside in multiplayer
-	if (SERVER && !SinglePlayer()) then return end
-	if (CLIENT && SinglePlayer()) then return end
-	if (CLIENT) then return end
-	
-	local pl = self:GetOwner()
-	local pln = self:GetOwner():UniqueID()
-	if (!AdvDupe[pln]) or (!AdvDupe[pln].HeadEntID) then return end //gonna need data also seems to stop client ghost in mp
-	
-	// Clear any existing ghosts
-	self:ReleaseGhostEntity()
-	
-	// set us up some tables
-	self.GhostEntities	= {}
-	self.GhostOffset	= {}
-	
-	//get the point where we are currently looking
-	local tr	= utilx.GetPlayerTrace( pl )
-	local trace	= util.TraceLine( tr )
-	if (!trace.Hit) then return end
-	AdvDupeClient.ghost.offset = trace.HitPos
-	
-	
-	//local Ents = pl:GetTable().Duplicator.Ents
-	local Ents = AdvDupe[pln].Ents
-	
-	
-	//load and make the ghost
-	for entID, EntTable in pairs(Ents) do
-		local entClass = EntTable.Class
-		local entArgs = duplicator.EntityClasses[entClass].Args
-		
-		if entClass and entArgs then //check that we know how to dupe this class
-			//get the args for this class
-			//local entArgs = AdvDupe.GetEntClassArgs(entClass)
-			
-			local Args = { model="models/props_junk/watermelon01.mdl", pos=Vector(0,0,0), ang=Vector(0,0,0) }
-			
-			for n,Key in pairs(entArgs) do
-				if type(Key) != "table" then
-					local Arg = EntTable[Key]
-					key = string.lower(Key)
-					
-					if key == "ang"	or key == "angle" then
-						Args.ang = Arg or Vector(0,0,0)
-					elseif key == "pos"	or key == "position" then
-						Args.pos = Arg + AdvDupeClient.ghost.offset or Vector(0,0,0)
-					elseif key == "mdl"	or key == "model" or key == "smodel" then 
-						Args.model = Arg
-					end
-				end
-			end
-			
-			local GhostEntity = self:MakeGhostEntity_Duplicator( Args.model, Args.pos, Args.ang )
-			
-			if ( GhostEntity ) then
-				self.GhostEntities[entID]	= GhostEntity
-				self.GhostOffset[entID]		= Args.pos - AdvDupeClient.ghost.offset
-				
-				if ( entID == AdvDupe[pln].HeadEntID ) then
-					self.GhostHead		= GhostEntity
-					self.GhostHeadOff	= Args.pos - AdvDupeClient.ghost.offset
-				end
-			end
-			
-		elseif (entClass) then
-			Msg("Duplicator Paste: Unknown class " .. (entClass or "NIL") .. "\n")
-		end
-	end
-	
-	if (!self.GhostHead) then 
-		Msg("Duplicator Error, no head entity!\n") 
-		self:ReleaseGhostEntity()
-		return
-	end
-	
-	for k, ent in pairs ( self.GhostEntities ) do
-		if ( self.GhostHead != ent ) then
-			ent:SetParent( self.GhostHead )
-		end
-	end
-	
-end
-
-function TOOL:UpdateGhostEntities()
-
-	if (!self.GhostEntities) then return end
-
-	local tr = utilx.GetPlayerTrace( self:GetOwner(), self:GetOwner():GetCursorAimVector() )
-	local trace = util.TraceLine( tr )
-	if (!trace.Hit) then return end
-	
-	local ent = self.GhostHead
-	
-	if (!ent) then return end
-	if (ent == NULL) then return end
-
-	ent:SetPos( trace.HitPos + self.GhostHeadOff )
-	
-	/*local angle = self:GetOwner():GetAngles()
-	angle.pitch = 0
-	angle.roll 	= 0
-	
-	if (!CLIENT) then
-		ent:SetAngles( angle - AdvDupe[self:GetOwner():UniqueID()].HoldAngle )
-	else
-		ent:SetAngles( angle - AdvDupeClient.ghost.HoldAngle )
-	end*
-	
-end
-
-function TOOL:SendGhostToClient(fileload)
-	if (CLIENT) then return end
-	if (SERVER && SinglePlayer()) then return end
-	
-	local pl = self:GetOwner()
-	Msg("=====\nsentghosttoclient pl = "..tostring(pl).."\n")
-	
-	if (!dupeshare.CurrentToolIsDuplicator(pl:GetActiveWeapon(), true)) then
-		Msg("Player does not have duplicator out!\n")
-		return
-	end
-	
-	local pln = pl:UniqueID()
-	
-	--Msg("start send ghost data\n")
-	if (!AdvDupe[pln]) or (!AdvDupe[pln].Ents) then return false end
-	local ents = AdvDupe[pln].Ents
-	local HeadEntID = AdvDupe[pln].HeadEntID
-	
-	if (fileload) then
-		//get the point where we are currently looking
-		local tr	= utilx.GetPlayerTrace( pl )
-		local trace	= util.TraceLine( tr )
-		if (!trace.Hit) then return end
-		AdvDupeClient.ghost.offset = trace.HitPos
-	end
-	
-	local entscount = table.Count(AdvDupe[pln].Ents)
-	if (entscount > 50) then entscount = 50 end
-	--Msg("entscount:  "..entscount.."\n")
-	self:SendGhostDataHeadToClient( HeadEntID, AdvDupeClient.ghost.offset, AdvDupe[pln].HoldAngle, entscount )
-	
-	local sendnum = 1
-	local Args = {}
-	
-	--Msg("sending headent "..HeadEntID.."\n")
-	Args = self:GetGhostArgsForClient( HeadEntID, ents[HeadEntID] )
-	self:SendGhostDataUMsgToClient( HeadEntID, Args )
-	
-	
-	for entID, EntTable in pairs(ents) do
-		if (entID != HeadEntID) then
-			Args = self:GetGhostArgsForClient( entID, EntTable )
-			self:SendGhostDataUMsgToClient( entID, Args )
-		end
-		
-		sendnum = sendnum + 1
-		if (sendnum > 50) then return end //only send 50
-	end
-end
-
-function TOOL:SendGhostDataHeadToClient( HeadEntID, offset, HoldAngle, entscount )
-	umsg.Start("ClientGhostDataHead", pl)
-		umsg.Short(HeadEntID)
-		umsg.Vector(offset)
-		umsg.Angle(HoldAngle)
-		umsg.Short(entscount)
-	umsg.End()
-end
-
-function TOOL:GetGhostArgsForClient( entID, EntTable )
-	if (CLIENT) then return end
-	local entClass = EntTable.Class
-	--Msg("start send ent ( "..entID.." ) data, class: "..(entClass or 0).."\n")
-	
-	local entArgs = duplicator.EntityClasses[entClass].Args
-	
-	if entClass and entArgs then //check that we know how to dupe this class
-		//get the args for this class
-		//local entArgs = AdvDupe.GetEntClassArgs(entClass)
-		
-		local Args = { model="models/props_junk/watermelon01.mdl", pos=Vector(0,0,0), ang=Vector(0,0,0) }
-		
-		for n,Key in pairs(entArgs) do
-			if type(Key) != "table" then
-				local Arg = EntTable[Key]
-				key = string.lower(Key)
-				
-				if key == "ang"	or key == "angle" then
-					Args.ang = Arg or Vector(0,0,0)
-				elseif key == "pos"	or key == "position" then
-					Args.pos = Arg or Vector(0,0,0)
-				elseif key == "mdl"	or key == "model" or key == "smodel" then 
-					Args.model = Model(Arg)
-				end
-			end
-		end
-		
-		return Args
-		
-	end
-	
-	return false
-	
-end
-
-function TOOL:SendGhostDataUMsgToClient( entID, Args )
-	if (CLIENT) then return end
-	if (Args) then
-		umsg.Start("ClientGhostData", pl)
-			umsg.Short(entID)
-			umsg.String(Args.model)
-			umsg.Vector(Args.pos)
-			umsg.Angle(Args.ang)
-		umsg.End()
-	else
-		umsg.Start("ClientGhostData", pl)
-			umsg.Short(0)
-		umsg.End()
-	end
-end
-
-
-//makes the ghost disappear so we can see what we are doing
-function TOOL:HideGhost(hide)
-	if (CLIENT) then return end
-	if (SERVER && !SinglePlayer()) then return end
-	
-	if (hide) then
-		for _, ghostent in pairs( self.GhostEntities ) do
-			ghostent:SetColor( 255, 255, 255, 0 )
-		end
-	else
-		for _, ghostent in pairs( self.GhostEntities ) do
-			ghostent:SetColor( 255, 255, 255, 150 )
-		end
-	end
-end*/
-
-
-

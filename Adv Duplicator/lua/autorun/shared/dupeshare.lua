@@ -175,9 +175,9 @@ end
 
 
 function dupeshare.NamedLikeAPublicDir(dir)
-	dir = dupeshare.ReplaceBadChar(string.lower(dir))
+	dir = string.lower(dir)
 	for k, v in pairs(dupeshare.PublicDirs) do
-		if dir == string.lower(k) then return true end
+		if dir == string.lower(v) then return true end
 	end
 	return false
 end
@@ -463,5 +463,5 @@ function dupeshare.UpDir(path)
 end
 
 
-Msg("--- Wire duplicator v.0.61 shared module installed! ---\n")
-if (!duplicator.EntityClasses) then Msg("===Error: Your gmod is out of date!===\n===You'll want to fix that or the Advanced Duplicator is not going to work.===\n") end
+Msg("==== Advanced Duplicator v.1.61a shared module installed! ====\n")
+if (!duplicator.EntityClasses) then Msg("=== Error: Your gmod is out of date! ===\n=== You'll want to fix that or the Advanced Duplicator is not going to work. ===\n") end

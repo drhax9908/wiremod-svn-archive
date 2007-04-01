@@ -73,10 +73,11 @@ local function ClientRecieveSaveStart( um )
 	
 	AdvDupeClient.temp.numofpieces	= um:ReadShort()
 	AdvDupeClient.temp.filename		= um:ReadString()
-	AdvDupeClient.temp.dir			= um:ReadString()
+	AdvDupeClient.temp.dir			= AdvDupeClient.CLcdir //um:ReadString()
 	
 	AdvDupeClient.temp.recievedpieces = 0
 	AdvDupeClient.downloading = true
+	AdvDuplicator_UpdateControlPanel()
 	
 	Msg("NumToRecieve= "..AdvDupeClient.temp.numofpieces.."\n==========\n")
 end
@@ -125,6 +126,7 @@ end
 
 local function DownloadFinished( um )
 	AdvDupeClient.downloading = false
+	AdvDuplicator_UpdateControlPanel()
 end
 usermessage.Hook("AdvDupeClientDownloadFinished", DownloadFinished)
 
@@ -232,8 +234,8 @@ end
 
 //simple error msg display
 function AdvDupeClient.Error( errormsg )
-	if !errormsg or type(errormsg) != "String" then return end
-	GAMEMODE:AddNotify( "ERROR: "..errormsg, NOTIFY_ERROR, 6 );
+	if !errormsg then return end
+	GAMEMODE:AddNotify( "AdvDupe-ERROR: "..tostring(errormsg), NOTIFY_ERROR, 6 );
 	surface.PlaySound( "buttons/button10.wav" )
 end
 
@@ -349,7 +351,7 @@ end
 concommand.Add( "adv_duplicator_save_gui", AdvDupeClient.SaveGUI )
 
 function AdvDupeClient.MakeDir( pl, command, args )
-	if !args[1] then return end
+	if !args or !args[1] then return end
 	
 	if !AdvDupeClient.gui.makedir or !AdvDupeClient.gui.makedir.frame then
 		AdvDupeClient.gui.makedir = {}
@@ -386,7 +388,7 @@ function AdvDupeClient.MakeDir( pl, command, args )
 		
 		function AdvDupeClient.gui.makedir.frame:ActionSignal(key,value)
 			if key == "MakeDirServer" then
-				local dir	= AdvDupeClient.gui.makedir.txtDir:GetValue()
+				local dir	= tostring(AdvDupeClient.gui.makedir.txtDir:GetValue())
 				
 				if (dupeshare.UsePWSys) and (!SinglePlayer()) then
 					local pass	= AdvDupeClient.gui.makedir.txtPass:GetValue()
@@ -424,7 +426,7 @@ end
 concommand.Add( "adv_duplicator_makedir_gui", AdvDupeClient.MakeDir )
 
 function AdvDupeClient.RenameFile( pl, cmd, args )
-	if !args[1] then return end
+	if !args or !args[1] then return end
 	
 	if !AdvDupeClient.gui.rename or !AdvDupeClient.gui.rename.frame then
 		AdvDupeClient.gui.rename = {}
@@ -490,7 +492,7 @@ end
 concommand.Add( "adv_duplicator_renamefile_gui", AdvDupeClient.RenameFile )
 
 function AdvDupeClient.ConfirmDelete( pl, cmd, args )
-	if !args[1] then return end
+	if !args or !args[1] then return end
 	
 	if !AdvDupeClient.gui.delete or !AdvDupeClient.gui.delete.frame then
 		AdvDupeClient.gui.delete = {}
@@ -551,5 +553,5 @@ end
 concommand.Add( "adv_duplicator_confirmdelete_gui", AdvDupeClient.ConfirmDelete )
 
 
-Msg("--- Wire duplicator v.0.61 client module installed! ---\n")
+Msg("==== Advanced Duplicator v.1.62 client module installed! ====\n")
 

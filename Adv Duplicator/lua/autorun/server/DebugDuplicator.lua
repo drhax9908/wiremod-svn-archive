@@ -197,18 +197,19 @@ function DebugDuplicator.Paste( Player, EntityList, ConstraintList )
 	//
 	// Create constraints
 	//
-	for k, Constraint in pairs( ConstraintList ) do
-		
-		local Entity = DebugDuplicator.CreateConstraintFromTable( Constraint, CreatedEntities )
-		
-		if ( Entity && Entity:IsValid() ) then
-			table.insert( CreatedConstraints, Entity )
-		else
-			Msg("Error:Created Constraint Bad! Type= "..(Constraint.Type or "NIL").."\n")
+	if ConstraintList then
+		for k, Constraint in pairs( ConstraintList ) do
+			
+			local Entity = DebugDuplicator.CreateConstraintFromTable( Constraint, CreatedEntities )
+			
+			if ( Entity && Entity:IsValid() ) then
+				table.insert( CreatedConstraints, Entity )
+			else
+				Msg("Error:Created Constraint Bad! Type= "..(Constraint.Type or "NIL").."\n")
+			end
+			
 		end
-		
 	end
-	
 	
 	return CreatedEntities, CreatedConstraints
 	
@@ -312,3 +313,4 @@ function DebugDuplicator.GetAllConstrainedEntitiesAndConstraints( ent, EntTable,
 	
 end
 
+Msg("==== Advanced Duplicator v.1.62 debug duplicator module installed! ---\n")
