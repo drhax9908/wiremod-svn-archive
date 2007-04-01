@@ -45,7 +45,8 @@ function TOOL:LeftClick( trace )
 		local Ent1, Ent2, Ent3  = self:GetEnt(1),	 self:GetEnt(2), trace.Entity
 		local const, rope = self.constraint, self.rope
 		
-		if ( !const ) then
+		if ( !const ) or ( !const:IsValid() ) then
+			self:GetOwner():SendLua( "GAMEMODE:AddNotify('Wire Hydraulic Invalid!', NOTIFY_GENERIC, 7);" )
 			self:ClearObjects()
 			self:SetStage(0)
 			return
@@ -81,7 +82,6 @@ function TOOL:LeftClick( trace )
 	elseif ( iNum == 1 ) then
 	
 		if ( CLIENT ) then
-			--self:ClearObjects()
 			return true
 		end
 		
@@ -100,9 +100,9 @@ function TOOL:LeftClick( trace )
 		self.constraint, self.rope = const,rope
 		
 		undo.Create("WireHydraulic")
-		if constraint then undo.AddEntity( const ) end
-		if rope   then undo.AddEntity( rope ) end
-		undo.SetPlayer( self:GetOwner() )
+			if constraint then undo.AddEntity( const ) end
+			if rope   then undo.AddEntity( rope ) end
+			undo.SetPlayer( self:GetOwner() )
 		undo.Finish()
 		
 		if const then	self:GetOwner():AddCleanup( "ropeconstraints", const ) end
@@ -121,12 +121,21 @@ function TOOL:LeftClick( trace )
 end
 
 function TOOL:RightClick( trace )
-
+	
+	local iNum = self:NumObjects()
+	
+	if ( iNum > 1 ) then
+		if ( !self.constraint ) or ( !self.constraint:IsValid() ) then
+			self:ClearObjects()
+			self:SetStage(0)
+		else
+			return false 
+		end
+	end
+	
 	// If there's no physics object then we can't constraint it!
 	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
 	
-	local iNum = self:NumObjects()
-
 	local Phys = trace.Entity:GetPhysicsObjectNum( trace.PhysicsBone )
 	self:SetObject( 1, trace.Entity, trace.HitPos, Phys, trace.PhysicsBone, trace.HitNormal )
 	
@@ -165,7 +174,6 @@ function TOOL:RightClick( trace )
 	self:SetObject( 2, tr.Entity, tr.HitPos, Phys2, tr.PhysicsBone, trace.HitNormal )
 	
 	if ( CLIENT ) then
-		--self:ClearObjects()
 		return true
 	end
 	
@@ -184,18 +192,15 @@ function TOOL:RightClick( trace )
 	self.constraint, self.rope = const,rope
 	
 	undo.Create("WireHydraulic")
-	if const then undo.AddEntity( const ) end
-	if rope   then undo.AddEntity( rope ) end
-	if controller then undo.AddEntity( controller ) end
-	undo.SetPlayer( self:GetOwner() )
+		if const then undo.AddEntity( const ) end
+		if rope   then undo.AddEntity( rope ) end
+		if controller then undo.AddEntity( controller ) end
+		undo.SetPlayer( self:GetOwner() )
 	undo.Finish()
 	
 	if constraint then	self:GetOwner():AddCleanup( "ropeconstraints", const ) end
 	if rope then		self:GetOwner():AddCleanup( "ropeconstraints", rope ) end
-	--if controller then	self:GetOwner():AddCleanup( "ropeconstraints", controller ) end
 	
-	// Clear the objects so we're ready to go again
-	--self:ClearObjects()
 	self:SetStage(2)
 	
 	return true

@@ -5,21 +5,21 @@ include('shared.lua')
 
 ENT.WireDebugName = "Hoverball"
 
-local MODEL = Model( "models/dav0r/hoverball.mdl" )
-
 /*---------------------------------------------------------
    Name: Initialize
 ---------------------------------------------------------*/
 function ENT:Initialize()
-
-	// Use the helibomb model just for the shadow (because it's about the same size)
-	self.Entity:SetModel( MODEL )
+	
+	self.Entity:SetModel( "models/dav0r/hoverball.mdl" )
 	
 	// Don't use the model's physics object, create a perfect sphere
+	
 	self.Entity:PhysicsInitSphere( 8, "metal_bouncy" )
 	
 	// Wake up our physics object so we don't start asleep
+	
 	local phys = self.Entity:GetPhysicsObject()
+	
 	if ( phys:IsValid() ) then 
 		phys:SetMass( 100 )
 		phys:EnableGravity( false )
@@ -56,9 +56,8 @@ end
 
 
 function ENT:EnableHover()
-	s = self.strength or 1 //needed to prevent some error when Initializing
 	self:SetHoverMode( true )
-	self:SetStrength(s) //reset weight so it will work
+	self:SetStrength( self.strength or 1 ) //reset weight so it will work
 	self:SetTargetZ ( self.Entity:GetPos().z ) //set height to current
 	local phys = self.Entity:GetPhysicsObject()
 	if ( phys:IsValid() ) then
@@ -66,7 +65,6 @@ function ENT:EnableHover()
 		phys:Wake()
 	end
 end
-
 
 function ENT:DisableHover()
 	self:SetHoverMode( false )

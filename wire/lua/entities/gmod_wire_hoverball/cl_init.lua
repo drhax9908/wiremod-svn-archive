@@ -55,6 +55,22 @@ function ENT:DrawTranslucent()
 		
 		render.DrawSprite( vOffset + vDiff * 4, 48, 48, color )
 		render.DrawSprite( vOffset + vDiff * 4, 52, 52, color )
+	else
+		local vOffset = self.Entity:GetPos()
+		local vPlayerEyes = LocalPlayer():EyePos()
+		local vDiff = (vOffset - vPlayerEyes):GetNormalized()
+		
+		render.SetMaterial( self.Glow )
+		local color = Color( 255, 50, 60, 255 ) //70,180,255,255
+		render.DrawSprite( vOffset - vDiff * 2, 22, 22, color )
+		
+		local Pulse = math.sin( CurTime() * 20 ) * 0.05
+		color.r = color.r * math.Clamp( Pulse, 0, 1 )
+		color.b = color.b * math.Clamp( Pulse, 0, 1 )
+		color.g = color.g * math.Clamp( Pulse, 0, 1 )
+		
+		render.DrawSprite( vOffset + vDiff * 4, 48, 48, color )
+		render.DrawSprite( vOffset + vDiff * 4, 52, 52, color )
 	end
 
 end
