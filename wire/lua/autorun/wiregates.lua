@@ -688,7 +688,7 @@ GateActions["toggle"] = {
 GateActions["wom4"] = {
 	group = "Memory",
 	name = "Write Only Memory(4 store)",
-	inputs = { "Clk", "AddrWrite", "Data" }
+	inputs = { "Clk", "AddrWrite", "Data" },
 	output = function( gate, Clk, AddrWrite, Data )
 		AddrWrite = math.floor(tonumber(AddrWrite))
 		if ( Clk > 0 ) then
