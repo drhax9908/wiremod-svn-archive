@@ -1,11 +1,12 @@
 local WIRE_SCROLL_SPEED = 0.5
 local WIRE_BLINKS_PER_SECOND = 2
 local CurPathEnt = {}
-
+local Wire_DisableWireRender = 0
 
 function Wire_Render(ent)
     if (not ent:IsValid()) then return end
-
+	if (Wire_DisableWireRender > 0) then return end
+	
 	local path_count = ent:GetNetworkedInt("wpn_count") or 0
 	if (path_count <= 0) then return end
 
@@ -107,3 +108,9 @@ function Wire_UpdateRenderBounds(ent)
 	local bbmin, bbmax = Wire_GetWireRenderBoundsWS(ent)
 	ent:SetRenderBoundsWS(bbmin, bbmax, Vector()*6)
 end
+
+local function WireDisableRender(pl, cmd, args)
+	if not args[1] then return end
+	Wire_DisableWireRender = tonumber(args[1])
+end
+concommand.Add( "Wire_DisableWireRender", WireDisableRender )
