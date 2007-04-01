@@ -40,45 +40,50 @@ function ENT:TriggerInput(iname, value)
 	if (iname == "Force") then
 		self.F = value
 		self:ShowOutput()
-		if (value > 0) then self:Think() end
+		//if (value > 0) then self:Think() end
 	elseif (iname == "OffsetForce") then
 		self.FoO = value
 		self:ShowOutput()
-		if (value > 0) then self:Think() end
+		//if (value > 0) then self:Think() end
 	elseif (iname == "Velocity") then
 		self.V = value
 		self:ShowOutput()
-		if (value > 0) then self:Think() end
+		//if (value > 0) then self:Think() end
 	end
 end
 
 function ENT:Think()
-	local vForward = self.Entity:GetUp()
-	local vStart = self.Entity:GetPos() + vForward*self.Entity:OBBMaxs().z
-
-	local trace = {}
-	trace.start = vStart
-	trace.endpos = vStart + (vForward * self.Tlength)
-	trace.filter = { self.Entity }
 	
-	local trace = util.TraceLine( trace )
-	
-	if (trace.Entity) and (trace.Entity:IsValid()) then // and (!trace.Entity:IsPlayer()) then
+	if (self.F > 0) or (self.FoO > 0) or (self.V > 0) then
 		
-		if (trace.Entity:GetMoveType() == MOVETYPE_VPHYSICS) then
-			local phys = trace.Entity:GetPhysicsObject()
-			if (phys:IsValid()) then
-				if (self.F > 0) then phys:ApplyForceCenter( vForward * self.Force * self.F ) end
-				if (self.FoO > 0) then phys:ApplyForceOffset( vForward * self.FoO, trace.HitPos ) end
-				if (self.V > 0) then phys:SetVelocity( vForward * self.V ) end
+		local vForward = self.Entity:GetUp()
+		local vStart = self.Entity:GetPos() + vForward*self.Entity:OBBMaxs().z
+		
+		local trace = {}
+		trace.start = vStart
+		trace.endpos = vStart + (vForward * self.Tlength)
+		trace.filter = { self.Entity }
+		
+		local trace = util.TraceLine( trace )
+		
+		if (trace.Entity) and (trace.Entity:IsValid()) then // and (!trace.Entity:IsPlayer()) then
+			
+			if (trace.Entity:GetMoveType() == MOVETYPE_VPHYSICS) then
+				local phys = trace.Entity:GetPhysicsObject()
+				if (phys:IsValid()) then
+					if (self.F > 0) then phys:ApplyForceCenter( vForward * self.Force * self.F ) end
+					if (self.FoO > 0) then phys:ApplyForceOffset( vForward * self.FoO, trace.HitPos ) end
+					if (self.V > 0) then phys:SetVelocity( vForward * self.V ) end
+				end
+			else
+				if (self.V > 0) then trace.Entity:SetVelocity( vForward * self.V ) end
 			end
-		else
-			if (self.V > 0) then trace.Entity:SetVelocity( vForward * self.V ) end
+			
 		end
 		
 	end
 	
-	self.Entity:NextThink(CurTime() + 0.05)
+	self.Entity:NextThink(CurTime() + 0.1)
 	return true
 end
 
