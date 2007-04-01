@@ -45,38 +45,34 @@ function TOOL:LeftClick( trace )
 		local Ent1, Ent2, Ent3  = self:GetEnt(1),	 self:GetEnt(2), trace.Entity
 		local const, rope = self.constraint, self.rope
 		
+		if ( !const ) then
+			self:ClearObjects()
+			self:SetStage(0)
+			return
+		end
+		
 		// Attach our Controller to the Elastic constraint
 		local Ang = trace.HitNormal:Angle()
 		Ang.pitch = Ang.pitch + 90
 		local controller = MakeWireHydraulicController(ply, trace.HitPos, Ang, nil, const, rope)
-
+		
 		local min = controller:OBBMins()
 		controller:SetPos( trace.HitPos - trace.HitNormal * min.z )
-		//controller:SetConstraint( const )
-		//controller:SetRope( rope )
-		//controller.const = const
-		//controller.rope = rope
-
-		/*local const2, nocollide
-
-		// Don't weld to world
-		if ( trace.Entity:IsValid() ) then
-			local const2 = constraint.Weld( controller, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-			// Don't disable collision if it's not attached to anything
-			controller:GetPhysicsObject():EnableCollisions( false )
-			controller.nocollide = true
-		end*/
+		
 		local const2 = WireLib.Weld(controller, trace.Entity, trace.PhysicsBone, true)
-
+		
 		undo.Create("WireHydraulic")
 			undo.AddEntity( controller )
+			undo.AddEntity( const )
+			undo.AddEntity( rope )
 			undo.AddEntity( const2 )
 			undo.SetPlayer( ply )
 		undo.Finish()
-
+		
 		ply:AddCleanup( "ropeconstraints", controller )
 		ply:AddCleanup( "ropeconstraints", const2 )
 		
+		if const then controller:DeleteOnRemove( const ) end
 		if rope then controller:DeleteOnRemove( rope ) end
 		
 		self:ClearObjects()
@@ -93,14 +89,14 @@ function TOOL:LeftClick( trace )
 		local material		= self:GetClientInfo( "material" ) or "cable/rope"
 		local width		= self:GetClientNumber( "width" )  or 3
 		local fixed		= self:GetClientNumber( "fixed" ) or 0
-
+		
 		// Get information we're about to use
 		local Ent1,  Ent2  = self:GetEnt(1),	 self:GetEnt(2)
 		local Bone1, Bone2 = self:GetBone(1),	 self:GetBone(2)
 		local LPos1, LPos2 = self:GetLocalPos(1),self:GetLocalPos(2)
-
+		
 		local const,rope = MakeWireHydraulic( self:GetOwner(), Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, width, material, fixed )
-
+		
 		self.constraint, self.rope = const,rope
 		
 		undo.Create("WireHydraulic")
@@ -109,23 +105,19 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( self:GetOwner() )
 		undo.Finish()
 		
-		
 		if const then	self:GetOwner():AddCleanup( "ropeconstraints", const ) end
 		if rope then		self:GetOwner():AddCleanup( "ropeconstraints", rope ) end
-		--if controller then	self:GetOwner():AddCleanup( "ropeconstraints", controller ) end
 		
-		// Clear the objects so we're ready to go again
-		--self:ClearObjects()
 		self:SetStage(2)
 		
 	else
-	
+		
 		self:SetStage( iNum+1 )
 		
 	end
 	
 	return true
-
+	
 end
 
 function TOOL:RightClick( trace )
