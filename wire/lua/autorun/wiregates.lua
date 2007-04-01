@@ -685,6 +685,30 @@ GateActions["toggle"] = {
     end
 }
 
+GateActions["wom4"] = {
+	group = "Memory",
+	name = "Write Only Memory(4 store)",
+	inputs = { "Clk", "AddrWrite", "Data" }
+	output = function( gate, Clk, AddrWrite, Data )
+		AddrWrite = math.floor(tonumber(AddrWrite))
+		if ( Clk > 0 ) then
+			if ( AddrWrite >= 0 ) and ( AddrWrite < 4 ) then
+				gate.LatchStore[AddrWrite] = Data
+			end
+		end
+		return 0
+	end,
+	reset = function( gate )
+		gate.LatchStore = {}
+		for i = 0, 3 do
+			gate.LatchStore[i] = 0
+		end
+	end,
+	label = function()
+		return "Write Only Memory - 4 store"
+    end
+}
+
 GateActions["ram8"] = {
     group = "Memory",
     name = "RAM(8 store)",
