@@ -123,7 +123,7 @@ function TOOL:LeftClick( trace )
 	end
 	
 	return true
-	w
+	
 end
 
 function TOOL:RightClick( trace )
