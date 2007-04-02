@@ -2,11 +2,12 @@
 //Build on Garry Duplicator Technology
 
 TOOL.Category		= "Construction"
-TOOL.Name			= "Advanced Duplicator"
+TOOL.Name			= "#AdvancedDuplicator"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
 if ( CLIENT ) then
+    language.Add( "AdvancedDuplicator", "Advanced Duplicator" )
     language.Add( "Tool_adv_duplicator_name", "Advanced Duplicator" )
     language.Add( "Tool_adv_duplicator_desc", "Duplicate an entity, or group of entities" )
     language.Add( "Tool_adv_duplicator_0", "Right click to copy, Reload places Paster" )
@@ -54,8 +55,8 @@ function TOOL:LeftClick( trace )
 		AdvDupe.ConvertConstraintPositionsToWorld( self.Constraints, trace.HitPos, angle - self.HoldAngle )
 		
 		Msg("===doing new paste===\n")
-		//Ents, Constraints = duplicator.Paste( self:GetOwner(), self.Entities, self.Constraints )//, self.DupeInfo, self.DORInfo )
-		Ents, Constraints = DebugDuplicator.Paste( self:GetOwner(), self.Entities, self.Constraints )//, self.DupeInfo, self.DORInfo )
+		//Ents, Constraints = duplicator.Paste( self:GetOwner(), self.Entities, self.Constraints )
+		Ents, Constraints = DebugDuplicator.Paste( self:GetOwner(), self.Entities, self.Constraints )
 		
 		AdvDupe.ResetPositions( self.Entities, self.Constraints )
 		
@@ -377,10 +378,10 @@ end
 function TOOL:SaveFile( filename, desc )
 	if ( CLIENT ) then return end
 	if (!filename) or (!self.Entities) then return end
-	if (self.FileLoaded or !self.Copied) then return end
+	if (self.Legacy) or (!self.Copied) then return end
 	
-	local Filename, Creator, Desc, NumOfEnts, NumOfConst, FileVersion = AdvDupe.SaveDupeTablesToFile( self:GetOwner(), 
-		self.Entities, self.Constraints, self.DupeInfo, self.DORInfo,
+	local Filename, Creator, Desc, NumOfEnts, NumOfConst, FileVersion = AdvDupe.SaveDupeTablesToFile( 
+		self:GetOwner(), self.Entities, self.Constraints,
 		self.HeadEntityIdx, self.HoldAngle, self.HoldPos,
 		filename, desc, (self:GetClientNumber( "debugsave" ) == 1)
 	)
