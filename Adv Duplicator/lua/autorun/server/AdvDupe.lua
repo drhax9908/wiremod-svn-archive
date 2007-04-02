@@ -3,7 +3,7 @@ AddCSLuaFile( "autorun/client/cl_advdupe.lua" )
 AddCSLuaFile( "autorun/shared/dupeshare.lua" )
 
 include( "autorun/shared/dupeshare.lua" )
-if (!dupeshare) then Msg("===ADVDupe: Error! dupeshare module not loaded") end
+if (!dupeshare) then Msg("===ADVDupe: Error! dupeshare module not loaded\n") end
 /*---------------------------------------------------------
    Advanced Duplicator module
    Author: TAD2020
@@ -17,161 +17,10 @@ if (CLIENT) then return end
 
 
 
-//Garry's functions copied from duplicator STOOL
-//Make them global so pasters can use of them too
-//
-// Converts to world so that the entities will be spawned in the correct positions
-//
-function AdvDupe.ConvertEntityPositionsToWorld( EntTable, Offset, HoldAngle )
-
-	for k, Ent in pairs( EntTable ) do
-
-		local NewPos, NewAngle = LocalToWorld( Ent.LocalPos, Ent.LocalAngle, Offset, HoldAngle )
-		
-		Ent.Pos = NewPos
-		Ent.Angle = NewAngle
-		
-		// And for physics objects
-		if ( Ent.PhysicsObjects ) then
-			for Num, Object in pairs( Ent.PhysicsObjects ) do
-	
-				local NewPos, NewAngle = LocalToWorld( Object.LocalPos, Object.LocalAngle, Offset, HoldAngle )
-			
-				Object.Pos = NewPos
-				Object.Angle = NewAngle
-	
-			end
-		end
-		
-		
-	end
-
-end
-
-//
-// Move the world positions
-//
-function AdvDupe.ConvertConstraintPositionsToWorld( Constraints, Offset, HoldAngle )
-	if (!Constraints) then return end
-	
-	for k, Constraint in pairs( Constraints ) do
-	
-		if ( Constraint.Entity ) then
-		
-			for k, Entity in pairs( Constraint.Entity ) do
-			
-				if (Entity.World && Entity.LPos) then
-				
-					local NewPos, NewAngle = LocalToWorld( Entity.LPos, Angle(0,0,0), Offset, HoldAngle )
-				
-					Entity.LPosOld = Entity.LPos
-					Entity.LPos = NewPos
-				
-				end
-			
-			end
-		
-		end
-	
-	end
-
-end
-
-
-//
-// Resets the positions of all the entities in the table
-//
-function AdvDupe.ResetPositions( EntTable, Constraints )
-
-	for k, Ent in pairs( EntTable ) do
-	
-		Ent.Pos = Ent.LocalPos * 1
-		Ent.Angle = Ent.LocalAngle * 1
-		
-		// And for physics objects
-		if ( Ent.PhysicsObjects ) then		
-			for Num, Object in pairs( Ent.PhysicsObjects ) do
-	
-				Object.Pos = Object.LocalPos * 1
-				Object.Angle = Object.LocalAngle * 1
-	
-			end
-		end
-		
-	end
-	
-	for k, Constraint in pairs( Constraints ) do
-	
-		if ( Constraint.Entity ) then
-		
-			for k, Entity in pairs( Constraint.Entity ) do
-			
-				if (Entity.LPosOld) then
-					Entity.LPos = Entity.LPosOld
-					Entity.LPosOld = nil
-				end
-			
-			end
-		
-		end
-	
-	end
-
-end
-
-//
-// Converts the positions from world positions to positions local to Offset
-//
-function AdvDupe.ConvertPositionsToLocal( EntTable, Constraints, Offset, HoldAngle )
-
-	for k, Ent in pairs( EntTable ) do
-	
-		Ent.Pos = Ent.Pos - Offset
-		Ent.LocalPos = Ent.Pos * 1
-		Ent.LocalAngle = Ent.Angle * 1
-		
-		if ( Ent.PhysicsObjects ) then
-			for Num, Object in pairs(Ent.PhysicsObjects) do
-			
-				Object.Pos = Object.Pos - Offset
-				Object.LocalPos = Object.Pos * 1
-				Object.LocalAngle = Object.Angle * 1
-				
-			end
-		end
-
-	end
-	
-	// If the entity is constrained to the world we want to move the points to be
-	// relative to where we're clicking
-	for k, Constraint in pairs( Constraints ) do
-	
-		if ( Constraint.Entity ) then
-		
-			for k, Entity in pairs( Constraint.Entity ) do
-			
-				if (Entity.World && Entity.LPos) then
-					Entity.LPos = Entity.LPos - Offset
-				end
-			
-			end
-		
-		end
-	
-	end
-
-end
-
-
-
-
-
-
-
 /*---------------------------------------------------------
   Process and save given dupe tables to file
 ---------------------------------------------------------*/
-function AdvDupe.SaveDupeTablesToFile( pl, EntTables, ConstraintTables, DupeInfo, DORInfo, HeadEntityIdx, HoldAngle, HoldPos, filename, desc, debugsave )
+function AdvDupe.SaveDupeTablesToFile( pl, EntTables, ConstraintTables, HeadEntityIdx, HoldAngle, HoldPos, filename, desc, debugsave )
 	
 	//save to a sub folder for each player
 	//local dir = "adv_duplicator/"..dupeshare.GetPlayerName(pl)
@@ -334,19 +183,10 @@ function AdvDupe.SavableEntityFromTable( EntTable )
 		
 		SavableEntity[ Key ] = EntTable[ Key ]
 		
-		/*local Arg = nil
-		
-		// Translate keys from old system
-		if ( Key == "pos" || Key == "position" ) then Key = "Pos" end
-		if ( Key == "ang" || Key == "Ang" || Key == "angle" ) then Key = "Angle" end
-		if ( Key == "model" ) then Key = "Model" end
-		
-		Arg = EntTable[ Key ]
-		
-		// Special keys
-		//if ( Key == "Data" ) then Arg = EntTable end
-		
-		SavableEntity[ Key ] = Arg*/
+		if ( EntTable.CollisionGroup ) then
+			if ( !EntTable.EntityMods ) then EntTable.EntityMods = {} end
+			EntTable.EntityMods.CollisionGroupMod = EntTable.CollisionGroup
+		end
 		
 	end
 	
@@ -379,6 +219,23 @@ end
 
 
 
+local function CollisionGroupModifier(ply, Ent, group )
+	
+	if ( group == COLLISION_GROUP_WORLD ) then
+		Ent:SetCollisionGroup( COLLISION_GROUP_WORLD )
+		Ent.CollisionGroup = COLLISION_GROUP_WORLD
+	else
+		Ent:SetCollisionGroup( COLLISION_GROUP_NONE )
+		Ent.CollisionGroup = COLLISION_GROUP_NONE
+	end
+	
+end
+duplicator.RegisterEntityModifier( "CollisionGroupMod", CollisionGroupModifier )
+
+
+
+
+
 if (dupeshare and dupeshare.PublicDirs) then
 	AdvDupe.PublicDirs = {}
 	for k, v in pairs(dupeshare.PublicDirs) do
@@ -406,6 +263,7 @@ function AdvDupe.GetPlayersFolder(pl)
 	
 	return dir
 end
+
 
 
 function AdvDupe.MakeDir(pl, cmd, args)
@@ -463,7 +321,6 @@ local function FileOptsRenameCommand(pl, cmd, args)
 	
 end
 concommand.Add("adv_duplicator_fileoptsrename", FileOptsRenameCommand)
-
 
 function AdvDupe.FileOpts(pl, action, filename, dir, dir2)
 	if not filename or not dir then return end
@@ -542,8 +399,7 @@ function AdvDupe.FileOpts(pl, action, filename, dir, dir2)
 	
 end
 
-
-
+//TODO
 function AdvDupe.CheckPerms(pl, dir, password, action)
 	
 	if (dupeshare.UsePWSys) and (!SinglePlayer()) then
@@ -555,6 +411,7 @@ function AdvDupe.CheckPerms(pl, dir, password, action)
 	
 	AdvDupe.SendClientError(pl, "Permission error!")
 end
+
 
 
 
@@ -578,9 +435,10 @@ end
 
 
 
-/*---------------------------------------------------------
-	Recieves file from client
----------------------------------------------------------*/
+
+//
+//Recieves file from client
+//
 function AdvDupe.RecieveFileContentStart( pl, cmd, args )
 	if !pl:IsValid() or !pl:IsPlayer() then return end
 	
@@ -650,9 +508,9 @@ end
 
 
 
-/*---------------------------------------------------------
-	Sends a file to the client
----------------------------------------------------------*/
+//
+//Sends a file to the client
+//
 function AdvDupe.SaveAndSendSaveToClient( pl, filename, desc )
 	local filepath = AdvDupe.SaveToFile( pl, filename, desc )
 	AdvDupe.SendSaveToClient( pl, filepath )
@@ -736,93 +594,6 @@ end
 
 
 
-
-
-
-//old copy, won't need
-// Copy ents & Constraints
-/*function AdvDupe.Copy( ply, StartEnt, offset )
-	
-	// Get all the ents & constraints in the system
-	local EntTable, ConstraintTable  = duplicator.GetEnts(StartEnt)
-	
-	// Clear plys duplicator table
-	AdvDupe[ply:UniqueID()] = { Ents = {}, Constraints = {}, HeadEntID = StartEnt:EntIndex(), DupeInfo = {}, DORInfo = {}, Wheels = {} }
-	
-	// Get info required to re-create each entity
-	for EntID, Ent in pairs(EntTable) do
-		local EntClass = Ent:GetClass()
-			
-		// Check the entity class is registered with the duplicator
-		local EntType = duplicator.EntityClasses[EntClass]
-		if EntType then
-			
-			AdvDupe[ply:UniqueID()].Ents[EntID] = AdvDupe.CopyGetEntArgs( ply, Ent, offset, EntClass)
-			// yeah, just one line now
-			
-			if Ent:GetTable().BuildDupeInfo then
-				AdvDupe[ply:UniqueID()].DupeInfo[EntID] = Ent:GetTable():BuildDupeInfo()
-			end
-			
-			AdvDupe[ply:UniqueID()].DORInfo[EntID] = Ent:GetDeleteOnRemoveInfo()
-			
-			//special case for wheels
-			if (EntClass == "gmod_wheel") or (EntClass == "gmod_wire_wheel") then
-				AdvDupe[ply:UniqueID()].Wheels[EntID] = {}
-				AdvDupe[ply:UniqueID()].Wheels[EntID].motor = Ent:GetTable():GetMotor():EntIndex()
-				AdvDupe[ply:UniqueID()].Wheels[EntID].toggle = Ent:GetTable():GetToggle()
-			end
-			
-		//elseif (EntClass) then
-		else
-			Msg("Duplicator copy: Unknown class " .. (EntClass or "NIL") .. "\n")
-			
-			local EntTable = Ent:GetTable()
-			EntTable.Class = Ent:GetClass()
-			
-			// Generic stuff
-			EntTable.Model 	= Ent:GetModel()
-			EntTable.Pos	= Ent:GetPos() - offset
-			EntTable.Angle	= Ent:GetAngles()
-		
-			//player:GetTable().Duplicator.Ents[ EntID ] = EntTable
-			AdvDupe[ply:UniqueID()].Ents[EntID] = EntTable
-			
-		end
-	end
-	
-	
-	// Get info required to re-create each constraint
-	for constID, Constraint in pairs(ConstraintTable) do
-		
-		
-		// check the constraint has been registered with the duplicator
-		local ConstraintType = duplicator.ConstraintType[Constraint:GetTable().Type]
-		if ConstraintType then
-			
-			local ctable, doconstraint = AdvDupe.CopyGetConstArgs( Constraint, function(id) return EntTable[id] end )
-			
-			if doconstraint then
-				if (type(constID) == "number") then
-					ctable.ConstID = constID
-				end
-				
-				ctable.ConstID = Constraint:EntIndex()
-				
-				table.insert(AdvDupe[ply:UniqueID()].Constraints, ctable)
-			end
-			
-		elseif (Constraint:GetTable().Type) then
-			Msg("Duplicator copy: Unknown constraint " .. (Constraint:GetTable().Type or "NIL") .. "\n")
-		end
-		
-	end
-	
-	Msg("\n=======================--Copyed--=======================\n")
-	
-	return EntTable, ConstraintTable
-end
-*/
 
 //
 // Lagacy paste stuff
@@ -923,164 +694,6 @@ function AdvDupe.OldPaste( ply, Ents, Constraints, DupeInfo, DORInfo, HeadEntity
 	return CreatedEnts, CreatedConstraints
 end
 
-
-
-/*---------------------------------------------------------
-	Name: AdvDupe.Paste* sub functions
-	Desc: functions used during AdvDupe.Paste
----------------------------------------------------------*/
-/*function AdvDupe.CopyGetEntArgs( ply, Ent, offset, EntClass )
-	
-	local etable	= {Class = EntClass}
-	local BoneArgs	= nil
-	local EntityTable = Ent:GetTable()
-	local EntType = duplicator.EntityClasses[EntClass]
-	
-	// Get the args needed to recreate this ent
-	for _, arg in pairs(EntType.Args) do
-		
-		// Get args which are stored in the ent's table
-		local Arg = EntityTable[arg]
-		
-		// Do special cases
-		if !Arg and type(arg) == "string" then
-			
-			key = string.lower(arg)
-			
-			if	key == "ang"	or key == "angle"		then
-				Arg = Ent:GetAngles()
-			elseif	key == "pos"	or key == "position"		then
-				Arg = Ent:GetPos() - offset
-			elseif	key == "vel"	or key == "velocity"		then
-				Arg = Ent:GetPhysicsObject():GetVelocity()
-			elseif	key == "avel"	or key == "anglevelocity"	then
-				Arg = Ent:GetPhysicsObject():GetAngleVelocity()
-			elseif	key == "frozen"	or key == "motiondisabled"	then
-				Arg = !Ent:GetPhysicsObject():IsMoveable()
-			elseif	key == "mdl"	or key == "model"		then
-				Arg = Ent:GetModel()
-			elseif	key == "pl" 	or key == "ply"		then
-				Arg = Arg:SteamID()
-			elseif	key == "class"					then
-				Arg = EntClass
-			end
-		end	
-		
-		// get bone args
-		if	type(arg) == "table"	then BoneArgs = arg end
-		etable[arg] = Arg
-	end
-	
-	// Get bone args
-	if EntityTable.Bones or BoneArgs then
-		
-		local Bones = {}
-		BoneArgs = BoneArgs or {}
-		
-		// Get args for each bone
-		for Bone = 0,( Ent:GetPhysicsObjectCount() - 1 ) do
-			if Ent:GetPhysicsObjectNum( Bone ):IsValid() then
-				Bones[Bone] = {}
-				
-				for _, barg in pairs(BoneArgs) do
-					
-					local bArg = nil
-					
-					if  EntityTable.Bones 
-					and EntityTable.Bones[Bone]
-					and EntityTable.Bones[Bone][barg] then
-						bArg = EntityTable.Bones[Bone][barg]
-					else
-						// Do special cases
-						local Phys = Ent:GetPhysicsObjectNum(Bone)
-						local barg = string.lower(barg)
-
-						if	barg == "ang"	or barg == "angle"		then bArg = Phys:GetAngle()
-						elseif	barg == "pos"	or barg == "position"		then bArg = Phys:GetPos() - offset
-						elseif	barg == "vel"	or barg == "velocity"		then bArg = Phys:GetVelocity()
-						elseif	barg == "avel"	or barg == "angvelocity"	then bArg = Phys:GetAngleVelocity()
-						elseif	barg == "mass"					then bArg = Phys:GetMass()
-						elseif	barg == "inertia"				then bArg = Phys:GetInertia()
-						elseif	barg == "damping"				then bArg = Phys:GetDamping()
-						elseif	barg == "frozen" or barg == "motionenabled"	then bArg = !Phys:IsMoveable()
-						end
-					end
-					
-					Bones[Bone][barg] = bArg
-					
-				end
-				
-				for ModifierType, _ in pairs(duplicator.GetEntityBoneModifiers()) do
-					if  EntityTable.Bones 
-					and EntityTable.Bones[Bone]
-					and EntityTable.Bones[Bone][ModifierType] then
-						Bones[Bone][ModifierType] = EntityTable.Bones[Bone][ModifierType]
-					end
-				end
-				
-			end
-		end
-		etable.Bones = Bones
-	end
-	
-	for ModifierType, _ in pairs(duplicator.EntityModifiers) do
-		if EntityTable[ModifierType] then
-			etable[ModifierType] = EntityTable[ModifierType]
-		end
-	end
-	
-	
-	// Hack to copy decals
-	if EntityTable.decals then
-		etable.decals = EntityTable.decals
-	end
-	
-	return etable
-	
-end
-*/
-/*function AdvDupe.CopyGetConstArgs( Constraint, GetEntByID )
-	
-	ctable = {Type = Constraint:GetTable().Type}
-	local doconstraint = true
-	
-	local ConstraintType = duplicator.ConstraintType[Constraint:GetTable().Type]
-	
-	for _,Key in pairs(ConstraintType.Args) do
-		
-		local Arg = Constraint:GetTable()[Key]
-		local len = string.len(Key)
-		local key = string.lower(Key)
-		
-		if (Arg) then
-			
-			// Do special cases
-			if		string.find(key, "lpos")  	and ( len == 4 or len == 5 )
-			or		string.find(key, "ang" )  	and ( len == 3 or len == 4 )	then Arg = Arg
-			elseif	string.find(key, "wpos")	and ( len == 4 or len == 5 )	then Arg = Arg - offset
-			elseif	key == "pl" 				or key == "ply"					then Arg = Arg:SteamID()
-			elseif	string.find(key, "ent" )  	and ( len == 3 or len == 4 )	then Arg = Arg:EntIndex() 
-				if !GetEntByID(Arg) then doconstraint = nil end
-			end
-			
-			// Nullify zero value args
-			if tostring(Arg) == "0.000 0.000 0.000" or Arg == false then Arg = nil end
-			
-		end
-		
-		ctable[Key] = Arg
-	end
-	
-	return ctable, doconstraint
-	
-end
-*/
-
-
-/*---------------------------------------------------------
-	Name: AdvDupe.Paste* sub functions
-	Desc: functions used during AdvDupe.Paste
----------------------------------------------------------*/
 function AdvDupe.PasteGetEntArgs( ply, EntTable, offset )
 	
 	local EntArgs, Args, BoneArgs, nBone = {}, {}, nil, nil
@@ -1221,7 +834,6 @@ function AdvDupe.OldMakeWheel( pl, Pos, Ang, Model, Vel, aVel, frozen, key_f, ke
 	
 end
 
-
 function AdvDupe.PasteApplyEntMods( ply, Ent, EntTable )
 	
 	/*for Type, ModFunction in pairs( duplicator.EntityModifiers ) do
@@ -1314,8 +926,6 @@ function AdvDupe.OldEntityModifiers.material.Func( pl, Entity, mat )
 	return true
 
 end
-
-
 
 //the data table uses the old names instead
 function AdvDupe.OldSetPhysProp( pl, ent, BoneID, Bone, Data )
@@ -1440,7 +1050,6 @@ function AdvDupe.PasteApplyDORInfo( DORInfoTable, GetentID )
 	
 end
 
-
 // Rotate entities relative to the ply's hold angles
 /*function AdvDupe.PasteRotate( ply, HeadEntity, CreatedEnts )
 	
@@ -1558,6 +1167,147 @@ end
 	return EntTable, ConstraintTable
 end
 */
+
+
+
+
+//Garry's functions copied from duplicator STOOL
+//Make them global so pasters can use of them too
+//
+// Converts to world so that the entities will be spawned in the correct positions
+function AdvDupe.ConvertEntityPositionsToWorld( EntTable, Offset, HoldAngle )
+
+	for k, Ent in pairs( EntTable ) do
+
+		local NewPos, NewAngle = LocalToWorld( Ent.LocalPos, Ent.LocalAngle, Offset, HoldAngle )
+		
+		Ent.Pos = NewPos
+		Ent.Angle = NewAngle
+		
+		// And for physics objects
+		if ( Ent.PhysicsObjects ) then
+			for Num, Object in pairs( Ent.PhysicsObjects ) do
+	
+				local NewPos, NewAngle = LocalToWorld( Object.LocalPos, Object.LocalAngle, Offset, HoldAngle )
+			
+				Object.Pos = NewPos
+				Object.Angle = NewAngle
+	
+			end
+		end
+		
+		
+	end
+
+end
+
+// Move the world positions
+function AdvDupe.ConvertConstraintPositionsToWorld( Constraints, Offset, HoldAngle )
+	if (!Constraints) then return end
+	
+	for k, Constraint in pairs( Constraints ) do
+	
+		if ( Constraint.Entity ) then
+		
+			for k, Entity in pairs( Constraint.Entity ) do
+			
+				if (Entity.World && Entity.LPos) then
+				
+					local NewPos, NewAngle = LocalToWorld( Entity.LPos, Angle(0,0,0), Offset, HoldAngle )
+				
+					Entity.LPosOld = Entity.LPos
+					Entity.LPos = NewPos
+				
+				end
+			
+			end
+		
+		end
+	
+	end
+
+end
+
+// Resets the positions of all the entities in the table
+function AdvDupe.ResetPositions( EntTable, Constraints )
+
+	for k, Ent in pairs( EntTable ) do
+	
+		Ent.Pos = Ent.LocalPos * 1
+		Ent.Angle = Ent.LocalAngle * 1
+		
+		// And for physics objects
+		if ( Ent.PhysicsObjects ) then		
+			for Num, Object in pairs( Ent.PhysicsObjects ) do
+	
+				Object.Pos = Object.LocalPos * 1
+				Object.Angle = Object.LocalAngle * 1
+	
+			end
+		end
+		
+	end
+	
+	for k, Constraint in pairs( Constraints ) do
+	
+		if ( Constraint.Entity ) then
+		
+			for k, Entity in pairs( Constraint.Entity ) do
+			
+				if (Entity.LPosOld) then
+					Entity.LPos = Entity.LPosOld
+					Entity.LPosOld = nil
+				end
+			
+			end
+		
+		end
+	
+	end
+
+end
+
+// Converts the positions from world positions to positions local to Offset
+function AdvDupe.ConvertPositionsToLocal( EntTable, Constraints, Offset, HoldAngle )
+
+	for k, Ent in pairs( EntTable ) do
+	
+		Ent.Pos = Ent.Pos - Offset
+		Ent.LocalPos = Ent.Pos * 1
+		Ent.LocalAngle = Ent.Angle * 1
+		
+		if ( Ent.PhysicsObjects ) then
+			for Num, Object in pairs(Ent.PhysicsObjects) do
+			
+				Object.Pos = Object.Pos - Offset
+				Object.LocalPos = Object.Pos * 1
+				Object.LocalAngle = Object.Angle * 1
+				
+			end
+		end
+
+	end
+	
+	// If the entity is constrained to the world we want to move the points to be
+	// relative to where we're clicking
+	for k, Constraint in pairs( Constraints ) do
+	
+		if ( Constraint.Entity ) then
+		
+			for k, Entity in pairs( Constraint.Entity ) do
+			
+				if (Entity.World && Entity.LPos) then
+					Entity.LPos = Entity.LPos - Offset
+				end
+			
+			end
+		
+		end
+	
+	end
+
+end
+
 
 
 
