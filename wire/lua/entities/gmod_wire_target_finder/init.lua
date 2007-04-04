@@ -80,7 +80,7 @@ end
 
 function ENT:GetBeaconPos(sensor)
 	local ch = 1
-	if (sensor.Inputs.Target.SrcId) then
+	if (sensor.Inputs) and (sensor.Inputs.Target.SrcId) then
 		ch = tonumber(sensor.Inputs.Target.SrcId)
 	end
 	if self.SelectedTargets[ch] then
@@ -245,6 +245,11 @@ function ENT:OnRemove()
 	end
 end
 
+function ENT:OnRestore()
+	self.BaseClass.OnRestore(self)
+	
+	self.MaxTargets = self.MaxTargets or 1
+end
 
 function ENT:TargetPainter( tt, targeted )
 	if tt &&						// There is a target
