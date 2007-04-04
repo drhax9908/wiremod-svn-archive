@@ -132,7 +132,7 @@ function TOOL:LeftClick( trace, worldweld )
 		turret:GetTable().nocollide = true
 		
 	end*/
-	local weld = WireLib.Weld(wire_twoway_radio, trace.Entity, trace.PhysicsBone, true, false, worldweld)
+	local weld = WireLib.Weld(turret, trace.Entity, trace.PhysicsBone, true, false, worldweld)
 	
 	undo.Create("WireTurret")
 		undo.AddEntity( turret )
