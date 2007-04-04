@@ -134,3 +134,26 @@ function ENT:Think()
 	self.Entity:NextThink(CurTime() + 0.01)
 	return true
 end
+
+
+//Duplicator support to save pod link (TAD2020)
+function ENT:BuildDupeInfo()
+	local info = self.BaseClass.BuildDupeInfo(self) or {}
+
+	if (self.Pod) and (self.Pod:IsValid()) then
+	    info.pod = self.Pod:EntIndex()
+	end
+
+	return info
+end
+
+function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
+	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
+
+	if (info.pod) then
+		self.Pod = GetEntByID(info.pod)
+		if (!self.Pod) then
+			self.Pod = ents.GetByIndex(info.pod)
+		end
+	end
+end
