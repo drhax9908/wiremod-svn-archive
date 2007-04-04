@@ -1,16 +1,14 @@
 AddCSLuaFile( "autorun/wiregates.lua" )
 
-/*
-All gate functions
-*/
+//***********************************************************
+//		Gate Action Functions Module
+//			define all gate actions here
+//	TODO: loader function to grab external gate action defines
+//***********************************************************
 GateActions = {}
-/*WireGates.Arithmetic = WireGates.Arithmetic or {}
-WireGates.Comparison = WireGates.Comparison or {}
-WireGates.Logic = WireGates.Logic or {}
-WireGates.Memory = WireGates.Memory or {}
-WireGates.Selection = WireGates.Selection or {}
-WireGates.Time = WireGates.Time or {}
-WireGates.Trig = WireGates.Trig or {}*/
+
+
+
 
 //***********************************************************
 //		Arithmetic Gates
@@ -354,6 +352,7 @@ GateActions["Delta"] = {
 
 
 
+
 //***********************************************************
 //		Comparison Gates
 //***********************************************************
@@ -614,6 +613,7 @@ GateActions["xnor"] = {
 
 
 
+
 //***********************************************************
 //		Memory Gates
 //***********************************************************
@@ -843,6 +843,7 @@ GateActions["udcounter"] = {
 		return "Increment:"..Inc.." Decrement:"..Dec.." Clk:"..Clk.." Reset:"..Reset.." = "..Out
 	end
 }
+
 
 
 
@@ -1094,6 +1095,32 @@ GateActions["pulser"] = {
 	end
 }
 
+GateActions["derive"] = {
+	group = "Time",
+	name = "Derivative",
+	inputs = {"A"},
+	timed = false,
+	output = function(gate, A)
+		local t = CurTime()
+		local dT = t - gate.LastT
+		gate.LastT = t
+		local dA = A - gate.LastA
+		gate.LastA = A
+		if (dT != 0) then
+			return dA/dT
+		else
+			return 0;
+		end
+	end,
+	reset = function(gate)
+		gate.LastT = CurTime()
+		gate.LastA = 0
+	end,
+	label = function(Out, A)
+		return "d/dt["..A.."] = "..Out
+	end
+}
+
 GateActions["delay"] = {
 	group = "Time",
 	name = "Delay",
@@ -1147,6 +1174,163 @@ GateActions["delay"] = {
 		"\nTime Elapsed: "..Out.TimeElapsed.." = "..Out.Out
 	end
 }
+
+GateActions["Definite Integral"] = {
+	group = "Time",
+	name = "Integral",
+	inputs = { "A", "Points" },
+	timed = true,
+	output = function(gate, A, Points)
+		local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
+		gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
+		if(Points<=0) then
+			Points=2
+			data = {}
+		end
+		data = data or {}
+		integral=A*DeltaTime
+		if (index == nil) then
+			index=1
+		else
+			index=(index+1)%Points
+		end
+		data[index]=integral
+		i=0
+		totalintegral=0
+		while (i<Points) do
+			whichIndex=(index-i)
+			whichIndex=whichIndex%Points
+			whichIndex=whichIndex+1
+			totalintegral=totalintegral+(data[whichIndex] or 0)
+			i=i+1
+		end
+	return totalintegral or 0
+	end,
+	reset = function(gate)
+		gate.PrevTime = CurTime()
+		data = {}
+	end,
+	label = function(Out, A, Points)
+		return "A: "..A.."   Points: "..Points.."   Output: "..Out
+	end,
+}
+ 
+GateActions["Derivative"] = {
+	group = "Time",
+	name = "Derivative",
+	inputs = { "A" },
+	timed = true,
+	output = function(gate, A)
+		prev5Delta= (prev4Delta or .04)
+		prev4Delta= (prev3Delta or .04)
+		prev3Delta= (prev2Delta or .04)
+		prev2Delta= (prevDelta or .04)
+		prevDelta = (DeltaT or .04)
+		-- begin block: set up DeltaValue time
+		prevTime=currentTime
+		currentTime=CurTime()
+		if (prevTime==currentTime) then
+			DeltaT=.04
+		else
+			DeltaT=currentTime-(prevTime or 0)
+		end
+		prev6Value=(prev5Value or A)
+		prev5Value=(prev4Value or A)
+		prev5Slope=(prev5Value-prev6Value)/prev5Delta
+		prev4Value=(prev3Value or A)
+		prev4Slope=(prev4Value-prev5Value)/prev4Delta
+		prev3Value=(prev2Value or A)
+		prev3Slope=(prev3Value-prev4Value)/prev3Delta
+		prev2Value=(prevValue or A)
+		prev2Slope=(prev2Value-prev3Value)/prev2Delta
+		prevValue=(currentValue or A)
+		prevSlope=(prevValue-prev2Value)/prevDelta
+		currentValue=A
+		currentSlope=(prevValue-currentValue)/DeltaT
+		averageSlope=((currentSlope+prevSlope+prev2Slope+prev3Slope+prev4Slope+prev5Slope)/6)
+		return averageSlope
+	end,
+	reset = function(gate)
+		gate.PrevTime = CurTime()
+		data = {}
+	end,
+	label = function(Out, A)
+		return "Input: "..currentValue.."   Previous: "..prevValue.."   Derivative: "..Out
+	end,
+}
+ 
+GateActions["Indefinite Integral"] = {
+	group = "Time",
+	name = "Indefinite Integral",
+	inputs = { "A", "Reset" },
+	timed = true,
+	output = function(gate, A, Reset)
+		local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
+		gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
+		if(Reset != 0) then
+			totalintegral=0
+		end
+		integral=A*DeltaTime
+		totalintegral = (totalintegral or 0) + integral
+		if (totalintegral > 100000) then
+			totalintegral = 100000
+		end
+		if (totalintegral < -100000) then
+			totalintegral = -100000
+		end
+		return totalintegral or 0
+	end,
+	reset = function(gate)
+		gate.PrevTime = CurTime()
+		data = {}
+	end,
+	label = function(Out, A, Reset)
+		return "A: "..A.."  Reset: "..Reset.."   Output: "..Out
+	end,
+}
+ 
+GateActions["Average Derivative"] = {
+	group = "Time",
+	name = "Average Derivative",
+	inputs = { "A", "Window" },
+	timed = true,
+	output = function(gate, A, Window)
+		local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
+		gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
+		if(Window<=0) then
+			Window=2
+			data = {}
+		end
+		data = data or {}
+		prevA=currentA or A
+		currentA=A
+		derivative=(currentA-prevA)/DeltaTime
+		if (index == nil) then
+			index=1
+		else
+			index=(index+1)%Window
+		end
+		data[index]=derivative
+		i=0
+		sum=0
+		while (i<Window) do
+			whichIndex=(index-i)
+			whichIndex=whichIndex%Window
+			whichIndex=whichIndex+1
+			sum=sum+(data[whichIndex] or 0)
+			i=i+1
+		end
+		averageDerivative=(sum/Window)
+	return averageDerivative or 0
+	end,
+	reset = function(gate)
+		gate.PrevTime = CurTime()
+		data = {}
+	end,
+	label = function(Out, A, Window)
+		return "A: "..A.."   Window: "..Window.."   Output: "..Out
+	end,
+} 
 
 
 
