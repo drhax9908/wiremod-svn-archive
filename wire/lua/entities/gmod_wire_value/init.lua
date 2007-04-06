@@ -16,8 +16,27 @@ function ENT:Initialize()
 end
 
 function ENT:Setup(value)
-	self.Value = value
-
-	self:SetOverlayText(self.Value)
-	Wire_TriggerOutput(self.Entity, "Out", self.Value)
+	
+	if type(value) != "table" then 
+		local v = value
+		value = {}
+		value[1] = tostring(v)
+	end
+	
+	self.value = value
+	//this is where storing the values as strings comes in
+	Wire_AdjustOutputs(self.Entity, value)
+	
+	local txt = ""
+	
+	for k,v in pairs(value) do
+		//line break after 4 values
+		if (k == 5) or (k == 9) then txt = txt.."\n" end
+		txt = txt .. v
+		if (k < #value) then txt = txt .. ", " end
+		Wire_TriggerOutput(self.Entity, v, tonumber(v))
+	end
+	
+	self:SetOverlayText(txt)
+	
 end

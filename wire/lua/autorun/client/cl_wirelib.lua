@@ -7,40 +7,40 @@ function Wire_Render(ent)
     if (not ent:IsValid()) then return end
 	if (Wire_DisableWireRender > 0) then return end
 	
-	local path_count = ent:GetNetworkedInt("wpn_count") or 0
+	local path_count = ent:GetNetworkedBeamInt("wpn_count") or 0
 	if (path_count <= 0) then return end
 
 	local w,f = math.modf(CurTime()*WIRE_BLINKS_PER_SECOND)
     local blink = nil
     if (f < 0.5) then
-		blink = ent:GetNetworkedString("BlinkWire")
+		blink = ent:GetNetworkedBeamString("BlinkWire")
 	end
 
     local bbmin = ent:GetPos()+Vector(-8, -8, -8)
     local bbmax = ent:GetPos()+Vector(8, 8, 8)
 
 	for i = 1,path_count do
-	    local path_name = ent:GetNetworkedString("wpn_" .. i)
+	    local path_name = ent:GetNetworkedBeamString("wpn_" .. i)
 	    if (blink ~= path_name) then
 	        local net_name = "wp_"..path_name
-		    local len = ent:GetNetworkedInt(net_name) or 0
+		    local len = ent:GetNetworkedBeamInt(net_name) or 0
 			
 			if (len > 0) then
-			    local start = ent:GetNetworkedVector(net_name .. "_start")
+			    local start = ent:GetNetworkedBeamVector(net_name .. "_start")
 			    if (ent:IsValid()) then start = ent:LocalToWorld(start) end
-			    local color_v = ent:GetNetworkedVector(net_name .. "_col")
+			    local color_v = ent:GetNetworkedBeamVector(net_name .. "_col")
 			    local color = Color(color_v.x, color_v.y, color_v.z, 255)
-			    local width = ent:GetNetworkedFloat(net_name .. "_width")
+			    local width = ent:GetNetworkedBeamFloat(net_name .. "_width")
 
 			    local scroll = CurTime()*WIRE_SCROLL_SPEED
 			    
-				render.SetMaterial(Material(ent:GetNetworkedString(net_name .. "_mat")))
+				render.SetMaterial(Material(ent:GetNetworkedBeamString(net_name .. "_mat")))
 				render.StartBeam(len+1)
 				render.AddBeam(start, width, scroll, color)
 
 				for j=1,len do
-				    local node_ent = ent:GetNetworkedEntity(net_name .. "_" .. j .. "_ent")
-				    local endpos = ent:GetNetworkedVector(net_name .. "_" .. j .. "_pos")
+				    local node_ent = ent:GetNetworkedBeamEntity(net_name .. "_" .. j .. "_ent")
+				    local endpos = ent:GetNetworkedBeamVector(net_name .. "_" .. j .. "_pos")
 					if (node_ent:IsValid()) then
 						endpos = node_ent:LocalToWorld(endpos)
 
@@ -74,17 +74,17 @@ local function Wire_GetWireRenderBoundsWS(ent)
     local bbmin = ent:GetPos()+Vector(-8, -8, -8)
     local bbmax = ent:GetPos()+Vector(8, 8, 8)
 
-	local path_count = ent:GetNetworkedInt("wpn_count") or 0
+	local path_count = ent:GetNetworkedBeamInt("wpn_count") or 0
 	if (path_count > 0) then
 		for i = 1,path_count do
-		    local path_name = ent:GetNetworkedString("wpn_" .. i)
+		    local path_name = ent:GetNetworkedBeamString("wpn_" .. i)
 	        local net_name = "wp_"..path_name
-		    local len = ent:GetNetworkedInt(net_name) or 0
+		    local len = ent:GetNetworkedBeamInt(net_name) or 0
 
 			if (len > 0) then
 				for j=1,len do
-				    local node_ent = ent:GetNetworkedEntity(net_name .. "_" .. j .. "_ent")
-				    local nodepos = ent:GetNetworkedVector(net_name .. "_" .. j .. "_pos")
+				    local node_ent = ent:GetNetworkedBeamEntity(net_name .. "_" .. j .. "_ent")
+				    local nodepos = ent:GetNetworkedBeamVector(net_name .. "_" .. j .. "_pos")
 					if (node_ent:IsValid()) then
 						nodepos = node_ent:LocalToWorld(nodepos)
 

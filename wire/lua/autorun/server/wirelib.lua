@@ -485,11 +485,11 @@ function Wire_Link_Start(idx, ent, pos, iname, material, color, width)
 		}
 
 	local net_name = "wp_" .. iname
-	ent:SetNetworkedInt(net_name, 0)
-	ent:SetNetworkedVector(net_name .. "_start", pos)
-	ent:SetNetworkedString(net_name .. "_mat", material)
-	ent:SetNetworkedVector(net_name .. "_col", Vector(color.r, color.g, color.b))
-	ent:SetNetworkedFloat(net_name .. "_width", width)
+	ent:SetNetworkedBeamInt(net_name, 0)
+	ent:SetNetworkedBeamVector(net_name .. "_start", pos)
+	ent:SetNetworkedBeamString(net_name .. "_mat", material)
+	ent:SetNetworkedBeamVector(net_name .. "_col", Vector(color.r, color.g, color.b))
+	ent:SetNetworkedBeamFloat(net_name .. "_width", width)
 
 	input.StartPos = pos
 	input.Material = material
@@ -504,10 +504,10 @@ function Wire_Link_Node(idx, ent, pos)
     if (not CurLink[idx]) or (not CurLink[idx].Dst) then return end
 
 	local net_name = "wp_" .. CurLink[idx].DstId
-	local node_idx = CurLink[idx].Dst:GetNetworkedInt(net_name)+1
-	CurLink[idx].Dst:SetNetworkedEntity(net_name .. "_" .. node_idx .. "_ent", ent)
-	CurLink[idx].Dst:SetNetworkedVector(net_name .. "_" .. node_idx .. "_pos", pos)
-	CurLink[idx].Dst:SetNetworkedInt(net_name, node_idx)
+	local node_idx = CurLink[idx].Dst:GetNetworkedBeamInt(net_name)+1
+	CurLink[idx].Dst:SetNetworkedBeamEntity(net_name .. "_" .. node_idx .. "_ent", ent)
+	CurLink[idx].Dst:SetNetworkedBeamVector(net_name .. "_" .. node_idx .. "_pos", pos)
+	CurLink[idx].Dst:SetNetworkedBeamInt(net_name, node_idx)
 
 	table.insert(CurLink[idx].Path, { Entity = ent, Pos = pos })
 end
@@ -523,10 +523,10 @@ function Wire_Link_End(idx, ent, pos, oname)
 	end
 	
 	local net_name = "wp_" .. CurLink[idx].DstId
-	local node_idx = CurLink[idx].Dst:GetNetworkedInt(net_name)+1
-	CurLink[idx].Dst:SetNetworkedEntity(net_name .. "_" .. node_idx .. "_ent", ent)
-	CurLink[idx].Dst:SetNetworkedVector(net_name .. "_" .. node_idx .. "_pos", pos)
-	CurLink[idx].Dst:SetNetworkedInt(net_name, node_idx)
+	local node_idx = CurLink[idx].Dst:GetNetworkedBeamInt(net_name)+1
+	CurLink[idx].Dst:SetNetworkedBeamEntity(net_name .. "_" .. node_idx .. "_ent", ent)
+	CurLink[idx].Dst:SetNetworkedBeamVector(net_name .. "_" .. node_idx .. "_pos", pos)
+	CurLink[idx].Dst:SetNetworkedBeamInt(net_name, node_idx)
 
 	table.insert(CurLink[idx].Path, { Entity = ent, Pos = pos })
 
@@ -544,10 +544,10 @@ function Wire_Link_Cancel(idx)
 	
 	local net_name = "wp_" .. CurLink[idx].DstId
 	for i=1,path_len do
-		CurLink[idx].Dst:SetNetworkedEntity(net_name .. "_" .. i, CurLink[idx].OldPath[i].Entity)
-		CurLink[idx].Dst:SetNetworkedVector(net_name .. "_" .. i, CurLink[idx].OldPath[i].Pos)
+		CurLink[idx].Dst:SetNetworkedBeamEntity(net_name .. "_" .. i, CurLink[idx].OldPath[i].Entity)
+		CurLink[idx].Dst:SetNetworkedBeamVector(net_name .. "_" .. i, CurLink[idx].OldPath[i].Pos)
 	end
-	CurLink[idx].Dst:SetNetworkedInt(net_name, path_len)
+	CurLink[idx].Dst:SetNetworkedBeamInt(net_name, path_len)
 
 	CurLink[idx] = nil
 end
@@ -555,16 +555,16 @@ end
 
 function Wire_Link_Clear(ent, iname)
 	local net_name = "wp_" .. iname
-	ent:SetNetworkedInt(net_name, 0)
+	ent:SetNetworkedBeamInt(net_name, 0)
 	
 	Wire_Unlink(ent, iname)
 end
 
 function Wire_SetPathNames(ent, names)
 	for k,v in pairs(names) do
-		ent:SetNetworkedString("wpn_" .. k, v)
+		ent:SetNetworkedBeamString("wpn_" .. k, v)
 	end
-	ent:SetNetworkedInt("wpn_count", table.getn(names))
+	ent:SetNetworkedBeamInt("wpn_count", table.getn(names))
 end
 
 
@@ -620,6 +620,75 @@ function WireLib.Weld(ent, traceEntity, tracePhysicsBone, DOR, collision, AllowW
 	end
 	return const
 end
+
+
+function WireLib.BuildDupeInfo( Ent )
+	if (not Ent.Inputs) then return end
+	
+	local info = { Wires = {} }
+	for k,input in pairs(Ent.Inputs) do
+		if (Ent.Src) and (Ent.Src:IsValid()) then
+		    info.Wires[k] = {
+				StartPos = Ent.StartPos,
+				Material = Ent.Material,
+				Color = Ent.Color,
+				Width = Ent.Width,
+				Src = Ent.Src:EntIndex(),
+				SrcId = Ent.SrcId,
+				SrcPos = Vector(0, 0, 0),
+			}
+			
+			if (input.Path) then
+				info.Wires[k].Path = {}
+				
+			    for _,v in ipairs(input.Path) do
+			        if (v.Entity) and (v.Entity:IsValid()) then
+			        	table.insert(info.Wires[k].Path, { Entity = v.Entity:EntIndex(), Pos = v.Pos })
+					end
+			    end
+			    
+			    local n = table.getn(info.Wires[k].Path)
+			    if (n > 0) and (info.Wires[k].Path[n].Entity == info.Wires[k].Src) then
+			        info.Wires[k].SrcPos = info.Wires[k].Path[n].Pos
+			        table.remove(info.Wires[k].Path, n)
+			    end
+			end
+		end
+	end
+	
+	return info
+end
+
+function WireLib.ApplyDupeInfo( ply, ent, info, GetEntByID )
+	if (info.Wires) then
+		for k,input in pairs(info.Wires) do
+		    
+			Wire_Link_Start(ply:UniqueID(), ent, input.StartPos, k, input.Material, input.Color, input.Width)
+		    
+			if (input.Path) then
+		        for _,v in ipairs(input.Path) do
+					
+					local ent2 = GetEntByID(v.Entity)
+					if (!ent2) or (!ent2:IsValid()) then ent2 = ents.GetByIndex(v.Entity) end
+					if (ent2) or (ent2:IsValid()) then
+						Wire_Link_Node(ply:UniqueID(), ent2, v.Pos)
+					else
+						Msg("ApplyDupeInfo: Error, Could not find the entity for wire path\n")
+					end
+				end
+		    end
+			
+			local ent2 = GetEntByID(input.Src)
+		    if (!ent2) or (!ent2:IsValid()) then ent2 = ents.GetByIndex(input.Src) end
+			if (ent2) or (ent2:IsValid()) then
+				Wire_Link_End(ply:UniqueID(), ent2, input.SrcPos, input.SrcId)
+			else
+				Msg("ApplyDupeInfo: Error, Could not find the output entity\n")
+			end
+		end
+	end
+end
+
 
 WireLib.CreateInputs			= Wire_CreateInputs
 WireLib.CreateOutputs			= Wire_CreateOutputs
