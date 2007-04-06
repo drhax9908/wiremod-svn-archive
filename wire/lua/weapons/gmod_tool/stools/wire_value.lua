@@ -18,8 +18,21 @@ if (SERVER) then
 	CreateConVar('sbox_maxwire_values', 20)
 end
 
-TOOL.ClientConVar[ "value" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/kobilica/value.mdl"
+TOOL.ClientConVar[ "numvalues" ] = "1"
+TOOL.ClientConVar[ "value1" ] = "0"
+TOOL.ClientConVar[ "value2" ] = "0"
+TOOL.ClientConVar[ "value3" ] = "0"
+TOOL.ClientConVar[ "value4" ] = "0"
+TOOL.ClientConVar[ "value5" ] = "0"
+TOOL.ClientConVar[ "value6" ] = "0"
+TOOL.ClientConVar[ "value7" ] = "0"
+TOOL.ClientConVar[ "value8" ] = "0"
+TOOL.ClientConVar[ "value9" ] = "0"
+TOOL.ClientConVar[ "value10" ] = "0"
+TOOL.ClientConVar[ "value11" ] = "0"
+TOOL.ClientConVar[ "value12" ] = "0"
+
 
 if (SERVER) then
 	ModelPlug_Register("value")
@@ -31,50 +44,45 @@ function TOOL:LeftClick( trace )
 	if (!trace.HitPos) then return false end
 	if (trace.Entity:IsPlayer()) then return false end
 	if ( CLIENT ) then return true end
-
+	
 	local ply = self:GetOwner()
-
-
+	
 	// Get client's CVars
-	local value = self:GetClientNumber( "value" )
-	local model             = self:GetClientInfo( "model" )
-
+	local model		= self:GetClientInfo( "model" )
+	local numvalues	= self:GetClientNumber( "numvalues" )
+	
+	//value is a table of strings so we can save a step later in adjusting the outputs
+	local value = {}
+	for i = 1, numvalues do
+		value[i] = tostring( self:GetClientNumber( "value"..i ) )
+	end
+	
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_value" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup(value)
 		trace.Entity.value = value
 		return true
 	end
-
+	
 	if ( !self:GetSWEP():CheckLimit( "wire_values" ) ) then return false end
-
+	
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
-
+	
 	local wire_value = MakeWireValue( ply, model, trace.HitPos, Ang, value )
-
+	
 	local min = wire_value:OBBMins()
 	wire_value:SetPos( trace.HitPos - trace.HitNormal * min.z )
-
-	//local const, nocollide
-
-	// Don't weld to world
-	/*if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_value, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_value:GetPhysicsObject():EnableCollisions( false )
-		wire_value.nocollide = true
-	end*/
+	
 	local const = WireLib.Weld(wire_value, trace.Entity, trace.PhysicsBone, true)
-
+	
 	undo.Create("WireValue")
 		undo.AddEntity( wire_value )
 		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
-
-
+	
 	ply:AddCleanup( "wire_values", wire_value )
-
+	
 	return true
 end
 
@@ -103,12 +111,19 @@ if (SERVER) then
 		wire_value:SetPos( Pos )
 		wire_value:SetModel( Model )
 		wire_value:Spawn()
-
+		
+		//for old saves
+		if type(value) != "table" then 
+			local v = value
+			value = {}
+			value[v] = tostring(v)
+		end
+		
 		wire_value:Setup(value)
 		wire_value:SetPlayer( pl )
 
 		local ttable = {
-			value			= value,
+			value		= value,
 			pl              = pl
 			}
 
@@ -154,30 +169,126 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_value_name", Description = "#Tool_wire_value_desc" })
-
+	
 	panel:AddControl("ComboBox", {
 		Label = "#Presets",
 		MenuButton = "1",
 		Folder = "wire_value",
-
+		
 		Options = {
 			Default = {
 				wire_value_value = "0",
 			}
 		},
-
+		
 		CVars = {
 			[0] = "wire_value_value",
 		}
 	})
-
+	
+	panel:AddControl("Slider", {
+		Label = "Num of Values",
+		Type = "Integer",
+		Min = "1",
+		Max = "12",
+		Command = "wire_value_numvalues"
+	})
+	
 	panel:AddControl("Slider", {
 		Label = "#WireValueTool_value",
 		Type = "Float",
 		Min = "-10",
 		Max = "10",
-		Command = "wire_value_value"
+		Command = "wire_value_value1"
 	})
-
+	
+	panel:AddControl("Slider", {
+		Label = "#WireValueTool_value",
+		Type = "Float",
+		Min = "-10",
+		Max = "10",
+		Command = "wire_value_value2"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireValueTool_value",
+		Type = "Float",
+		Min = "-10",
+		Max = "10",
+		Command = "wire_value_value3"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireValueTool_value",
+		Type = "Float",
+		Min = "-10",
+		Max = "10",
+		Command = "wire_value_value4"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireValueTool_value",
+		Type = "Float",
+		Min = "-10",
+		Max = "10",
+		Command = "wire_value_value5"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireValueTool_value",
+		Type = "Float",
+		Min = "-10",
+		Max = "10",
+		Command = "wire_value_value6"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireValueTool_value",
+		Type = "Float",
+		Min = "-10",
+		Max = "10",
+		Command = "wire_value_value7"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireValueTool_value",
+		Type = "Float",
+		Min = "-10",
+		Max = "10",
+		Command = "wire_value_value8"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireValueTool_value",
+		Type = "Float",
+		Min = "-10",
+		Max = "10",
+		Command = "wire_value_value9"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireValueTool_value",
+		Type = "Float",
+		Min = "-10",
+		Max = "10",
+		Command = "wire_value_value10"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireValueTool_value",
+		Type = "Float",
+		Min = "-10",
+		Max = "10",
+		Command = "wire_value_value11"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireValueTool_value",
+		Type = "Float",
+		Min = "-10",
+		Max = "10",
+		Command = "wire_value_value12"
+	})
+	
 	ModelPlug_AddToCPanel(panel, "value", "wire_value", "#WireValueTool_model", nil, "#WireValueTool_model")
 end

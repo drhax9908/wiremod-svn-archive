@@ -22,7 +22,7 @@ end
 
 function ENT:Setup(flim)
 	self:TriggerInput("A", 0)
-	self.Flim = flim
+	self.Flim = math.min(flim, 10000)
 end
 
 function ENT:TriggerInput(iname, value)

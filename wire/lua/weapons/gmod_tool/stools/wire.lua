@@ -171,7 +171,7 @@ function TOOL:RightClick( trace )
 			end
 
 			if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) then
-			    self.CurrentComponent:SetNetworkedString("BlinkWire", self.CurrentInput)
+			    self.CurrentComponent:SetNetworkedBeamString("BlinkWire", self.CurrentInput)
 			end
 		end
 	elseif (stage == 1) then
@@ -347,7 +347,7 @@ function TOOL:SelectComponent(ent)
 	if (self.CurrentComponent == ent) then return end
 	
     if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) then
- 	    self.CurrentComponent:SetNetworkedString("BlinkWire", "")
+ 	    self.CurrentComponent:SetNetworkedBeamString("BlinkWire", "")
 	end
 	
 	self.CurrentComponent = ent
@@ -383,6 +383,6 @@ function TOOL:SelectComponent(ent)
 	end
 	
 	if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) then
-	    self.CurrentComponent:SetNetworkedString("BlinkWire", self.CurrentInput)
+	    self.CurrentComponent:SetNetworkedBeamString("BlinkWire", self.CurrentInput)
 	end
 end
