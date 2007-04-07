@@ -82,9 +82,13 @@ function TOOL:LeftClick( trace )
 		end
 		
 		self.Outputs = {}
+		self.OutputsDesc = {}
 		for key,v in pairs(trace.Entity.Outputs) do
 			if v.Num then 
 				self.Outputs[v.Num] = key
+				if (v.Desc) then
+					self.OutputsDesc[key] = v.Desc
+				end
 			else
 				table.insert(self.Outputs, key)
 			end
@@ -93,12 +97,19 @@ function TOOL:LeftClick( trace )
 
 		local oname = nil
 		for k,_ in pairs(trace.Entity.Outputs) do
-		    if (oname) then
+			if (oname) then
 				self:SelectComponent(nil)
-		        self.CurrentOutput = oname
+		        self.CurrentOutput = self.Outputs[1] //oname
 		        self.OutputEnt = trace.Entity
 		        self.OutputPos = trace.Entity:WorldToLocal(trace.HitPos)
-		    	self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output:"..self.CurrentOutput)
+		    	//self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output:"..self.CurrentOutput)
+				
+				if (self.OutputsDesc) and (self.OutputsDesc[self.CurrentOutput]) then
+					self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output: "..self.CurrentOutput.." ("..self.OutputsDesc[self.CurrentOutput]..")")
+				else
+					self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output: "..self.CurrentOutput)
+				end
+				
 		        self:SetStage(2)
 		        return true
 		    end
@@ -192,7 +203,11 @@ function TOOL:RightClick( trace )
 		    if (iNextOutput > table.getn(self.Outputs)) then iNextOutput = 1 end
 		    
             self.CurrentOutput = self.Outputs[iNextOutput]
-	    	self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output: "..self.CurrentOutput)
+			if (self.OutputsDesc) and (self.OutputsDesc[self.CurrentOutput]) then
+				self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output: "..self.CurrentOutput.." ("..self.OutputsDesc[self.CurrentOutput]..")")
+			else
+				self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output: "..self.CurrentOutput)
+			end
 		end
 	end
 end

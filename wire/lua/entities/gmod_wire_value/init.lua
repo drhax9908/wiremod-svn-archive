@@ -23,18 +23,23 @@ function ENT:Setup(value)
 		value[1] = tostring(v)
 	end
 	
+	local adjoutputs = {}
+	for k,v in pairs(value) do
+		adjoutputs[k] = "Value"..tostring(k)
+	end
+	
 	self.value = value
 	//this is where storing the values as strings comes in
-	Wire_AdjustOutputs(self.Entity, value)
+	Wire_AdjustOutputs(self.Entity, adjoutputs, value)
 	
 	local txt = ""
 	
 	for k,v in pairs(value) do
 		//line break after 4 values
-		if (k == 5) or (k == 9) then txt = txt.."\n" end
-		txt = txt .. v
-		if (k < #value) then txt = txt .. ", " end
-		Wire_TriggerOutput(self.Entity, v, tonumber(v))
+		//if (k == 5) or (k == 9) then txt = txt.."\n" end
+		txt = txt .. "1: " .. v
+		if (k < #value) then txt = txt .. "\n" end
+		Wire_TriggerOutput(self.Entity, adjoutputs[k], tonumber(v))
 	end
 	
 	self:SetOverlayText(txt)

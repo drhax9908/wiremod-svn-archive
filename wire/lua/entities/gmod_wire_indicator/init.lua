@@ -56,7 +56,7 @@ end
 
 function ENT:ShowOutput(value)
 	if (value ~= self.PrevOutput) then
-		self:SetOverlayText( "Color = " .. string.format("%.2f", value) )
+		self:SetOverlayText( "Color = " .. string.format("%.1f", (value * 100)) .. "%" )
 		self.PrevOutput = value
 	end
 end
