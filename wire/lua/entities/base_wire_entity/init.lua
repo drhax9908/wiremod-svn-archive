@@ -8,8 +8,9 @@ ENT.WireDebugName = "No Name"
 
 function ENT:Think()
 	if (self.NextOverlayTextTime) and (CurTime() >= self.NextOverlayTextTime) then
-	    if (self.NextOverlayText) then
-		    self.BaseClass.BaseClass.SetOverlayText(self, self.NextOverlayText)
+		if (self.NextOverlayText) then
+			//self.BaseClass.BaseClass.SetOverlayText(self, self.NextOverlayText)
+			self.Entity:SetNetworkedBeamString( "GModOverlayText", self.NextOverlayText )
 			self.NextOverlayText = nil
 			self.NextOverlayTextTime = CurTime() + (self.OverlayDelay or 0.4) + math.random()*(self.OverlayRandom or 0.2)
 		else
@@ -20,16 +21,28 @@ function ENT:Think()
 end
 
 function ENT:SetOverlayText(txt)
-	if (self.NextOverlayTextTime) then
-		self.NextOverlayText = txt
-	else
-	    self.BaseClass.BaseClass.SetOverlayText(self, txt)
-		self.NextOverlayText = nil
+	
+	if (Wire_FastOverlayTextUpdate) then
 		
-		if (not self.OverlayDelay) or (self.OverlayDelay > 0) then
-			self.NextOverlayTextTime = CurTime() + (self.OverlayDelay or 0.6) + math.random()*(self.OverlayRandom or 0.2)
+		self.Entity:SetNetworkedBeamString( "GModOverlayText", txt )
+		
+	else
+		
+		if (self.NextOverlayTextTime) then
+			self.NextOverlayText = txt
+		else
+		    //self.BaseClass.BaseClass.SetOverlayText(self, txt)
+			self.Entity:SetNetworkedBeamString( "GModOverlayText", txt )
+			
+			self.NextOverlayText = nil
+			
+			if (not self.OverlayDelay) or (self.OverlayDelay > 0) then
+				self.NextOverlayTextTime = CurTime() + (self.OverlayDelay or 0.6) + math.random()*(self.OverlayRandom or 0.2)
+			end
 		end
+		
 	end
+	
 end
 
 function ENT:OnRemove()
@@ -41,6 +54,7 @@ function ENT:OnRestore()
 end
 
 function ENT:BuildDupeInfo()
+	//return WireLib.BuildDupeInfo( self.Entity )
 	if (not self.Inputs) then return end
 	
 	local info = { Wires = {} }
@@ -78,6 +92,7 @@ function ENT:BuildDupeInfo()
 end
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
+	//WireLib.ApplyDupeInfo( ply, ent, info, GetEntByID )
 	if (info.Wires) then
 		for k,input in pairs(info.Wires) do
 		    

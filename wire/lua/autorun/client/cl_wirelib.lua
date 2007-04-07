@@ -113,4 +113,4 @@ local function WireDisableRender(pl, cmd, args)
 	if not args[1] then return end
 	Wire_DisableWireRender = tonumber(args[1])
 end
-concommand.Add( "Wire_DisableWireRender", WireDisableRender )
+concommand.Add( "cl_Wire_DisableWireRender", WireDisableRender )
