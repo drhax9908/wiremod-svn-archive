@@ -40,6 +40,9 @@ function ENT:Think( )
 		self.ActivePoint = point;
 	end
 	
+	// Reset?
+	local shouldreset = self.Entity:GetNetworkedBool( "Reset" )
+
 	// fade the points away
 	local i;
 	for i = 1, table.getn( self.PointList ) do
@@ -49,8 +52,8 @@ function ENT:Think( )
 			// fade away
 			pt.alpha = pt.alpha - pt.faderate * FrameTime();
 			
-			// die?
-			if( pt.alpha <= 0 ) then
+			// die? (changed to add Reset input)
+			if( (pt.alpha <= 0) || shouldreset ) then
 				table.remove( self.PointList, i );
 			end
 			

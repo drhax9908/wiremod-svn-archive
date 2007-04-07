@@ -24,9 +24,10 @@ function ENT:Initialize( )
 	self.Entity:SetNetworkedFloat( "Lifetime", 0.2 );
 	self.Entity:SetNetworkedBool( "Display", false );
 	self.Entity:SetNetworkedEntity( "grid", self.Entity );
+	self.Entity:SetNetworkedBool( "Reset", false );
 
 	// create inputs.
-	self.Inputs = Wire_CreateInputs( self.Entity, { "X", "Y", "Z", "Display", "Lifetime" } );
+	self.Inputs = Wire_CreateInputs( self.Entity, { "X", "Y", "Z", "Display", "Lifetime", "Reset" } );
 end
 
 // link to grid
@@ -39,7 +40,9 @@ function ENT:TriggerInput( inputname, value, iter )
 	// store values.
 	if( inputname == "Display" ) then
 		self.Entity:SetNetworkedBool( "Display", value > 0 );
-		
+	
+	elseif (inputname == "Reset") then
+		self.Entity:SetNetworkedBool( "Reset", value > 0 );
 	// store float values.
 	else
 		self.Entity:SetNetworkedFloat( inputname, value );
