@@ -87,7 +87,7 @@ function Wire_CreateInputs(ent, names)
 end
 
 
-function Wire_CreateOutputs(ent, names)
+function Wire_CreateOutputs(ent, names, desc)
 	local outputs = {}
 	for n,v in pairs(names) do
 		local output = {
@@ -98,6 +98,10 @@ function Wire_CreateOutputs(ent, names)
 			TriggerLimit = 8,
 			Num = n,
 			}
+		
+		if (desc) and (desc[n]) then
+			output.Desc = desc[n]
+		end
 		
 		local idx = 1
 		while (Outputs[idx]) do
@@ -233,7 +237,7 @@ function Wire_AdjustInputs(ent, names)
 end
 
 
-function Wire_AdjustOutputs(ent, names)
+function Wire_AdjustOutputs(ent, names, desc)
     local outputs = ent.Outputs
 	for n,v in pairs(names) do
 	    if (outputs[v]) then
@@ -248,13 +252,17 @@ function Wire_AdjustOutputs(ent, names)
 				TriggerLimit = 8,
 				Num = n,
 			}
-
+			
+			if (desc) and (desc[n]) then
+				output.Desc = desc[n]
+			end
+			
 			local idx = 1
 			while (Outputs[idx]) do
 			    idx = idx+1
 			end
 			output.Idx = idx
-
+			
 			outputs[v] = output
 			Outputs[idx] = output
 		end
