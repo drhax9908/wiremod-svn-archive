@@ -3,7 +3,7 @@ AddCSLuaFile( "autorun/Beam_NetVars.lua" )
 //***********************************************************
 //		Get/Set Networked Beam Var
 //
-//
+//	Basicly this one doesn't umsg.PoolString( Key )
 //***********************************************************
 
 local meta = FindMetaTable( "Entity" )
@@ -194,7 +194,7 @@ local function AddNetworkFunctions( name, SetFunction, GetFunction, Default )
 		// Pool the name of the function. 
 		// Makes it send a number representing the string rather than the string itself.
 		// Only do this with strings that you send quite a bit and always stay the same.
-		//umsg.PoolString( "RcvEntityBeamVar_"..name )
+		umsg.PoolString( "RcvEntityBeamVar_"..name )
 	end
 	
 	// Client Receive Function

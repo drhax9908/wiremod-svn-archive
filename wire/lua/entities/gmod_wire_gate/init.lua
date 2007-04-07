@@ -89,7 +89,7 @@ function ENT:ShowOutput()
 	if (self.Action) then
 		txt = (self.Action.name or "No Name")
 		if (self.Action.label) then
-			txt = txt.."\n"..self.Action.label(self:GetActionOutputs(), unpack(self:GetActionInputs(true)))
+			txt = txt.."\n"..self.Action.label(self:GetActionOutputs(), unpack(self:GetActionInputs(Wire_EnableGateInputValues)))
 		end
 	else
 	    txt = "Invalid gate!"

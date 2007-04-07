@@ -705,3 +705,27 @@ WireLib.Link_Clear				= Wire_Link_Clear
 WireLib.SetPathNames			= Wire_SetPathNames
 WireLib.CreateOutputIterator	= Wire_CreateOutputIterator
 WireLib.AfterPasteMods			= Wire_AfterPasteMods
+
+
+//backwards logic: set enable to false to show show values on gates instead
+Wire_EnableGateInputValues = true
+local function WireEnableInputValues(pl, cmd, args)
+	if not args[1] then return end
+	if args[1] == "1" or args[1] == 1 then 
+		Wire_EnableGateInputValues = false
+	else
+		Wire_EnableGateInputValues = true
+	end
+end
+concommand.Add( "sv_Wire_EnableGateInputValues", WireEnableInputValues )
+
+Wire_FastOverlayTextUpdate = false
+local function WireFastOverlayTextUpdate(pl, cmd, args)
+	if not args[1] then return end
+	if args[1] == "1" or args[1] == 1 then 
+		Wire_FastOverlayTextUpdate = true
+	else
+		Wire_FastOverlayTextUpdate = false
+	end
+end
+concommand.Add( "sv_Wire_FastOverlayTextUpdate", WireFastOverlayTextUpdate )
