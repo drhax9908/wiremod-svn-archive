@@ -4,7 +4,7 @@ AddCSLuaFile( "shared.lua" )
 
 include('shared.lua')
 
-ENT.WireDebugName = ""
+ENT.WireDebugName = "Nailer"
 
 local MODEL = Model("models/jaanus/wiretool/wiretool_siren.mdl")
 
@@ -21,7 +21,7 @@ function ENT:OnRemove()
 end
 
 function ENT:Setup(flim)
-	self:TriggerInput("A", 0)
+	self:TriggerInput("A", 0) 
 	self.Flim = math.min(flim, 10000)
 end
 
@@ -51,6 +51,15 @@ function ENT:TriggerInput(iname, value)
 			if ( trTwo.Hit && !trTwo.Entity:IsPlayer() ) then
 				// Weld them!
 				local constraint = constraint.Weld( trace.Entity, trTwo.Entity, trace.PhysicsBone, trTwo.PhysicsBone, self.Flim )
+				
+				// Emit an effect
+				local effectdata = EffectData()
+					effectdata:SetOrigin( trTwo.HitPos )
+					effectdata:SetNormal( trTwo.HitNormal )
+					effectdata:SetMagnitude( 5 )
+					effectdata:SetScale( 1 )
+					effectdata:SetRadius( 10 )
+				util.Effect( "Sparks", effectdata )
 			end
 		end
 	end
