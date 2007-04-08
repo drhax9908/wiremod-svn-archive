@@ -4,6 +4,7 @@ WireLib = {}
 
 -- Compatibility Global
 WireAddon = 1
+WireVersion = 0.96
 
 -- extra table functions
 
@@ -65,6 +66,7 @@ function Wire_CreateInputs(ent, names)
 			Entity = ent,
 			Name = v,
 			Value = 0,
+			Type = "NORMAL",
 			Material = "tripmine_laser",
 			Color = Color(255, 255, 255, 255),
 			Width = 1,
@@ -94,6 +96,7 @@ function Wire_CreateOutputs(ent, names, desc)
 			Entity = ent,
 			Name = v,
 			Value = 0,
+			Type = "NORMAL",
 			Connected = {},
 			TriggerLimit = 8,
 			Num = n,
@@ -117,83 +120,6 @@ function Wire_CreateOutputs(ent, names, desc)
 end
 
 
-
--- and array of data types
-WireLib.DT = {
-	"NORMAL",	-- Numbers
-	"VECTOR",
-	"ANGLE",
-	"COLOR",
-	"ENTITY",
-	"STRING",
-	"TABLE",
-}
-WireLib.DT_ZERO = {}
-WireLib.DT_ZERO.NORMAL = 0
-WireLib.DT_ZERO.VECTOR = Vector(0,0,0)
-WireLib.DT_ZERO.ANGLE = Angle(0,0,0)
-WireLib.DT_ZERO.COLOR = Color(0,0,0,0)
-WireLib.DT_ZERO.ENTITY = NULL
-WireLib.DT_ZERO.STRING = ""
-WireLib.DT_ZERO.TABLE = {}
-
-function WireLib.CreateSpecialInputs(ent, names)
-	local inputs = {}
-	for n,v in pairs(names) do
-		local input = {
-			Entity = ent,
-			Name = v.Name,
-			Type = v.Type,
-			Value = WireLib.DT_ZERO[v.Type] or WireLib.DT_ZERO.NORMAL,
-			Material = "tripmine_laser",
-			Color = Color(255, 255, 255, 255),
-			Width = 1,
-			Num = n,
-			}
-
-		local idx = 1
-		while (Inputs[idx]) do
-		    idx = idx+1
-		end
-		input.Idx = idx
-
-		inputs[v] = input
-		Inputs[idx] = input
-	end
-	
-	Wire_SetPathNames(ent, names)
-
-	return inputs
-end
-
-
-function WireLib.CreateSpecialOutputs(ent, names)
-	local outputs = {}
-	for n,v in pairs(names) do
-		local output = {
-			Entity = ent,
-			Name = v,
-			Value = 0,
-			Connected = {},
-			TriggerLimit = 8,
-			Num = n,
-			}
-
-		local idx = 1
-		while (Outputs[idx]) do
-		    idx = idx+1
-		end
-		output.Idx = idx
-
-		outputs[v] = output
-		Outputs[idx] = output
-	end
-
-	return outputs
-end
-
-
-
 function Wire_AdjustInputs(ent, names)
     local inputs = ent.Inputs
 	for n,v in pairs(names) do
@@ -205,6 +131,7 @@ function Wire_AdjustInputs(ent, names)
 				Entity = ent,
 				Name = v,
 				Value = 0,
+				Type = "NORMAL",
 				Material = "tripmine_laser",
 				Color = Color(255, 255, 255, 255),
 				Width = 1,
@@ -243,11 +170,15 @@ function Wire_AdjustOutputs(ent, names, desc)
 	    if (outputs[v]) then
 			outputs[v].Keep = true
 			outputs[v].Num = n
+			if (desc) and (desc[n]) then
+				outputs[v].Desc = desc[n]
+			end
 	    else
 			local output = {
 				Keep = true,
 				Name = v,
 				Value = 0,
+				Type = "NORMAL",
 				Connected = {},
 				TriggerLimit = 8,
 				Num = n,
@@ -285,6 +216,193 @@ function Wire_AdjustOutputs(ent, names, desc)
 	ent.Outputs = outputs -- Just to be sure
 end
 
+
+-- and array of data types
+WireLib.DT = {
+	NORMAL = {},	-- Numbers
+	VECTOR = {},
+	ANGLE = {},
+	COLOR = {},
+	ENTITY = {},
+	STRING = {},
+	TABLE = {},
+	BIDIRTABLE = {},
+}
+WireLib.DT.NORMAL.Zero	= 0
+WireLib.DT.VECTOR.Zero	= Vector(0,0,0)
+WireLib.DT.ANGLE.Zero	= Angle(0,0,0)
+WireLib.DT.COLOR.Zero	= Color(0,0,0,0)
+WireLib.DT.ENTITY.Zero	= NULL
+WireLib.DT.STRING.Zero	= ""
+WireLib.DT.TABLE.Zero	= {}
+WireLib.DT.BIDIRTABLE.Zero	= {}
+WireLib.DT.BIDIRTABLE.BiDir	= true
+
+function WireLib.CreateSpecialInputs(ent, names, types, desc)
+	types = types or {}
+	desc = desc or {}
+	local inputs = {}
+	for n,v in pairs(names) do
+		local input = {
+			Entity = ent,
+			Name = v,
+			Desc = desc[n],
+			Type = types[n] or "NORMAL",
+			Value = WireLib.DT[ (types[n] or "NORMAL") ].Zero,
+			Material = "tripmine_laser",
+			Color = Color(255, 255, 255, 255),
+			Width = 1,
+			Num = n,
+		}
+		
+		local idx = 1
+		while (Inputs[idx]) do
+		    idx = idx+1
+		end
+		input.Idx = idx
+		
+		inputs[v] = input
+		Inputs[idx] = input
+	end
+	
+	WireLib.SetPathNames(ent, names)
+
+	return inputs
+end
+
+
+function WireLib.CreateSpecialOutputs(ent, names, types, desc)
+	types = types or {}
+	desc = desc or {}
+	local outputs = {}
+	for n,v in pairs(names) do
+		local output = {
+			Entity = ent,
+			Name = v,
+			Desc = desc[n],
+			Type = types[n] or "NORMAL",
+			Value = WireLib.DT[ (types[n] or "NORMAL") ].Zero,
+			Connected = {},
+			TriggerLimit = 8,
+			Num = n,
+		}
+		
+		local idx = 1
+		while (Outputs[idx]) do
+		    idx = idx+1
+		end
+		output.Idx = idx
+		
+		outputs[v] = output
+		Outputs[idx] = output
+	end
+
+	return outputs
+end
+
+
+
+function WireLib.AdjustSpecialInputs(ent, names, types, desc)
+    types = types or {}
+	desc = desc or {}
+	local inputs = ent.Inputs
+	for n,v in pairs(names) do
+	    if (inputs[v]) then
+			inputs[v].Keep = true
+			inputs[v].Num = n
+			inputs[v].Desc = desc[n]
+			inputs[v].Type = types[n] or "NORMAL"
+	    else
+			local input = {
+				Entity = ent,
+				Name = v,
+				Desc = desc[n],
+				Type = types[n] or "NORMAL",
+				Value = WireLib.DT[ (types[n] or "NORMAL") ].Zero,
+				Material = "tripmine_laser",
+				Color = Color(255, 255, 255, 255),
+				Width = 1,
+				Keep = true,
+				Num = n,
+			}
+			
+			local idx = 1
+			while (Inputs[idx]) do
+			    idx = idx+1
+			end
+			input.Idx = idx
+			
+			inputs[v] = input
+			Inputs[idx] = input
+		end
+	end
+
+	for k,v in pairs(inputs) do
+	    if (v.Keep) then
+	        v.Keep = nil
+	    else
+	        Wire_Link_Clear(ent, k)
+
+			inputs[k] = nil
+	    end
+	end
+
+	WireLib.SetPathNames(ent, names)
+end
+
+
+function WireLib.AdjustSpecialOutputs(ent, names, types, desc)
+    types = types or {}
+	desc = desc or {}
+	local outputs = ent.Outputs
+	for n,v in pairs(names) do
+	    if (outputs[v]) then
+			outputs[v].Keep = true
+			outputs[v].Num = n			
+			outputs[v].Desc = desc[n]
+			outputs[v].Type = types[n] or "NORMAL"
+	    else
+			local output = {
+				Keep = true,
+				Name = v,
+				Desc = desc[n],
+				Type = types[n] or "NORMAL",
+				Value = WireLib.DT[ (types[n] or "NORMAL") ].Zero,
+				Connected = {},
+				TriggerLimit = 8,
+				Num = n,
+			}
+			
+			local idx = 1
+			while (Outputs[idx]) do
+			    idx = idx+1
+			end
+			output.Idx = idx
+			
+			outputs[v] = output
+			Outputs[idx] = output
+		end
+	end
+
+	for k,v in pairs(outputs) do
+	    if (v.Keep) then
+	        v.Keep = nil
+	    else
+			//fix by Syranide: unlinks wires of removed outputs
+			for i,v in ipairs(outputs[k].Connected) do
+				if (v.Entity:IsValid()) then
+					Wire_Link_Clear(v.Entity, v)
+				end
+			end
+			outputs[k] = nil
+	    end
+	end
+	
+	ent.Outputs = outputs -- Just to be sure
+end
+
+
+
 -- force_outputs is only needed for existing components to allow them to be updated
 function Wire_Restored(ent, force_outputs)
     local inputs = ent.Inputs
@@ -292,7 +410,7 @@ function Wire_Restored(ent, force_outputs)
 		for name,input in pairs(inputs) do
 			if (not input.Material) then  -- Must be an old save
 			    input.Name = name
-
+				
 				if (input.Ropes) then
 				    for _,rope in pairs(input.Ropes) do
 						rope:Remove()
@@ -302,6 +420,7 @@ function Wire_Restored(ent, force_outputs)
 			end
 			
 			input.Entity = ent
+			input.Type = input.Type or "NORMAL"
 			input.Material = input.Material or "cable/blue_elec"
 		    input.Color = input.Color or Color(255, 255, 255, 255)
 		    input.Width = input.Width or 2
@@ -309,7 +428,7 @@ function Wire_Restored(ent, force_outputs)
 			if (input.Src) and (not input.Path) then
 			    input.Path = { { Entity = input.Src, Pos = Vector(0, 0, 0) } }
 			end
-
+			
 			local idx = 1
 			while (Inputs[idx]) do
 			    idx = idx+1
@@ -324,7 +443,8 @@ function Wire_Restored(ent, force_outputs)
     if (outputs) then
 		for _,output in pairs(outputs) do
 			output.Entity = ent
-
+			output.Type = output.Type or "NORMAL"
+			
 			local idx = 1
 			while (Outputs[idx]) do
 			    idx = idx+1
@@ -521,11 +641,27 @@ function Wire_Link_Node(idx, ent, pos)
 end
 
 
-function Wire_Link_End(idx, ent, pos, oname)
+function Wire_Link_End(idx, ent, pos, oname, pl)
     if (not CurLink[idx]) or (not CurLink[idx].Dst) then return end
 	
 	if (CurLink[idx].Dst:GetClass() == "gmod_wire_sensor") and (ent:GetClass() != "gmod_wire_target_finder") then
 		Msg("Wire_link: Beacon Sensor can only be wired to a Target Finder!\n")
+		if pl then
+			pl:SendLua( "GAMEMODE:AddNotify('Beacon Sensor can only be wired to a Target Finder!', NOTIFY_GENERIC, 7);" )
+		end
+		Wire_Link_Cancel(idx)
+		return
+	end
+	
+	local input = CurLink[idx].Dst.Inputs[CurLink[idx].DstId]
+	local output = ent.Outputs[oname]
+	Msg("input type= " .. input.Type .. "  output type= " .. output.Type .. "\n")
+	if (input.Type != output.Type) then
+		local txt = "Data Type Mismatch! Input takes "..input.Type.." and Output gives "..output.Type
+		Msg(txt.."\n")
+		if pl then
+			pl:SendLua( "GAMEMODE:AddNotify('"..txt.."', NOTIFY_GENERIC, 7);" )
+		end
 		Wire_Link_Cancel(idx)
 		return
 	end
@@ -539,7 +675,11 @@ function Wire_Link_End(idx, ent, pos, oname)
 	table.insert(CurLink[idx].Path, { Entity = ent, Pos = pos })
 
 	Wire_Link(CurLink[idx].Dst, CurLink[idx].DstId, ent, oname, CurLink[idx].Path)
-
+	
+	if (WireLib.DT[input.Type].BiDir) then
+		Wire_Link(ent, oname, CurLink[idx].Dst, CurLink[idx].DstId, {})
+	end
+	
 	CurLink[idx] = nil
 end
 
@@ -737,3 +877,12 @@ local function WireFastOverlayTextUpdate(pl, cmd, args)
 	end
 end
 concommand.Add( "sv_Wire_FastOverlayTextUpdate", WireFastOverlayTextUpdate )
+
+
+local function PrintWireVersion(pl,cmd,args)
+	pl:SendLua("Msg(\"===============================\n===  Wire  "..WireVersion.."   Installed  ===\n===============================\n\")")
+end
+concommand.Add( "Wire_PrintVersion", PrintWireVersion )
+
+Msg("===============================\n===  Wire  "..WireVersion.."   Installed  ===\n===============================\n")
+MsgAll("===============================\n===  Wire  "..WireVersion.."   Installed  ===\n===============================\n")
