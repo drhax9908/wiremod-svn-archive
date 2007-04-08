@@ -52,7 +52,7 @@ function ENT:TriggerInput(iname, value)
 				// Weld them!
 				local constraint = constraint.Weld( trace.Entity, trTwo.Entity, trace.PhysicsBone, trTwo.PhysicsBone, self.Flim )
 				
-				// Emit an effect
+				//effect on weld (tomb332)
 				local effectdata = EffectData()
 					effectdata:SetOrigin( trTwo.HitPos )
 					effectdata:SetNormal( trTwo.HitNormal )
