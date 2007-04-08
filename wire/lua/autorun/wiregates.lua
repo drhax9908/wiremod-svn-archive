@@ -350,6 +350,24 @@ GateActions["Delta"] = {
     end
 } 
 
+GateActions["Delta360"] = {
+    group = "Arithmetic",
+    name = "Delta (Rectified)",
+    inputs = { "A" },
+    output = function(gate, A)
+        gate.PrevValue = gate.PrevValue or 0
+        local delta = A - gate.PrevValue
+        gate.PrevValue = A
+        return ( math.fmod( (math.fmod( delta, 360 ) + 540 ), 360 ) - 180 )
+    end,
+    reset = function(gate)
+        gate.PrevValue = 0
+    end,
+    label = function(Out, A)
+        return "Delta("..A..") "
+    end
+}
+
 
 
 

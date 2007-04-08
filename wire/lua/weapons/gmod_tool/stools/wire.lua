@@ -83,11 +83,15 @@ function TOOL:LeftClick( trace )
 		
 		self.Outputs = {}
 		self.OutputsDesc = {}
+		self.OutputsType = {}
 		for key,v in pairs(trace.Entity.Outputs) do
 			if v.Num then 
 				self.Outputs[v.Num] = key
 				if (v.Desc) then
 					self.OutputsDesc[key] = v.Desc
+				end
+				if (v.Type) then
+					self.OutputsType[key] = v.Type
 				end
 			else
 				table.insert(self.Outputs, key)
@@ -104,20 +108,24 @@ function TOOL:LeftClick( trace )
 		        self.OutputPos = trace.Entity:WorldToLocal(trace.HitPos)
 		    	//self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output:"..self.CurrentOutput)
 				
+				local txt = "Output: "..self.CurrentOutput
 				if (self.OutputsDesc) and (self.OutputsDesc[self.CurrentOutput]) then
-					self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output: "..self.CurrentOutput.." ("..self.OutputsDesc[self.CurrentOutput]..")")
-				else
-					self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output: "..self.CurrentOutput)
+					txt = txt.." ("..self.OutputsDesc[self.CurrentOutput]..")"
 				end
-				
-		        self:SetStage(2)
+				if (self.OutputsType) and (self.OutputsType[self.CurrentOutput])
+				and (self.OutputsType[self.CurrentOutput] != "NORMAL") then
+					txt = txt.." ["..self.OutputsType[self.CurrentOutput].."]"
+				end
+				self:GetWeapon():SetNetworkedString("WireCurrentInput", txt)
+		        
+				self:SetStage(2)
 		        return true
 		    end
 
 		    oname = k
 		end
 
-		Wire_Link_End(self:GetOwner():UniqueID(), trace.Entity, trace.Entity:WorldToLocal(trace.HitPos), oname)
+		Wire_Link_End(self:GetOwner():UniqueID(), trace.Entity, trace.Entity:WorldToLocal(trace.HitPos), oname, self:GetOwner())
 
 		self:SelectComponent(nil)
 		self:SetStage(0)
@@ -127,7 +135,7 @@ function TOOL:LeftClick( trace )
 			return true
 		end
 
-		Wire_Link_End(self:GetOwner():UniqueID(), self.OutputEnt, self.OutputPos, self.CurrentOutput)
+		Wire_Link_End(self:GetOwner():UniqueID(), self.OutputEnt, self.OutputPos, self.CurrentOutput, self:GetOwner())
 		
 		self.CurrentOutput = nil
 		self.OutputEnt = nil
@@ -167,20 +175,38 @@ function TOOL:RightClick( trace )
 		end
 		if (iNextInput) then
 		    self:GetOwner():EmitSound("weapons/pistol/pistol_empty.wav")
-
+			
 		    if (iNextInput > table.getn(self.Inputs)) then iNextInput = 1 end
-
+			
 		    self.CurrentInput = self.Inputs[iNextInput]
 			if (self.CurrentInput) then self.LastValidInput = self.CurrentInput end
-
-			if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) and (self.CurrentInput)
+			
+			/*if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) and (self.CurrentInput)
 			  and (self.CurrentComponent.Inputs) and (self.CurrentComponent.Inputs[self.CurrentInput])
 			  and (self.CurrentComponent.Inputs[self.CurrentInput].Src) then
 		    	self:GetWeapon():SetNetworkedString("WireCurrentInput", "%"..(self.CurrentInput or ""))
 			else
 		    	self:GetWeapon():SetNetworkedString("WireCurrentInput", self.CurrentInput or "")
+			end*/
+			
+			local txt = ""
+			if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) and (self.CurrentInput)
+			  and (self.CurrentComponent.Inputs) and (self.CurrentComponent.Inputs[self.CurrentInput])
+			  and (self.CurrentComponent.Inputs[self.CurrentInput].Src) then
+				txt = "%"..(self.CurrentInput or "")
+			else
+				txt = self.CurrentInput or ""
 			end
-
+			if (self.InputsDesc) and (self.InputsDesc[self.CurrentInput]) then
+				txt = txt.." ("..self.InputsDesc[self.CurrentInput]..")"
+			end
+			if (self.InputsType) and (self.InputsType[self.CurrentInput])
+			and (self.InputsType[self.CurrentInput] != "NORMAL") then
+				txt = txt.." ["..self.InputsType[self.CurrentInput].."]"
+			end
+			self:GetWeapon():SetNetworkedString("WireCurrentInput", txt)
+			
+			
 			if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) then
 			    self.CurrentComponent:SetNetworkedBeamString("BlinkWire", self.CurrentInput)
 			end
@@ -203,11 +229,16 @@ function TOOL:RightClick( trace )
 		    if (iNextOutput > table.getn(self.Outputs)) then iNextOutput = 1 end
 		    
             self.CurrentOutput = self.Outputs[iNextOutput]
+			
+			local txt = "Output: "..self.CurrentOutput
 			if (self.OutputsDesc) and (self.OutputsDesc[self.CurrentOutput]) then
-				self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output: "..self.CurrentOutput.." ("..self.OutputsDesc[self.CurrentOutput]..")")
-			else
-				self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output: "..self.CurrentOutput)
+				txt = txt.." ("..self.OutputsDesc[self.CurrentOutput]..")"
 			end
+			if (self.OutputsType) and (self.OutputsType[self.CurrentOutput])
+			and (self.OutputsType[self.CurrentOutput] != "NORMAL") then
+				txt = txt.." ["..self.OutputsType[self.CurrentOutput].."]"
+			end
+			self:GetWeapon():SetNetworkedString("WireCurrentInput", txt)
 		end
 	end
 end
@@ -368,6 +399,8 @@ function TOOL:SelectComponent(ent)
 	self.CurrentComponent = ent
 	self.CurrentInput = nil
 	self.Inputs = {}
+	self.InputsDesc = {}
+	self.InputsType = {}
 	
 	local best = nil
 	local first = nil
@@ -380,6 +413,12 @@ function TOOL:SelectComponent(ent)
 			else
 				table.insert(self.Inputs, k)
 			end
+			if (v.Desc) then
+				self.InputsDesc[k] = v.Desc
+			end
+			if (v.Type) then
+				self.InputsType[k] = v.Type
+			end
 		end
 	end
 	
@@ -389,13 +428,22 @@ function TOOL:SelectComponent(ent)
 	self.CurrentInput = best or first
 	if (self.CurrentInput) and (self.CurrentInput ~= "") then self.LastValidInput = self.CurrentInput end
 	
+	local txt = ""
 	if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) and (self.CurrentInput)
 	  and (self.CurrentComponent.Inputs) and (self.CurrentComponent.Inputs[self.CurrentInput])
 	  and (self.CurrentComponent.Inputs[self.CurrentInput].Src) then
-    	self:GetWeapon():SetNetworkedString("WireCurrentInput", "%"..(self.CurrentInput or ""))
+    	txt = "%"..(self.CurrentInput or "")
 	else
-    	self:GetWeapon():SetNetworkedString("WireCurrentInput", self.CurrentInput or "")
+    	txt = self.CurrentInput or ""
 	end
+	if (self.InputsDesc) and (self.InputsDesc[self.CurrentInput]) then
+		txt = txt.." ("..self.InputsDesc[self.CurrentInput]..")"
+	end
+	if (self.InputsType) and (self.InputsType[self.CurrentInput])
+	and (self.InputsType[self.CurrentInput] != "NORMAL") then
+		txt = txt.." ["..self.InputsType[self.CurrentInput].."]"
+	end
+	self:GetWeapon():SetNetworkedString("WireCurrentInput", txt)
 	
 	if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) then
 	    self.CurrentComponent:SetNetworkedBeamString("BlinkWire", self.CurrentInput)
