@@ -56,7 +56,7 @@ function TOOL:LeftClick( trace )
 	local wire_radio = MakeWireRadio( ply, model, trace.HitPos, Ang, _channel )
 	
 	local min = wire_radio:OBBMins()
-	wire_radio:SetPos( trace.HitPos - trace.HitNormal * (min.z-5) )
+	wire_radio:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
 	// Don't weld to world
 	/*local const
@@ -139,7 +139,7 @@ function TOOL:UpdateGhostWireRadio( ent, player )
 	ent:SetAngles( Ang )	
 
 	local min = ent:OBBMins()
-	ent:SetPos( trace.HitPos - trace.HitNormal * (min.z-5) )
+	ent:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
 	ent:SetNoDraw( false )
 
