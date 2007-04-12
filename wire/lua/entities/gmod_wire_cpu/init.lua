@@ -1,30 +1,60 @@
 AddCSLuaFile( "cl_init.lua" )
-AddCSLuaFile( "shared.lua" )
+//AddCSLuaFile( "shared.lua" )
 include('shared.lua')
+include('compiler_asm.lua')
 
 ENT.WireDebugName = "CPU"
 
 function ENT:Initialize()
-	
+
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	
-	self.Inputs = Wire_CreateInputs(self.Entity, { "Frequency", "Clk", "Reset", "ReadAddr", "WriteAddr", "Data", "WriteClk", "Port0", "Port1", "Port2", "Port3", "Port4", "Port5", "Port6", "Port7"})
-	self.Outputs = Wire_CreateOutputs(self.Entity, { "Error", "Data", "Port0", "Port1", "Port2", "Port3", "Port4", "Port5", "Port6", "Port7"}) 
+	self.Inputs = Wire_CreateInputs(self.Entity, { "MemBus", "IOBus", "Frequency", "Clk", "Reset"})
+	self.Outputs = Wire_CreateOutputs(self.Entity, { "Error" }) 
 
 	self.Memory = {}
-
 	for i = 0, 65535 do
 		self.Memory[i] = 0
 	end
 
-	self.IP = 0
-	self.WIP = 0
+	self.ROMMemory = {}
+	for i = 0, 65535 do
+		self.ROMMemory[i] = 0
+	end
 
-	self.Ports = {0, 0, 0, 0, 0, 0, 0, 0}
+	self.Page = {}
+	for i = 0, 511 do
+		self.Page[i] = true
+	end
+
+	self.IOBus = nil
+	self.MemBus = nil
+	self.UseROM = false
 
 	self.Clk = 0
+	self.InputClk = 0
+
+	self:Reset()
+	
+	//= Different compiler vars========
+	self.WIP = 0
+	self.FatalError = false
+	self.Labels = {}
+	self.Compiling = false
+	//=================================
+
+	self.ThinkTime = 10
+	self.PrevTime = CurTime()
+end
+
+function ENT:Reset()
+	self.IP = 0
+
+	for i = 0, 511 do
+		self.Page[i] = true
+	end
 
 	self.EAX = 0
 	self.EBX = 0
@@ -35,163 +65,350 @@ function ENT:Initialize()
 	self.EDI = 0
 	self.ESP = 65535
 	self.EBP = 0
+
+	self.CS	= 0
+	self.SS = 0
+	self.DS = 0
+	self.ES = 0
+	self.GS = 0
+	self.FS = 0
+
+	self.IDTR = 0
+	self.IF = true
+	self.PF = false
+
+	self.Debug = false
 	
 	self.CMPR = 0
+	self.ILTC = 0
+	self.XEIP = 0
+	self.LADD = 0
+	self.INTR = false
+	self.TMR = 0
+	self.TIMER = 0
 
-	self.WriteAddr = 0
-	self.WriteData = 0
+	self.Clk = self.InputClk
 
 	self.HaltPort = -1
-	
-	//=================================
-	self.FatalError = false
-	self.Labels = {}
-	//=================================
 
-	self.ThinkTime = 10
+	if (self.UseROM) then
+		for i = 0, 65535 do
+			self.Memory[i] = self.ROMMemory[i]
+		end
+	end
 
 	Wire_TriggerOutput(self.Entity, "Error", 0.0)
 end
 
+//INTERRUPTS TABLE
+//Value | Meaning				| Passed parameters
+//---------------------------------------------------------------------
+//0.0	| Software restart			|
+//2.0	| End of program execution		|
+//3.0	| Division by zero			|
+//4.0	| Unknown opcode 			| OPCODE
+//5.0	| Internal error			|
+//6.0	| Stack error				|
+//7.0   | Memory fault (Read/write violation)	| ADDRESS
+//8.0   | External bus error			|
+//9.0	| Page fault (Write access violation)	| ADDRESS
+//10.0  | Port Bus fault			| ADDRESS
+//11.0  | ROM Error				|
+//12.0	| Page error (wrong page id)		|
+//13.0	| General Protection Error		|
+//----------------------------------------------------------------------
+
+function ENT:Interrupt( intnumber )
+	if ( self.Compiling ) then
+		self.FatalError = true
+		return
+	end
+	if (self.Debug) then
+		Msg("INTERRUPT: "..intnumber.." AT "..self.XEIP.." LADD="..self.LADD.." ILTC="..self.ILTC.."\n")
+	end
+	if ( self.INTR ) then
+		return
+	end
+	self.INTR = true
+	if ( intnumber <= 1 ) or ( intnumber > 255) then
+		self:Reset()
+		self.EAX = 10
+		if (intnumber == 1) then
+			self.Clk = 0
+		end
+		return
+	end
+	if (self.IF) then
+		if (self.PF == false) then
+			Wire_TriggerOutput(self.Entity, "Error", intnumber)
+			self.Clk = 0
+			return
+		else
+			local intaddress = self.IDTR + intnumber*2
+			if (intaddress > 65535) then intaddress = 65535 end
+			if (intaddress < 0) then intaddress = 0 end
+			local intoffset = self.Memory[intaddress]
+			local intprops = self.Memory[intaddress+1]
+			if (intprops ~= 0) then //Interrupt active, temp fix
+				self.INTR = false
+				if self:Push(self.IP) then //Store IRET
+					self:Push(self.XEIP)
+					if ( intnumber == 4 ) then //If wrong opcode then store data
+						self:Push(self.ILTC)
+					end
+					if ( intnumber == 7 ) || ( intnumber == 9 ) || ( intnumber == 10) then
+						self:Push(self.LADD)
+					end
+					self.IP = intoffset
+				end
+				self.INTR = true
+			else
+				//Msg("Baad thing\n")
+				self:Interrupt( 0 )
+			end
+		end
+	end
+end
+
 function ENT:Write( value )
-	self.Memory[self.WIP] = value
-	self.WIP = self.WIP + 1
-	
-	//Msg("-> ZyeliosASM: Wrote "..value.." at ["..self.WIP.."]\n")
+	if (value) then
+		//self.BIOSMemory
+		if (self.UseROM) then
+			if (self.WIP < 65536) then
+				self.ROMMemory[self.WIP] = value
+			end
+		else
+			self:WriteCell(self.WIP,value)
+		end
+		if (self.Debug) then
+			//Msg("-> ZyeliosASM: Wrote "..value.." at ["..self.WIP.."]\n")
+		end
+
+		self.WIP = self.WIP + 1
+	else
+		if (self.Debug) then
+			Msg("-> ZyeliosASM: NIL VALUE at ["..self.WIP.."]\n")
+		end
+	end
 end
 
 function ENT:Read( )
+	if (self.INTR) then //Lock the bus & eip
+		if (self.Debug) then
+			Msg("BUS READ WHILE LOCKED\n")
+		end
+		return nil
+	end
 	self.IP = self.IP + 1
-	return self.Memory[self.IP - 1]
+	return self:ReadCell(self.IP-1+self.CS)
 end
 
-
-
-
-
-
-
-function ENT:DecodeOpcode( opcode )
-	//------------------------------------------------------------
-	if (opcode == "jne") || (opcode == "jnz") then		//JNE X   : IP = X, IF CMPR ~= 0
-		return 1
-	elseif (opcode == "jmp") then	//JMP X  : IP = X
-		return 2
-	elseif (opcode == "jg") || (opcode == "jnle") then	//JG X 	 : IP = X, IF CMPR > 0
-		return 3
-	elseif (opcode == "jge") || (opcode == "jnl") then	//JGE X  : IP = X, IF CMPR >= 0
-		return 4
-	elseif (opcode == "jl") || (opcode == "jnge") then	//JL X 	 : IP = X, IF CMPR < 0
-		return 5
-	elseif (opcode == "jle") || (opcode == "jng") then	//JLE X  : IP = X, IF CMPR <= 0
-		return 6
-	elseif (opcode == "je") || (opcode == "jz") then	//JE X   : IP = X, IF CMPR = 0
-		return 7
-	elseif (opcode == "cpuid") then	//CPUID X : EAX -> CPUID[X]
-		return 8
-	elseif (opcode == "push") then	//PUSH X : X -> STACK
-		return 9
-	//------------------------------------------------------------
-	elseif (opcode == "add") then	//ADD X,Y : X = X + Y
-		return 10
-	elseif (opcode == "sub") then	//SUB X,Y : X = X - Y
-		return 11
-	elseif (opcode == "mul") then	//MUL X,Y : X = X * Y
-		return 12
-	elseif (opcode == "div") then	//DIV X,Y : X = X / Y
-		return 13
-	elseif (opcode == "mov") then	//MOV X,Y : X = Y
-		return 14
-	elseif (opcode == "cmp") then	//CMP X,Y : CMPR = X - Y
-		return 15
-	elseif (opcode == "rd") then	//RD X,Y : X = MEMORY[Y]
-		return 16
-	elseif (opcode == "wd") then	//WD X,Y : MEMORY[X] = Y
-		return 17
-	elseif (opcode == "min") then	//MIN X,Y : MIN(X,Y)
-		return 18
-	elseif (opcode == "max") then	//MAX X,Y : MAX(X,Y)
-		return 19
-	//------------------------------------------------------------
-	elseif (opcode == "inc") then	//INC X  : X = X + 1
-		return 20
-	elseif (opcode == "dec") then	//DEC X  : X = X - 1
-		return 21
-	elseif (opcode == "neg") then	//NEG X  : X = -X
-		return 22
-	elseif (opcode == "rand") then	//RAND X : X = Random(0..1)
-		return 23
-	//------------------------------------------------------------
-	elseif (opcode == "pop") then 	//POP X : X <- STACK
-		return 30
-	elseif (opcode == "call") then	//CALL X : IP -> STACK; IP = X
-		return 31
-	elseif (opcode == "not") then	//NOT X : X = not X
-		return 32
-	elseif (opcode == "int") then	//INT X : X = FLOOR(X)
-		return 33
-	elseif (opcode == "rnd") then	//RND X : X = ROUND(X)
-		return 34
-	elseif (opcode == "frac") then	//FRAX X : X = X - FLOOR(X)
-		return 35
-	elseif (opcode == "finv") then	//FINV X : X = 1 / X
-		return 36
-	elseif (opcode == "halt") then	//HALT X : HALT UNTIL PORT[X]
-		return 37
-	//------------------------------------------------------------
-	elseif (opcode == "ret") then	//RET : IP <- STACK
-		return 40
-	//------------------------------------------------------------
-	elseif (opcode == "and") then	//AND X,Y : X = X AND Y
-		return 50
-	elseif (opcode == "or") then	//OR X,Y : X = X OR Y
-		return 51
-	elseif (opcode == "xor") then	//XOR X,Y : X = X XOR Y
-		return 52
-	elseif (opcode == "fsin") then	//FSIN X,Y : X = SIN Y
-		return 53
-	elseif (opcode == "fcos") then	//FCOS X,Y : X = COS Y
-		return 54
-	elseif (opcode == "ftan") then	//FTAN X,Y : X = TAN Y
-		return 55
-	elseif (opcode == "fasin") then	//FASIN X,Y : X = ASIN Y
-		return 56
-	elseif (opcode == "facos") then	//FACOS X,Y : X = ACOS Y
-		return 57
-	elseif (opcode == "fatan") then	//FATAN X,Y : X = ATAN Y
-		return 58
+function ENT:ReadCell( Address )
+	if (self.INTR) then //Lock the bus
+		return nil
 	end
-	return -1
-end
 
-function ENT:OpcodeParamCount( opcode )
-	if (opcode >= 1) && (opcode <= 9) then
-		return 1
-	elseif (opcode >= 10) && (opcode <= 19) then	
-		return 2
-	elseif (opcode >= 20) && (opcode <= 29) then
-		return 1
-	elseif (opcode >= 30) && (opcode <= 39) then
-		return 1
-	elseif (opcode >= 40) && (opcode <= 49) then
-		return 0
-	elseif (opcode >= 50) && (opcode <= 59) then
-		return 2
+	if (Address < 0) then
+		self.LADD = math.floor(Address)
+		self:Interrupt(8)
+		return nil
 	end
-	return 0
+	if (Address < 65536) then
+		return self.Memory[math.floor(Address)]
+	else
+		if (self.Inputs.MemBus.Src) then
+			if (self.Inputs.MemBus.Src.LatchStore) then
+				if (self.Inputs.MemBus.Src.LatchStore[math.floor(Address)-65536]) then
+					return self.Inputs.MemBus.Src.LatchStore[math.floor(Address)-65536]
+				else
+					self.LADD = math.floor(Address)
+					self:Interrupt(7)
+					return nil
+				end
+			elseif (self.Inputs.MemBus.Src.ReadCell) then
+				local var = self.Inputs.MemBus.Src:ReadCell(math.floor(Address)-65536)
+				if (var) then
+					return var
+				else
+					self.LADD = math.floor(Address)
+					self:Interrupt(7)
+					return nil
+				end
+			else
+				self.LADD = math.floor(Address)
+				self:Interrupt(8)
+				return nil
+			end
+		else
+			self.LADD = math.floor(Address)
+			self:Interrupt(7)
+			return nil
+		end
+	end
 end
 
-//ERROR VALUES TABLE
-//Value | Error
-//--------------------------------------------
-//0.0	| No error
-//2.0	| End of program execution
-//3.0	| Division by zero
-//4.0	| Unknown opcode
-//5.0	| Internal error
-//6.0	| Stack error
-//--------------------------------------------
-//
+function ENT:WriteCell( Address, value )
+	if (self.INTR) then //Lock the bus
+		return nil
+	end
+
+	if (Address < 0) then
+		self.LADD = math.floor(Address)
+		self:Interrupt(8)
+		return false
+	end
+	if (Address < 65536) then
+		if (self.Page[math.floor(Address / 128)]) then
+			self.Memory[math.floor(Address)] = value
+		else
+			self.LADD = math.floor(Address)
+			self:Interrupt(9)
+			return false
+		end
+		return true
+	else
+		if (self.Inputs.MemBus.Src) then
+			if (self.Inputs.MemBus.Src.LatchStore) then
+				if (self.Inputs.MemBus.Src.LatchStore[math.floor(Address)-65536]) then
+					self.Inputs.MemBus.Src.LatchStore[math.floor(Address)-65536] = value
+					return true
+				else
+					self.LADD = math.floor(Address)
+					self:Interrupt(7)
+					return false
+				end
+			elseif (self.Inputs.MemBus.Src.WriteCell) then
+				if (self.Inputs.MemBus.Src:WriteCell(math.floor(Address)-65536,value)) then
+					return true
+				else
+					self.LADD = math.floor(Address)
+					self:Interrupt(7)
+					return false
+				end
+			else
+				self.LADD = math.floor(Address)
+				self:Interrupt(8)
+				return false
+			end
+		else
+			self.LADD = math.floor(Address)
+			self:Interrupt(7)
+			return false
+		end
+	end
+end
+
+function ENT:ReadPort( Address )
+	if (self.INTR) then //Lock the bus
+		return nil
+	end
+
+	
+	if (Address < 0) then
+		self.LADD = -math.floor(Address)
+		self:Interrupt(8)
+		return nil
+	end
+	if (self.Inputs.IOBus.Src) then
+		if (self.Inputs.IOBus.Src.LatchStore) then
+			if (self.Inputs.IOBus.Src.LatchStore[math.floor(Address)]) then
+				return self.Inputs.IOBus.Src.LatchStore[math.floor(Address)]
+			else
+				self.LADD = -math.floor(Address)
+				self:Interrupt(10)
+				return nil
+			end
+		elseif (self.Inputs.IOBus.Src.ReadCell) then
+			local var = self.Inputs.IOBus.Src:ReadCell(math.floor(Address))
+			if (var) then
+				return var
+			else
+				self.LADD = -math.floor(Address)
+				self:Interrupt(10)
+				return nil
+			end
+		else
+			self.LADD = -math.floor(Address)
+			self:Interrupt(8)
+			return nil
+		end
+	else
+		self.LADD = -math.floor(Address)
+		self:Interrupt(10)
+		return nil
+	end
+end
+
+function ENT:WritePort( Address, value )
+	if (self.INTR) then //Lock the bus
+		return nil
+	end
+
+	if (Address < 0) then
+		self.LADD = -math.floor(Address)
+		self:Interrupt(8)
+		return false
+	end
+	if (self.Inputs.IOBus.Src) then
+		if (self.Inputs.IOBus.Src.LatchStore) then
+			if (self.Inputs.IOBus.Src.LatchStore[math.floor(Address)]) then
+				self.Inputs.IOBus.Src.LatchStore[math.floor(Address)] = value
+				return true
+			else
+				self.LADD = -math.floor(Address)
+				self:Interrupt(10)
+				return false
+			end
+		elseif (self.Inputs.IOBus.Src.WriteCell) then
+			if (self.Inputs.IOBus.Src:WriteCell(math.floor(Address),value)) then
+				return true
+			else
+				self.LADD = -math.floor(Address)
+				self:Interrupt(10)
+				return false
+			end
+		else
+			self.LADD = -math.floor(Address)
+			self:Interrupt(8)
+			return false
+		end
+	else
+		self.LADD = -math.floor(Address)
+		self:Interrupt(10)
+		return false
+	end
+end
+
+function ENT:Push(value)
+	if (self.INTR) then //Lock the bus
+		return nil
+	end
+
+	self:WriteCell(self.ESP+self.SS,value)
+	self.ESP = self.ESP - 1
+	if (self.ESP < 0) then
+		self.ESP = 0
+		self:Interrupt(6)
+		return false
+	end
+	return true
+end
+
+function ENT:Pop()
+	if (self.INTR) then //Lock the bus
+		return nil
+	end
+
+	self.ESP = self.ESP + 1
+	if (self.ESP > 65535) then
+		self.ESP = 65535
+		self:Interrupt(6)
+		return nil
+	else
+		return self:ReadCell(self.ESP+self.SS)
+	end
+end
+
 //CPUID
 //Value | EAX
 //--------------------------------------------
@@ -200,112 +417,167 @@ end
 //--------------------------------------------
 
 function ENT:Execute( )
-	if (self.HaltPort ~= -1) then
-		return
+	local DeltaTime = CurTime()-(self.PrevTime or CurTime())
+	self.PrevTime = (self.PrevTime or CurTime())+DeltaTime
+
+	self.TIMER = self.TIMER + DeltaTime
+	self.TMR = self.TMR + 1
+	if (self.Debug) then
+		Msg(">TMR="..self.TMR.." IP="..self.IP.." ");
 	end
+
+	//-OBSOLETE---------------------------------
+	//if (self.HaltPort ~= -1) then
+	//	return
+	//end
+	//------------------------------------------
 	
-	local opcode = self:Read( )
+	self.XEIP = self.IP
+
+	local opcode = self:Read( ) //Temp buttfux fix
 	local rm = self:Read( )
 	local params = {0, 0}
 	local result = 0
 
-	local disp1,disp2 = 0
+	if (self.Debug) then
+		Msg("OPCODE="..opcode.." RM="..rm.." ");
+	end
 
-	local drm2 = math.floor(rm / 100)
-	local drm1 = rm - drm2*100
+	if (opcode) then
+		self.ILTC = opcode
+	else
+		self.ILTC = -1
+	end
 
+	local disp1 = 0
+	local disp2 = 0
+
+	if (opcode == nil) || (rm == nil) then
+		self.INTR = false
+		return
+	end
+
+	opcode = opcode + 1 - 1 //Dont laugh, it helps
+
+	local drm2 = math.floor(rm / 10000)
+	local drm1 = rm - drm2*10000
+
+	local segment1 = self.DS
+	local segment2 = self.DS
+
+	//Fix problem here (the lua buttfux one):
+	if (opcode > 1000) then
+		if (opcode > 10000) then
+			segment2 = self:Read()
+			opcode = opcode-10000
+			if (opcode > 1000) then
+				segment1 = self:Read()
+				opcode = opcode-1000
+			end
+		else
+			segment1 = self:Read()
+			opcode = opcode-1000
+		end
+	end
+
+
+	//if (self.Debug) then
+	//	Msg("OPCODE2="..opcode.." S1="..segment1.." S2="..segment2.." ");
+	//end
+
+	if (segment1 == -2) then segment1 = self.CS end
+	if (segment1 == -3) then segment1 = self.SS end
+	if (segment1 == -4) then segment1 = self.DS end
+	if (segment1 == -5) then segment1 = self.ES end
+	if (segment1 == -6) then segment1 = self.GS end
+	if (segment1 == -7) then segment1 = self.FS end
+	if (segment2 == -2) then segment2 = self.CS end
+	if (segment2 == -3) then segment2 = self.SS end
+	if (segment2 == -4) then segment2 = self.DS end
+	if (segment2 == -5) then segment2 = self.ES end
+	if (segment2 == -6) then segment2 = self.GS end
+	if (segment2 == -7) then segment2 = self.FS end
 
 	if (self:OpcodeParamCount( opcode ) > 0) then
-		if (drm1 == 0) then
-			params[1] = self:Read( )
-		elseif (drm1 == 1) then
-			params[1] = self.EAX
-		elseif (drm1 == 2) then
-			params[1] = self.EBX
-		elseif (drm1 == 3) then
-			params[1] = self.ECX
-		elseif (drm1 == 4) then
-			params[1] = self.EDX
-		elseif (drm1 == 5) then
-			params[1] = self.ESI
-		elseif (drm1 == 6) then
-			params[1] = self.EDI
-		elseif (drm1 == 7) then
-			params[1] = self.ESP
-		elseif (drm1 == 8) then
-			params[1] = self.EBP
-		elseif (drm1 >= 9) && (drm1 <= 16) then
-			params[1] = self.Ports[drm1-9]
-		elseif (drm1 == 17) then
-			disp1 = math.floor(self.EAX)
-		elseif (drm1 == 18) then
-			disp1 = math.floor(self.EBX)
-		elseif (drm1 == 19) then
-			disp1 = math.floor(self.ECX)
-		elseif (drm1 == 20) then
-			disp1 = math.floor(self.EDX)
-		elseif (drm1 == 21) then
-			disp1 = math.floor(self.ESI)
-		elseif (drm1 == 22) then
-			disp1 = math.floor(self.EDI)
-		elseif (drm1 == 23) then
-			disp1 = math.floor(self.ESP)
-		elseif (drm1 == 24) then
-			disp1 = math.floor(self.EBP)
+		if (drm1 == 0) then params[1] = self:Read( )
+		elseif (drm1 == 1) then	params[1] = self.EAX
+		elseif (drm1 == 2) then	params[1] = self.EBX
+		elseif (drm1 == 3) then	params[1] = self.ECX
+		elseif (drm1 == 4) then	params[1] = self.EDX
+		elseif (drm1 == 5) then	params[1] = self.ESI
+		elseif (drm1 == 6) then	params[1] = self.EDI
+		elseif (drm1 == 7) then	params[1] = self.ESP
+		elseif (drm1 == 8) then params[1] = self.EBP
+		elseif (drm1 == 9)  then params[1] = self.CS
+		elseif (drm1 == 10) then params[1] = self.SS
+		elseif (drm1 == 11) then params[1] = self.DS
+		elseif (drm1 == 12) then params[1] = self.ES
+		elseif (drm1 == 13) then params[1] = self.GS
+		elseif (drm1 == 14) then params[1] = self.FS
+		elseif (drm1 == 17) then disp1 = math.floor(self.EAX)
+		elseif (drm1 == 18) then disp1 = math.floor(self.EBX)
+		elseif (drm1 == 19) then disp1 = math.floor(self.ECX)
+		elseif (drm1 == 20) then disp1 = math.floor(self.EDX)
+		elseif (drm1 == 21) then disp1 = math.floor(self.ESI)
+		elseif (drm1 == 22) then disp1 = math.floor(self.EDI)
+		elseif (drm1 == 23) then disp1 = math.floor(self.ESP)
+		elseif (drm1 == 24) then disp1 = math.floor(self.EBP)
 		elseif (drm1 == 25) then
-			disp1 = math.floor(self:Read( ))
+			local addr = self:Read( )
+			if (addr ~= nil) then disp1 = math.floor(addr) end
 		end
 		if (drm1 >= 17) && (drm1 <= 25) then
-			if (disp1 >= 0) && (disp1 <= 65535) then
-				params[1] = self.Memory[disp1]
-			end
+			params[1] = self:ReadCell(disp1+segment1)
+		end
+		if (drm1 >= 1000) && (drm1 <= 2024) then
+			params[1] = self:ReadPort(drm1-1000)
 		end
 	end
 	if (self:OpcodeParamCount( opcode ) > 1) then
-		if (drm2 == 0) then
-			params[2] = self:Read( )
-		elseif (drm2 == 1) then
-			params[2] = self.EAX
-		elseif (drm2 == 2) then
-			params[2] = self.EBX
-		elseif (drm2 == 3) then
-			params[2] = self.ECX
-		elseif (drm2 == 4) then
-			params[2] = self.EDX
-		elseif (drm2 == 5) then
-			params[2] = self.ESI
-		elseif (drm2 == 6) then
-			params[2] = self.EDI
-		elseif (drm2 == 7) then
-			params[2] = self.ESP
-		elseif (drm2 == 8) then
-			params[2] = self.EBP
-		elseif (drm2 >= 9) && (drm2 <= 16) then
-			params[2] = self.Ports[drm2-9]
-		elseif (drm2 == 17) then
-			disp2 = math.floor(self.EAX)
-		elseif (drm2 == 18) then
-			disp2 = math.floor(self.EBX)
-		elseif (drm2 == 19) then
-			disp2 = math.floor(self.ECX)
-		elseif (drm2 == 20) then
-			disp2 = math.floor(self.EDX)
-		elseif (drm2 == 21) then
-			disp2 = math.floor(self.ESI)
-		elseif (drm2 == 22) then
-			disp2 = math.floor(self.EDI)
-		elseif (drm2 == 23) then
-			disp2 = math.floor(self.ESP)
-		elseif (drm2 == 24) then
-			disp2 = math.floor(self.EBP)
+		if (drm2 == 0) then params[2] = self:Read( )
+		elseif (drm2 == 1) then	params[2] = self.EAX
+		elseif (drm2 == 2) then	params[2] = self.EBX
+		elseif (drm2 == 3) then	params[2] = self.ECX
+		elseif (drm2 == 4) then	params[2] = self.EDX
+		elseif (drm2 == 5) then	params[2] = self.ESI
+		elseif (drm2 == 6) then	params[2] = self.EDI
+		elseif (drm2 == 7) then	params[2] = self.ESP
+		elseif (drm2 == 8) then	params[2] = self.EBP
+		elseif (drm2 == 9)  then params[2] = self.CS
+		elseif (drm2 == 10) then params[2] = self.SS
+		elseif (drm2 == 11) then params[2] = self.DS
+		elseif (drm2 == 12) then params[2] = self.ES
+		elseif (drm2 == 13) then params[2] = self.GS
+		elseif (drm2 == 14) then params[2] = self.FS
+		elseif (drm2 == 17) then disp2 = math.floor(self.EAX)
+		elseif (drm2 == 18) then disp2 = math.floor(self.EBX)
+		elseif (drm2 == 19) then disp2 = math.floor(self.ECX)
+		elseif (drm2 == 20) then disp2 = math.floor(self.EDX)
+		elseif (drm2 == 21) then disp2 = math.floor(self.ESI)
+		elseif (drm2 == 22) then disp2 = math.floor(self.EDI)
+		elseif (drm2 == 23) then disp2 = math.floor(self.ESP)
+		elseif (drm2 == 24) then disp2 = math.floor(self.EBP)
 		elseif (drm2 == 25) then
-			disp2 = math.floor(self:Read( ))
+			local addr = self:Read( )
+			if (addr ~= nil) then disp2 = math.floor(addr) end
 		end
 		if (drm2 >= 17) && (drm2 <= 25) then
-			if (disp2 >= 0) && (disp2 <= 65535) then
-				params[2] = self.Memory[disp2]
-			end
+			params[2] = self:ReadCell(disp2+segment2)
 		end
+		if (drm2 >= 1000) && (drm2 <= 2024) then
+			params[2] = self:ReadPort(drm2-1000)
+		end
+	end
+
+	if (self.Debug) then
+		if (params[1] && params[2]) then
+			Msg("PARAMS1="..params[1].." PARAMS2="..params[2].."\n");
+		end
+	end
+
+	if (self.INTR) then
+		self.INTR = false
+		return
 	end
 
 	local WriteBack = true
@@ -314,8 +586,7 @@ function ENT:Execute( )
 	//| OPCODES COME HERE:                             |//
 	// ------------------------------------------------ //
 	if (opcode == 0) then
-		Wire_TriggerOutput(self.Entity, "Error", 2.0)
-		self.Clk = 0
+		self:Interrupt(2)
 	elseif (opcode == 1) then	//JNE
 		if (self.CMPR ~= 0) then
 			self.IP = params[1]
@@ -352,7 +623,7 @@ function ENT:Execute( )
 	//============================================================
 	elseif (opcode == 8) then	//CPUID
 		if (params[1] == 0) then 	//CPU VERSION
-			self.EAX = 150		//= 1.50
+			self.EAX = 200		//= 2.00
 		elseif (params[1] == 1) then	//AMOUNT OF RAM
 			self.EAX = 65536	//= 64KB
 		elseif (params[1] == 2) then	//TYPE (0 - ZCPU; 1 - ZGPU)
@@ -363,12 +634,8 @@ function ENT:Execute( )
 		WriteBack = false
 	//============================================================
 	elseif (opcode == 9) then	//PUSH
-		self.Memory[ESP] = params[1]
-		ESP = ESP - 1
-		if (ESP < 16384) then
-			Wire_TriggerOutput(self.Entity, "Error", 6.0)
-			self.Clk = 0
-		end
+		//self.Memory[ESP] = params[1]
+		self:Push(params[1])
 		WriteBack = false
 	//------------------------------------------------------------
 	elseif (opcode == 10) then	//ADD
@@ -379,8 +646,7 @@ function ENT:Execute( )
 		result = params[1] * params[2]
 	elseif (opcode == 13) then	//DIV
 		if (math.abs(params[2]) < 0.0001) then
-			Wire_TriggerOutput(self.Entity, "Error", 3.0)
-			self.Clk = 0
+			self:Interrupt(3)
 		else
 			result = params[1] / params[2]
 		end
@@ -415,23 +681,50 @@ function ENT:Execute( )
 		result = -params[1]
 	elseif (opcode == 23) then	//RAND
 		result = math.random()
-	//------------------------------------------------------------
-	elseif (opcode == 30) then	//POP
-		self.ESP = self.ESP + 1
-		if (self.ESP > 65535) then
-			Wire_TriggerOutput(self.Entity, "Error", 6.0)
-			self.Clk = 0
-		else
-			result = self.Memory[self.ESP]
+	elseif (opcode == 24) then	//LOOP
+		if (self.ECX ~= 0) then
+			self.IP = params[1]
+			self.ECX = self.EAX-1
 		end
 		WriteBack = false
-	elseif (opcode == 31) then	//CALL
-		self.Memory[self.ESP] = self.IP
-		self.ESP = self.ESP - 1
-		if (self.ESP < 16384) then
-			Wire_TriggerOutput(self.Entity, "Error", 6.0)
-			self.Clk = 0
+	elseif (opcode == 25) then	//LOOPA
+		if (self.EAX ~= 0) then
+			self.IP = params[1]
+			self.EAX = self.EAX-1
+		end
+		WriteBack = false
+	elseif (opcode == 26) then	//LOOPB
+		if (self.EBX ~= 0) then
+			self.IP = params[1]
+			self.EBX = self.EAX-1
+		end
+		WriteBack = false
+	elseif (opcode == 27) then	//LOOPD
+		if (self.EDX ~= 0) then
+			self.IP = params[1]
+			self.EDX = self.EAX-1
+		end
+		WriteBack = false
+	elseif (opcode == 28) then	//SPG
+		if (math.floor(params[1] / 128) >= 0) && (math.floor(params[1] / 128) < 512) then
+			Page[math.floor(params[1] / 128)] = false
 		else
+			self:Interrupt(12)
+		end
+		WriteBack = false
+	elseif (opcode == 29) then	//CPG
+		if (math.floor(params[1] / 128) >= 0) && (math.floor(params[1] / 128) < 512) then
+			Page[math.floor(params[1] / 128)] = true
+		else
+			self:Interrupt(12)
+		end
+		WriteBack = false
+	//------------------------------------------------------------
+	elseif (opcode == 30) then	//POP
+		result = self:Pop()
+		WriteBack = false
+	elseif (opcode == 31) then	//CALL
+		if self:Push(self.IP) then
 			self.IP = params[1]
 		end
 		WriteBack = false
@@ -449,7 +742,7 @@ function ENT:Execute( )
 		result = params[1] - math.floor(params[1])
 	elseif (opcode == 36) then	//INV
 		if (math.abs(params[1]) < 0.0001) then
-			Wire_TriggerOutput(self.Entity, "Error", 3.0)
+			self:Interrupt(3)
 			self.Clk = 0
 		else
 			result = 1 / params[1]
@@ -463,17 +756,51 @@ function ENT:Execute( )
 			self.HaltPort = 0
 		end
 		WriteBack = false
-	elseif (opcode == 38) then
-		Wire_TriggerOutput(self.Entity, "Error", 5632663.0)
+	elseif (opcode == 38) then	//FSHL
+		result = math.floor(params[1] * 2)
+	elseif (opcode == 39) then	//FSHR
+		result = math.floor(params[1] / 2)
 	//------------------------------------------------------------
 	elseif (opcode == 40) then	//RET
-		self.ESP = self.ESP + 1
-		if (self.ESP > 65535) then
-			Wire_TriggerOutput(self.Entity, "Error", 6.0)
-			self.Clk = 0
-		else
-			self.IP = self.Memory[self.ESP]
+		local newIP = self:Pop()
+		if (newIP) then
+			self.IP = newIP
 		end
+		WriteBack = false
+	elseif (opcode == 41) then	//IRET
+		local newIP = self:Pop()
+		if (newIP) then
+			self.IP = newIP
+		end
+		WriteBack = false
+	elseif (opcode == 42) then	//STI
+		self.IF = true
+		WriteBack = false
+	elseif (opcode == 43) then	//CLI
+		self.IF = false
+		WriteBack = false
+	elseif (opcode == 44) then	//STP
+		self.PF = true
+		WriteBack = false
+	elseif (opcode == 45) then	//CLP
+		self.PF = false
+		WriteBack = false
+	elseif (opcode == 46) then	//STD
+		//self.Debug = true
+		WriteBack = false
+	elseif (opcode == 47) then	//RETF
+		local newIP = self:Pop()
+		local newCS = self:Pop()
+		if (newIP) && (newCS) then
+			self.IP = newIP
+			self.CS = newCS
+		end
+		WriteBack = false
+	elseif (opcode == 48) then	//I0
+		self:Interrupt(0)
+		WriteBack = false
+	elseif (opcode == 49) then	//TMR
+		self.EAX = self.TMR
 		WriteBack = false
 	//------------------------------------------------------------
 	elseif (opcode == 50) then	//AND
@@ -506,11 +833,217 @@ function ENT:Execute( )
 	elseif (opcode == 57) then	//FACOS
 		result = math.acos(params[2])
 	elseif (opcode == 58) then	//FATAN
-		result = math.atan(params[2])	
+		result = math.atan(params[2])
+	elseif (opcode == 59) then	//MOD
+		result = math.fmod(params[1],params[2])
+	//------------------------------------------------------------
+	elseif (opcode >= 60) && (opcode < 69) then
+		//Bitwise - coming soon
+		WriteBack = false
+	elseif (opcode == 69) then	//JMPF
+		self.CS = params[2]
+		self.IP = params[1]
+		WriteBack = false
+	//------------------------------------------------------------
+	elseif (opcode == 71) then	//CNE
+		if (self.CMPR ~= 0) then
+			if self:Push(self.IP) then
+				self.IP = params[1]
+			end
+		end
+		WriteBack = false
+	elseif (opcode == 72) then	//CJMP
+		if self:Push(self.IP) then
+			self.IP = params[1]
+		end
+		WriteBack = false
+	elseif (opcode == 73) then	//CG
+		if (self.CMPR > 0) then
+			if self:Push(self.IP) then
+				self.IP = params[1]
+			end
+		end
+		WriteBack = false
+	elseif (opcode == 74) then	//CGE
+		if (self.CMPR >= 0) then
+			if self:Push(self.IP) then
+				self.IP = params[1]
+			end
+		end
+		WriteBack = false
+	elseif (opcode == 75) then	//CL
+		if (self.CMPR < 0) then
+			if self:Push(self.IP) then
+				self.IP = params[1]
+			end
+		end
+		WriteBack = false
+	elseif (opcode == 76) then	//CLE
+		if (self.CMPR <= 0) then
+			if self:Push(self.IP) then
+				self.IP = params[1]
+			end
+		end
+		WriteBack = false
+	elseif (opcode == 77) then	//CE
+		if (self.CMPR == 0) then
+			if self:Push(self.IP) then
+				self.IP = params[1]
+			end
+		end
+		WriteBack = false
+	elseif (opcode == 78) then	//MCOPY
+		for i = 1,params[1] do
+			local val
+			val = self:ReadCell(self.ESI+segment1)
+			if (val == nil) then return end
+			if (self:WriteCell(self.EDI+segment2,val) == false) then return end
+			self.EDI = self.EDI + 1
+			self.ESI = self.ESI + 1
+		end
+		WriteBack = false
+	elseif (opcode == 79) then	//MXCHG
+		for i = 1,params[1] do
+			local val
+			val1 = self:ReadCell(self.ESI+segment1)
+			val2 = self:ReadCell(self.EDI+segment2)
+			if (val1 == nil) || (val2 == nil) then return end
+			if (self:WriteCell(self.EDI+segment2,val1) == false) || (self:WriteCell(self.ESI+segment1,val2) == false) then return end
+			self.EDI = self.EDI + 1
+			self.ESI = self.ESI + 1
+		end
+		WriteBack = false
+	//------------------------------------------------------------
+	elseif (opcode == 80) then	//FPWR
+		result = params[1]^params[2]
+	elseif (opcode == 81) then	//XCHG
+		local val1 = params[2]
+		local val2 = params[1]
+
+		result = val1
+		if (drm2 == 1) then self.EAX = val2
+		elseif (drm2 == 2) then	self.EBX = val2
+		elseif (drm2 == 3) then	self.ECX = val2
+		elseif (drm2 == 4) then	self.EDX = val2
+		elseif (drm2 == 5) then	self.ESI = val2
+		elseif (drm2 == 6) then	self.EDI = val2
+		elseif (drm2 == 7) then	self.ESP = val2
+		elseif (drm2 == 8) then	self.EBP = val2
+		elseif (drm2 == 9)  then self:Interrupt(13)
+		elseif (drm2 == 10) then self.SS = val2
+		elseif (drm2 == 11) then self.DS = val2
+		elseif (drm2 == 12) then self.ES = val2
+		elseif (drm2 == 13) then self.GS = val2
+		elseif (drm2 == 14) then self.FS = val2
+		elseif (drm2 >= 17) && (drm2 <= 25) then
+			self:WriteCell(disp2+segment2,val2)
+		elseif (drm2 >= 1000) && (drm2 <= 2024) then
+			self:WritePort(drm2-1000,val2)
+		end
+	elseif (opcode == 82) then	//FLOG
+		result = math.log(params[2])
+	elseif (opcode == 83) then	//FLOG10
+		result = math.log10(params[2])
+	elseif (opcode == 84) then	//IN
+		result = self:ReadPort(params[2])
+	elseif (opcode == 85) then	//OUT
+		self:WritePort(params[1],params[2])
+		WriteBack = false
+	elseif (opcode == 86) then	//FABS
+		result = math.abs(params[2])
+	elseif (opcode == 87) then	//FSGN
+		if (params[2] > 0) then
+			result = 1
+		elseif (params[2] < 0) then
+			result = -1
+		else
+			result = 0
+		end
+	elseif (opcode == 88) then	//FEXP
+		result = math.exp(params[2])
+	elseif (opcode == 89) then	//CALLF
+		if self:Push(self.CS) && self:Push(self.IP)  then
+			self.IP = params[1]
+			self.CS = params[2]
+		end
+		WriteBack = false
+	//------------------------------------------------------------
+	elseif (opcode == 90) then 	//FPI
+		result = 3.141592653589793
+	elseif (opcode == 91) then 	//FE
+		result = 2.718281828459045
+	elseif (opcode == 92) then 	//INT
+		self:Interrupt(tonumber(params[1]))
+		WriteBack = false
+	elseif (opcode == 93) then 	//TPG
+		local tadd = params[1]*128
+		self.CMPR = 0
+		while (tadd < params[1]*128+128) do
+			local val = self:ReadCell(tadd)
+			if (val == nil) then
+				tadd = params[1]*128+128
+				self.CMPR = tadd
+			end
+			tadd = tadd + 1
+		end
+		WriteBack = false
+	elseif (opcode == 94) then 	//EPG
+		local tadd = params[1]*128
+		while (tadd < params[1]*128+128) do
+			local val = self:WriteCell(tadd,0)
+			if (val == nil) then
+				tadd = params[1]*128+128
+			end
+			tadd = tadd + 1
+		end
+		WriteBack = false
+	elseif (opcode == 95) then 	//ERPG
+		if (params[1] >= 0) && (params[1] < 512) then
+			local tadd = params[1]*128
+			while (tadd < params[1]*128+128) do
+				self.ROMMemory[tadd] = 0
+				tadd = tadd + 1
+			end
+		else
+			self:Interrupt(12)
+		end
+		WriteBack = false
+	elseif (opcode == 96) then 	//WRPG
+		if (params[1] >= 0) && (params[1] < 512) then
+			local tadd = params[1]*128
+			while (tadd < params[1]*128+128) do
+				self.ROMMemory[tadd] = self.Memory[tadd]
+				tadd = tadd + 1
+			end
+		else
+			self:Interrupt(12)
+		end
+		WriteBack = false
+	elseif (opcode == 97) then 	//RDPG
+		if (params[1] >= 0) && (params[1] < 512) then
+			local tadd = params[1]*128
+			while (tadd < params[1]*128+128) do
+				self.Memory[tadd] = self.ROMMemory[tadd]
+				tadd = tadd + 1
+			end
+		else
+			self:Interrupt(12)
+		end
+		WriteBack = false
+	elseif (opcode == 98) then	//TIMER
+		result = self.TIMER
+		WriteBack = false
+	elseif (opcode == 99) then	//LIDTR
+		self.IDTR = params[1]
+		WriteBack = false
 	//------------------------------------------------------------
 	else
-		Wire_TriggerOutput(self.Entity, "Error", 4.0)
-		self.Clk = 0
+		self:Interrupt(4)
+	end
+
+	if (self.INTR) then
+		self.INTR = false
+		return
 	end
 
 	// ------------------------------------------------ //
@@ -518,449 +1051,30 @@ function ENT:Execute( )
 	// ------------------------------------------------ //
 
 	if (self:OpcodeParamCount( opcode ) > 0) && (drm1 ~= 0) && (WriteBack) && (self.Clk == 1) then
-		if (drm1 == 1) then
-			self.EAX = result
-		elseif (drm1 == 2) then
-			self.EBX = result
-		elseif (drm1 == 3) then
-			self.ECX = result
-		elseif (drm1 == 4) then
-			self.EDX = result
-		elseif (drm1 == 5) then
-			self.ESI = result
-		elseif (drm1 == 6) then
-			self.EDI = result
-		elseif (drm1 == 7) then
-			self.ESP = result
-		elseif (drm1 == 8) then
-			self.EBP = result
-		elseif (drm1 >= 9) && (drm1 <= 16) then
-			local port = drm1 - 9
-			Wire_TriggerOutput(self.Entity, "Port"..port, result)
+		if (drm1 == 1) then self.EAX = result
+		elseif (drm1 == 2) then self.EBX = result
+		elseif (drm1 == 3) then self.ECX = result
+		elseif (drm1 == 4) then	self.EDX = result
+		elseif (drm1 == 5) then	self.ESI = result
+		elseif (drm1 == 6) then	self.EDI = result
+		elseif (drm1 == 7) then	self.ESP = result
+		elseif (drm1 == 8) then	self.EBP = result
+		elseif (drm1 == 9)  then self:Interrupt(13)
+		elseif (drm1 == 10) then self.SS = result
+		elseif (drm1 == 11) then self.DS = result
+		elseif (drm1 == 12) then self.ES = result
+		elseif (drm1 == 13) then self.GS = result
+		elseif (drm1 == 14) then self.FS = result
 		elseif (drm1 >= 17) && (drm1 <= 25) then
-			self.Memory[disp1] = result
+			self:WriteCell(disp1+segment1,result)
+		elseif (drm1 >= 1000) && (drm1 <= 2024) then
+			self:WritePort(drm1-1000,result)
 		end
 	end
-end
 
-
-
-function ENT:Digit( prefix )
-	return (prefix == "0") || (prefix == "1") || (prefix == "2") || (prefix == "3") ||
-	       (prefix == "4") || (prefix == "5") || (prefix == "6") || (prefix == "7") ||
-	       (prefix == "8") || (prefix == "9") || (prefix == ".")
-end
-
-function ENT:ValidNumber( line )
-	if (line) then
-		return self:Digit(string.sub(line,1,1))
-	else
-		return false;
+	if (self.INTR) then
+		self.INTR = false
 	end
-end
-
-function ENT:Compile( pl, line, linenumber, firstpass )
-	local opcodetable = string.Explode(" ", line or { } )
-	local dopcode = 0
-	local nextparams = false
-	local nextvariable = false
-	local nextorg = false
-	local nextdefine = false
-	local nextalloc = false
-	local nextdb = false
-	local programsize = 0
-	for _,opcode in pairs(opcodetable) do
-		opcode = string.Trim(opcode)
-		if (nextdefine) then
-			local deftable = string.Explode(",", opcode )
-			if (table.Count(deftable) == 2) then
-				if (not self.Labels[deftable[1]]) then
-					if (self:ValidNumber(opcode)) then
-						self.Labels[deftable[1]] = deftable[2]
-					else
-						pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E270) at line "..linenumber..": Attempt to define a non-number\n")
-						return false
-					end
-				else
-					if (firstpass) then
-						pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E236) at line "..linenumber..": Define "..deftable[1].." already exists\n")
-						return false
-					end
-				end
-			else
-				pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E335) at line "..linenumber..": Invalid number of parameters in DEFINE macro\n")
-				return false	
-			end
-		elseif (nextdb) then
-			local dbtable = string.Explode(",", opcode )
-			for _,dbvalue in pairs(dbtable) do
-				if self:ValidNumber(dbvalue) then
-					self:Write(dbvalue)
-				else
-					pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E450) at line "..linenumber..": Invalid parameter in DB macro\n")
-					return false
-				end
-			end
-		elseif (nextorg) then
-			if self:ValidNumber(opcode) then
-				self.WIP = opcode
-			else
-				pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E333) at line "..linenumber..": Invalid parameter in ORG macro\n")
-				return false
-			end
-		elseif (nextalloc) then
-			local alloctable = string.Explode(",", opcode )
-			if (table.Count(alloctable) == 0) then
-				pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Allocated new variable ".."0".." ["..self.WIP.."]\n")
-				self:Write( 0 )
-			end
-			if (table.Count(alloctable) == 1) then
-				alloctable[1] = string.Trim(alloctable[1])
-				local prefix = string.sub(alloctable[1],1,1)
-				if self:ValidNumber(alloctable[1]) then
-					pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Allocated new array ".."0["..alloctable[1].."] ["..self.WIP.."]\n")
-					for i = 1, alloctable[1] do
-						self:Write( 0 )
-					end
-				else
-					if (not self.Labels[alloctable[1]]) then
-						self.Labels[alloctable[1]] = self.WIP
-						pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Allocated new variable "..alloctable[1].." ["..self.WIP.."]\n")
-						self:Write( 0 )
-					else
-						if (firstpass) then
-							pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E231) at line "..linenumber..": Variable "..opcode.." already exists\n")
-							return false
-						else
-							self:Write( 0 )
-						end
-					end
-				end
-			end
-			if (table.Count(alloctable) == 2) then
-				alloctable[1] = string.Trim(alloctable[1])
-				alloctable[2] = string.Trim(alloctable[2])
-				if (not self.Labels[alloctable[1]]) then
-					self.Labels[alloctable[1]] = self.WIP
-					pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Allocated new array "..alloctable[1].."["..alloctable[2].."] ["..self.WIP.."]\n")
-					for i = 1, alloctable[2] do
-						self:Write( 0 )
-					end
-				else
-					if (firstpass) then
-						pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E231) at line "..linenumber..": Variable "..opcode.." already exists\n")
-						return false
-					else
-						for i = 1, alloctable[2] do
-							self:Write( 0 )
-						end
-					end
-				end
-			end
-			if (table.Count(alloctable) == 3) then
-				alloctable[1] = string.Trim(alloctable[1])
-				alloctable[2] = string.Trim(alloctable[2])
-				alloctable[3] = string.Trim(alloctable[3])
-				if (not self.Labels[alloctable[1]]) then
-					self.Labels[alloctable[1]] = self.WIP
-					pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Allocated new array "..alloctable[1].."["..alloctable[2].."] ["..self.WIP.."]\n")
-					for i = 1, alloctable[2] do
-						self:Write( alloctable[3] )
-					end
-				else
-					if (firstpass) then
-						pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E231) at line "..linenumber..": Variable "..opcode.." already exists\n")
-						return false
-					else
-						for i = 1, alloctable[2] do
-							self:Write( alloctable[3] )
-						end
-					end
-				end
-			end
-			nextalloc = false
-		elseif (nextparams) then
-			local paramtable = string.Explode(",", opcode or {"none","none"} )
-			local drm1 = 0
-			local drm2 = 0
-			local disp1,disp2 = 0
-
-			if (table.Count(paramtable) ~= self:OpcodeParamCount( dopcode )) then
-				pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E245) at line "..linenumber..": wrong number of parameters for opcode\n")
-				return false
-			end
-			paramtable[1] = string.Trim(paramtable[1])
-			
-			if (paramtable[1] == "eax") then
-				drm1 = 1
-			elseif (paramtable[1] == "ebx")	then
-				drm1 = 2
-			elseif (paramtable[1] == "ecx")	then				
-				drm1 = 3
-			elseif (paramtable[1] == "edx")	then				
-				drm1 = 4
-			elseif (paramtable[1] == "esi")	then				
-				drm1 = 5
-			elseif (paramtable[1] == "edi")	then				
-				drm1 = 6
-			elseif (paramtable[1] == "esp")	then				
-				drm1 = 7
-			elseif (paramtable[1] == "ebp")	then				
-				drm1 = 8
-			elseif (paramtable[1] == "port0") then				
-				drm1 = 9
-			elseif (paramtable[1] == "port1") then				
-				drm1 = 10
-			elseif (paramtable[1] == "port2") then				
-				drm1 = 11
-			elseif (paramtable[1] == "port3") then				
-				drm1 = 12
-			elseif (paramtable[1] == "port4") then				
-				drm1 = 13
-			elseif (paramtable[1] == "port5") then				
-				drm1 = 14
-			elseif (paramtable[1] == "port6") then				
-				drm1 = 15
-			elseif (paramtable[1] == "port7") then				
-				drm1 = 16
-			else
-				local prefix = string.sub(paramtable[1],1,1)
-				local postprefix = string.sub(paramtable[1],2)
-				if (prefix ~= "#") && (not self:ValidNumber(paramtable[1])) then
-					if (self.Labels[paramtable[1]..":"]) then
-						paramtable[1] = self.Labels[paramtable[1]..":"]
-					else	
-						if (not firstpass) then
-							pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E232) at line "..linenumber..": No such label: "..paramtable[1].."!\n")
-							return false
-						end
-					end
-				end
-				if (prefix == "#") then
-					if (postprefix == "eax") then
-						drm1 = 17
-					elseif (postprefix == "ebx") then
-						drm1 = 18
-					elseif (postprefix == "ecx") then
-						drm1 = 19
-					elseif (postprefix == "edx") then
-						drm1 = 20
-					elseif (postprefix == "esi") then
-						drm1 = 21
-					elseif (postprefix == "edi") then
-						drm1 = 22
-					elseif (postprefix == "esp") then
-						drm1 = 23
-					elseif (postprefix == "edp") then
-						drm1 = 24
-					elseif (self.Labels[postprefix..":"]) then
-						drm1 = 25
-						disp1 = self.Labels[postprefix..":"]
-					elseif (self.Labels[postprefix]) then
-						drm1 = 25
-						disp1 = self.Labels[postprefix]
-					else
-						if (postprefix) then
-							if (not self.ValidNumber(postprefix)) then
-								if (not firstpass) then
-									pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E232) at line "..linenumber..": No such variable: "..postprefix.."!\n")
-									return false
-								end
-							end
-							drm1 = 25
-							disp1 = postprefix
-						else
-							pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E490) at line "..linenumber..": Wrong memory reference syntax!\n")
-						end
-					end
-				end
-			end
-
-			if (self:OpcodeParamCount( dopcode ) > 1) && (paramtable[2] ~= "none") then
-				paramtable[2] = string.Trim(paramtable[2])
-
-				if (paramtable[2] == "eax") then
-					drm2 = 1
-				elseif (paramtable[2] == "ebx") then				
-					drm2 = 2
-				elseif (paramtable[2] == "ecx") then				
-					drm2 = 3
-				elseif (paramtable[2] == "edx") then				
-					drm2 = 4	
-				elseif (paramtable[2] == "esi") then				
-					drm2 = 5
-				elseif (paramtable[2] == "edi") then				
-					drm2 = 6
-				elseif (paramtable[2] == "esp") then		
-					drm2 = 7
-				elseif (paramtable[2] == "ebp") then				
-					drm2 = 8
-				elseif (paramtable[2] == "port0") then				
-					drm2 = 9
-				elseif (paramtable[2] == "port1") then				
-					drm2 = 10
-				elseif (paramtable[2] == "port2") then				
-					drm2 = 11
-				elseif (paramtable[2] == "port3") then				
-					drm2 = 12
-				elseif (paramtable[2] == "port4") then				
-					drm2 = 13
-				elseif (paramtable[2] == "port5") then				
-					drm2 = 14
-				elseif (paramtable[2] == "port6") then				
-					drm2 = 15
-				elseif (paramtable[2] == "port7") then				
-					drm2 = 16
-				else
-					local prefix = string.sub(paramtable[2],1,1)
-					local postprefix = string.sub(paramtable[2],2)
-					if (prefix ~= "#") && (not self:ValidNumber(paramtable[2])) then
-						if (self.Labels[paramtable[2]..":"]) then
-							paramtable[2] = self.Labels[paramtable[2]..":"]
-						else	
-							if (not firstpass) then
-								pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E232) at line "..linenumber..": No such label: "..paramtable[2].."!\n")
-								return false
-							end
-						end
-					end
-					if (prefix == "#") then
-						if (postprefix == "eax") then
-							drm2 = 17
-						elseif (postprefix == "ebx") then
-							drm2 = 18
-						elseif (postprefix == "ecx") then
-							drm2 = 19
-						elseif (postprefix == "edx") then
-							drm2 = 20
-						elseif (postprefix == "esi") then
-							drm2 = 21
-						elseif (postprefix == "edi") then
-							drm2 = 22
-						elseif (postprefix == "esp") then
-							drm2 = 23
-						elseif (postprefix == "edp") then
-							drm2 = 24
-						elseif (self.Labels[postprefix..":"]) then
-							drm2 = 25
-							disp2 = self.Labels[postprefix..":"]
-						elseif (self.Labels[postprefix]) then
-							drm2 = 25
-							disp2 = self.Labels[postprefix]
-						else
-							if (postprefix) then
-								if (not self.ValidNumber(postprefix)) then
-									if (not firstpass) then
-										pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E231) at line "..linenumber..": No such variable: "..postprefix.."!\n")
-										return false
-									end
-								end
-								drm2 = 25
-								disp2 = postprefix
-							else
-								pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E490) at line "..linenumber..": Wrong memory reference syntax!\n")
-							end
-						end
-					end	
-				end
-			end
-			local rm = drm1 + drm2*100
-			self:Write( dopcode )
-			self:Write( rm )
-			programsize = programsize + 2
-			
-			if (drm1 == 0) then
-				self:Write( paramtable[1] )
-				programsize = programsize + 1
-			end
-			if (self:OpcodeParamCount( dopcode ) > 1) && (drm2 == 0) then
-				self:Write( paramtable[2] )
-				programsize = programsize + 1
-			end
-			if (drm1 == 25) then
-				self:Write( disp1 )
-			end
-			if (drm2 == 25) then
-				self:Write( disp2 )
-			end
-
-			nextparams = false
-		else
-			if ( opcode == "alloc" ) then
-				nextalloc = true
-			elseif (opcode == "db") then
-				nextdb = true
-			elseif ( opcode == "org" ) then
-				nextorg = true
-			elseif ( opcode == "define" ) then
-				nextdefine = true
-			elseif ( opcode == "code" ) then
-				self.WIP = 0
-				self.Labels["codestart"] = 0
-			elseif ( opcode == "data" ) then
-				self.WIP = 8196
-				self.Labels["datastart"] = 8196
-			else
-				dopcode = self:DecodeOpcode( opcode )
-				if (dopcode ~= -1) then
-					if (self:OpcodeParamCount( dopcode ) > 0) then
-						nextparams = true
-					else
-						self:Write( dopcode )
-						self:Write( 0 )
-						programsize = programsize + 2
-					end				
-				else
-					local lastsymbol = string.sub(opcode,-1,-1)
-					if (lastsymbol == ":") then
-						if (not self.Labels[opcode]) then
-							self.Labels[opcode] = self.WIP
-							pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Added label "..opcode.."["..self.WIP.."]\n")
-						else
-							if (firstpass) then
-								pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E200) at line "..linenumber..": Label "..opcode.." already exists\n")
-								return false
-							end
-						end
-					else
-						if (opcode ~= "") && (opcode ~= " ") then
-							pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E500) at line "..linenumber..": unknown opcode: "..opcode.."\n")
-							return false
-						end
-					end
-				end
-			end
-		end
-	end
-	return true
-end
-
-function ENT:ParseProgram( pl, programtext, parsedline, firstpass )
-	if (self.FatalError) then
-		return false
-	end
-	
-	//local programtext2 = string.gsub(programtext,"/*(.-)*/")
-	//Msg("!!: "..programtext2.."\n")
-	//local programtext2 = string.Implode(" ",tablenolines)
-	
-	local comment = string.find(programtext,"//")
-
-	local programtext2 = programtext
-
-	if (comment) then
-		programtext2 = string.sub(programtext,1,comment-1)
-	end
-
-	local linestable = string.Explode(";", programtext2 or { } )
-	local linenumber = 0
-	for _,line in pairs(linestable) do
-		linenumber = linenumber + 1
-		if (not self:Compile( pl, string.lower(line), parsedline, firstpass )) then
-			self.FatalError = true
-			self.Memory[0] = 0	//FIXME
-		end
-	end	
 end
 
 function ENT:Use()
@@ -969,91 +1083,33 @@ end
 function ENT:Think()
 	self.BaseClass.Think(self)
 	
-	local timeout = self.ThinkTime
+	local timeout = self.ThinkTime*5
 	while (timeout > 0) && (self.Clk >= 1.0) do
 		self:Execute( )
 		timeout = timeout - 1
 	end
-	self.Entity:NextThink(CurTime()+0.01)
+	self.Entity:NextThink(CurTime()+0.05)
 end
 
 function ENT:TriggerInput(iname, value)
 	if (iname == "Clk") then
 		self.Clk = value
-		if (value >= 1.0) then
-			Wire_TriggerOutput(self.Entity, "Error", 0.0)
-		end
+		self.InputClk = value
+		self.PrevTime = CurTime()
 	elseif (iname == "Frequency") then
+		if (!SinglePlayer() && (value > 5000)) then return end
 		if (value ~= 0) then
 			self.ThinkTime = value/100
 		end
 	elseif (iname == "Reset") then
 		if (value >= 1.0) then
-			self.IP = 0
-		
-			self.EAX = 0
-			self.EBX = 0
-			self.ECX = 0
-			self.EDX = 0
-
-			self.ESI = 0
-			self.EDI = 0
-			self.ESP = 65535
-			self.EBP = 0
+			self:Reset()
 
 			Wire_TriggerOutput(self.Entity, "Error", 0.0)
 		end		
-	elseif (iname == "Port0") then
-		if (self.HaltPort == 0) then
-			self.HaltPort = -1
-		end
-		self.Ports[0] = value
-	elseif (iname == "Port1") then
-		if (self.HaltPort == 1) then
-			self.HaltPort = -1
-		end
-		self.Ports[1] = value
-	elseif (iname == "Port2") then
-		if (self.HaltPort == 2) then
-			self.HaltPort = -1
-		end
-		self.Ports[2] = value
-	elseif (iname == "Port3") then
-		if (self.HaltPort == 3) then
-			self.HaltPort = -1
-		end
-		self.Ports[3] = value
-	elseif (iname == "Port4") then
-		if (self.HaltPort == 4) then
-			self.HaltPort = -1
-		end
-		self.Ports[4] = value
-	elseif (iname == "Port5") then
-		if (self.HaltPort == 5) then
-			self.HaltPort = -1
-		end
-		self.Ports[5] = value
-	elseif (iname == "Port6") then
-		if (self.HaltPort == 6) then
-			self.HaltPort = -1
-		end
-		self.Ports[6] = value
-	elseif (iname == "Port7") then
-		if (self.HaltPort == 7) then
-			self.HaltPort = -1
-		end
-		self.Ports[7] = value
-	elseif (iname == "ReadAddr") then
-		if (value >= 0.0) and (value <= 65535.0) then
-			Wire_TriggerOutput(self.Entity, "Data", self.Memory[math.floor(value)])
-		end
-	elseif (iname == "WriteAddr") then
-		self.WriteAddr = math.floor(value)
-	elseif (iname == "Data") then
-		self.WriteData = value
-	elseif (iname == "WriteClk") then
-		if (value >= 1.0) then
-			self.Memory[self.WriteAddr] = self.WriteData
-		end
+	elseif (iname == "MemBus") then
+		self.MemBus = self.Inputs.MemBus.Src /////////////
+	elseif (iname == "IOBus") then
+		self.IOBus = self.Inputs.IOBus.Src /////////////
 	end
 end

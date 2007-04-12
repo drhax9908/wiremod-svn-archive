@@ -14,14 +14,15 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_cpus', 20)
+	SourceCode = {}
+	SourceLines = 0
 end
 
 TOOL.ClientConVar[ "model" ] = "models/cheeze/wires/cpu.mdl"
 TOOL.ClientConVar[ "filename" ] = ""
-
-for i = 1,512 do
-	TOOL.ClientConVar[ "line"..i ] = ""
-end
+TOOL.ClientConVar[ "compiler" ] = "ZyeliosASM"
+TOOL.ClientConVar[ "userom" ] = 0
+TOOL.ClientConVar[ "dumpcode" ] = 0
 
 cleanup.Register( "wire_cpus" )
 
@@ -33,37 +34,94 @@ function TOOL:LeftClick( trace )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_cpu" && trace.Entity.pl == ply ) then
 		//trace.Entity:LoadProgram("CPUChip/"..TOOL.ClientConVar[ "filename" ])
-		ply:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 0.9 <----\n")
-		ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compiling...\n")
-		ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 1\n")
-		trace.Entity.FatalError = false
-		trace.Entity.WIP = 0
-		trace.Entity.Labels = {}
+		if (self:GetClientInfo( "compiler") == "ZyeliosASM") then
+			//PrintTable(SourceCode)
 
-		trace.Entity.Labels["version"] = 090
-		trace.Entity.Labels["platform"] = 0
-		trace.Entity.Labels["true"] = 1
-		trace.Entity.Labels["false"] = 0
+			ply:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 1.0 <----\n")
+			ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compiling...\n")
+			ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 1\n")
+			trace.Entity.FatalError = false
+			trace.Entity.WIP = 0
+			trace.Entity.Labels = {}
+			trace.Entity.Compiling = true
+			if (self:GetClientInfo("userom") == 1) then
+				trace.Entity.UseROM = true
+			else
+				trace.Entity.UseROM = false
+			end
+	
+			trace.Entity.Labels["version"] = 100
+			trace.Entity.Labels["platform"] = 0
+			trace.Entity.Labels["true"] = 1
+			trace.Entity.Labels["false"] = 0
 
-		for i = 1,512 do
-			if (self:GetClientInfo("line"..i)) then
-				trace.Entity:ParseProgram(ply, self:GetClientInfo( "line"..i),i,true)
+			local linen = 0
+			for i = 1,table.Count(SourceCode)-1 do
+				linen = linen + 1
+				line = SourceCode[tostring(linen)]
+				trace.Entity:ParseProgram_ASM(ply,line,linen,true)
 			end
-		end
-		trace.Entity.WIP = 0
-		ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 2\n")
-		for i = 1,512 do
-			if (self:GetClientInfo("line"..i)) then
-				trace.Entity:ParseProgram(ply, self:GetClientInfo( "line"..i),i,false)
+	
+			trace.Entity.WIP = 0
+			ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 2\n")
+
+			local linen = 0
+			for i = 1,table.Count(SourceCode)-1 do
+				linen = linen + 1
+				line = SourceCode[tostring(linen)]
+				trace.Entity:ParseProgram_ASM(ply,line,linen,false)
 			end
+
+			if (trace.Entity.FatalError) then
+				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile aborted: fatal error has occured\n")			
+			else
+				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile succeded! Wrote "..trace.Entity.WIP.." bytes.\n")
+				if (self:GetClientInfo( "dumpcode") == 1) then //lololol codedump
+					ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dumping compiled data\n")
+					local codedump = ""
+					for i = 0,trace.Entity.WIP do
+						codedump = codedump..trace.Entity.Memory[i].."\n"
+					end
+					ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dumped, saving\n")
+					file.Write("codedump.txt",codedump)
+					ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dump Saved!\n")
+				end
+			end
+			trace.Entity:Reset()
+			trace.Entity.Compiling = false
+			return true
 		end
-		if (trace.Entity.FatalError) then
-			ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile aborted: fatal error has occured\n")			
-		else
-			ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile succeded! Wrote "..trace.Entity.WIP.." bytes.\n")
-			trace.Entity.Clk = 0
+		if (self:GetClientInfo( "compiler") == "ZyeliosBASIC") then
+			ply:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosBASIC compiler - Version 0.1 - CodeSet: Yellow <----\n")
+			ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosBASIC: Compiling...\n")
+			trace.Entity.FatalError = false
+			trace.Entity.WIP = 0
+			trace.Entity.Labels = {}
+	
+			trace.Entity.Labels["version"] = 100
+			trace.Entity.Labels["platform"] = 0
+			trace.Entity.Labels["true"] = 1
+			trace.Entity.Labels["false"] = 0
+
+			for i = 1,256 do
+				if (self:GetClientInfo("line"..i)) then
+					trace.Entity:ParseProgram_BASIC(ply, self:GetClientInfo( "line"..i),i,true)
+				end
+			end
+			trace.Entity.WIP = 0
+			for i = 1,256 do
+				if (self:GetClientInfo("line"..i)) then
+					trace.Entity:ParseProgram_BASIC(ply, self:GetClientInfo( "line"..i),i,false)
+				end
+			end
+			if (trace.Entity.FatalError) then
+				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosBASIC: Compile aborted: fatal error has occured\n")			
+			else
+				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosBASIC: Compile succeded! Wrote "..trace.Entity.WIP.." bytes.\n")
+				trace.Entity.Clk = 0
+			end
+			return true
 		end
-		return true
 	end
 	
 	if ( !self:GetSWEP():CheckLimit( "wire_cpus" ) ) then return false end
@@ -168,44 +226,110 @@ function TOOL:Think()
 	self:UpdateGhostWireCpu( self.GhostEntity, self:GetOwner() )
 end
 
-local function LoadProgram( pl, command, args )//
-	local lines = string.Explode("\n", file.Read("CPUChip\\"..pl:GetInfo("wire_cpu_filename")) or {} )
-	for i = 1,512 do
-		if (lines[i] && (lines[i] ~= "\n")) then
-			pl:ConCommand('wire_cpu_line'..i..' "' .. lines[i] .. '"')
+if (CLIENT) then
+	SourceLines = {}
+	SourceLineNumbers = {}
+	SourceLinesSent = 0
+end
+
+local function UploadProgram( pl )
+	local SendLinesMax = SourceLinesSent + 50	
+	if (SendLinesMax > table.Count(SourceLines)) then SendLinesMax = table.Count(SourceLines) end
+	while (SourceLinesSent <= SendLinesMax) do
+		SourceLinesSent = SourceLinesSent + 1
+		local line = SourceLines[SourceLinesSent]
+		local linen = SourceLinesSent
+
+		if (line) && (line ~= "\n") && (string.gsub(line, "\n", "") ~= "") then
+			pl:ConCommand('wire_cpu_addsrc "'..linen..'" "' .. string.gsub(line, "\n", "") .. '"')
 		else
-			pl:ConCommand('wire_cpu_line'..i..' ""')
-		end
+			pl:ConCommand('wire_cpu_addsrc "'..linen..'" ""')
+		end	
 	end
+	local TempPercent = ((SourceLinesSent-1)/table.Count(SourceLines))*100
+	pl:PrintMessage(HUD_PRINTCONSOLE,"CPU -> Sent packet ("..TempPercent.." )\n")
+end
+
+local function LoadProgram( pl, command, args )//
+	//SP only:
+	//SourceCode = string.Explode("\n", file.Read("CPUChip\\"..pl:GetInfo("wire_cpu_filename")) )
+
+	pl:ConCommand('wire_cpu_clearsrc')
+
+	//timer.Create( String Name, Number delay, Number reps, Function func, ... )
+
+	SourceLines = string.Explode("\n", file.Read("CPUChip\\"..pl:GetInfo("wire_cpu_filename")) )
+	SourceLinesSent = 0
+	//Send 50 lines
+	local Reps = math.floor(table.Count(SourceLines)/50)+1
+
+	timer.Create("CPUSendTimer",0.3,Reps,UploadProgram,pl)
+
+	//linen = 0
+	//for _,line in pairs(lines) do
+	//	if (line) && (line ~= "\n") && (string.gsub(line, "\n", "") ~= "") then
+	//		pl:ConCommand('wire_cpu_addsrc "'..linen..'" "' .. string.gsub(line, "\n", "") .. '"')
+	//	else
+	//		pl:ConCommand('wire_cpu_addsrc "'..linen..'" ""')
+	//	end
+	//	linen = linen + 1
+	//end
+
+	//SourceCode = {}
+	//local lines = string.Explode("\n", file.Read("CPUChip\\"..pl:GetInfo("wire_cpu_filename")) )
+	//for i = 1,256 do
+	//	if (lines[i]) && (lines[i] ~= "\n") && (string.gsub(lines[i], "\n", "") ~= "") then
+	//		pl:ConCommand('wire_cpu_line'..i..' "' .. string.gsub(lines[i], "\n", "") .. '"')
+	//	else
+	//		pl:ConCommand('wire_cpu_line'..i..' ""')
+	//	end
+	//end
 end
 concommand.Add( "wire_cpu_load", LoadProgram )
 
 local function StoreProgram( pl, command, args )
-        local lines = "";
-        for i = 1,512 do
-		if (pl:GetInfo("wire_cpu_line"..i) ~= "") then
-	                lines = lines .. pl:GetInfo("wire_cpu_line"..i) .. "\n"
-		end
-        end
-        file.Write("CPUChip\\"..pl:GetInfo("wire_cpu_filename"),lines)
+        //local lines = "";
+        //for i = 1,256 do
+	//	if (pl:GetInfo("wire_cpu_line"..i) ~= "") then
+	//                lines = lines .. pl:GetInfo("wire_cpu_line"..i) .. "\n"
+	//	end
+        //end
+        //file.Write("CPUChip\\"..pl:GetInfo("wire_cpu_filename"),lines)
+	Msg("Storing program is disabled - its readonly!\n")
 end
 concommand.Add( "wire_cpu_store", StoreProgram )
 
 local function ClearProgram( pl, command, args )
-	local lines = "";
-        for i = 1,512 do
-		if (pl:GetInfo("wire_cpu_line"..i) ~= "") then
-	                lines = lines .. pl:GetInfo("wire_cpu_line"..i) .. "\n"
-			pl:ConCommand('wire_cpu_line'..i..' ""')
-		end
-        end
-	local filenum = 0
-	while (file.Exists("CPUChip\\ClearSave\\SavedCode"..filenum..".txt")) do
-		filenum = filenum + 1
-	end
-        file.Write("CPUChip\\ClearSave\\SavedCode"..filenum..".txt",lines)
+//	local lines = "";
+//        for i = 1,256 do
+//		if (pl:GetInfo("wire_cpu_line"..i) ~= "") then
+//	                lines = lines .. pl:GetInfo("wire_cpu_line"..i) .. "\n"
+//			pl:ConCommand('wire_cpu_line'..i..' ""')
+//		end
+//        end
+//	local filenum = 0
+//	while (file.Exists("CPUChip\\ClearSave\\SavedCode"..filenum..".txt")) do
+//		filenum = filenum + 1
+//	end
+//        file.Write("CPUChip\\ClearSave\\SavedCode"..filenum..".txt",lines)
+	pl:ConCommand('wire_cpu_clearsrc')
 end
-concommand.Add( "wire_cpu_clear", ClearProgram )
+concommand.Add( "wire_cpu_clear", ClearProgram ) 
+
+if (SERVER) then
+
+	local function AddSourceLine( pl, command, args )
+		SourceCode[args[1]] = tostring(args[2])
+	end
+	concommand.Add( "wire_cpu_addsrc", AddSourceLine )
+	
+	local function ClearSource( pl, command, args )
+		SourceCode = {}
+	end
+	concommand.Add( "wire_cpu_clearsrc", ClearSource )
+
+end
+
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_cpu_name", Description = "#Tool_wire_cpu_desc" })
@@ -222,24 +346,39 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_cpu_load"
 	})
 
-	panel:AddControl("Button", {
-		Text = "Store",
-		Name = "Store",
-		Command = "wire_cpu_store"
-	})
+//	panel:AddControl("Button", {
+//		Text = "Store",
+//		Name = "Store",
+//		Command = "wire_cpu_store"
+//	})
 	
 	panel:AddControl("Button", {
 		Text = "Clear",
 		Name = "Clear",
 		Command = "wire_cpu_clear"
 	})
-	
-	for i = 1,512 do
-		panel:AddControl("TextBox", {
-			Label = "Line "..i..":",
-			Command = "wire_cpu_line"..i,
-			MaxLength = "128"
-		})
-	end
+
+	panel:AddControl("CheckBox", {
+		Label = "Store in CPU ROM",
+		Command = "wire_cpu_userom"
+	})
+
+//	panel:AddControl("ComboBox", {
+//		Label = "Compiler",
+//		MenuButton = "0",
+//
+//		Options = {
+//			["ZyeliosASM"]		= { wire_cpu_compiler = "ZyeliosASM" }
+//			["ZyeliosBASIC"]	= { wire_cpu_compiler = "ZyeliosBASIC" }
+//		}
+//	})
+	//Bye till better times:
+//	for i = 1,256 do
+//		panel:AddControl("TextBox", {
+//			Label = "Line "..i..":",
+//			Command = "wire_cpu_line"..i,
+//			MaxLength = "128"
+//		})
+//	end
 end
 	
