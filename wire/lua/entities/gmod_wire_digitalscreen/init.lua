@@ -10,12 +10,12 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	
-	self.Inputs = Wire_CreateInputs(self.Entity, { "PixelX", "PixelY", "PixelG", "Clk" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "PixelX", "PixelY", "PixelG", "Clk", "FillColor", "ClearRow", "ClearCol" })
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Memory" }) 
 
 	self.Memory = {}
 
-	for i = 0, 1023 do
+	for i = 0, 2048 do
 		self.Memory[i] = 0
 	end
 
@@ -29,8 +29,8 @@ function ENT:Use()
 end
 
 function ENT:SendPixel()
-	if (self.Clk >= 1) && (self.PixelX >= 0) && (self.PixelX <= 32) &&
-			      (self.PixelY >= 0) && (self.PixelY <= 32) then
+	if (self.Clk >= 1) && (self.PixelX >= 0) && (self.PixelX < 32) &&
+			      (self.PixelY >= 0) && (self.PixelY < 32) then
 		local address = math.floor(self.PixelY)*32+math.floor(self.PixelX)
 		self.Memory[address] = self.PixelG 
 
@@ -39,46 +39,42 @@ function ENT:SendPixel()
 
 		umsg.Start("digitalscreen_datamessage", rp)
 			umsg.Long( self:EntIndex() )
+			umsg.Long( self.Clk )
 			umsg.Long( address )
 			umsg.Float( self.PixelG )
 		umsg.End()
-		Msg("DSCR - sent pixel "..address.." wait for reply\n")
 	end
 end
 
 function ENT:ReadCell( Address )
-	if (Address < 0) || (Address > 1024) then
+	if (Address < 0) || (Address > 2048) then
 		return nil
-	elseif (Address == 1024) then
+	elseif (Address == 2048) then
 		return self.Clk
-	elseif (Address >= 0) && (Address <= 1023) then
+	elseif (Address >= 0) && (Address <= 2047) then
 		return self.Memory[Address]
 	end
 end
 
 function ENT:WriteCell( Address, value )
-	if (Address < 0) || (Address > 1024) then
+	if (Address < 0) || (Address > 2048) then
 		return false
-	elseif (Address == 1024) then
+	elseif (Address == 2048) then
 		self.Clk = value
 		return true
-	elseif (Address >= 0) && (Address <= 1023) then
-		if (self.Clk >= 1) then
-			self.Memory[Address] = value
+	elseif (Address >= 0) && (Address <= 2047) then
+		self.Memory[Address] = value
 
-			local rp = RecipientFilter()
-			rp:AddAllPlayers()
-	
-			umsg.Start("digitalscreen_datamessage", rp)
-				umsg.Long( self:EntIndex() )
-				umsg.Long( Address )
-				umsg.Float( value )
-			umsg.End()
-			Msg("DSCR2 - sent pixel "..Address.." wait for reply\n")
-			return true
-		else
-			return false
-		end
+		local rp = RecipientFilter()
+		rp:AddAllPlayers()
+
+		umsg.Start("digitalscreen_datamessage", rp)
+			umsg.Long( self:EntIndex() )
+			umsg.Long( self.Clk )
+			umsg.Long( Address )
+			umsg.Float( value )
+		umsg.End()
+		return true
 	end
 end
 
@@ -95,5 +91,11 @@ function ENT:TriggerInput(iname, value)
 	elseif (iname == "Clk") then
 		self.Clk = value
 		self:SendPixel()
+	elseif (iname == "FillColor") then
+		self:WriteCell(2042,value)
+	elseif (iname == "ClearCol") then
+		self:WriteCell(2041,0)
+	elseif (iname == "ClearRow") then
+		self:WriteCell(2040,0)
 	end
 end
