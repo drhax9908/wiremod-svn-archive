@@ -115,3 +115,37 @@ function ENT:OnRestore()
 	Wire_AdjustInputs(self.Entity, { "A", "B", "C", "D" })
 	Wire_AdjustOutputs(self.Entity, { "A", "B", "C", "D" })
 end
+
+// Dupe info functions added by TheApathetic
+function ENT:BuildDupeInfo()
+	local info = self.BaseClass.BuildDupeInfo(self) or {}
+
+	if (self.Other) && (self.Other:IsValid()) then
+		info.Other = self.Other:EntIndex()
+	end
+
+	return info
+end
+
+function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
+	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
+
+	if (info.Other) then
+		local other = GetEntByID(info.Other)
+		if (!other) then
+			other = ents.GetByIndex(info.Other)
+		end
+
+		local id = 0
+		// A new two-way ID is created upon paste to avoid
+		// interference with current two-way radios
+		// This works because ApplyDupeInfo is called after
+		// all entities are already pasted (TheApathetic)
+		if (other && other:IsValid() && other.PairID) then
+			id = other.PairID
+		else
+			id = Radio_GetTwoWayID()
+		end
+		self:RadioLink(other, id)
+	end
+end

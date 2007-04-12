@@ -72,7 +72,7 @@ function TOOL:LeftClick( trace )
 	local wire_twoway_radio = MakeWireTwoWay_Radio( ply, model, trace.HitPos, Ang, nil )
 	
 	local min = wire_twoway_radio:OBBMins()
-	wire_twoway_radio:SetPos( trace.HitPos - trace.HitNormal * (min.z-5) )
+	wire_twoway_radio:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
 	// Don't weld to world
 	/*local const
@@ -117,7 +117,10 @@ end
 
 if SERVER then
 
-	function MakeWireTwoWay_Radio(pl, Model, Pos, Ang, PeerID, Other, Vel, aVel, frozen )
+	// Having PeerID and Other in the duplicator was making it error out
+	// by trying to reference a two-way radio that didn't exist yet
+	// Build/ApplyDupeInfo now handle this (TheApathetic)
+	function MakeWireTwoWay_Radio(pl, Model, Pos, Ang, Vel, aVel, frozen) //PeerID, Other, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_twoway_radioes" ) ) then return nil end
 
 		local wire_twoway_radio = ents.Create( "gmod_wire_twoway_radio" )
@@ -132,8 +135,8 @@ if SERVER then
 
 		local ttable = 
 		{
-			PeerID      = PeerID,
-			Other		= Other,
+			//PeerID      = PeerID,
+			//Other		= Other,
 			pl			= pl,
 			nocollide	= nocollide,
 			description = description
@@ -146,7 +149,7 @@ if SERVER then
 		return wire_twoway_radio
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_twoway_radio", MakeWireTwoWay_Radio, "Model", "Pos", "Ang", "PeerID", "Other", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_twoway_radio", MakeWireTwoWay_Radio, "Model", "Pos", "Ang", "Vel", "aVel", "frozen") //"PeerID", "Other", "Vel", "aVel", "frozen")
 
 end
 
@@ -167,7 +170,7 @@ function TOOL:UpdateGhostWireTwoWay_Radio( ent, player )
 	ent:SetAngles( Ang )	
 
 	local min = ent:OBBMins()
-	ent:SetPos( trace.HitPos - trace.HitNormal * (min.z-5) )
+	ent:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
 	ent:SetNoDraw( false )
 
