@@ -21,13 +21,14 @@ function ENT:Initialize( )
 	self.Entity:SetNetworkedFloat( "X", 0 );
 	self.Entity:SetNetworkedFloat( "Y", 0 );
 	self.Entity:SetNetworkedFloat( "Z", 0 );
-	self.Entity:SetNetworkedFloat( "Lifetime", 0.2 );
-	self.Entity:SetNetworkedBool( "Display", false );
+	self.Entity:SetNetworkedFloat( "FadeRate", 50 );
+	self.Entity:SetNetworkedFloat( "PointSize", 0.2 );
+	self.Entity:SetNetworkedBool( "ShowBeam", true );
+	self.Entity:SetNetworkedBool( "Active", false );
 	self.Entity:SetNetworkedEntity( "grid", self.Entity );
-	self.Entity:SetNetworkedBool( "Reset", false );
 
 	// create inputs.
-	self.Inputs = Wire_CreateInputs( self.Entity, { "X", "Y", "Z", "Display", "Lifetime", "Reset" } );
+	self.Inputs = Wire_CreateInputs( self.Entity, { "X", "Y", "Z", "Active", "FadeRate" } );
 end
 
 // link to grid
@@ -38,13 +39,12 @@ end
 // trigger input
 function ENT:TriggerInput( inputname, value, iter )
 	// store values.
-	if( inputname == "Display" ) then
-		self.Entity:SetNetworkedBool( "Display", value > 0 );
-	
-	elseif (inputname == "Reset") then
-		self.Entity:SetNetworkedBool( "Reset", value > 0 );
+	if( inputname == "Active" ) then
+		self.Entity:SetNetworkedBool( "Active", value > 0 );
+		
 	// store float values.
 	else
 		self.Entity:SetNetworkedFloat( inputname, value );
+		
 	end
 end
