@@ -134,13 +134,14 @@ function TOOL:LeftClick( trace )
 			self:SetStage(0)
 			return true
 		end
-
+		
 		Wire_Link_End(self:GetOwner():UniqueID(), self.OutputEnt, self.OutputPos, self.CurrentOutput, self:GetOwner())
 		
+		self:GetWeapon():SetNetworkedString("WireCurrentInput", "")
 		self.CurrentOutput = nil
 		self.OutputEnt = nil
 		self.OutputPos = nil
-
+		
 		self:SelectComponent(nil)
 		self:SetStage(0)
 	end
@@ -367,6 +368,10 @@ function TOOL.BuildCPanel(panel)
 			["Blue Electric"] = { Material = "cable/blue_elec", wire_material = "cable/blue_elec" },
 			["Physics Beam"] = { Material = "cable/physbeam", wire_material = "cable/physbeam" },
 			["Hydra"] = { Material = "cable/hydra", wire_material = "cable/hydra" },
+		
+		//new wire materials by Acegikmo
+			["Arrowire"] = { Material = "arrowire/arrowire", wire_material = "arrowire/arrowire" },
+			["Arrowire2"] = { Material = "arrowire/arrowire2", wire_material = "arrowire/arrowire2" },
 		},
 
 		CVars = {
