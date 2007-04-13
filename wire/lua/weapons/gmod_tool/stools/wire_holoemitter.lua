@@ -9,6 +9,8 @@ if( CLIENT ) then
 	language.Add( "Tool_wire_holoemitter_desc", "The emitter required for holographic projections" );
 	language.Add( "Tool_wire_holoemitter_0", "Primary: Create emitter      Secondary: Link emitter" );
 	language.Add( "Tool_wire_holoemitter_1", "Select the emitter point to link to." );
+	language.Add( "Tool_wire_holoemitter_showbeams", "Show beam" );
+	language.Add( "Tool_wire_holoemitter_size", "Point size" );
 	language.Add( "undone_holoemitter", "Undone Wire Holoemitter" );
 	language.Add( "sboxlimit_wire_holoemitters", "You've hit the holoemitters limit!" );
 end
@@ -23,6 +25,8 @@ TOOL.ClientConVar["r"]	= "255";
 TOOL.ClientConVar["g"]	= "255";
 TOOL.ClientConVar["b"]	= "255";
 TOOL.ClientConVar["a"]	= "255";
+TOOL.ClientConVar["showbeams"]	= "1";
+TOOL.ClientConVar["size"]	= "4";
 
 // tool data.
 TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl";	// models/jaanus/wiretool/wiretool_siren.mdl
@@ -44,11 +48,17 @@ function TOOL:LeftClick( tr )
 	local g = self:GetClientNumber( "g" );
 	local b = self:GetClientNumber( "b" );
 	local a = self:GetClientNumber( "a" );
+	local size = self:GetClientNumber( "size" );
+	local showbeams = util.tobool( self:GetClientNumber( "showbeams" ) );
 	
 	// did we hit another holoemitter?
 	if( tr.HitNonWorld && tr.Entity:GetClass() == "gmod_wire_holoemitter" ) then
 		// update it.
 		tr.Entity:SetColor( r, g, b, a );
+		
+		// update size and show states
+		tr.Entity:SetNetworkedBool( "ShowBeam", showbeams );
+		tr.Entity:SetNetworkedFloat( "PointSize", size );
 		
 		//
 		return true;
@@ -80,7 +90,7 @@ function TOOL:LeftClick( tr )
 	ang.p = ang.p + 90;
 	
 	// create emitter
-	local emitter = MakeWireHoloemitter( pl, tr.HitPos, ang, r, g, b, a );
+	local emitter = MakeWireHoloemitter( pl, tr.HitPos, ang, r, g, b, a, showbeams, size );
 	
 	// pull it out of the spawn point
 	local mins = emitter:OBBMins();
@@ -122,7 +132,7 @@ end
 // creation code
 if( SERVER ) then
 	// make emitter
-	function MakeWireHoloemitter( pl, pos, ang, r, g, b, a )
+	function MakeWireHoloemitter( pl, pos, ang, r, g, b, a, showbeams, size )
 		// check the players limit
 		if( !pl:CheckLimit( "wire_holoemitters" ) ) then return; end
 		
@@ -137,12 +147,18 @@ if( SERVER ) then
 		emitter:SetColor( r, g, b, a );
 		emitter:SetPlayer( pl );
 		
+		// update size and show states
+		emitter:SetNetworkedBool( "ShowBeam", showbeams );
+		emitter:SetNetworkedFloat( "PointSize", size );
+		
 		// store the color on the table.
 		local tbl = {
 			r = r,
 			g = g,
 			b = b,
 			a = a,
+			showbeams = showbeams,
+			size = size,
 		};
 		table.Merge( emitter:GetTable(), tbl );
 		
@@ -214,6 +230,27 @@ function TOOL.BuildCPanel( panel )
 		{
 			Text 		= "#Tool_wire_holoemitter_name",
 			Description 	= "#Tool_wire_holoemitter_desc",
+		}
+	);
+	
+	// show beams.
+	panel:AddControl(
+		"Checkbox",
+		{
+			Label = "#Tool_wire_holoemitter_showbeams",
+			Command = "wire_holoemitter_showbeams",
+		}
+	);
+	
+	// point size
+	panel:AddControl(
+		"Slider",
+		{
+			Label = "#Tool_wire_holoemitter_size",
+			Type = "Float",
+			Min = "1",
+			Max = "32",
+			Command = "wire_holoemitter_size",
 		}
 	);
 	
