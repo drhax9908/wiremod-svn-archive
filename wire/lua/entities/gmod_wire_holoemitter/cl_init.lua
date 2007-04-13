@@ -11,12 +11,16 @@ function ENT:Initialize( )
 	
 	// active point
 	self.ActivePoint = Vector( 0, 0, 0 );
+	
+	// boundry.
+	self.Boundry = 64;
 end
 
 // calculate point
 function ENT:CalculatePixelPoint( pos, emitterPos, fwd, right, up )
 	// calculate point
 	return emitterPos + ( up * pos.z ) + ( fwd * pos.x ) + ( right * pos.y );
+	
 end
 
 // think
@@ -29,36 +33,18 @@ function ENT:Think( )
 	);
 	
 	// did the point differ from active point?
-	if( point != self.ActivePoint && self.Entity:GetNetworkedBool( "Display" ) ) then
+	if( point != self.ActivePoint && self.Entity:GetNetworkedBool( "Active" ) ) then
 		// fetch color.
 		local _, _, _, a = self.Entity:GetColor();
 	
 		// store this point inside the point list
-		table.insert( self.PointList, { pos = self.ActivePoint, alpha = a, faderate = self.Entity:GetNetworkedFloat( "Lifetime" ) } );
+		table.insert( self.PointList, { pos = self.ActivePoint, alpha = a, faderate = math.Clamp( self.Entity:GetNetworkedFloat( "FadeRate" ), 10, 255 ) } );
 		
 		// store new active point
 		self.ActivePoint = point;
+		
 	end
 	
-	// Reset?
-	local shouldreset = self.Entity:GetNetworkedBool( "Reset" )
-
-	// fade the points away
-	local i;
-	for i = 1, table.getn( self.PointList ) do
-		// easy access
-		local pt = self.PointList[i];
-		if( pt ) then
-			// fade away
-			pt.alpha = pt.alpha - pt.faderate * FrameTime();
-			
-			// die? (changed to add Reset input)
-			if( (pt.alpha <= 0) || shouldreset ) then
-				table.remove( self.PointList, i );
-			end
-			
-		end
-	end
 end
 
 // draw
@@ -67,7 +53,7 @@ function ENT:Draw( )
 	self.Entity:DrawModel();
 	
 	// are we rendering?
-	if( !self.Entity:GetNetworkedBool( "Display" ) ) then return; end
+	if( !self.Entity:GetNetworkedBool( "Active" ) ) then return; end
 	
 	// read emitter.
 	local emitter = self.Entity:GetNetworkedEntity( "grid" );
@@ -77,7 +63,14 @@ function ENT:Draw( )
 	local fwd 	= emitter:GetForward();
 	local right 	= emitter:GetRight();
 	local up 	= emitter:GetUp();
-	local pos = emitter:GetPos() + up * 64;
+	local pos 	= emitter:GetPos() + up * 64;
+
+	// draw beam?
+	local drawbeam	= self.Entity:GetNetworkedBool( "ShowBeam" );
+	
+	// read point size
+	local size	= self.Entity:GetNetworkedFloat( "PointSize" );
+	local beamsize	= size * 0.25;
 	
 	// read color
 	local r, g, b, a = self.Entity:GetColor();
@@ -87,55 +80,81 @@ function ENT:Draw( )
 	local pixelpos = self:CalculatePixelPoint( self.ActivePoint, pos, fwd, right, up );
 	
 	// draw active point - beam
-	render.SetMaterial( matbeam );
-	render.DrawBeam(
-		self.Entity:GetPos(),
-		pixelpos,
-		1,
-		0, 1,
-		color
-	);
+	if( drawbeam ) then
+		render.SetMaterial( matbeam );
+		render.DrawBeam(
+			self.Entity:GetPos(),
+			pixelpos,
+			beamsize,
+			0, 1,
+			color
+		);
+		
+	end
 	
 	// draw active point - sprite
 	render.SetMaterial( matpoint );
 	render.DrawSprite(
 		pixelpos,
-		4, 4,
+		size,  size,
 		color
 	);
 	
 	
 	// draw fading points.
-	local point, lastpos = nil, pixelpos;
-	for _, point in pairs( self.PointList ) do
-		// calculate pixel point.
-		local pixelpos = self:CalculatePixelPoint( point.pos, pos, fwd, right, up );
+	local point, lastpos, i = nil, pixelpos;
+	for i = table.getn( self.PointList ), 1, -1 do
+		// easy access
+		local point = self.PointList[i];
+
 		
-		// draw active point - beam
-		render.SetMaterial( matbeam );
-		render.DrawBeam(
-			self.Entity:GetPos(),
-			pixelpos,
-			1,
-			0, 1,
-			Color( r, g, b, point.alpha )
-		);
-		render.DrawBeam(
-			lastpos,
-			pixelpos,
-			2,
-			0, 1,
-			Color( r, g, b, point.alpha )
-		);
-		lastpos = pixelpos;
+		// I'm doing this here, to remove that extra loop in ENT:Think.
+		// fade away
+		point.alpha = point.alpha - point.faderate * FrameTime();
 		
-		// draw active point - sprite
-		render.SetMaterial( matpoint );
-		render.DrawSprite(
-			pixelpos,
-			4, 4,
-			Color( r, g, b, point.alpha )
-		);
+		// die?
+		if( point.alpha <= 0 ) then
+			table.remove( self.PointList, i );
+			
+			
+		// WHY CAN'T LUA SUPPORT CONTINUE!?!?!!?
+		else
+			// calculate pixel point.
+			local pixelpos = self:CalculatePixelPoint( point.pos, pos, fwd, right, up );
+			
+			// calculate color.
+			local color = Color( r, g, b, point.alpha );
+			
+			// draw active point - beam
+			if( drawbeam ) then
+				render.SetMaterial( matbeam );
+				render.DrawBeam(
+					self.Entity:GetPos(),
+					pixelpos,
+					beamsize,
+					0, 1,
+					color
+				);
+				render.DrawBeam(
+					lastpos,
+					pixelpos,
+					beamsize * 2,
+					0, 1,
+					color
+				);
+				lastpos = pixelpos;
+				
+			end
+			
+			// draw active point - sprite
+			render.SetMaterial( matpoint );
+			render.DrawSprite(
+				pixelpos,
+				size, size,
+				color
+			);
+			
+		end
 		
 	end
 end
