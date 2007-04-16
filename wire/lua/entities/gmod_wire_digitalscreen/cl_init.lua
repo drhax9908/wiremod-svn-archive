@@ -29,7 +29,7 @@ function DigitalScreen_DataMessage( um )
 	local address = um:ReadLong()
 	local value = um:ReadFloat()
 	if (ent) && (ent.Memory1) && (ent.Memory2) then
-		if (clk == 1) && (address <= 2000) then
+		if (clk == 1) then
 			ent.Memory1[address] = value //Vis mem
 			ent.Memory2[address] = value //Invis mem
 		else

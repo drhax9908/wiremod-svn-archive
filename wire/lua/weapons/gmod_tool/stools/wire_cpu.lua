@@ -248,6 +248,9 @@ local function UploadProgram( pl )
 	end
 	local TempPercent = ((SourceLinesSent-1)/table.Count(SourceLines))*100
 	pl:PrintMessage(HUD_PRINTCONSOLE,"CPU -> Sent packet ("..TempPercent.." )\n")
+	if (TempPercent == 100) then
+		pl:PrintMessage(HUD_PRINTTALK,"CPU Upload Done\n")
+	end
 end
 
 local function LoadProgram( pl, command, args )//
@@ -261,9 +264,13 @@ local function LoadProgram( pl, command, args )//
 	SourceLines = string.Explode("\n", file.Read("CPUChip\\"..pl:GetInfo("wire_cpu_filename")) )
 	SourceLinesSent = 0
 	//Send 50 lines
-	local Reps = math.floor(table.Count(SourceLines)/50)+1
-
-	timer.Create("CPUSendTimer",0.3,Reps,UploadProgram,pl)
+	if (SinglePlayer()) then
+		local Reps = math.floor(table.Count(SourceLines)/50)+1	
+		timer.Create("CPUSendTimer",0.1,Reps,UploadProgram,pl)
+	else
+		local Reps = math.floor(table.Count(SourceLines)/50)+1	
+		timer.Create("CPUSendTimer",0.4,Reps,UploadProgram,pl)
+	end
 
 	//linen = 0
 	//for _,line in pairs(lines) do
