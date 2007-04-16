@@ -10,6 +10,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_waypoint_0", "Primary: Create/Update Waypoint Beacon    Secondary: Link to next waypoint" )
     language.Add( "Tool_wire_waypoint_1", "Primary: Select waypoint to go to after this one" )
     language.Add( "WireWaypointTool_range", "Range:" )
+	language.Add( "WireWaypointTool_alink", "Auto-link previous:" )
 	language.Add( "sboxlimit_wire_waypoints", "You've hit waypoint beacons limit!" )
 	language.Add( "undone_wirewaypoint", "Undone Wire Waypoint Beacon" )
 end
@@ -19,6 +20,7 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "range" ] = "150"
+TOOL.ClientConVar[ "alink" ] = "0"
 
 TOOL.Model = "models/props_lab/powerbox02d.mdl"
 
@@ -65,7 +67,14 @@ function TOOL:LeftClick(trace)
 
 	local min = wire_waypoint:OBBMins()
 	wire_waypoint:SetPos( trace.HitPos - trace.HitNormal * (min.z) )
-
+	
+	// Auto-link (itsbth)
+	if ( self.OldWaypoint && self.OldWaypoint:IsValid() and self:GetClientNumber("alink") == 1 ) then
+		self.OldWaypoint:SetNextWaypoint(wire_waypoint)
+	end
+	
+	self.OldWaypoint = wire_waypoint
+	
 	undo.Create("WireWaypoint")
 		undo.AddEntity( wire_waypoint )
 		undo.SetPlayer( ply )
@@ -161,6 +170,10 @@ function TOOL.BuildCPanel(panel)
 		Min = "1",
 		Max = "1000",
 		Command = "wire_waypoint_range"
+	})
+		panel:AddControl("Checkbox", {
+		Label = "#WireWaypointTool_alink",
+		Command = "wire_waypoint_alink"
 	})
 end
 
