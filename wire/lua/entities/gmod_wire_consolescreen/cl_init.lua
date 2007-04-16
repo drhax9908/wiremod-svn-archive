@@ -33,17 +33,38 @@ function ConsoleScreen_DataMessage( um )
 	local address = um:ReadLong()
 	local value = um:ReadFloat()
 	if (ent) && (ent.Memory1) && (ent.Memory2) then
-		if (clk == 1) && (address <= 2000) then
+		if (clk == 1) then
 			ent.Memory1[address] = value //Vis mem
 			ent.Memory2[address] = value //Invis mem
 		else
 			ent.Memory2[address] = value //Invis mem
 		end
 
+		//2039 - Shift rows (number of rows, >0 shift down, <0 shift up)
 		//2040 - Hardware Clear Row (Writing clears row)
 		//2041 - Hardware Clear Column (Writing clears column)
 		//2042 - Hardware Clear Screen
 
+		if (address == 2039) then
+			local delta = value
+			if (delta > 0) then
+				for j = 0, 17-delta do
+					for i = 0, 29 do
+						Msg("Shift row "..j+delta.." into row "..j.."\n")
+						ent.Memory1[j*30+i] = ent.Memory1[(j+delta)*30+i]
+						ent.Memory2[j*30+i] = ent.Memory2[(j+delta)*30+i]
+					end
+				end
+			else
+				delta = -delta
+				for j = 17,delta do
+					for i = 0, 29 do
+						ent.Memory1[j*30+i] = ent.Memory1[(j-delta)*30+i]
+						ent.Memory2[j*30+i] = ent.Memory2[(j-delta)*30+i]
+					end
+				end
+			end
+		end
 		if (address == 2040) then
 			for i = 0, 29 do
 				ent.Memory1[value*30+i] = 0
@@ -138,6 +159,19 @@ function ENT:Draw()
 		surface.DrawRect(x/RatioX,y,(x+w)/RatioX,y+h)
 
 		//local ratio = 192/w;
+
+		local DeltaTime = CurTime()-(self.PrevTime or CurTime())
+		self.PrevTime = (self.PrevTime or CurTime())+DeltaTime
+		self.IntTimer = self.IntTimer + DeltaTime
+
+		local Flash = false
+
+		if (self.IntTimer <= self.Memory1[2044]) then
+			Flash = true			
+		end
+		if (self.IntTimer >= self.Memory1[2044]*2) then
+			self.IntTimer = 0
+		end
 		
 		for ty = 0, 17 do
 			for tx = 0, 29 do
@@ -147,18 +181,24 @@ function ENT:Draw()
 				local cback = math.floor(c2 / 1000)
 				local cfrnt = c2 - math.floor(c2 / 1000)*1000
 
-				local fb = 24*math.fmod(cfrnt,10)
-				local fg = 24*math.fmod(math.floor(cfrnt / 10),10)
-				local fr = 24*math.fmod(math.floor(cfrnt / 100),10)
-				local bb = 24*math.fmod(cback,10)
-				local bg = 24*math.fmod(math.floor(cback / 10),10)
-				local br = 24*math.fmod(math.floor(cback / 100),10)
+				local fb = 24*math.fmod(cfrnt,10) + self.Memory1[2037]
+				local fg = 24*math.fmod(math.floor(cfrnt / 10),10) + self.Memory1[2037]
+				local fr = 24*math.fmod(math.floor(cfrnt / 100),10) + self.Memory1[2037]
+				local bb = 24*math.fmod(cback,10) + self.Memory1[2037]
+				local bg = 24*math.fmod(math.floor(cback / 10),10) + self.Memory1[2037]
+				local br = 24*math.fmod(math.floor(cback / 100),10) + self.Memory1[2037]
+
+				if (Flash) && (cback > 999) then
+					fb,bb = bb,fb
+					fg,bg = bg,fg
+					fr,br = br,fr
+				end
 
 				if (c1 > 255) then c1 = 0 end
 
 				if (cback ~= 0) then
 					surface.SetDrawColor(br,bg,bb,255)
-					surface.DrawRect((x+tx*14)/RatioX,y+ty*24,14/RatioX+2,24+2)
+					surface.DrawRect((x+tx*14)/RatioX,y+ty*24,14/RatioX+1,24+1)
 				end
 				if (c1 ~= 0) && (cfrnt ~= 0) then
 					draw.DrawText(string.char(c1),"console_font",(8+x+tx*14)/RatioX,y+ty*24,Color(fr,fg,fb,255),1)
@@ -166,6 +206,10 @@ function ENT:Draw()
 			end
 		end
 
+		//2036 - Charset, always 0
+		//2037 - Brightness (Add to color)
+		//2038 - Shift cells -OBSOLETE-
+		//2039 - Shift rows (number of rows, >0 shift down, <0 shift up)
 		//2040 - Hardware Clear Row (Writing clears row)
 		//2041 - Hardware Clear Column (Writing clears column)
 		//2042 - Hardware Clear Screen
@@ -177,13 +221,7 @@ function ENT:Draw()
 		//2048 - Clk
 
 		if (self.Memory1[2047] >= 1) then
-			local DeltaTime = CurTime()-(self.PrevTime or CurTime())
-			self.PrevTime = (self.PrevTime or CurTime())+DeltaTime
-			self.IntTimer = self.IntTimer + DeltaTime
-
-			local Rate = self.Memory1[2044]
-
-			if (self.IntTimer <= Rate) then
+			if (Flash) then
 				local a = math.floor(self.Memory1[2046] / 2)
 
 				local tx = a - math.floor(a / 30)*30
@@ -197,9 +235,6 @@ function ENT:Draw()
 	
 				surface.SetDrawColor(br,bg,bb,255)
 				surface.DrawRect((x+tx*14)/RatioX,y+ty*24+24*(1-self.Memory1[2045]),14/RatioX,24*self.Memory1[2045])
-			end
-			if (self.IntTimer >= Rate*2) then
-				self.IntTimer = 0
 			end
 		end
 		

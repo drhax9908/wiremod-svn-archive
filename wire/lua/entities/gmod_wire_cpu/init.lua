@@ -661,13 +661,13 @@ function ENT:Execute( )
 		self.Memory[params[1]] = params[2]
 		WriteBack = false
 	elseif (opcode == 18) then	//MIN
-		if (params[2] < params[1]) then
+		if (tonumber(params[2]) < tonumber(params[1])) then
 			result = params[2]
 		else
 			result = params[1]
 		end
 	elseif (opcode == 19) then	//MAX
-		if (params[2] > params[1]) then
+		if (tonumber(params[2]) > tonumber(params[1])) then
 			result = params[2]
 		else
 			result = params[1]

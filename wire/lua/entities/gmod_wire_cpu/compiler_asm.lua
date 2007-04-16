@@ -335,7 +335,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 	for _,opcode in pairs(opcodetable) do
 		opcode = string.Trim(opcode)
 		if (nextdefine) then
-			local deftable = string.Explode(",", opcode )
+			local deftable = self:Explode(",", opcode )
 			if (table.Count(deftable) == 2) then
 				if (not self.Labels[deftable[1]]) then
 					if (self:ValidNumber(deftable[2])) then
@@ -356,19 +356,31 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 				return false	
 			end
 		elseif (nextdb) then
-			local dbtable = string.Explode(",", opcode )
+			local dbtable = self:Explode(",", opcode )
 			for _,dbvalue in pairs(dbtable) do
-				if self:ValidNumber(dbvalue) then
-					self:Write(dbvalue)
-				else
-					if (string.sub(dbvalue,1,1) == "'") && (string.sub(dbvalue,-1,-1) == "'") then
-						local string = string.sub(dbvalue,2,-2)
-						for i = 1, string.len(string) do									
-							self:Write(string.byte(string,i))
-						end
+				if (dbvalue ~= "") then
+					dbvalue = string.Trim(dbvalue)
+					if self:ValidNumber(dbvalue) then
+						self:Write(dbvalue)
 					else
-						pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E450) at line "..linenumber..": Invalid parameter in DB macro\n")
-						return false
+						if (string.sub(dbvalue,1,1) == "'") && (string.sub(dbvalue,-1,-1) == "'") then
+							local string = string.sub(dbvalue,2,-2)
+							for i = 1, string.len(string) do									
+								self:Write(string.byte(string,i))
+							end
+						else
+							if (self.Labels[dbvalue]) then
+								self:Write(self.Labels[dbvalue])
+							elseif (self.Labels[dbvalue..":"]) then
+								self:Write(self.Labels[dbvalue..":"])
+							else
+								if (not firstpass) then
+									pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E450) at line "..linenumber..": Invalid parameter in DB macro\n")
+									return false
+								end
+								//self:Write(0)
+							end
+						end
 					end
 				end
 			end
@@ -514,9 +526,11 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 				if (prefix == nil) && (not self:ValidNumber(paramtable[1])) then
 					if (self.Labels[postprefix..":"]) then
 						paramtable[1] = self.Labels[postprefix..":"]
+					elseif (self.Labels[postprefix]) then
+						paramtable[1] = self.Labels[postprefix]
 					else	
 						if (not firstpass) then
-							pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E232) at line "..linenumber..": No such label: "..postprefix.."!\n")
+							pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E235) at line "..linenumber..": No such label: "..postprefix.."!\n")
 							return false
 						end
 					end
@@ -536,7 +550,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 						drm1 = 22
 					elseif (postprefix == "esp") then
 						drm1 = 23
-					elseif (postprefix == "edp") then
+					elseif (postprefix == "ebp") then
 						drm1 = 24
 					elseif (self.Labels[postprefix..":"]) then
 						drm1 = 25
@@ -618,6 +632,8 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 					if (prefix == nil) && (not self:ValidNumber(paramtable[2])) then
 						if (self.Labels[postprefix..":"]) then
 							paramtable[2] = self.Labels[postprefix..":"]
+						elseif (self.Labels[postprefix]) then
+							paramtable[2] = self.Labels[postprefix]
 						else	
 							if (not firstpass) then
 								pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E232) at line "..linenumber..": No such label: "..postprefix.."!\n")
@@ -640,7 +656,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 							drm2 = 22
 						elseif (postprefix == "esp") then
 							drm2 = 23
-						elseif (postprefix == "edp") then
+						elseif (postprefix == "ebp") then
 							drm2 = 24
 						elseif (self.Labels[postprefix..":"]) then
 							drm2 = 25
