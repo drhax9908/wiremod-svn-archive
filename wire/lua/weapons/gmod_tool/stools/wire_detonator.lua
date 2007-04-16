@@ -57,7 +57,10 @@ function TOOL:LeftClick( trace )
 	
 	// Don't weld to world
 	if ( trace.Entity:IsValid() ) then
-		wire_detonator = MakeWireDetonator( ply, model, Ang, trace.HitPos, trace.Entity, damage )
+		wire_detonator = MakeWireDetonator( ply, model, Ang, trace.HitPos, damage )
+		// See MakeWireDetonator() for explanation of this
+		wire_detonator:GetTable().target = trace.Entity
+
 		local min = wire_detonator:OBBMins()
 		wire_detonator:SetPos( trace.HitPos - trace.HitNormal * min.z )
 		
@@ -87,7 +90,12 @@ end
 
 if (SERVER) then
 
-	function MakeWireDetonator( pl, Model, Ang, Pos, target, damage, nocollide, Vel, aVel, frozen )
+	// "target" is now handled by TOOL:LeftClick() for STool-spawned
+	// detonators and ENT:Build/ApplyDupeInfo() for duplicated ones
+	// It's done this way because MakeWireDetonator() cannot distinguish whether
+	// detonator was made by the STool or the duplicator; the duplicator-made
+	// detonator tries to reference a non-existent target (TheApathetic)
+	function MakeWireDetonator( pl, Model, Ang, Pos, damage, nocollide, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_detonators" ) ) then return false end
 	
 		local wire_detonator = ents.Create( "gmod_wire_detonator" )
@@ -106,7 +114,7 @@ if (SERVER) then
 		local ttable = {
 			pl	= pl,
 			damage = damage,
-			target = target,
+			//target = target,
 			nocollide = nocollide
 			}
 
@@ -117,7 +125,7 @@ if (SERVER) then
 		return wire_detonator
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_detonator", MakeWireDetonator, "Model", "Ang", "Pos", "target", "damage", "nocollide", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_detonator", MakeWireDetonator, "Model", "Ang", "Pos", "damage", "nocollide", "Vel", "aVel", "frozen")
 
 end
 
