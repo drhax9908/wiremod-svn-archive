@@ -75,7 +75,7 @@ end
 
 
 function ENT:ShowOutput(iname, value)
-	local chagned
+	local changed
 	if (iname == "A") then
 		if (A ~= self.PrevOutputA) then
 			self.PrevOutputA = (value or 0)

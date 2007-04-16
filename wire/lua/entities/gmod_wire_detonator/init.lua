@@ -53,3 +53,26 @@ function ENT:DoDamage()
 	util.Effect( "Explosion", effectdata, true, true )
 	self.Entity:Remove()
 end
+
+// Dupe info functions added by TheApathetic
+function ENT:BuildDupeInfo()
+	local info = self.BaseClass.BuildDupeInfo(self) or {}
+
+	if (self.target) && (self.target:IsValid()) then
+		info.target = self.target:EntIndex()
+	end
+
+	return info
+end
+
+function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
+	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
+
+	if (info.target) then
+		local target = GetEntByID(info.target)
+		if (!target) then
+			target = ents.GetByIndex(info.target)
+		end
+		self.target = target
+	end
+end
