@@ -12,11 +12,11 @@ function ENT:Initialize()
 	self.Memory1 = {}
 	self.Memory2 = {}
 
-	for i = 0, 2048 do
+	for i = 0, 2047 do
 		self.Memory1[i] = 0
 	end
 
-	for i = 0, 2048 do
+	for i = 0, 2047 do
 		self.Memory2[i] = 0
 	end
 
@@ -40,19 +40,24 @@ function ConsoleScreen_DataMessage( um )
 			ent.Memory2[address] = value //Invis mem
 		end
 
-		//2039 - Shift rows (number of rows, >0 shift down, <0 shift up)
-		//2040 - Hardware Clear Row (Writing clears row)
-		//2041 - Hardware Clear Column (Writing clears column)
-		//2042 - Hardware Clear Screen
+		//2038 - Shift rows (number of rows, >0 shift down, <0 shift up)
+		//2039 - Hardware Clear Row (Writing clears row)
+		//2040 - Hardware Clear Column (Writing clears column)
+		//2041 - Hardware Clear Screen
 
-		if (address == 2039) then
+		if (address == 2038) then
 			local delta = value
 			if (delta > 0) then
 				for j = 0, 17-delta do
 					for i = 0, 29 do
-						Msg("Shift row "..j+delta.." into row "..j.."\n")
 						ent.Memory1[j*30+i] = ent.Memory1[(j+delta)*30+i]
 						ent.Memory2[j*30+i] = ent.Memory2[(j+delta)*30+i]
+					end
+				end
+				for j = 17-delta+1,17 do
+					for i = 0, 29 do
+						ent.Memory1[j*30+i] = 0
+						ent.Memory2[j*30+i] = 0
 					end
 				end
 			else
@@ -63,21 +68,27 @@ function ConsoleScreen_DataMessage( um )
 						ent.Memory2[j*30+i] = ent.Memory2[(j-delta)*30+i]
 					end
 				end
+				for j = delta+1,0 do
+					for i = 0, 29 do
+						ent.Memory1[j*30+i] = 0
+						ent.Memory2[j*30+i] = 0
+					end
+				end
 			end
 		end
-		if (address == 2040) then
+		if (address == 2039) then
 			for i = 0, 29 do
 				ent.Memory1[value*30+i] = 0
 				ent.Memory2[value*30+i] = 0
 			end
 		end
-		if (address == 2041) then
+		if (address == 2040) then
 			for i = 0, 17 do
 				ent.Memory1[i*30+value] = 0
 				ent.Memory2[i*30+value] = 0
 			end
 		end
-		if (address == 2042) then
+		if (address == 2041) then
 			for i = 0, 18*30*2 do 
 				ent.Memory1[i] = 0
 				ent.Memory2[i] = 0
@@ -150,7 +161,7 @@ function ENT:Draw()
 		local w = 676
 		local h = 692
 
-		local ch = self.Memory1[2043]
+		local ch = self.Memory1[2042]
 
 		local hb = 24*math.fmod(ch,10)
 		local hg = 24*math.fmod(math.floor(ch / 10),10)
@@ -166,10 +177,10 @@ function ENT:Draw()
 
 		local Flash = false
 
-		if (self.IntTimer <= self.Memory1[2044]) then
+		if (self.IntTimer <= self.Memory1[2043]) then
 			Flash = true			
 		end
-		if (self.IntTimer >= self.Memory1[2044]*2) then
+		if (self.IntTimer >= self.Memory1[2043]*2) then
 			self.IntTimer = 0
 		end
 		
@@ -181,12 +192,12 @@ function ENT:Draw()
 				local cback = math.floor(c2 / 1000)
 				local cfrnt = c2 - math.floor(c2 / 1000)*1000
 
-				local fb = 24*math.fmod(cfrnt,10) + self.Memory1[2037]
-				local fg = 24*math.fmod(math.floor(cfrnt / 10),10) + self.Memory1[2037]
-				local fr = 24*math.fmod(math.floor(cfrnt / 100),10) + self.Memory1[2037]
-				local bb = 24*math.fmod(cback,10) + self.Memory1[2037]
-				local bg = 24*math.fmod(math.floor(cback / 10),10) + self.Memory1[2037]
-				local br = 24*math.fmod(math.floor(cback / 100),10) + self.Memory1[2037]
+				local fb = 24*math.fmod(cfrnt,10) + self.Memory1[2036]
+				local fg = 24*math.fmod(math.floor(cfrnt / 10),10) + self.Memory1[2036]
+				local fr = 24*math.fmod(math.floor(cfrnt / 100),10) + self.Memory1[2036]
+				local bb = 24*math.fmod(cback,10) + self.Memory1[2036]
+				local bg = 24*math.fmod(math.floor(cback / 10),10) + self.Memory1[2036]
+				local br = 24*math.fmod(math.floor(cback / 100),10) + self.Memory1[2036]
 
 				if (Flash) && (cback > 999) then
 					fb,bb = bb,fb
@@ -206,23 +217,23 @@ function ENT:Draw()
 			end
 		end
 
-		//2036 - Charset, always 0
-		//2037 - Brightness (Add to color)
-		//2038 - Shift cells -OBSOLETE-
-		//2039 - Shift rows (number of rows, >0 shift down, <0 shift up)
-		//2040 - Hardware Clear Row (Writing clears row)
-		//2041 - Hardware Clear Column (Writing clears column)
-		//2042 - Hardware Clear Screen
-		//2043 - Hardware Background Color (000)
-		//2044 - Cursor Blink Rate (0.50)
-		//2045 - Cursor Size (0.25)
-		//2046 - Cursor Address
-		//2047 - Cursor Enabled
-		//2048 - Clk
+		//2035 - Charset, always 0
+		//2036 - Brightness (Add to color)
+		//2037 - Shift cells -OBSOLETE-
+		//2038 - Shift rows (number of rows, >0 shift down, <0 shift up)
+		//2039 - Hardware Clear Row (Writing clears row)
+		//2040 - Hardware Clear Column (Writing clears column)
+		//2041 - Hardware Clear Screen
+		//2042 - Hardware Background Color (000)
+		//2043 - Cursor Blink Rate (0.50)
+		//2044 - Cursor Size (0.25)
+		//2045 - Cursor Address
+		//2046 - Cursor Enabled
+		//2047 - Clk
 
-		if (self.Memory1[2047] >= 1) then
+		if (self.Memory1[2046] >= 1) then
 			if (Flash) then
-				local a = math.floor(self.Memory1[2046] / 2)
+				local a = math.floor(self.Memory1[2045] / 2)
 
 				local tx = a - math.floor(a / 30)*30
 				local ty = math.floor(a / 30)
@@ -234,7 +245,7 @@ function ENT:Draw()
 				local br = 24*math.fmod(math.floor(cback / 100),10)
 	
 				surface.SetDrawColor(br,bg,bb,255)
-				surface.DrawRect((x+tx*14)/RatioX,y+ty*24+24*(1-self.Memory1[2045]),14/RatioX,24*self.Memory1[2045])
+				surface.DrawRect((x+tx*14)/RatioX,y+ty*24+24*(1-self.Memory1[2044]),14/RatioX,24*self.Memory1[2044])
 			end
 		end
 		

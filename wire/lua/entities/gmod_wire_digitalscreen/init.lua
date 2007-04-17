@@ -15,7 +15,7 @@ function ENT:Initialize()
 
 	self.Memory = {}
 
-	for i = 0, 2048 do
+	for i = 0, 2047 do
 		self.Memory[i] = 0
 	end
 
@@ -47,22 +47,22 @@ function ENT:SendPixel()
 end
 
 function ENT:ReadCell( Address )
-	if (Address < 0) || (Address > 2048) then
+	if (Address < 0) || (Address > 2047) then
 		return nil
-	elseif (Address == 2048) then
+	elseif (Address == 2047) then
 		return self.Clk
-	elseif (Address >= 0) && (Address <= 2047) then
+	elseif (Address >= 0) && (Address <= 2046) then
 		return self.Memory[Address]
 	end
 end
 
 function ENT:WriteCell( Address, value )
-	if (Address < 0) || (Address > 2048) then
+	if (Address < 0) || (Address > 2047) then
 		return false
-	elseif (Address == 2048) then
+	elseif (Address == 2047) then
 		self.Clk = value
 		return true
-	elseif (Address >= 0) && (Address <= 2047) then
+	elseif (Address >= 0) && (Address <= 2046) then
 		self.Memory[Address] = value
 
 		local rp = RecipientFilter()
@@ -92,10 +92,10 @@ function ENT:TriggerInput(iname, value)
 		self.Clk = value
 		self:SendPixel()
 	elseif (iname == "FillColor") then
-		self:WriteCell(2042,value)
+		self:WriteCell(2041,value)
 	elseif (iname == "ClearCol") then
-		self:WriteCell(2041,0)
-	elseif (iname == "ClearRow") then
 		self:WriteCell(2040,0)
+	elseif (iname == "ClearRow") then
+		self:WriteCell(2039,0)
 	end
 end
