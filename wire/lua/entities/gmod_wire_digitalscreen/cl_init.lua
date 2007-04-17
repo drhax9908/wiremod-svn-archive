@@ -12,10 +12,10 @@ function ENT:Initialize()
 	self.Memory1 = {}
 	self.Memory2 = {}
 
-	for i = 0, 2048 do
+	for i = 0, 2047 do
 		self.Memory1[i] = 0
 	end
-	for i = 0, 2048 do
+	for i = 0, 2047 do
 		self.Memory2[i] = 0
 	end
 
@@ -36,23 +36,23 @@ function DigitalScreen_DataMessage( um )
 			ent.Memory2[address] = value //Invis mem
 		end
 
-		//2040 - Hardware Clear Row (Writing clears row)
-		//2041 - Hardware Clear Column (Writing clears column)
-		//2042 - Hardware Clear Screen
+		//2039 - Hardware Clear Row (Writing clears row)
+		//2040 - Hardware Clear Column (Writing clears column)
+		//2041 - Hardware Clear Screen
 
-		if (address == 2040) then
+		if (address == 2039) then
 			for i = 0, 29 do
 				ent.Memory1[value*30+i] = 0
 				ent.Memory2[value*30+i] = 0
 			end
 		end
-		if (address == 2041) then
+		if (address == 2040) then
 			for i = 0, 17 do
 				ent.Memory1[i*30+value] = 0
 				ent.Memory2[i*30+value] = 0
 			end
 		end
-		if (address == 2042) then
+		if (address == 2041) then
 			for i = 0, 18*30*2 do 
 				ent.Memory1[i] = value
 				ent.Memory2[i] = value

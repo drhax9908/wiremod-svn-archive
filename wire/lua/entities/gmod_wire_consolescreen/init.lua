@@ -15,7 +15,7 @@ function ENT:Initialize()
 
 	self.Memory = {}
 
-	for i = 0, 2048 do
+	for i = 0, 2047 do
 		self.Memory[i] = 0
 	end
 
@@ -65,20 +65,20 @@ function ENT:SendPixel()
 end
 
 function ENT:ReadCell( Address )
-	if (Address < 0) || (Address > 2048) then
+	if (Address < 0) || (Address > 2047) then
 		return nil
-	elseif (Address == 2048) then
+	elseif (Address == 2047) then
 		return self.Clk
-	elseif (Address >= 0) && (Address <= 2047) then
+	elseif (Address >= 0) && (Address <= 2046) then
 		return self.Memory[Address]
 	end
 end
 
 function ENT:WriteCell( Address, value )
-	if (Address < 0) || (Address > 2048) then
+	if (Address < 0) || (Address > 2047) then
 		return false
-	elseif (Address >= 0) && (Address <= 2048) then
-		if (Address == 2048) then
+	elseif (Address >= 0) && (Address <= 2047) then
+		if (Address == 2047) then
 			self.Clk = value
 		end
 
@@ -114,8 +114,8 @@ function ENT:TriggerInput(iname, value)
 		self.Clk = value
 		self:SendPixel()
 	elseif (iname == "Reset") then
+		self:WriteCell(2041,0)
+		self:WriteCell(2046,0)
 		self:WriteCell(2042,0)
-		self:WriteCell(2047,0)
-		self:WriteCell(2043,0)
 	end
 end
