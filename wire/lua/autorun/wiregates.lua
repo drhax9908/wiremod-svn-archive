@@ -415,7 +415,7 @@ GateActions["<"] = {
 
 GateActions[">"] = {
 	group = "Comparison",
-	name = "Greater Then",
+	name = "Greater Than",
 	inputs = { "A", "B" },
 	output = function(gate, A, B)
 	    if (A > B) then return 1 end
@@ -1108,6 +1108,32 @@ GateActions["timer"] = {
 	end,
 	label = function(Out, Run, Reset)
 	    return "Run:"..Run.." Reset:"..Reset.." = "..Out
+	end
+}
+
+GateActions["ostime"] = {
+	group = "Time",
+	name = "OS Time",
+	inputs = { },
+	timed = true,
+	output = function(gate)
+	    return os.date("%H")*3600+os.date("%M")*60+os.date("%S")
+	end,
+	label = function(Out)
+	    return "OS Time = "..Out
+	end
+}
+
+GateActions["osdate"] = {
+	group = "Time",
+	name = "OS Date",
+	inputs = { },
+	timed = true,
+	output = function(gate)
+	    return os.date("%Y")*366+os.date("%j")
+	end,
+	label = function(Out)
+	    return "OS Date = "..Out
 	end
 }
 

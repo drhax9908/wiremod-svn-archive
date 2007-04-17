@@ -22,7 +22,9 @@ end
 function ENT:OnRemove()
 	if (!self.RadiantComponent) then return end
 	if not self.RadiantComponent:IsValid() then return end
-	self.RadiantComponent:Fire("TurnOff","","0")
+	self.RadiantComponent:SetParent() //Bugfix by aVoN
+	self.RadiantComponent:Fire("TurnOff","",0)
+	self.RadiantComponent:Fire("kill","",1); 
 end
 
 function ENT:DirectionalOn()
