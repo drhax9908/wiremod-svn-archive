@@ -319,6 +319,10 @@ function ENT:Lowercase(str)
 	return rstr
 end
 
+function ENT:RemoveFuckingSpaces(str)
+	
+end
+
 function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 	local opcodetable = self:Explode(" ", line or { } )
 	local dopcode = 0
