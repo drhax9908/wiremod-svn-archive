@@ -24,6 +24,7 @@ function ENT:Initialize()
 	self.Entity:SetName(self.Tname)
 	
 	]]
+	
 	-- Output keys. Format: keys["name"] = IN_*
 	keys = { }
 	keys["W"] = IN_FORWARD
@@ -41,6 +42,15 @@ function ENT:Initialize()
 		outputs[n] = k
 		n = n + 1
 	end
+	
+	-- <angle>
+	outputs[n] = "X"
+	n = n + 1
+	outputs[n] = "Y"
+	n = n + 1
+	outputs[n] = "Z"
+	-- </angle>
+	
 	-- Create outputs
 	self.Outputs = Wire_CreateOutputs( self.Entity, outputs )
 end
@@ -128,6 +138,11 @@ function ENT:Think()
 				--print("SPAM!")
 				if self.Ply:KeyDownLast( v ) then Wire_TriggerOutput( self.Entity, k, 1 )
 				else Wire_TriggerOutput( self.Entity, k, 0 ) end
+				
+				local tmp = self.Ply:GetEyeTrace().HitPos
+				Wire_TriggerOutput( self.Entity, "X", tmp.x )
+				Wire_TriggerOutput( self.Entity, "Y", tmp.y )
+				Wire_TriggerOutput( self.Entity, "Z", tmp.z )
 			end
 		end
 	end
