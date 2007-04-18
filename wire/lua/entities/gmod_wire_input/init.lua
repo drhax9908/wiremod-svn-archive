@@ -7,6 +7,8 @@ include('shared.lua')
 ENT.WireDebugName = "Input"
 ENT.OverlayDelay = 0
 
+local keylist = {"0","1","2","3","4","5","6","7","8","9",".","Enter","+","-","*","/"}
+
 local MODEL = Model("models/jaanus/wiretool/wiretool_input.mdl")
 
 function ENT:Initialize()
@@ -15,18 +17,34 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 
+	// Used to keep track of numpad.OnUp/Down returns
+	// Fixes bug where player cannot change numpad key (TheApathetic)
+	self.OnUpImpulse = nil
+	self.OnDownImpulse = nil
+
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Out" })
 end
 
 function ENT:Setup(keygroup, toggle, value_off, value_on)
-	self.KeyGroup = keygroup
+	self.keygroup = keygroup
 	self.Toggle = (toggle == 1)
-	self.ValueOff = value_off
-	self.ValueOn = value_on
+	self.toggle = toggle
+	self.value_off = value_off
+	self.value_on = value_on
 	self.Value = value_off
 
-	self:ShowOutput(self.ValueOff)
-	Wire_TriggerOutput(self.Entity, "Out", self.ValueOff)
+	if (self.OnUpImpulse) then
+		numpad.Remove(self.OnUpImpulse)
+		numpad.Remove(self.OnDownImpulse)
+	end
+
+	local pl = self:GetPlayer()
+	self.OnDownImpulse = numpad.OnDown( pl, keygroup, "WireInput_On", self.Entity, 1 )
+	self.OnUpImpulse = numpad.OnUp( pl, keygroup, "WireInput_Off", self.Entity, 1 )
+
+
+	self:ShowOutput(self.value_off)
+	Wire_TriggerOutput(self.Entity, "Out", self.value_off)
 end
 
 function ENT:InputActivate( mul )
@@ -49,11 +67,11 @@ function ENT:Switch( on, mul )
 	self.On = on
 
 	if (on) then
-		self:ShowOutput(self.ValueOn)
-		self.Value = self.ValueOn
+		self:ShowOutput(self.value_on)
+		self.Value = self.value_on
 	else
-		self:ShowOutput(self.ValueOff)
-		self.Value = self.ValueOff
+		self:ShowOutput(self.value_off)
+		self.Value = self.value_off
 	end
 
 	Wire_TriggerOutput(self.Entity, "Out", self.Value)
@@ -62,7 +80,7 @@ function ENT:Switch( on, mul )
 end
 
 function ENT:ShowOutput(value)
-	self:SetOverlayText( "(" .. self.ValueOff .. " - " .. self.ValueOn .. ") = " .. value )
+	self:SetOverlayText( "Numpad Input ("..keylist[self.keygroup + 1]..")\n(" .. self.value_off .. " - " .. self.value_on .. ") = " .. value )
 end
 
 local function On( pl, ent, mul )

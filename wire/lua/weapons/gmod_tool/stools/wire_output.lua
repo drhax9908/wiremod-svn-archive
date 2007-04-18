@@ -37,8 +37,9 @@ function TOOL:LeftClick( trace )
 
 	// If we shot a wire_output do nothing
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_output" && trace.Entity.pl == ply ) then
+		trace.Entity.key = key
 		if (numpad.GetModifiedKey) then key = numpad.GetModifiedKey(ply, key) end
-		
+		trace.Entity:SetKey(key)
 		return true
 	end
 
@@ -99,6 +100,7 @@ if (SERVER) then
 
 		table.Merge(wire_output:GetTable(), ttable )
 
+		wire_output:GetTable():ShowOutput()
 		pl:AddCount( "wire_outputs", wire_output )
 
 		return wire_output

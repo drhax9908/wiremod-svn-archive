@@ -7,6 +7,7 @@ ENT.WireDebugName = "Output"
 
 local MODEL = Model("models/jaanus/wiretool/wiretool_output.mdl")
 
+local keylist = {"0","1","2","3","4","5","6","7","8","9",".","Enter","+","-","*","/"}
 
 function ENT:Initialize()
 	self.Entity:SetModel( MODEL )
@@ -44,9 +45,15 @@ function ENT:Switch( on, ply )
 	self:SetOn(on)
 end
 
+function ENT:ShowOutput()
+	if (self.key) then
+		self:SetOverlayText("Numpad Output ("..keylist[self.key + 1]..")")
+	end
+end
 
 function ENT:SetKey( key )
 	self.Key = key
+	self:ShowOutput()
 end
 
 function ENT:GetKey()

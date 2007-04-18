@@ -96,11 +96,12 @@ if (SERVER) then
 		wire_input:SetModel( Model("models/jaanus/wiretool/wiretool_input.mdl") )
 		wire_input:Spawn()
 
-		wire_input:Setup( keygroup, toggle, value_off, value_on )
 		wire_input:SetPlayer( pl )
+		wire_input:Setup( keygroup, toggle, value_off, value_on )
 
-		numpad.OnDown( pl, keygroup, "WireInput_On", wire_input, 1 )
-		numpad.OnUp( pl, keygroup, "WireInput_Off", wire_input, 1 )
+		// Moved to ENT:Setup() to allow for updates (TheApathetic)
+		//numpad.OnDown( pl, keygroup, "WireInput_On", wire_input, 1 )
+		//numpad.OnUp( pl, keygroup, "WireInput_Off", wire_input, 1 )
 
 		local ttable = {
 			keygroup		= keygroup,
