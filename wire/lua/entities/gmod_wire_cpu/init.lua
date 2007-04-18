@@ -209,9 +209,10 @@ function ENT:ReadCell( Address )
 	end
 
 	if (Address < 0) then
-		self.LADD = math.floor(Address)
-		self:Interrupt(8)
-		return nil
+		//self.LADD = math.floor(Address)
+		//self:Interrupt(8)
+		//return nil
+		return ReadPort(-Address-1)
 	end
 	if (Address < 65536) then
 		return self.Memory[math.floor(Address)]
@@ -253,9 +254,10 @@ function ENT:WriteCell( Address, value )
 	end
 
 	if (Address < 0) then
-		self.LADD = math.floor(Address)
-		self:Interrupt(8)
-		return false
+		//self.LADD = math.floor(Address)
+		//self:Interrupt(8)
+		//return false
+		return WritePort(-Address-1,value)
 	end
 	if (Address < 65536) then
 		if (self.Page[math.floor(Address / 128)]) then
@@ -722,7 +724,6 @@ function ENT:Execute( )
 	//------------------------------------------------------------
 	elseif (opcode == 30) then	//POP
 		result = self:Pop()
-		WriteBack = false
 	elseif (opcode == 31) then	//CALL
 		if self:Push(self.IP) then
 			self.IP = params[1]
