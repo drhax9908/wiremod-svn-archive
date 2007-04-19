@@ -1,0 +1,10 @@
+N@clock
+I@Tick
+O@Hour Minutes Seconds
+#Connect a pulser to Tick!
+Tick & !TickEdge ->
+    Seconds += 1
+    Seconds >= 60 -> Seconds = 0, Minutes += 1;
+    Minutes >= 60 -> Minutes = 0, Hours += 1;
+    Hours >= 24 -> Hours = 0;;
+TickEdge = Tick
