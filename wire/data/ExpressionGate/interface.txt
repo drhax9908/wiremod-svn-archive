@@ -1,0 +1,4 @@
+N@interface
+I@Speed Reset Distance
+#Use of the gate to prettify a module
+Speed /= 60

@@ -1,0 +1,4 @@
+N@latch
+I@Hold Data
+O@Out
+!Hold -> Out = Data;
