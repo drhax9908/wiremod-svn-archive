@@ -231,6 +231,11 @@ function ENT:Draw()
 		//2046 - Cursor Enabled
 		//2047 - Clk
 
+		if (self.Memory1[2045] > 1080) then self.Memory1[2045] = 1080 end
+		if (self.Memory1[2045] < 0) then self.Memory1[2045] = 0 end
+		if (self.Memory1[2044] > 1) then self.Memory1[2044] = 1 end
+		if (self.Memory1[2044] < 0) then self.Memory1[2044] = 0 end
+
 		if (self.Memory1[2046] >= 1) then
 			if (Flash) then
 				local a = math.floor(self.Memory1[2045] / 2)
