@@ -1033,7 +1033,6 @@ function ENT:Execute( )
 		WriteBack = false
 	elseif (opcode == 98) then	//TIMER
 		result = self.TIMER
-		WriteBack = false
 	elseif (opcode == 99) then	//LIDTR
 		self.IDTR = params[1]
 		WriteBack = false
