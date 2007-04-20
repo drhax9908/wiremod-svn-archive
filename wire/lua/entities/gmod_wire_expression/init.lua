@@ -190,6 +190,7 @@ ENT._floor_1 =   function (self, n) return math.floor(n) end
 ENT._log_1 =     function (self, n) return math.log(n) end
 ENT._log10_1 =   function (self, n) return math.log10(n) end
 ENT._sqrt_1 =    function (self, n) return math.sqrt(n) end
+ENT._round_1 =   function (self, n) return math.Round(n) end
 ENT._random_2 =  function (self, l, u) return math.random() * (u - l) end
 
 ENT._max_x =     function (self, ...) return math.max(...) end
