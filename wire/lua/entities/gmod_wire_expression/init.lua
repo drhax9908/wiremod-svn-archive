@@ -228,5 +228,5 @@ ENT._angnormr_1 = function (self, d) return (d + math.pi) % (math.pi * 2) - math
 --ENT._angdiffr_2 = function (self, a, b) return (a - b + math.pi) % (math.pi * 2) - math.pi end
 ENT._clamp_3 =   function (self, v, l, u) if v < l then return l elseif v > u then return u else return v end end
 
-ENT._send_x =    function (self, ...) WireModPacketIndex = WireModPacketIndex % 1024 + 1 WireModPacket[WireModPacketIndex] = {...} return WireModPacketIndex end
-ENT._recv_2 =    function (self, id, p) if WireModPacket[id] and WireModPacket[id][p - 1] then return WireModPacket[id][p - 1] else return -1 end end
+ENT._send_x =    function (self, ...) WireModPacketIndex = WireModPacketIndex % 8192 + 1 WireModPacket[WireModPacketIndex] = {...} return WireModPacketIndex end
+ENT._recv_2 =    function (self, id, p) if WireModPacket[id] and WireModPacket[id][p] then return WireModPacket[id][p] else return -1 end end
