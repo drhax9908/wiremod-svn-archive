@@ -138,14 +138,14 @@ end
 --	return tbl
 --end
 
-function ENT:_end(tbl)  return -1 end
+function ENT:_end(tbl)  return nil end
 
 function ENT:_num(tbl)  return tbl[2] end
 function ENT:_var(tbl)  return self.variables[tbl[2]] end
 function ENT:_dlt(tbl)  return self.variables[tbl[2]] - self.deltavars[tbl[2]] end
 function ENT:_trg(tbl)  if self.triggvars[tbl[2]] then return 1 else return 0 end end
 
-function ENT:_seq(tbl)  if self["_"..tbl[2][1]](self,tbl[2]) == -1 then return -1 elseif self["_"..tbl[3][1]](self,tbl[3]) == -1 then return -1 end end
+function ENT:_seq(tbl)  if self["_"..tbl[2][1]](self,tbl[2]) == nil then return nil elseif self["_"..tbl[3][1]](self,tbl[3]) == nil then return nil end end
 
 function ENT:_fun(tbl)  local prm = self["_"..tbl[3][1]](self,tbl[3]) local fun = self["_"..tbl[2].."_"..#prm] if !fun and #prm > 0 then fun = self["_"..tbl[2].."_x"] end if !fun then return -1 end return fun(self,unpack(prm)) end
 function ENT:_prm(tbl)  local prm = self["_"..tbl[2][1]](self,tbl[2]) table.insert(prm, self["_"..tbl[3][1]](self,tbl[3])) return prm end
