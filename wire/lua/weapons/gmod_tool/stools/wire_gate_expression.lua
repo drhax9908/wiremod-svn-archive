@@ -124,7 +124,7 @@ function TOOL:LeftClick(trace)
 	wire_gate = MakeWireGateExpression(player, Ang, trace.HitPos, Model, name, lines, inputs, outputs)
 	if !wire_gate then return false end
 	
-	wire_gate:GetPhysicsObject():EnableMotion(false)
+	--wire_gate:GetPhysicsObject():EnableMotion(false)
 	wire_gate:SetPos(trace.HitPos - trace.HitNormal * wire_gate:OBBMins().z)
 	local constraint = WireLib.Weld(wire_gate, trace.Entity, trace.PhysicsBone, true)
 	
