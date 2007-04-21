@@ -162,7 +162,8 @@ function DebugDuplicator.Paste( Player, EntityList, ConstraintList )
 		
 		CreatedEntities[ k ] = DebugDuplicator.CreateEntityFromTable( Player, v, k )
 		
-		if ( CreatedEntities[ k ] && CreatedEntities[ k ]:IsValid() ) then
+		if ( CreatedEntities[ k ] and CreatedEntities[ k ]:IsValid() )
+			and not (!CreatedEntities[ k ].Spawnable and CreatedEntities[ k ].AdminSpawnable) then
 			
 			CreatedEntities[ k ].BoneMods = table.Copy( v.BoneMods )
 			CreatedEntities[ k ].EntityMods = table.Copy( v.EntityMods )
