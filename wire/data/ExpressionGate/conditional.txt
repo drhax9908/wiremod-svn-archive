@@ -1,4 +1,4 @@
-N@conditional
+N@Example Conditional
 I@Speed Turbo
 O@Speed Limited
 Limited = 0

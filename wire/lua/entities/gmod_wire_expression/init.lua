@@ -32,13 +32,6 @@ function ENT:Initialize()
 	self.Outputs = Wire_CreateOutputs(self.Entity, {})
 end
 
-function ENT:Use()
-end
-
-function ENT:Think()
-	--self:Update()
-end
-
 function ENT:TriggerInput(key, value)
 	if key then
 		self.deltavars[key] = self.inputvars[key]
@@ -190,7 +183,8 @@ ENT._clamp_3 =   function (self, v, l, u) if v < l then return l elseif v > u th
 ENT._exp_1 =     function (self, n)    return math.exp(n) end
 ENT._floor_1 =   function (self, n)    return math.floor(n) end
 ENT._floor_2 =   function (self, n, d) return math.floor(n * 10 ^ d) / 10 ^ d end
-ENT._frac_1 =    function (self, n)    return math.abs(n) % 1 end
+ENT._frac_1 =    function (self, n)    return math.fmod(n, 1) end
+ENT._int_1 =     function (self, n)    return math.modf(n, 1) end
 ENT._ln_1 =      function (self, n)    return math.log(n) / math.log(math.exp(1)) end
 ENT._log_2 =     function (self, n, k) return math.log(n) / math.log(k) end
 ENT._log2_1 =    function (self, n)    return math.log(n) end
@@ -206,6 +200,8 @@ ENT._e_0 =       function (self)       return math.exp(1) end
 
 ENT._max_x =     function (self, ...)  return math.max(...) end
 ENT._min_x =     function (self, ...)  return math.min(...) end
+ENT._avg_x =     function (self, ...)  local n = 0 for _,v in ipairs({...}) do n = n + v end return n / #{...} end
+ENT._sel_x =     function (self, i, ...) if ({...})[i] == nil then return -1 else return ({...})[i] end end
 
 ENT._random_0 =  function (self)       return math.random() end
 ENT._random_2 =  function (self, l, u) return math.random() * (u - l) - l end
@@ -237,8 +233,8 @@ ENT._sinh_1 =    function (self, d)    return math.sinh(math.rad(d)) end
 ENT._tan_1 =     function (self, d)    return math.tan(math.rad(d)) end
 ENT._tanh_1 =    function (self, d)    return math.tanh(math.rad(d)) end
 
-ENT._angnorm_1 = function (self, d)    return (d + 180) % 360 - 180 end
+ENT._angnorm_1 =  function (self, d)   return (d + 180) % 360 - 180 end
 ENT._angnormr_1 = function (self, d)   return (d + math.pi) % (math.pi * 2) - math.pi end
 
-ENT._send_x =    function (self, ...)   WireModPacketIndex = WireModPacketIndex % 8192 + 1 WireModPacket[WireModPacketIndex] = {...} return WireModPacketIndex end
-ENT._recv_2 =    function (self, id, p) if WireModPacket[id] and WireModPacket[id][p] then return WireModPacket[id][p] else return -1 end end
+ENT._send_x =    function (self, ...)   WireModPacketIndex = WireModPacketIndex % 90 + 1 WireModPacket[WireModPacketIndex] = {...} return WireModPacketIndex + 9 end
+ENT._recv_2 =    function (self, id, p) id = id - 9 if WireModPacket[id] and WireModPacket[id][p] then return WireModPacket[id][p] else return -1 end end
