@@ -1,0 +1,9 @@
+N@Demultiplexer
+I@Packet
+O@A B C D
+# Get mulitple values sent over a single wire
+# Send the values using a mux
+A = recv(Packet, 1)
+B = recv(Packet, 2)
+C = recv(Packet, 3)
+D = recv(Packet, 4)

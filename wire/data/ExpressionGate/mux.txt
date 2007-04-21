@@ -1,0 +1,6 @@
+N@Multiplexer
+I@A B C D
+O@Packet
+# Send multiple values over a single wire
+# Retreive the values using a demux
+Packet = send(A, B, C, D)
