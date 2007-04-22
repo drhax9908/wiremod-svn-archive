@@ -4,7 +4,7 @@ AddCSLuaFile( "shared.lua" )
 
 include('shared.lua')
 
-ENT.WireDebugName = "Nailer"
+ENT.WireDebugName = "Colorer"
 
 local MODEL = Model("models/jaanus/wiretool/wiretool_siren.mdl")
 
@@ -13,20 +13,22 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-	self.Inputs = Wire_CreateInputs(self.Entity, { "A" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "Fire", "R", "G", "B", "A" })
+	self.ValueR = 255
+    self.ValueG = 255
+    self.ValueB = 255
+    self.ValueA = 255
 end
 
 function ENT:OnRemove()
 	Wire_Remove(self.Entity)
 end
 
-function ENT:Setup(flim)
-	self:TriggerInput("A", 0) 
-	self.Flim = math.min(flim, 10000)
+function ENT:Setup()
 end
 
 function ENT:TriggerInput(iname, value)
-	if (iname == "A") then
+	if (iname == "Fire") then
 		if (value ~= 0) then
 			 local vStart = self.Entity:GetPos()
 			 local vForward = self.Entity:GetUp()
@@ -37,37 +39,26 @@ function ENT:TriggerInput(iname, value)
 				 trace.filter = { self.Entity }
 			 local trace = util.TraceLine( trace ) 
 			
-			// Bail if we hit world or a player
-			if (  !trace.Entity:IsValid() || trace.Entity:IsPlayer() ) then return end
-			// If there's no physics object then we can't constraint it!
-			if ( !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return end
-		
-			local tr = {}
-				tr.start = trace.HitPos
-				tr.endpos = trace.HitPos + (self.Entity:GetUp() * 50.0)
-				tr.filter = { trace.Entity, self.Entity }
-			local trTwo = util.TraceLine( tr )
-		
-			if ( trTwo.Hit && !trTwo.Entity:IsPlayer() ) then
-				// Weld them!
-				local constraint = constraint.Weld( trace.Entity, trTwo.Entity, trace.PhysicsBone, trTwo.PhysicsBone, self.Flim )
-				
-				//effect on weld (tomb332)
-				local effectdata = EffectData()
-					effectdata:SetOrigin( trTwo.HitPos )
-					effectdata:SetNormal( trTwo.HitNormal )
-					effectdata:SetMagnitude( 5 )
-					effectdata:SetScale( 1 )
-					effectdata:SetRadius( 10 )
-				util.Effect( "Sparks", effectdata )
-			end
+			if (!trace.Entity) then return false end
+            if (!trace.Entity:IsValid() ) then return false end
+            if (trace.Entity:IsWorld()) then return false end
+            if ( CLIENT ) then return true end
+            trace.Entity:SetColor(self.ValueR,self.ValueG,self.ValueB,self.ValueA)
 		end
+	elseif(iname == "R") then
+		self.ValueR = math.max(math.min(255,value),0)
+	elseif(iname == "G") then
+		self.ValueG = math.max(math.min(255,value),0)
+	elseif(iname == "B") then
+		self.ValueB = math.max(math.min(255,value),0)
+	elseif(iname == "A") then
+		self.ValueA = math.max(math.min(255,value),0)
 	end
 end
 
 function ENT:ShowOutput(value)
 	if (value ~= self.PrevOutput) then
-		self:SetOverlayText( "Nailer" )
+		self:SetOverlayText( "Colorer" )
 		self.PrevOutput = value
 	end
 end
