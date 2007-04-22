@@ -537,8 +537,6 @@ function AdvDupe.SendSaveToClient( pl, filename )
 	
 	AdvDupe[pln].temp = file.Read(filepath)
 	
-	//AdvDupe[pln].temp = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(AdvDupe[pln].temp,"\t\t\"__name\"\t\t","|mn"),"\t\t\"__type\"\t\t","|mt"),"\t\t\t\"V\"\t\t","|mv|"),"\t\t\t\"DupeInfo\"","|mD"),"\"Number\"\n","|mN"),"\"String\"\n","|mS"),"\"Angle\"\n","|mA"),"\"Vector\"\n","|mV"),"\"Bool\"\n","|mB"),"\"Class\"","|mC"),"\"material\"","|mm"),"\"prop_physics\"","|mp"),"\t\t\"VersionInfo\"\n\t\t\"FileVersion\"\n\t\t{\n","|VI"),"\"models","|wm"),"\n\t\t\t\"NoCollide\"\n\t\t\t{\n\t","|NC"),"\"nocollide\"\n","|nc"),"\"HeadEntID\"\n","|HE"),"\n\t}\n\t\"holdangle\"\n\t{\n","|ha"),"\t\t\"Y\"\t\t\"","|qY"),"\t\t\"z\"\t\t\"","|qz"),"\t\t\"x\"\t\t\"","|qx"),"\t\t\"A\"\t\t\"","|qA"),"\t\t\"B\"\t\t\"","|qB"),"\t\t\"g\"\t\t\"","|qg"),"\t\t\"r\"\t\t\"","|qr"),"\t\t\"p\"\t\t\"","|qp"),"\"HoldAngle\"\n","|HA"),"\t\t\t\t","|4"),"\t\t\t","|3"),"name","|N")
-	
 	AdvDupe[pln].temp = dupeshare.Compress(AdvDupe[pln].temp, false)
 	
 	local len = string.len(AdvDupe[pln].temp)
@@ -557,7 +555,7 @@ end
 
 function AdvDupe.SendSaveToClientData(pl, pln, len, offset, last)
 	
-	for k=0,1 do //sends two pieces
+	for k=0,2 do //sends three pieces
 		
 		if ((offset + k + 1) <= last) then
 			Msg("sending string: "..tostring((offset + k) * 220).." / "..len.." k: "..k.." piece: "..(offset + k + 1).." / "..last.."\n")
@@ -580,8 +578,8 @@ function AdvDupe.SendSaveToClientData(pl, pln, len, offset, last)
 		end
 	end
 	
-	if (offset + 3) <= last then
-		timer.Simple( 0.1, AdvDupe.SendSaveToClientData, pl, pln, len, (offset + 2), last )
+	if (offset + 4) <= last then
+		timer.Simple( 0.02, AdvDupe.SendSaveToClientData, pl, pln, len, (offset + 3), last )
 	else
 		AdvDupe[pln].temp = nil //clear this to send again
 		//inform the client they finished downloading in case they didn't notice
@@ -590,6 +588,141 @@ function AdvDupe.SendSaveToClientData(pl, pln, len, offset, last)
 	end
 	
 end
+
+
+
+
+
+
+
+
+function AdvDupe.OverTimePasteStart( Player, EntityList, ConstraintList, HeadEntityIdx )
+	
+	local EntIDList = {}
+	EntIDList[1] = HeadEntityIdx
+	for EntID, EntTable in pairs( EntityList ) do
+		if ( EntID != HeadEntityIdx ) then
+			table.insert(EntIDList, EntID)
+		end
+	end
+	
+	local ConstIDList = {}
+	for ConstID, ConstTable in pairs( ConstraintList ) do
+		table.insert(ConstIDList, ConstID)
+	end
+	
+	
+	
+	AdvDupe.OverTimePasteProcess(Player, EntityList, ConstraintList, HeadEntityIdx, 1, 1, EntIDList, ConstIDList, {}, {})
+	
+end
+
+
+function AdvDupe.OverTimePasteProcess(Player, EntityList, ConstraintList, HeadEntityIdx, Stage, LastID, EntIDList, ConstIDList, CreatedEntities, CreatedConstraints)
+	
+	
+	if Stage == 1 then
+		
+		if EntIDList[ LastID ] then
+			
+			local EntID		= EntIDList[ LastID ]
+			local EntTable	= EntityList[ EntID ]
+			
+			CreatedEntities[ EntID ] = DebugDuplicator.CreateEntityFromTable( Player, EntTable, EntID )
+			
+			if ( CreatedEntities[ EntID ] && CreatedEntities[ EntID ]:IsValid() ) then
+				
+				CreatedEntities[ EntID ].BoneMods = table.Copy( EntTable.BoneMods )
+				CreatedEntities[ EntID ].EntityMods = table.Copy( EntTable.EntityMods )
+				CreatedEntities[ EntID ].PhysicsObjects = table.Copy( EntTable.PhysicsObjects )
+				
+				CreatedEntities[ EntID ]:SetNotSolid(true)
+				CreatedEntities[ EntID ]:SetParent(CreatedEntities[ HeadEntityIdx ])
+				
+				local ed = EffectData()
+					ed:SetEntity( CreatedEntities[ EntID ] )
+				util.Effect( "propspawn", ed )
+				
+			else
+				Msg("Error:Created Entity Bad! Class: "..(EntTable.Class or "NIL").." Ent: "..EntID.."\n")
+				CreatedEntities[ EntID ] = nil
+			end
+			
+			LastID = LastID + 1
+			
+		else
+			LastID = 1
+			Stage = 2
+		end
+		
+	elseif Stage == 2 then
+		
+		for EntID, Ent in pairs( CreatedEntities ) do	
+			
+			duplicator.ApplyEntityModifiers ( Player, Ent )
+			duplicator.ApplyBoneModifiers ( Player, Ent )
+			
+			if ( Ent.PostEntityPaste ) then
+				Ent:PostEntityPaste( Player, Ent, CreatedEntities )
+			end
+			
+		end
+		
+		LastID = 1
+		Stage = 3
+		
+	elseif Stage == 3 then
+		
+		if ConstraintList and ConstIDList[ LastID ] then
+			
+			local k		= EntIDList[ LastID ]
+			local Constraint	= ConstraintList[ k ]
+			
+			local Entity = DebugDuplicator.CreateConstraintFromTable( Constraint, CreatedEntities )
+			
+			if ( Entity && Entity:IsValid() ) then
+				table.insert( CreatedConstraints, Entity )
+			else
+				Msg("Error:Created Constraint Bad! Type= "..(Constraint.Type or "NIL").."\n")
+			end
+			
+			LastID = LastID + 1
+			
+		else
+			LastID = 1
+			Stage = 4
+		end
+		
+	elseif Stage == 4 then
+		
+		AdvDupe.ResetPositions( self.MyEnts, self.MyConstraints )
+		
+		// Add all of the created entities
+		//  to the undo system under one undo.
+		
+		undo.Create( "Duplicator" )
+			for k, ent in pairs( Ents ) do
+				ent:SetNotSolid(false)
+				ent:SetParent()
+				undo.AddEntity( ent )
+				self:GetPlayer():AddCleanup( "duplicates", ent )
+			end
+			undo.SetPlayer( self:GetPlayer() )
+		undo.Finish()
+		
+		Stage = 5 //done!
+		
+	end
+	
+	
+	if Stage < 5 then
+		timer.Simple( 0.1, AdvDupe.OverTimePasteProcess, Player, EntityList, ConstraintList, HeadEntityIdx, Stage, LastID, EntIDList, ConstIDList, CreatedEntities, CreatedConstraints )
+	end
+	
+end
+
+
+
 
 
 
