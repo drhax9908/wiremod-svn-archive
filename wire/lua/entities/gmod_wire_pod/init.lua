@@ -53,10 +53,7 @@ function ENT:Initialize()
 	
 	-- Create outputs
 	self.Outputs = Wire_CreateOutputs( self.Entity, outputs )
-end
-
-function ENT:OnRemove()
-	Wire_Remove(self.Entity)
+	self:SetOverlayText( "Pod Controller" )
 end
 
 -- Link to pod
@@ -75,7 +72,7 @@ end
 
 function ENT:ShowOutput(value)
 	if (value ~= self.PrevOutput) then
-		self:SetOverlayText( "Pod" )
+		self:SetOverlayText( "Pod Controller" )
 		self.PrevOutput = value
 	end
 end
@@ -89,7 +86,7 @@ function ENT:OnRestore()
 	keys["Mouse1"] = IN_ATTACK
 	keys["R"] = IN_RELOAD
 	
-    Wire_Restored(self.Entity)
+    self.BaseClass.OnRestore(self)
 end
 
 --[[

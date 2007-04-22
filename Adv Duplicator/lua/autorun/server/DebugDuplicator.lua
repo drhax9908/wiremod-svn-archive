@@ -165,6 +165,9 @@ function DebugDuplicator.Paste( Player, EntityList, ConstraintList )
 		if ( CreatedEntities[ k ] and CreatedEntities[ k ]:IsValid() )
 			and not (!CreatedEntities[ k ].Spawnable and CreatedEntities[ k ].AdminSpawnable) then
 			
+			//safe guard
+			Player:AddCleanup( "duplicates", CreatedEntities[ k ] )
+			
 			CreatedEntities[ k ].BoneMods = table.Copy( v.BoneMods )
 			CreatedEntities[ k ].EntityMods = table.Copy( v.EntityMods )
 			CreatedEntities[ k ].PhysicsObjects = table.Copy( v.PhysicsObjects )

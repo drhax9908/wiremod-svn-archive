@@ -30,7 +30,9 @@ TOOL.ClientConVar[ "pasterundo_key" ]	= -1
 cleanup.Register( "duplicates" )
 
 
+//
 // Paste a copy
+//
 function TOOL:LeftClick( trace )
 	
 	if ( CLIENT ) then	return true	end
@@ -68,7 +70,7 @@ function TOOL:LeftClick( trace )
 		
 		for k, ent in pairs( Ents ) do
 			undo.AddEntity( ent )
-			self:GetOwner():AddCleanup( "duplicates", ent ) 
+			//self:GetOwner():AddCleanup( "duplicates", ent ) 
 		end
 		
 		undo.SetPlayer( self:GetOwner() )
@@ -79,23 +81,30 @@ function TOOL:LeftClick( trace )
 	
 end
 
-// Put The stuff we're pointing at in the 'clipboard'
+//
+// Put the stuff in the 'clipboard'
+//
 function TOOL:RightClick( trace )
 	
 	if (!trace.Entity ||
 		!trace.Entity:IsValid() ||
 		trace.Entity:IsPlayer() )
 	then
-	
-		self.Entities = nil
+		
 		self:ReleaseGhostEntity()
 		self.GhostEntities = {}
 		
-		return false
+		self.HeadEntityIdx	= nil
+		self.HoldAngle 	= nil
+		self.HoldPos 		= nil
+		self.Entities		= nil
+		self.Constraints	= nil
+		
+		return true
 	
 	end
 
-	local StartPos = trace.Entity:GetPos()
+	local StartPos = trace.HitPos
 
 	self:ReleaseGhostEntity()
 
@@ -124,10 +133,14 @@ function TOOL:RightClick( trace )
 	// Convert the positions to local
 	AdvDupe.ConvertPositionsToLocal( Entities, Constraints, StartPos, angle )
 
+	
 	// Store stuff for pasting/ghosting
+	// Save to a UniqueID table so the object will exist after the player dies/leaves the server
+	local DupeTable = self:GetOwner():UniqueIDTable( "Duplicator" )
+
 	self.HeadEntityIdx	= trace.Entity:EntIndex()
 	self.HoldAngle 		= angle
-	self.HoldPos 		= StartPos
+	self.HoldPos 		= trace.Entity:WorldToLocal( StartPos )
 	self.Entities		= Entities
 	self.Constraints	= Constraints
 	self.Legacy			= false
@@ -137,7 +150,7 @@ function TOOL:RightClick( trace )
 	self.FileLoaded=false
 	self.Copied=true
 	
-	self:StartGhostEntities( Entities )
+	self:StartGhostEntities( self.Entities, self.HeadEntityIdx, self.HoldPos, self.HoldAngle )
 	
 	return true
 	
@@ -219,42 +232,10 @@ function TOOL:Think()
 	
 end
 
-
-/*---------------------------------------------------------
-   Starts up the ghost entities
----------------------------------------------------------*/
-function TOOL:StartGhostEntities( EntityTable )
-	
-	self:ReleaseGhostEntity()
-	self.GhostEntities = {}
-	if self.Legacy then return end //TODO: no ghosting support for lagcey loads, table are too fucking different
-	
-	self.GhostEntities[ self.HeadEntityIdx ] = self:MakeGhostFromTable( EntityTable[ self.HeadEntityIdx ], self.GhostEntities[ self.HeadEntityIdx ] )
-	
-	
-	self.Weapon:SetNetworkedEntity( "GhostEntity", self.GhostEntities[ self.HeadEntityIdx ] )
-	self.Weapon:SetNetworkedVector( "HeadPos", self.GhostEntities[ self.HeadEntityIdx ].Pos )
-	self.Weapon:SetNetworkedAngle( 	"HeadAngle", self.GhostEntities[ self.HeadEntityIdx ].Angle )	
-	
-	if ( !self.GhostEntities[ self.HeadEntityIdx ] || !self.GhostEntities[ self.HeadEntityIdx ]:IsValid()  ) then
-		
-		self.GhostEntities = nil
-		return
-		
-	end
-	
-	for k, entTable in pairs( EntityTable ) do
-		
-		if ( !self.GhostEntities[ k ] ) then
-			self.GhostEntities[ k ] = self:MakeGhostFromTable( entTable, self.GhostEntities[ self.HeadEntityIdx ] )
-		end
-		
-	end
-
-end
-
+//
 // Make the ghost entities
-function TOOL:MakeGhostFromTable( EntTable, pParent )
+//
+function TOOL:MakeGhostFromTable( EntTable, pParent, HoldAngle )
 	if ( !EntTable ) then return end
 	
 	local GhostEntity = nil
@@ -287,7 +268,7 @@ function TOOL:MakeGhostFromTable( EntTable, pParent )
 	GhostEntity:SetColor( 255, 255, 255, 150 )
 	
 	GhostEntity.Pos 	= EntTable.Pos
-	GhostEntity.Angle 	= EntTable.Angle - self.HoldAngle
+	GhostEntity.Angle 	= EntTable.Angle - HoldAngle
 	
 	if ( pParent ) then
 		GhostEntity:SetParent( pParent )
@@ -297,29 +278,68 @@ function TOOL:MakeGhostFromTable( EntTable, pParent )
 	
 end
 
+
+/*---------------------------------------------------------
+   Starts up the ghost entities
+---------------------------------------------------------*/
+function TOOL:StartGhostEntities( EntityTable, Head, HoldPos, HoldAngle )
+	
+	self:ReleaseGhostEntity()
+	self.GhostEntities = {}
+	if self.Legacy then return end //no ghosting support for lagcey loads, table are too fucking different
+	
+	// Make the head entity first
+	self.GhostEntities[ Head ] = self:MakeGhostFromTable( EntityTable[ Head ], self.GhostEntities[ Head ], HoldAngle )
+	
+	// Set NW vars for clientside
+	self.Weapon:SetNetworkedEntity( "GhostEntity", self.GhostEntities[ Head ] )
+	self.Weapon:SetNetworkedVector( "HeadPos", self.GhostEntities[ Head ].Pos )
+	self.Weapon:SetNetworkedAngle( 	"HeadAngle", self.GhostEntities[ Head ].Angle )	
+	self.Weapon:SetNetworkedVector( "HoldPos", HoldPos )
+	
+	if ( !self.GhostEntities[ Head ] || !self.GhostEntities[ Head ]:IsValid() ) then
+	
+		self.GhostEntities = nil
+		return
+		
+	end
+	
+	for k, entTable in pairs( EntityTable ) do
+		
+		if ( !self.GhostEntities[ k ] ) then
+			self.GhostEntities[ k ] = self:MakeGhostFromTable( entTable, self.GhostEntities[ Head ], HoldAngle )
+		end
+		
+	end
+
+end
 /*---------------------------------------------------------
    Update the ghost entity positions
 ---------------------------------------------------------*/
 function TOOL:UpdateGhostEntities()
 
 	if (SERVER && !self.GhostEntities) then return end
+	
+	local Owner = self:GetOwner()
 
-	local tr = utilx.GetPlayerTrace( self:GetOwner(), self:GetOwner():GetCursorAimVector() )
+	local tr = utilx.GetPlayerTrace( Owner, Owner:GetCursorAimVector() )
 	local trace = util.TraceLine( tr )
 	if (!trace.Hit) then return end
 
 	local GhostEnt = nil
+	local HoldPos = nil
 	
 	if ( SERVER ) then
 		GhostEnt = self.GhostEntities[ self.HeadEntityIdx ]
+		HoldPos = self.HoldPos
 	else
 		GhostEnt = self.Weapon:GetNetworkedEntity( "GhostEntity", nil )
 		GhostEnt.Pos = self.Weapon:GetNetworkedVector( "HeadPos", Vector(0,0,0) )
 		GhostEnt.Angle = self.Weapon:GetNetworkedAngle( "HeadAngle", Angle(0,0,0) )		
+		HoldPos = self.Weapon:GetNetworkedVector( "HoldPos", Vector(0,0,0) )
 	end
 	
 	if (!GhostEnt || !GhostEnt:IsValid()) then 
-		// HACKKKK - this should be done in ReleaseGhostEntity
 		self.GhostEntities = nil
 	return end
 	
@@ -329,17 +349,21 @@ function TOOL:UpdateGhostEntities()
 	local angle  = self:GetOwner():GetAngles()
 	angle.pitch = 0
 	angle.roll = 0
+	
+	local TargetPos = GhostEnt:GetPos() - GhostEnt:LocalToWorld( HoldPos )
 
 	local PhysObj = GhostEnt:GetPhysicsObject()
 	if ( PhysObj && PhysObj:IsValid() ) then
 	
 		PhysObj:EnableMotion( false )
-		PhysObj:SetPos( GhostEnt.Pos + trace.HitPos )
+		PhysObj:SetPos( TargetPos + trace.HitPos )
 		PhysObj:SetAngle( GhostEnt.Angle + angle )
 		PhysObj:Wake()
 		
 	else
 	
+		// Give the head ghost entity a physics object
+		// This way the movement will be predicted on the client
 		if ( CLIENT ) then
 			GhostEnt:PhysicsInit( SOLID_VPHYSICS )
 		end
@@ -352,7 +376,7 @@ end
 function TOOL:Deploy()
 	
 	if ( self.Entities ) then
-		self:StartGhostEntities( self.Entities )
+		self:StartGhostEntities( self.Entities, self.HeadEntityIdx, self.HoldPos, self.HoldAngle )
 	end
 	
 	if ( CLIENT ) then return end
@@ -444,7 +468,7 @@ function TOOL:LoadFile( filepath )
 		
 		self:UpdateList()
 		
-		self:StartGhostEntities( self.Entities )
+		self:StartGhostEntities( self.Entities, self.HeadEntityIdx, self.HoldPos, self.HoldAngle )
 	end
 	
 end
