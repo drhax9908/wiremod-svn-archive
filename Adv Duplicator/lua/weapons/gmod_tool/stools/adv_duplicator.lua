@@ -491,7 +491,8 @@ function TOOL:UpdateList()
 	self:GetOwner():SendLua( "AdvDupeClient.LoadListFiles={}" )
 	self:GetOwner():SendLua( "AdvDupeClient.SScdir=\""..cdir.."\"" )
 	
-	if ( cdir == dupeshare.BaseDir.."/=Public Folder=" ) then
+	//if ( cdir == dupeshare.BaseDir.."/=Public Folder=" ) then
+	if ( dupeshare.NamedLikeAPublicDir(dupeshare.GetFileFromFilename(cdir)) ) then
 		self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs[\"/..\"] = \""..AdvDupe.GetPlayersFolder(self:GetOwner()).."\"" )
 	elseif ( cdir != AdvDupe.GetPlayersFolder(self:GetOwner()) ) then
 		self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs[\"/..\"] = \""..dupeshare.UpDir(cdir).."\"" )
