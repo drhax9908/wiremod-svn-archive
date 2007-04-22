@@ -46,7 +46,7 @@ function AdvDupeClient.SendSaveDataToServer(len, offset, last)
 	
 	if (offset + 1) <= last then
 		//send slowly or the server will boot player or just crash
-		timer.Simple( 0.1, AdvDupeClient.SendSaveDataToServer, len, (offset + 1), last )
+		timer.Simple( 0.02, AdvDupeClient.SendSaveDataToServer, len, (offset + 1), last )
 	else
 		timer.Simple( 0.5, 
 			function()
@@ -60,6 +60,7 @@ end
 
 local function SendFinished( um )
 	AdvDupeClient.sending = false
+	AdvDuplicator_UpdateControlPanel()
 end
 usermessage.Hook("AdvDupeClientSendFinished", SendFinished)
 
