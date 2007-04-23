@@ -37,7 +37,7 @@ function TOOL:LeftClick( trace )
 		if (self:GetClientInfo( "compiler") == "ZyeliosASM") then
 			//PrintTable(SourceCode)
 
-			ply:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 1.0 <----\n")
+			ply:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 1.1 <----\n")
 			ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compiling...\n")
 			ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 1\n")
 			trace.Entity.FatalError = false
@@ -50,7 +50,7 @@ function TOOL:LeftClick( trace )
 				trace.Entity.UseROM = false
 			end
 	
-			trace.Entity.Labels["version"] = 100
+			trace.Entity.Labels["version"] = 110
 			trace.Entity.Labels["platform"] = 0
 			trace.Entity.Labels["true"] = 1
 			trace.Entity.Labels["false"] = 0
@@ -75,7 +75,7 @@ function TOOL:LeftClick( trace )
 			if (trace.Entity.FatalError) then
 				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile aborted: fatal error has occured\n")			
 			else
-				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile succeded! Wrote "..trace.Entity.WIP.." bytes.\n")
+				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile succeded! "..table.Count(SourceCode).." lines, "..trace.Entity.WIP.." bytes, "..table.Count(trace.Entity.Labels).." definitions.\n")
 				if (self:GetClientInfo( "dumpcode") == 1) then //lololol codedump
 					ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dumping compiled data\n")
 					local codedump = ""

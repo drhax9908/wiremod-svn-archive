@@ -49,43 +49,43 @@ function ConsoleScreen_DataMessage( um )
 			local delta = value
 			if (delta > 0) then
 				for j = 0, 17-delta do
-					for i = 0, 29 do
-						ent.Memory1[j*30+i] = ent.Memory1[(j+delta)*30+i]
-						ent.Memory2[j*30+i] = ent.Memory2[(j+delta)*30+i]
+					for i = 0, 59 do
+						ent.Memory1[j*60+i] = ent.Memory1[(j+delta)*60+i]
+						ent.Memory2[j*60+i] = ent.Memory2[(j+delta)*60+i]
 					end
 				end
 				for j = 17-delta+1,17 do
-					for i = 0, 29 do
-						ent.Memory1[j*30+i] = 0
-						ent.Memory2[j*30+i] = 0
+					for i = 0, 59 do
+						ent.Memory1[j*60+i] = 0
+						ent.Memory2[j*60+i] = 0
 					end
 				end
 			else
 				delta = -delta
 				for j = 17,delta do
-					for i = 0, 29 do
-						ent.Memory1[j*30+i] = ent.Memory1[(j-delta)*30+i]
-						ent.Memory2[j*30+i] = ent.Memory2[(j-delta)*30+i]
+					for i = 0, 59 do
+						ent.Memory1[j*60+i] = ent.Memory1[(j-delta)*60+i]
+						ent.Memory2[j*60+i] = ent.Memory2[(j-delta)*60+i]
 					end
 				end
 				for j = delta+1,0 do
-					for i = 0, 29 do
-						ent.Memory1[j*30+i] = 0
-						ent.Memory2[j*30+i] = 0
+					for i = 0, 59 do
+						ent.Memory1[j*60+i] = 0
+						ent.Memory2[j*60+i] = 0
 					end
 				end
 			end
 		end
 		if (address == 2039) then
-			for i = 0, 29 do
-				ent.Memory1[value*30+i] = 0
-				ent.Memory2[value*30+i] = 0
+			for i = 0, 59 do
+				ent.Memory1[value*60+i] = 0
+				ent.Memory2[value*60+i] = 0
 			end
 		end
 		if (address == 2040) then
 			for i = 0, 17 do
-				ent.Memory1[i*30+value] = 0
-				ent.Memory2[i*30+value] = 0
+				ent.Memory1[i*60+value] = 0
+				ent.Memory2[i*60+value] = 0
 			end
 		end
 		if (address == 2041) then
@@ -206,6 +206,7 @@ function ENT:Draw()
 				end
 
 				if (c1 > 255) then c1 = 0 end
+				if (c1 < 0) then c1 = 0 end
 
 				if (cback ~= 0) then
 					surface.SetDrawColor(br,bg,bb,255)

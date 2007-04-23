@@ -3,6 +3,7 @@ AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
 
 include('shared.lua')
+include('case.lua')
 
 ENT.WireDebugName = "Numpad"
 ENT.OverlayDelay = 0
@@ -86,6 +87,7 @@ function ENT:Switch( on, key )
 	if ( on ) then
 		self.Buffer[0] = self.Buffer[0] + 1
 		self.Buffer[self.Buffer[0]] = key
+		Wire_TriggerOutput(self.Entity, "Memory", key)
 	else
 		for i = 1,self.Buffer[0] do
 			if (self.Buffer[i] == key) then
@@ -117,7 +119,8 @@ function Wire_KeyPress ( pl, cmd, args )
 	if (KeyBoardPlayerKeys[pl:EntIndex()]) then
 		local ent = ents.GetByIndex( KeyBoardPlayerKeys[pl:EntIndex()] )
 		if (ent) && (ent:IsValid()) && (ent.InUse) then
-			if (pl:KeyDown(IN_SPEED)) then
+			if (pl:KeyDown(IN_SPEED)) then // && (UpperCase[key])
+//				key = UpperCase[key]
 				key = string.upper(key)
 			end
 			//Msg("Key press: "..key.."\n")
