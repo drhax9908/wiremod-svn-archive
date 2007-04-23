@@ -1444,4 +1444,4 @@ end
 
 
 
-Msg("==== Advanced Duplicator v.1.62 server module installed! ====\n")
+Msg("==== Advanced Duplicator v.1.62.2 server module installed! ====\n")
