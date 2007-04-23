@@ -172,7 +172,7 @@ end
 
 
 //removes illegal characters from file names
-dupeshare.BadChars = {"\\", "/", ":", "*", "?", "\"", "<", ">", "¦", "|"}
+dupeshare.BadChars = {"\\", "/", ":", "*", "?", "\"", "<", ">", "¦", "|", "'"}
 
 function dupeshare.ReplaceBadChar(str)
 	for _,entry in pairs(dupeshare.BadChars) do
