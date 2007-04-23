@@ -477,5 +477,5 @@ function dupeshare.UpDir(path)
 end
 
 
-Msg("==== Advanced Duplicator v.1.61a shared module installed! ====\n")
+Msg("==== Advanced Duplicator v.1.61.2 shared module installed! ====\n")
 if (!duplicator.EntityClasses) then Msg("=== Error: Your gmod is out of date! ===\n=== You'll want to fix that or the Advanced Duplicator is not going to work. ===\n") end
