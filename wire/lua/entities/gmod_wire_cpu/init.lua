@@ -686,7 +686,7 @@ function ENT:Execute( )
 	elseif (opcode == 24) then	//LOOP
 		if (self.ECX ~= 0) then
 			self.IP = params[1]
-			self.ECX = self.EAX-1
+			self.ECX = self.ECX-1
 		end
 		WriteBack = false
 	elseif (opcode == 25) then	//LOOPA
@@ -698,13 +698,13 @@ function ENT:Execute( )
 	elseif (opcode == 26) then	//LOOPB
 		if (self.EBX ~= 0) then
 			self.IP = params[1]
-			self.EBX = self.EAX-1
+			self.EBX = self.EBX-1
 		end
 		WriteBack = false
 	elseif (opcode == 27) then	//LOOPD
 		if (self.EDX ~= 0) then
 			self.IP = params[1]
-			self.EDX = self.EAX-1
+			self.EDX = self.EDX-1
 		end
 		WriteBack = false
 	elseif (opcode == 28) then	//SPG
