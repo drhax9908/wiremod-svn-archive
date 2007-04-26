@@ -106,10 +106,6 @@ function ENT:HUDSetup(showinhud, huddesc, hudaddname, hudshowvalue, hudstyle, al
 	for k,v in pairs(self.RegisteredPlayers) do
 		self:RegisterPlayer(v.pl, v.hookhidehud)
 	end
-
-	// Force factor to update
-	self.PrevOutput = nil
-	self:TriggerInput("A", self.Inputs.A.Value)
 	
 	// Only trigger this input on the
 	// first time that Setup() is called
@@ -160,6 +156,8 @@ function ENT:RegisterPlayer(ply, hookhidehud, podonly)
 	self:SetupHUDStyle(self.HUDStyle, ply)
 		
 	// Trigger inputs to fully add this player to the list
+	// Force factor to update
+	self.PrevOutput = nil
 	self:TriggerInput("A", self.Inputs.A.Value)
 	if (hookhidehud) then
 		self:TriggerInput("HideHUD", self.Inputs.HideHUD.Value)
