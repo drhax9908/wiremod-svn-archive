@@ -227,16 +227,20 @@ WireLib.DT = {
 	STRING = {},
 	TABLE = {},
 	BIDIRTABLE = {},
+	ANY = {},
+	HOVERDATAPORT = {},
 }
-WireLib.DT.NORMAL.Zero	= 0
-WireLib.DT.VECTOR.Zero	= Vector(0,0,0)
-WireLib.DT.ANGLE.Zero	= Angle(0,0,0)
-WireLib.DT.COLOR.Zero	= Color(0,0,0,0)
-WireLib.DT.ENTITY.Zero	= NULL
-WireLib.DT.STRING.Zero	= ""
-WireLib.DT.TABLE.Zero	= {}
-WireLib.DT.BIDIRTABLE.Zero	= {}
-WireLib.DT.BIDIRTABLE.BiDir	= true
+WireLib.DT.NORMAL.Zero			= 0
+WireLib.DT.VECTOR.Zero			= Vector(0,0,0)
+WireLib.DT.ANGLE.Zero			= Angle(0,0,0)
+WireLib.DT.COLOR.Zero			= Color(0,0,0,0)
+WireLib.DT.ENTITY.Zero			= NULL
+WireLib.DT.STRING.Zero			= ""
+WireLib.DT.TABLE.Zero			= {}
+WireLib.DT.BIDIRTABLE.Zero		= {}
+WireLib.DT.BIDIRTABLE.BiDir		= true
+WireLib.DT.ANY.Zero				= 0
+WireLib.DT.HOVERDATAPORT.Zero	= 0
 
 function WireLib.CreateSpecialInputs(ent, names, types, desc)
 	types = types or {}
@@ -402,6 +406,23 @@ function WireLib.AdjustSpecialOutputs(ent, names, types, desc)
 end
 
 
+function WireLib.RetypeInputs(ent, iname, itype, desc)
+	local inputs = ent.Inputs
+	if (!inputs[iname]) or (!itype) then return end
+	inputs[iname].Desc = desc
+	inputs[iname].Type = itype
+	inputs[iname].Value = WireLib.DT[itype].Zero
+end
+
+
+function WireLib.RetypeOutputs(ent, oname, otype, desc)
+	local outputs = ent.Outputs
+	if (!outputs[oname]) or (!otype) then return end
+	outputs[oname].Desc = desc
+	outputs[oname].Type = otype
+	outputs[oname].Value = WireLib.DT[otype].Zero
+end
+
 
 -- force_outputs is only needed for existing components to allow them to be updated
 function Wire_Restored(ent, force_outputs)
@@ -532,6 +553,16 @@ local function Wire_Link(dst, dstid, src, srcid, path)
 	
 	table.insert(output.Connected, { Entity = dst, Name = dstid })
 	
+	if dst.OnInputWireLink then
+		//ENT:OnInputWireLink(iName, iType, oEnt, oName, oType)
+		dst:OnInputWireLink(dstid, input.Type, src, srcid, output.Type)
+	end
+	
+	if src.OnOutputWireLink then
+		//ENT:OnOutputWireLink(oName, oType, iEnt, iName, iType)
+		src:OnOutputWireLink(srcid, output.Type, dst, dstid, input.Type)
+	end
+	
 	dst.Inputs[dstid].Value = output.Value
 	if (dst.TriggerInput) then
 		dst:TriggerInput(dstid, output.Value)
@@ -574,8 +605,7 @@ function Wire_TriggerOutput(ent, oname, value, iter)
         iter:Process()
     end
 end
-
-
+	
 local function Wire_Unlink(ent, iname)
 	local input = ent.Inputs[iname]
 	if (input) then
@@ -587,6 +617,16 @@ local function Wire_Unlink(ent, iname)
 			            table.remove(output.Connected, k)
 			        end
 			    end
+				//untested
+				if input.Src.OnOutputWireLink then
+					//ENT:OnOutputWireLink(oName, oType, iEnt, iName, iType)
+					input.Src:OnOutputWireLink(input.SrcId, input.Src.Outputs[input.SrcId].Type, ent, iname, input.Type)
+				end
+			end
+			//untested
+			if ent.OnInputWireUnlink then
+				//ENT:OnInputWireUnlink(iName, iType, oEnt, oName, oType)
+				ent:OnInputWireUnlink(iname, input.Type, input.Src, input.SrcId, input.Src.Outputs[input.SrcId].Type)
 			end
 		end
 
@@ -611,14 +651,24 @@ function Wire_Link_Start(idx, ent, pos, iname, material, color, width)
 		Path = {},
 		OldPath = input.Path,
 		}
-
+	
+	CurLink[idx].OldPath				= CurLink[idx].OldPath or {}
+	CurLink[idx].OldPath[0]				= {}
+	CurLink[idx].OldPath[0].pos			= input.StartPos
+	CurLink[idx].OldPath[0].material	= input.Material
+	CurLink[idx].OldPath[0].color		= input.Color
+	CurLink[idx].OldPath[0].width		= input.Width
+	
 	local net_name = "wp_" .. iname
 	ent:SetNetworkedBeamInt(net_name, 0)
 	ent:SetNetworkedBeamVector(net_name .. "_start", pos)
 	ent:SetNetworkedBeamString(net_name .. "_mat", material)
 	ent:SetNetworkedBeamVector(net_name .. "_col", Vector(color.r, color.g, color.b))
 	ent:SetNetworkedBeamFloat(net_name .. "_width", width)
-
+	
+	//beamlib.StartBeam(ent, iname, pos, material, color, width)
+	
+	
 	input.StartPos = pos
 	input.Material = material
 	input.Color = color
@@ -630,12 +680,15 @@ end
 
 function Wire_Link_Node(idx, ent, pos)
     if (not CurLink[idx]) or (not CurLink[idx].Dst) then return end
-
+	if (!ent:IsValid()) then return end //its the world, give up
+	
 	local net_name = "wp_" .. CurLink[idx].DstId
 	local node_idx = CurLink[idx].Dst:GetNetworkedBeamInt(net_name)+1
 	CurLink[idx].Dst:SetNetworkedBeamEntity(net_name .. "_" .. node_idx .. "_ent", ent)
 	CurLink[idx].Dst:SetNetworkedBeamVector(net_name .. "_" .. node_idx .. "_pos", pos)
 	CurLink[idx].Dst:SetNetworkedBeamInt(net_name, node_idx)
+	
+	//beamlib.AddBeamPoint(CurLink[idx].Dst, CurLink[idx].DstId, ent, pos)
 
 	table.insert(CurLink[idx].Path, { Entity = ent, Pos = pos })
 end
@@ -654,9 +707,10 @@ function Wire_Link_End(idx, ent, pos, oname, pl)
 	end
 	
 	local input = CurLink[idx].Dst.Inputs[CurLink[idx].DstId]
-	local output = ent.Outputs[oname]
-	Msg("input type= " .. input.Type .. "  output type= " .. output.Type .. "\n")
-	if (input.Type != output.Type) then
+	local output = ent.Outputs[oname] or {}
+	Msg("input type= " .. input.Type .. "  output type= " .. (output.Type or "NIL") .. "\n")
+	output.Type = output.Type or "NORMAL"
+	if (input.Type != output.Type) and (input.Type != "ANY") and (output.Type != "ANY") then
 		local txt = "Data Type Mismatch! Input takes "..input.Type.." and Output gives "..output.Type
 		Msg(txt.."\n")
 		if pl then
@@ -671,7 +725,9 @@ function Wire_Link_End(idx, ent, pos, oname, pl)
 	CurLink[idx].Dst:SetNetworkedBeamEntity(net_name .. "_" .. node_idx .. "_ent", ent)
 	CurLink[idx].Dst:SetNetworkedBeamVector(net_name .. "_" .. node_idx .. "_pos", pos)
 	CurLink[idx].Dst:SetNetworkedBeamInt(net_name, node_idx)
-
+	
+	//beamlib.EndBeam(CurLink[idx].Dst, CurLink[idx].DstId, ent, pos)
+	
 	table.insert(CurLink[idx].Path, { Entity = ent, Pos = pos })
 
 	Wire_Link(CurLink[idx].Dst, CurLink[idx].DstId, ent, oname, CurLink[idx].Path)
@@ -696,7 +752,20 @@ function Wire_Link_Cancel(idx)
 		CurLink[idx].Dst:SetNetworkedBeamVector(net_name .. "_" .. i, CurLink[idx].OldPath[i].Pos)
 	end
 	CurLink[idx].Dst:SetNetworkedBeamInt(net_name, path_len)
-
+	
+	
+	/*local orig = CurLink[idx].OldPath[0]
+	beamlib.StartBeam(CurLink[idx].Dst, CurLink[idx].DstId, 
+		orig.pos, orig.material, orig.color, orig.width)
+	
+	local path_len = 0
+	if (CurLink[idx].OldPath) then path_len = table.getn(CurLink[idx].OldPath) end
+	
+	for i=1,path_len do
+		beamlib.AddBeamPoint(CurLink[idx].Dst, CurLink[idx].DstId, 
+			CurLink[idx].OldPath[i].Entity, CurLink[idx].OldPath[i].Pos)
+	end*/
+	
 	CurLink[idx] = nil
 end
 
@@ -704,11 +773,13 @@ end
 function Wire_Link_Clear(ent, iname)
 	local net_name = "wp_" .. iname
 	ent:SetNetworkedBeamInt(net_name, 0)
+	//beamlib.SetBeamLen( ent, iname, 0 )
 	
 	Wire_Unlink(ent, iname)
 end
 
 function Wire_SetPathNames(ent, names)
+	//beamlib.SetEntBeamNames(ent, names)
 	for k,v in pairs(names) do
 		ent:SetNetworkedBeamString("wpn_" .. k, v)
 	end

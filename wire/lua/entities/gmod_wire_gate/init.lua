@@ -21,11 +21,12 @@ function ENT:Setup( action, noclip )
 	if (action) then
 	    self.WireDebugName = action.name
 	    
-		Wire_AdjustInputs(self.Entity, action.inputs)
+		WireLib.AdjustSpecialInputs(self.Entity, action.inputs, action.inputtypes )
 		if (action.outputs) then
-		    Wire_AdjustOutputs(self.Entity, action.outputs)
+			WireLib.AdjustSpecialOutputs(self.Entity, action.outputs, action.outputtypes)
 		else
-		    Wire_AdjustOutputs(self.Entity, { "Out" })
+			//Wire_AdjustOutputs(self.Entity, { "Out" })
+			WireLib.AdjustSpecialOutputs(self.Entity, { "Out" }, action.outputtypes)
 		end
 		
 		if (action.reset) then
@@ -39,9 +40,24 @@ function ENT:Setup( action, noclip )
 	
 	self.Action = action
 	self.PrevValue = nil
-
+	
+	//self.Action.inputtypes = self.Action.inputtypes or {}
+	
     self:CalcOutput()
 	self:ShowOutput()
+end
+
+
+function ENT:OnInputWireLink(iname, itype, src, oname, otype)
+	if (self.Action) and (self.Action.OnInputWireLink) then
+		self.Action.OnInputWireLink(self, iname, itype, src, oname, otype)
+	end
+end
+
+function ENT:OnOutputWireLink(oname, otype, dst, iname, itype)
+	if (self.Action) and (self.Action.OnOutputWireLink) then
+		self.Action.OnOutputWireLink(self, oname, otype, dst, iname, itype)
+	end
 end
 
 
@@ -130,7 +146,8 @@ function ENT:GetActionInputs(as_names)
 			if (as_names) then
 			    table.insert(Args, self.Action.inputs[#Args+1] or "*Not enough inputs*")
 			else
-			    table.insert(Args, 0)
+			    //table.insert( Args, WireLib.DT[ (self.Action.inputtypes[#Args+1] or "NORMAL") ].Zero )
+			    table.insert( Args, WireLib.DT[ self.Inputs[ self.Action.inputs[#Args+1] ].Type ].Zero )
 			end
 		end
 	else
@@ -149,9 +166,11 @@ function ENT:GetActionInputs(as_names)
 				end
 			else
 				if (input.Src) and (input.Src:IsValid()) then
-					Args[k] = (input.Value or 0)
+					//Args[k] = ( input.Value or WireLib.DT[ (self.Action.inputtypes[k] or "NORMAL") ].Zero )
+					Args[k] = ( input.Value or WireLib.DT[ self.Inputs[v].Type ].Zero )
 				else
-				    Args[k] = 0
+					//Args[k] = WireLib.DT[ (self.Action.inputtypes[k] or "NORMAL") ].Zero
+				    Args[k] = WireLib.DT[ self.Inputs[v].Type ].Zero
 				end
 			end
 		end
