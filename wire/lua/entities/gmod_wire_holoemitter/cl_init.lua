@@ -20,7 +20,6 @@ end
 function ENT:CalculatePixelPoint( pos, emitterPos, fwd, right, up )
 	// calculate point
 	return emitterPos + ( up * pos.z ) + ( fwd * pos.x ) + ( right * pos.y );
-	
 end
 
 // think
@@ -64,6 +63,7 @@ function ENT:Draw( )
 	local right 	= emitter:GetRight();
 	local up 	= emitter:GetUp();
 	local pos 	= emitter:GetPos() + up * 64;
+	local usegps = emitter:GetNetworkedBool( "UseGPS" )
 
 	// draw beam?
 	local drawbeam	= self.Entity:GetNetworkedBool( "ShowBeam" );
@@ -77,7 +77,12 @@ function ENT:Draw( )
 	local color = Color( r, g, b, a );
 	
 	// calculate pixel point.
-	local pixelpos = self:CalculatePixelPoint( self.ActivePoint, pos, fwd, right, up );
+	local pixelpos
+	if (usegps) then
+		pixelpos = self.ActivePoint;
+	else
+		pixelpos = self:CalculatePixelPoint( self.ActivePoint, pos, fwd, right, up );
+	end
 	
 	// draw active point - beam
 	if( drawbeam ) then
@@ -120,7 +125,12 @@ function ENT:Draw( )
 		// WHY CAN'T LUA SUPPORT CONTINUE!?!?!!?
 		else
 			// calculate pixel point.
-			local pixelpos = self:CalculatePixelPoint( point.pos, pos, fwd, right, up );
+			local pixelpos
+			if (usegps == 0) then
+				pixelpos = self:CalculatePixelPoint( point.pos, pos, fwd, right, up );
+			else
+				pixelpos = point.pos
+			end
 			
 			// calculate color.
 			local color = Color( r, g, b, point.alpha );
