@@ -1619,6 +1619,140 @@ GateActions["angdiff_d"] = {
 
 
 
+//***********************************************************
+//		Table Gates
+//***********************************************************
+/*GateActions["table_4merge"] = {
+	group = "Table",
+	name = "4x merger",
+	timed = true,
+	inputs = { "A", "B", "C", "D" },
+	inputtypes = { "ANY", "ANY", "ANY", "ANY" },
+	outputs = { "Tbl" },
+	outputtypes = { "TABLE" },
+	output = function(gate, A, B, C, D)
+		if A then return { A, B, C, D }
+		else return {}
+		end
+	end,
+	OnInputWireLink = function(gate, iname, itype, src, oname, otype)
+		if (itype == "ANY") then
+			WireLib.RetypeInputs(gate, iname, otype)
+			for n,con in pairs(gate.Outputs.Tbl.Connected) do
+				WireLib.RetypeOutputs(con.Entity, iname, otype)
+				Msg("=== con.Entity.Outputs[iname] m ( "..n.." ) type = "..con.Entity.Outputs[iname].Type.."\n")
+				PrintTable()
+			end
+		end
+	end,
+	OnOutputWireLink = function(gate, oname, otype, dst, iname, itype)
+		if (oname == "Tbl") then
+			
+			for _,iname in pairs(gate.inputs) do
+				PrintTable(gate.Inputs.Tbl.Src.Inputs[oname])
+			end
+			
+		end
+	end,
+}
+
+GateActions["table_4split"] = {
+	group = "Table",
+	name = "4x splitter",
+	timed = true,
+	inputs = { "Tbl" },
+	inputtypes = { "TABLE" },
+	outputs = { "A", "B", "C", "D" },
+	outputtypes = { "ANY", "ANY", "ANY", "ANY"  },
+	output = function(gate, Tbl)
+		if Tbl then return unpack( Tbl )
+		else return 0,0,0,0
+		end
+	end,
+	OnInputWireLink = function(gate, iname, itype, src, oname, otype)
+		/*Msg("\n=== gate.Outputs s start ===\n")
+		PrintTable(gate.Outputs)
+		Msg("\n=== gate.Outputs s end ===\n\n")
+		
+		if (itype == "ANY") then
+			Msg("\n=== con.Entity.Outputs[iname] s start ===\n")
+			for n,con in pairs(gate.Outputs.Tbl.Connected) do
+				Msg("\n=== "..n.." s start ===\n")
+				PrintTable(con.Entity.Outputs[iname])
+			end
+			Msg("\n=== con.Entity.Outputs[iname] m end ===\n\n")
+		end*
+	end,
+	OnOutputWireLink = function(gate, oname, otype, dst, iname, itype)
+		if (otype == "ANY") then
+			WireLib.RetypeOutputs(gate, oname, itype)
+			if (gate.Inputs.Tbl.Src) then
+				WireLib.RetypeInputs(gate.Inputs.Tbl.Src, oname, itype)
+				Msg("=== gate.Inputs.Tbl.Src.Inputs[oname].Type = "..gate.Inputs.Tbl.Src.Inputs[oname].Type.."\n")
+			end
+		end
+	end,
+}*/
+
+GateActions["table_8merge"] = {
+	group = "Table",
+	name = "8x merger",
+	timed = true,
+	inputs = { "A", "B", "C", "D", "E", "F", "G", "H" },
+	outputs = { "Tbl" },
+	outputtypes = { "TABLE" },
+	output = function(gate, A, B, C, D, E, F, G, H)
+		if A then return { A, B, C, D, E, F, G, H }
+		else return {}
+		end
+	end,
+}
+
+GateActions["table_8split"] = {
+	group = "Table",
+	name = "8x splitter",
+	timed = true,
+	inputs = { "Tbl" },
+	inputtypes = { "TABLE" },
+	outputs = { "A", "B", "C", "D", "E", "F", "G", "H" },
+	output = function(gate, Tbl)
+		if Tbl then return unpack( Tbl )
+		else return 0,0,0,0,0,0,0,0
+		end
+	end,
+}
+
+GateActions["table_8duplexer"] = {
+	group = "Table",
+	name = "8x duplexer",
+	timed = true,
+	inputs = { "Tbl", "A", "B", "C", "D", "E", "F", "G", "H" },
+	inputtypes = { "BIDIRTABLE" },
+	outputs = { "Tbl", "A", "B", "C", "D", "E", "F", "G", "H" },
+	outputtypes = { "BIDIRTABLE" },
+	output = function(gate, Tbl, A, B, C, D, E, F, G, H)
+		local t,v = {0,0,0,0,0,0,0,0}, {}
+		if Tbl then t = Tbl end
+		if A then v = { A, B, C, D, E, F, G, H } end
+		return v, unpack( t )
+	end,
+}
+
+GateActions["table_valuebyidx"] = {
+	group = "Table",
+	name = "Value retriever",
+	timed = true,
+	inputs = { "Tbl", "Index" },
+	inputtypes = { "TABLE" },
+	outputs = { "Data" },
+	output = function(gate, Tbl, idx)
+		if Tbl && idx && Tbl[idx] then return Tbl[idx]
+		else return 0
+		end
+	end,
+}
+
+
 WireGatesSorted = {}
 for name,gate in pairs(GateActions) do
 	if !WireGatesSorted[gate.group] then WireGatesSorted[gate.group] = {} end

@@ -71,7 +71,8 @@ function ENT:Think()
 				if (phys:IsValid()) then
 					if (self.F > 0.1) or (self.F < -0.1) then phys:ApplyForceCenter( vForward * self.Force * self.F ) end
 					if (self.FoO > 0.1) or (self.FoO < -0.1) then phys:ApplyForceOffset( vForward * self.FoO, trace.HitPos ) end
-					if (self.V > 0.1) or (self.V < -0.1) then phys:SetVelocity( vForward * self.V ) end
+					//if (self.V > 0.1) or (self.V < -0.1) then phys:SetVelocity( vForward * self.V ) end
+					if (self.V > 0.1) or (self.V < -0.1) then phys:SetVelocityInstantaneous( vForward * self.V ) end
 				end
 			else
 				if (self.V > 0.1) or (self.V < -0.1) then trace.Entity:SetVelocity( vForward * self.V ) end
