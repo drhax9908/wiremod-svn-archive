@@ -988,16 +988,8 @@ function ENT:Execute( )
 			tadd = tadd + 1
 		end
 		WriteBack = false
-	elseif (opcode == 94) then 	//EPG
-		local tadd = params[1]*128
-		while (tadd < params[1]*128+128) do
-			local val = self:WriteCell(tadd,0)
-			if (val == nil) then
-				tadd = params[1]*128+128
-			end
-			tadd = tadd + 1
-		end
-		WriteBack = false
+	elseif (opcode == 94) then 	//FCEIL
+		result = math.ceil(params[1])
 	elseif (opcode == 95) then 	//ERPG
 		if (params[1] >= 0) && (params[1] < 512) then
 			local tadd = params[1]*128
