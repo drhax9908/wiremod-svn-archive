@@ -53,7 +53,7 @@ end
 function Wire_KeyOn(pl,ent)
 	pl:ConCommand("exec vkeyboard.cfg")
 	KeyBoardPlayerKeys[pl:EntIndex()] = ent:EntIndex()
-	pl:PrintMessage(HUD_PRINTTALK,"Virtual keyboard turned on\n")
+	pl:PrintMessage(HUD_PRINTTALK,"Virtual keyboard turned on - press ALT key to exit the mode!\n")
 end
 
 function ENT:Use(pl)

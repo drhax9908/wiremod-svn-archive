@@ -191,7 +191,7 @@ function ENT:DecodeOpcode( opcode )
 		return 92
 	elseif (opcode == "tpg") then	//TPG X : CMPR = TEST(PAGE(X))*	//2.00
 		return 93
-	elseif (opcode == "epg") then	//EPG X : ERASE PAGE(X)*	//2.00
+	elseif (opcode == "fceil") then	//FCEIL X : X = CEIL(X)		//2.00
 		return 94
 	elseif (opcode == "erpg") then	//ERPG X : ERASE ROM PAGE(X)	//2.00
 		return 95
