@@ -14,6 +14,7 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	self.Inputs = Wire_CreateInputs(self.Entity, { "Fire", "R", "G", "B", "A" })
+	self.Outputs = Wire_CreateOutputs(self.Entity, {"Out"})
 	self.ValueR = 255
     self.ValueG = 255
     self.ValueB = 255
@@ -24,7 +25,16 @@ function ENT:OnRemove()
 	Wire_Remove(self.Entity)
 end
 
-function ENT:Setup()
+function ENT:Setup(outColor)
+    Msg("setup\n")
+    if(outColor)then
+        local onames = {}
+        table.insert(onames, "R")
+	    table.insert(onames, "G")
+	    table.insert(onames, "B")
+	    table.insert(onames, "A")
+	    Wire_AdjustOutputs(self.Entity, onames)
+	end
 end
 
 function ENT:TriggerInput(iname, value)
@@ -58,7 +68,15 @@ end
 
 function ENT:ShowOutput(value)
 	if (value ~= self.PrevOutput) then
-		self:SetOverlayText( "Colorer" )
+	    local text = "Colorer"
+	    if(self.Outputs["R"])then
+	       text = text .. "\nColor = "
+			.. math.Round(self.Outputs["R"].Value*1000)/1000 .. ", "
+			.. math.Round(self.Outputs["G"].Value*1000)/1000 .. ", "
+			.. math.Round(self.Outputs["B"].Value*1000)/1000 .. ", "
+			.. math.Round(self.Outputs["A"].Value*1000)/1000
+		end
+		self:SetOverlayText( text )
 		self.PrevOutput = value
 	end
 end
@@ -67,3 +85,34 @@ function ENT:OnRestore()
     Wire_Restored(self.Entity)
 end
 
+function ENT:Think()
+    if(self.Outputs["R"])then
+        local vStart = self.Entity:GetPos()
+	    local vForward = self.Entity:GetUp()
+			 
+	    local trace = {}
+		  trace.start = vStart
+		  trace.endpos = vStart + (vForward * 2048)
+		  trace.filter = { self.Entity }
+	    local trace = util.TraceLine( trace ) 
+			
+        if (!trace.Entity) then return false end
+        if (!trace.Entity:IsValid() ) then return false end
+        if (trace.Entity:IsWorld()) then return false end
+        if ( CLIENT ) then return true end
+    
+        local r,g,b,a = trace.Entity:GetColor()
+        Msg("color check\n")
+        Msg("R-"..tostring(r).."\nG-"..tostring(g).."\nB-"..tostring(b).."\nA-"..tostring(a).."\n")
+    
+        Wire_TriggerOutput(self.Entity,"R",r)
+        Wire_TriggerOutput(self.Entity,"G",g)
+        Wire_TriggerOutput(self.Entity,"B",b)
+        Wire_TriggerOutput(self.Entity,"A",a)
+        
+        self:ShowOutput()
+        
+    end
+    self.Entity:NextThink(CurTime()+0.25)
+end
+    
