@@ -19,21 +19,6 @@ function ENT:SetTargetZ( z )
 	return self.Entity:SetNetworkedInt( 0, z )
 end
 
-/*function ENT:GetTargetX()
-	return self.Entity:GetNetworkedInt( 1 )
-end
-function ENT:SetTargetX( x )
-	return self.Entity:SetNetworkedInt( 1, x )
-end
-
-function ENT:GetTargetY()
-	return self.Entity:GetNetworkedInt( 2 )
-end
-function ENT:SetTargetY( y )
-	return self.Entity:SetNetworkedInt( 2, y )
-end*/
-
-
 function ENT:GetSpeed()
 
 	// Sensible limits

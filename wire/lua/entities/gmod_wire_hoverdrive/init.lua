@@ -41,8 +41,8 @@ function ENT:Initialize()
 	self:SetSpeed( 1 )
 	self:EnableHover()
 
-	self.Inputs = Wire_CreateInputs(self.Entity, { "X_Velocity", "Y_Velocity", "Z_Velocity", "HoverMode" })
-	//self.Inputs = WireLib.CreateSpecialInputs(self.Entity, {"Data"}, {"HOVERDATAPORT"})
+	//self.Inputs = Wire_CreateInputs(self.Entity, { "X_Velocity", "Y_Velocity", "Z_Velocity", "HoverMode" })
+	self.Inputs = WireLib.CreateSpecialInputs(self.Entity, {"Data"}, {"HOVERDATAPORT"})
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "A: Zpos", "B: Xpos", "C: Ypos" })
 	
 end
@@ -66,17 +66,16 @@ function ENT:SpawnFunction( ply, tr )
 	return ent
 end
 
+function ENT:OnInputWireLink(iname, iType, src, oname, oType)
+	self.Offset = self.Entity:GetPos() - src.Entity:GetPos()
+end
+
 function ENT:TriggerInput(iname, value)
-	if (iname == "Z_Velocity") then
-		self:SetZVelocity( value )
-	elseif (iname == "X_Velocity") then
-		self:SetXVelocity( value )
-	elseif (iname == "Y_Velocity") then
-		self:SetYVelocity( value )
-	elseif (iname == "HoverMode") then
-		if (value >= 1 && !self:GetHoverMode()) then
+	if (iname == "Data") then
+		self.Target = value.Target + self.Offset
+		if (value.Hover >= 1) and (!self:GetHoverMode()) then
 			self:EnableHover()
-		elseif (self:GetHoverMode()) then
+		elseif (value.Hover == 0) and (self:GetHoverMode()) then
 			self:DisableHover()
 		end
 	end
@@ -87,8 +86,6 @@ function ENT:EnableHover()
 	self:SetHoverMode( true )
 	self:SetStrength( self.strength or 1 ) //reset weight so it will work
 	self:SetTargetZ( self.Entity:GetPos().z ) //set height to current
-	//self:SetTargetX( self.Entity:GetPos().x )
-	//self:SetTargetY( self.Entity:GetPos().y )
 	self.Target = self.Entity:GetPos()
 	local phys = self.Entity:GetPhysicsObject()
 	if ( phys:IsValid() ) then
@@ -165,9 +162,9 @@ local function GetTargetAndExponentVector(deltatime, Target, Velocity, AxisPos, 
 	end
 	
 	local Diff = Target - AxisPos
-	Diff.x = math.Clamp( Diff.x, -600, 600 )
-	Diff.y = math.Clamp( Diff.y, -600, 600 )
-	Diff.z = math.Clamp( Diff.z, -600, 600 )
+	Diff.x = math.Clamp( Diff.x, -100, 100 )
+	Diff.y = math.Clamp( Diff.y, -100, 100 )
+	Diff.z = math.Clamp( Diff.z, -100, 100 )
 	
 	if ( Diff == Vector(0,0,0) ) then
 		return Target, Vector(0,0,0)
@@ -232,14 +229,10 @@ function ENT:PhysicsSimulate( phys, deltatime )
 		self:SetTargetZ(TargetZ)*/
 		
 		local Target, Exponent = GetTargetAndExponentVector(deltatime, self.Target, Vel, Pos, physVel, AirResistance, Speed)
-		//self:SetTargetX(Target.X)
-		//self:SetTargetY(Target.Y)
 		self.Target = Target
 		self:SetTargetZ(Target.Z)
 			
 		local Ang = phys:GetAngles()
-		
-		//pyr//local TargetAngP, ExponentAngP = GetTargetAndExponent(deltatime, 0, 0, Ang.p, physAngVel.x, AirResistance, 2)//local TargetAngY, ExponentAngY = GetTargetAndExponent(deltatime, 0, 0, Ang.y, physAngVel.y, AirResistance, 2)//local TargetAngR, ExponentAngR = GetTargetAndExponent(deltatime, 0, 0, Ang.r, physAngVel.z, AirResistance, 2)
 		
 		if ( Exponent == Vector(0,0,0) ) then return end
 		
