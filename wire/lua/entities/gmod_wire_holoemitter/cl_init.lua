@@ -76,9 +76,10 @@ function ENT:Draw( )
 	local r, g, b, a = self.Entity:GetColor();
 	local color = Color( r, g, b, a );
 	
+	self.Entity:SetRenderBounds( Vector()*-8192, Vector()*8192 )	
 	// calculate pixel point.
 	local pixelpos
-	if (usegps) then
+	if (usegps == true) then
 		pixelpos = self.ActivePoint;
 	else
 		pixelpos = self:CalculatePixelPoint( self.ActivePoint, pos, fwd, right, up );
@@ -126,10 +127,10 @@ function ENT:Draw( )
 		else
 			// calculate pixel point.
 			local pixelpos
-			if (usegps == 0) then
-				pixelpos = self:CalculatePixelPoint( point.pos, pos, fwd, right, up );
-			else
+			if (usegps == true) then
 				pixelpos = point.pos
+			else
+				pixelpos = self:CalculatePixelPoint( point.pos, pos, fwd, right, up );
 			end
 			
 			// calculate color.
