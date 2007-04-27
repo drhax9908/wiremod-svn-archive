@@ -1403,6 +1403,37 @@ GateActions["Average Derivative"] = {
 } 
 
 
+GateActions["monostable"] = {
+	group = "Time",
+	name = "Monostable Timer",
+	inputs = { "Run", "Time", "Reset" },
+	timed = true,
+	output = function(gate, Run, Time, Reset)
+	    local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
+	    gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
+		if ( Reset > 0 ) then
+			gate.Accum = 0
+		elseif ( gate.Accum > 0 || Run > 0 ) then
+			gate.Accum = gate.Accum+DeltaTime
+				if(gate.Accum > Time) then
+					gate.Accum = 0
+				end
+			
+		end
+		if(gate.Accum > 0)then
+			return 1
+		else
+			return 0
+		end
+	end,
+	reset = function(gate)
+	    gate.PrevTime = CurTime()
+	    gate.Accum = 0
+	end,
+	label = function(Out, Run, Time, Reset)
+	    return "Run:"..Run.." Time:"..Time.." Reset:"..Reset.." = "..Out
+	end
+}
 
 
 //***********************************************************
