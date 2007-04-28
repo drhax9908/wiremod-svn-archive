@@ -51,6 +51,9 @@ function ENT:Initialize()
 	outputs[n] = "Z"
 	-- </angle>
 	
+	n = n + 1
+	outputs[n] = "Active"
+	
 	-- Create outputs
 	self.Outputs = Wire_CreateOutputs( self.Entity, outputs )
 	self:SetOverlayText( "Pod Controller" )
@@ -119,6 +122,9 @@ function ENT:Think()
 				for k,v in pairs(plys) do
 					if v:GetVehicle() == self.Pod then self.Ply = v end
 				end
+				
+				if self.Ply then Wire_TriggerOutput( self.Entity, "Active", 1)
+				else Wire_TriggerOutput( self.Entity, "Active", 0) end
 			end
 			-- Look for players again in 1/10 second
 			self.TTLFP = CurTime() + 0.1
