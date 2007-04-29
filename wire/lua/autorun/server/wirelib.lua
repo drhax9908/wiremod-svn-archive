@@ -695,7 +695,7 @@ end
 
 
 function Wire_Link_End(idx, ent, pos, oname, pl)
-    if (not CurLink[idx]) or (not CurLink[idx].Dst) then return end
+    if (not CurLink[idx]) or (not CurLink[idx].Dst) or (not ent.Outputs) then return end
 	
 	if (CurLink[idx].Dst:GetClass() == "gmod_wire_sensor") and (ent:GetClass() != "gmod_wire_target_finder") then
 		Msg("Wire_link: Beacon Sensor can only be wired to a Target Finder!\n")
@@ -708,7 +708,7 @@ function Wire_Link_End(idx, ent, pos, oname, pl)
 	
 	local input = CurLink[idx].Dst.Inputs[CurLink[idx].DstId]
 	local output = ent.Outputs[oname] or {}
-	Msg("input type= " .. input.Type .. "  output type= " .. (output.Type or "NIL") .. "\n")
+	--Msg("input type= " .. input.Type .. "  output type= " .. (output.Type or "NIL") .. "\n")	//I bet that was getting anoying (TAD2020)
 	output.Type = output.Type or "NORMAL"
 	if (input.Type != output.Type) and (input.Type != "ANY") and (output.Type != "ANY") then
 		local txt = "Data Type Mismatch! Input takes "..input.Type.." and Output gives "..output.Type
@@ -949,6 +949,38 @@ local function WireFastOverlayTextUpdate(pl, cmd, args)
 end
 concommand.Add( "sv_Wire_FastOverlayTextUpdate", WireFastOverlayTextUpdate )
 
+Wire_SlowerOverlayTextUpdate = false
+local function WireSlowerOverlayTextUpdate(pl, cmd, args)
+	if not args[1] then return end
+	if args[1] == "1" or args[1] == 1 then 
+		Wire_SlowerOverlayTextUpdate = true
+	else
+		Wire_SlowerOverlayTextUpdate = false
+	end
+end
+concommand.Add( "sv_Wire_SlowerOverlayTextUpdate", WireSlowerOverlayTextUpdate )
+
+Wire_DisableOverlayTextUpdate = false
+local function WireDisableOverlayTextUpdate(pl, cmd, args)
+	if not args[1] then return end
+	if args[1] == "1" or args[1] == 1 then 
+		Wire_DisableOverlayTextUpdate = true
+	else
+		Wire_DisableOverlayTextUpdate = false
+	end
+end
+concommand.Add( "sv_Wire_DisableOverlayTextUpdate", WireDisableOverlayTextUpdate )
+
+Wire_ForceDelayOverlayTextUpdate = false
+local function WireForceDelayOverlayTextUpdate(pl, cmd, args)
+	if not args[1] then return end
+	if args[1] == "1" or args[1] == 1 then 
+		Wire_ForceDelayOverlayTextUpdate = true
+	else
+		Wire_ForceDelayOverlayTextUpdate = false
+	end
+end
+concommand.Add( "sv_Wire_ForceDelayOverlayTextUpdate", WireForceDelayOverlayTextUpdate )
 
 local function PrintWireVersion(pl,cmd,args)
 	pl:SendLua("Msg(\"===============================\n===  Wire  "..WireVersion.."   Installed  ===\n===============================\n\")")

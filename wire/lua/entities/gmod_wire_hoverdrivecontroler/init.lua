@@ -23,7 +23,7 @@ function ENT:Initialize()
 	
 	if ( phys:IsValid() ) then 
 		phys:SetMass( 100 )
-		//phys:EnableGravity( true )
+		phys:EnableGravity( false )
 		phys:Wake() 
 	end
 	
@@ -31,18 +31,15 @@ function ENT:Initialize()
 	
 	self.Fraction = 0
 	
-	/*self.ZVelocity = 0
-	self.XVelocity = 0
-	self.YVelocity = 0*/
 	self.Velocity = Vector(0,0,0)
 	self:SetTargetZ( self.Entity:GetPos().z )
-	//self:SetTargetX( self.Entity:GetPos().x )
-	//self:SetTargetY( self.Entity:GetPos().y )
 	self.Target = self.Entity:GetPos()
 	self:SetSpeed( 1 )
 	self:SetHoverMode( 1 )
+	
+	self.JumpTarget = Vector(0,0,0)
 
-	self.Inputs = Wire_CreateInputs(self.Entity, { "X_Velocity", "Y_Velocity", "Z_Velocity", "HoverMode" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "X_Velocity", "Y_Velocity", "Z_Velocity", "HoverMode", "Jump", "X_JumpTarget", "Y_JumpTarget", "Z_JumpTarget", "SetJumpTarget" })
 	self.Outputs = WireLib.CreateSpecialOutputs(self.Entity, {"Data"}, {"HOVERDATAPORT"})
 	
 end
@@ -57,12 +54,12 @@ function ENT:SpawnFunction( ply, tr )
 	ent:SetPos( SpawnPos )
 	ent:SetPlayer( ply )
 	ent:Spawn()
+	ent:Activate()
 	
 	ent:SetSpeed( 1 )
 	ent:SetAirResistance( 1 )
 	ent:SetStrength( 1 )
 	
-	ent:Activate()
 	return ent
 end
 
@@ -80,24 +77,31 @@ function ENT:TriggerInput(iname, value)
 		elseif (value == 0) then
 			self:SetHoverMode( 0 )
 		end
+	elseif (iname == "Jump") and (value > 0) and (!self.Jumping) then
+		self:Jump()
+	elseif (iname == "X_JumpTarget") then
+		self.JumpTarget = self.JumpTarget or Vector(0,0,20)
+		self.JumpTarget.x = value
+	elseif (iname == "Y_JumpTarget") then
+		self.JumpTarget = self.JumpTarget or Vector(0,0,20)
+		self.JumpTarget.y = value
+	elseif (iname == "Z_JumpTarget") then
+		self.JumpTarget = self.JumpTarget or Vector(0,0,20)
+		self.JumpTarget.z = value
+	elseif (iname == "SetJumpTarget") then
+		if (value > 0) then
+			self.JumpTargetSet = true
+		else
+			self.JumpTargetSet = false
+		end
 	end
 end
 
 
-/*function ENT:EnableHover()
-	self:SetHoverMode( true )
-end
-
-function ENT:DisableHover()
-	self:SetHoverMode( false )
-end*/
-
 
 function ENT:OnRestore()
-	/*self.ZVelocity = 0
-	self.XVelocity = 0
-	self.YVelocity = 0*/
 	self.Velocity = Vector(0,0,0)
+	self.Target = self.Entity:GetPos()
 	
 	self.BaseClass.OnRestore(self)
 end
@@ -109,32 +113,6 @@ end
 	//self.Entity:TakePhysicsDamage( dmginfo )
 end*/
 
-
-
-
-
-local function GetTargetAndExponent(deltatime, Target, Velocity, AxisPos, AxisVel, AirResistance, Speed)
-	if ( Velocity != 0 ) then
-		Target = Target + ( Velocity * deltatime * Speed )
-	end
-	
-	local Diff = Target - AxisPos
-	Diff = math.Clamp( Diff, -600, 600 )
-	
-	if ( Diff == 0 ) then
-		return Target, 0
-	end
-	
-	local Exponent = Diff^2
-	if ( Diff < 0 ) then
-		Exponent = Exponent * -1
-	end
-	Exponent = ( Exponent * deltatime * 300 ) - ( AxisVel * deltatime * 600 * ( AirResistance + 1 ) )
-	
-	//Exponent = Exponent//Exponent = math.Clamp( Exponent, -5000, 5000 )
-	
-	return Target, math.Clamp( Exponent, -5000, 5000 ) //Exponent
-end
 
 local function GetTargetAndExponentVector(deltatime, Target, Velocity, AxisPos, AxisVel, AirResistance, Speed)
 	if ( Velocity != 0 ) then
@@ -169,7 +147,7 @@ local function GetTargetAndExponentVector(deltatime, Target, Velocity, AxisPos, 
 end
 
 /*---------------------------------------------------------
-   Name: Simulate
+	Think wasn't good enough
 ---------------------------------------------------------*/
 function ENT:PhysicsSimulate( phys, deltatime )
 	
@@ -257,46 +235,6 @@ end
 
 
 
-/*---------------------------------------------------------
-   Name: Think
----------------------------------------------------------*/
-//function ENT:Think()
-
-	//self.Entity:NextThink( CurTime() + 0.25 )
-	//self.Entity:SetNetworkedInt( "TargetZ", self:GetTargetZ() )
-	
-	/*local Pos = phys:GetPos()
-	local phys = self.Entity:GetPhysicsObject()
-	local physVel = phys:GetVelocity()
-	local physAngVel = phys:GetAngleVelocity()
-	local AirResistance = self:GetAirResistance()
-	local Speed = self:GetSpeed()
-	
-	self.Velovity = Vector( self.XVelocity, self.YVelocity, self.ZVelocity )
-	local Vel = phys:LocalToWorldVector( self.Velovity )
-	
-	local Target, Exponent = GetTargetAndExponentVector(deltatime, self.Target, Vel, Pos, physVel, AirResistance, Speed)
-	self.Target = Target
-	self:SetTargetZ(Target.Z)*/
-	
-	
-	//self.Velovity = Vector( self.XVelocity, self.YVelocity, self.ZVelocity )
-	/*local Vel = self.Entity:GetPhysicsObject():LocalToWorldVector( self.Velocity )
-	local DeltaTime = CurTime()-(self.PrevTime or CurTime())
-	self.PrevTime = (self.PrevTime or CurTime())+DeltaTime
-	
-	self.Target = self.Target + ( Vel * DeltaTime * self:GetSpeed() )
-	self:SetTargetZ(self.Target.Z)
-	
-	
-	self:DoOutput()
-	
-	//return true
-	
-end*/
-
-
-
 function ENT:DoOutput()
 	
 	local data = {}
@@ -368,9 +306,472 @@ end
 
 
 
+ENT.JumpStage = 0
 
+function ENT:Jump()
+	if (!self.JumpTargetSet) then return end
+	self.Jumping = true
+	
+	self.other_gate = self.Entity
+	self.LastPos = self.Entity:GetPos()// + Vector(0,0,5)
+	
+	self.JumpStage = 1
+	self.JumpTargetSet = false
+	Msg("Jumping!\n")
+end
 
+util.PrecacheSound("stargate/teleport.mp3")
+function ENT:Think()
+	if (self.JumpStage == 1) then
+		--Msg("Start Jump 1\n")
 		
+		local attached = self:GetEntitiesForTeleport(self.Entity);
+		if(attached) then
+			self.ents = self:PrepareTeleport(attached);
+			
+			DoPropSpawnedEffect( self.Entity );
+			
+			//self.LastPos = self.Entity:GetPos()
+			
+			local Ofs = self.JumpTarget - self.Entity:GetPos()
+			//local ang = Ofs:Angle()
+			//local effectend = self.Entity:GetPos() + (Ofs:Normalize() * 180)
+			
+			local ed = EffectData()
+				ed:SetEntity( self.Entity )
+				ed:SetOrigin( self.Entity:GetPos() + (Ofs:Normalize() * math.Clamp( self.Entity:BoundingRadius() * 5, 180, 4092 ) ) )
+			util.Effect( "jump_out", ed, true, true );
+			
+			for _,v in pairs(self.ents.Attached) do
+				if (v and v.Entity and v.Entity:IsValid()) then
+					DoPropSpawnedEffect( v.Entity );
+					local ed = EffectData()
+						ed:SetEntity( v.Entity )
+						ed:SetOrigin( self.Entity:GetPos() + (Ofs:Normalize() * math.Clamp( v.Entity:BoundingRadius() * 5, 180, 4092 ) ) )
+					util.Effect( "jump_out", ed, true, true );
+				end
+			end
+			
+			self.Entity:EmitSound("stargate/teleport.mp3");
+			
+			self.JumpStage = 2
+		else
+			self.JumpStage = 0
+		end
+		
+		--Msg("End Jump 1\n")
+	elseif (self.JumpStage == 2) then
+		--Msg("Start Jump 2\n")
+		
+		self:Teleport(self.ents.Entity, self.Entity);
+		
+		DoPropSpawnedEffect( self.Entity );
+		
+		local Ofs = self.LastPos - self.Entity:GetPos()
+		
+		local ed = EffectData()
+			ed:SetEntity( self.Entity )
+			ed:SetOrigin( self.Entity:GetPos() + (Ofs:Normalize() * math.Clamp( self.Entity:BoundingRadius() * 5, 180, 4092 ) ) )
+		util.Effect( "jump_in", ed, true, true );
+		
+		for _,v in pairs(self.ents.Attached) do
+			self:Teleport(v,self.Entity);
+			
+			DoPropSpawnedEffect( v.Entity );
+			
+			local ed = EffectData()
+				ed:SetEntity( v.Entity )
+				ed:SetOrigin( self.Entity:GetPos() + (Ofs:Normalize() * math.Clamp( v.Entity:BoundingRadius() * 5, 180, 4092 ) ) )
+			util.Effect( "jump_in", ed, true, true );
+			
+		end
+		
+		self.Entity:EmitSound("stargate/teleport.mp3");
+		
+		//self.JumpTarget = self.NextJumpTarget
+		self.Target = self.Entity:GetPos()
+		self.JumpStage = 0
+		self.Jumping = false
+		
+		--Msg("End Jump 1\n")
+	end
+end
 
 
+
+/*---------------------------------------------------------
+	Teleport Functions
+	Based on Teleport functions from Stargates
+	Credits to Avon
+---------------------------------------------------------*/
+
+
+--################# Allowed for teleport?
+function ENT:Allowed(e,auto_close_check)
+	local c = e:GetClass();
+	local t = type(e):lower();
+	local p = e:GetPhysicsObject();
+	local moveable = true;
+	if(p:IsValid() and t == "entity") then
+		if(not p:IsMoveable()) then
+			moveable = false;
+		end
+	end
+	if(((t == "player" and not e:InVehicle()) or 
+		(t == "entity" and (c:find("prop_[prv]") or (c:find("phys_") and not auto_close_check))) or -- Allow props and constraints
+		t == "vehicle" or -- Vehicles
+		(e.Type ~= nil and not c:find("stargate") and not (c:find("dhd") and auto_close_check)) or -- SENT's but not stargates - May cause into infinity selfteleportation - For more, watch this funny screeny ;)  http://forums.facepunchstudios.com/showpost.php?p=4747617&postcount=256
+		t == "npc" or -- NPC's
+		t == "weapon" or c == "npc_grenade_frag" or c == "rpg_missile" or c == "grenade_ar2" or c == "crossbow_bolt" or c == "npc_satchel" or c == "prop_combine_ball") and -- Weapons and grenades from weapons etc
+		e:GetParent():EntIndex() == 0 -- Only allow unparented props to get teleported
+		and (moveable or not auto_close_check) -- For the autoclose only - Is the object awake?
+	) then  
+		return true 
+	end 
+	return false 
+end
+
+
+--################# Bones for vehicle teleportation
+function ENT:GetBones(e)
+	-- And as well, get the bones of an object
+	local bones = {};
+	if(type(e):lower() == "vehicle" or e:GetClass() == "prop_ragdoll") then
+		for k=0,e:GetPhysicsObjectCount()-1 do
+			local bone = e:GetPhysicsObjectNum(k);
+			if(bone:IsValid()) then
+				table.insert(bones,{
+					Entity=bone,
+					Position=e:WorldToLocal(bone:GetPos()),
+					Velocity=e:WorldToLocal(e:GetPos()+bone:GetVelocity()),
+				});
+			end
+		end
+	end
+	return bones;
+end
+
+--################# Prepares the teleport for the entity e and the attached entities a
+function ENT:PrepareTeleport(tbl)
+	-- Entities
+	local e = tbl.Entity;
+	-- Gate specific
+	local g = {self.Entity,self.other_gate} -- Gates
+	local a = { -- Angles
+		This=g[1]:GetAngles(),
+		Other=g[2]:GetAngles(),
+	}
+	a.Delta=a.Other-a.This;
+	
+	/*local maxz = e:GetPos().z + e:BoundingRadius();
+	local maxeent = e;
+	local minz = e:GetPos().z - e:BoundingRadius();
+	local minzent = e;*/
+	
+	
+	-- Return table
+	local ret = {Attached={}};
+	-- ######### Calculate new positions,angles and velocity for attached
+	for _,v in pairs(tbl.Attached) do
+		local vel = v:GetVelocity();
+		local data = {
+			Entity=v,
+			Position={
+				New=e:WorldToLocal(v:GetPos()),
+				Old=v:GetPos(),
+			},
+			Velocity={
+				New=e:WorldToLocal(vel+e:GetPos()),
+				Old=vel,
+			},
+			Angles={
+				Old=v:GetAngles(),
+				New=v:GetAngles()+a.Delta,
+				Delta=a.Delta,
+			},
+			Bones=self:GetBones(v),
+		}
+		table.insert(ret.Attached,data);
+		/*if minz < v:GetPos().z - v:BoundingRadius() then
+			minz = v:GetPos().z - v:BoundingRadius();
+			maxeent = v;
+		end
+		if maxz < v:GetPos().z + v:BoundingRadius() then
+			maxz = v:GetPos().z + v:BoundingRadius();
+			minzent = v;
+		end*/
+	end
+	-- ######### Calculate new positions,angles and velocity for constraints
+	-- No we don't do. Why? I found out, constraints are at the same placer - always. so, don't change them
+	-- ######### Now change the base-entity itself
+	local vel = e:GetVelocity();
+	ret.Entity={
+		Entity=e;
+		Position={
+			//New=g[2]:LocalToWorld(g[1]:WorldToLocal(e:GetPos())),
+			New=self.JumpTarget,// + e:WorldToLocal(e:GetPos()),
+			Old=e:GetPos(),
+		},
+		Velocity={
+			//New=g[2]:LocalToWorld(g[1]:WorldToLocal(-1*vel+g[1]:GetPos())) - g[2]:GetPos(),
+			New=vel, //self.JumpTarget + e:WorldToLocal(vel+e:GetPos()),
+			Old=vel,
+		},
+		Angles={
+			Old=e:GetAngles(),
+			New=e:GetAngles()+a.Delta,
+			Delta=a.Delta,
+		},
+		//Bones=self:GetBones(e),
+	}
+	-- ######### Calculate the heigh of the object, so it won't get stuck on the other side
+	/*local localmaxz = ( e:GetPos() - maxeent:GetPos() ).z + maxeent:BoundingRadius()
+	local localminz = ( e:GetPos() - minzent:GetPos() ).z - minzent:BoundingRadius()
+	local trace = util.TraceLine({
+		start = ret.Entity.Position.New + Vector(0,0,localmaxz),
+		endpos = ret.Entity.Position.New - Vector(0,0,localminz),
+	})
+	
+	if (trace.HitWorld) and (trace.Fraction == 0) then
+		//local add_height = localminz - trace.HitPos.z
+		local add_height = 5 + trace.Fraction * ( localmaxz - localminz );
+		ret.Entity.Position.New = ret.Entity.Position.New + Vector(0,0,add_height);
+	end*/
+	
+	/*local height = 60;
+	local trace={
+		util.TraceLine({
+			start=e:GetPos(),
+			endpos=e:GetPos()-Vector(0,0,height),
+			filter=self.Entity,
+		}),
+		util.TraceLine({
+			start=ret.Entity.Position.New+Vector(0,0,height),
+			endpos=ret.Entity.Position.New-Vector(0,0,height),
+			filter=self.Entity,
+		}),
+	}
+	if(trace[1].Hit and trace[2].Hit) then
+		local add_height = 5 + (1 - 2*trace[2].Fraction + trace[1].Fraction)*height;
+		ret.Entity.Position.New = ret.Entity.Position.New + Vector(0,0,add_height);
+	end*/
+	return ret;
+end
+
+--################# Retrieves the valid entites for a teleport from an ent
+function ENT:GetEntitiesForTeleport(e)
+	if(self:Allowed(e)) then
+		local entities = {};
+		local constraints = {}; -- We dont need constraints
+		--################# Attached Props and constraints
+		local attached = {};
+		/*if(not duplicator.GetAllConstrainedEntitiesAndConstraints) then -- Fallback to servers, which either have wire installed or an older version as 0020 of gmod
+			if(duplicator.GetEnts) then
+				attached = {duplicator.GetEnts(e)};
+			else
+				return false; -- Hurray, user has a gmod version, which is totally fucked up - dont teleport!
+			end
+		else
+			attached = {{},{}};
+			duplicator.GetAllConstrainedEntitiesAndConstraints(e,attached[1],attached[2]);
+		end*/
+		attached = {{},{}};
+		DebugDuplicator.GetAllConstrainedEntities(e,attached[1],attached[2]);
+		--################# Check, if the prop is attached to the gate (like hoverballs) and disallow it's teleportataion then
+		local allow = true;
+		/*for _,v in pairs(attached[1]) do
+			if(v == self.Entity) then
+				allow = false;
+				break;
+			end
+		end*/
+		--################# Filter specific entities
+		if(allow) then
+			--#################  Attached props filter
+			/*local allow = true;
+			for _,v in pairs(attached[1]) do
+				if(v:GetClass() == "gmod_spawner") then
+					allow = false;
+					break;
+				end
+			end*/
+			//if(allow) then
+				for _,v in pairs(attached[1]) do
+					if(v:GetClass() ~= "gmod_spawner" and v ~= e and self:Allowed(v)) then
+						table.insert(entities,v);
+					end
+				end
+			//end
+			--[[ -- Disabled - Not necsessary
+			--#################  Constraint filter
+			for _,v in pairs(attached[2]) do
+				if(self:Allowed(v)) then
+					table.insert(constraints,v);
+				end
+			end
+			--]]
+		end
+		return {Entity=e,Attached=entities};
+	else
+		return false;
+	end
+end
+
+-- The awesome StarGate sounds, ftw!
+ENT.snd = {
+	"stargate/gate_roll.mp3",
+	"stargate/chevron.mp3",
+	"stargate/chevron_inbound.mp3",
+	"stargate/gate_open.mp3",
+	"stargate/gate_travel.mp3",
+	"stargate/gate_close.mp3",
+	"stargate/teleport.mp3",
+	"stargate/chevron_inbound_lock.mp3",
+	"stargate/dial_fail.mp3",
+	"stargate/iris_open.mp3",
+	"stargate/iris_close.mp3",
+	"stargate/iris_hit.mp3",
+	"stargate/wormhole_loop.wav", -- Thx to appollo114 for sending me this sounds
+	"stargate/chevron2.mp3", -- Second engage sound
+	"stargate/chevron_lock.mp3", -- Chevron lock sound
+}
+
+--################# Teleportation function
+function ENT:Teleport(tbl,base)
+	local g = {self.Entity,self.other_gate} -- Gates
+	local p = tbl.Position;
+	local b = tbl.Bones;
+	local e = tbl.Entity;
+	local a = tbl.Angles;
+	local v = tbl.Velocity;
+	local t = type(e):lower();
+	if(e ~= base) then
+		p.New = base:LocalToWorld(p.New);
+		v.New = base:LocalToWorld(v.New)-base:GetPos();
+	end
+	-- Now, rotate the velocity vector by 180 degrees around the Forward axis of the stargate
+	--v.New = math.RotationMatrix(g[2]:GetForward(),0,v.New);
+	e:SetNetworkedInt("last_stargate_teleport",CurTime());
+	-- ######### Disable stucking (make the gates possible to pass threw) for some seconds
+	//g[1]:SetSolid(0);
+	//g[2]:SetSolid(0);
+	//timer.Create("StarGate_"..g[1]:EntIndex().."solid",0.8,1,g[1].SetSolid,g[1],6);
+	//timer.Create("StarGate_"..g[2]:EntIndex().."solid",0.8,1,g[2].SetSolid,g[2],6);
+	-- ######### Player teleport
+	if(t == "player") then
+		//if(not g[2]:IsBlocked()) then
+			-- Calculate correct viewangle
+			local ai = e:GetAimVector();
+			local pitch = math.deg(math.acos(ai.z))-90;
+			ai.z=0; ai:Normalize();
+			local parity = 1; -- This will handle, whether the y componet is below the x-axis in the unit-circle or not, so the angle has the right orientation
+			if(ai:Normalize().y <0) then
+				parity = -1;
+			end
+			local yaw = math.deg(math.acos(parity*ai.x))+(1-parity)*90;
+			e:SetNetworkedString("stargate_movetype",tonumber(e:GetNetworkedString("stargate_movetype")) or e:GetMoveType());
+			e:SetMoveType(MOVETYPE_NOCLIP); -- Needed, or person dont get teleported correctly
+			timer.Create("RestoreMovetype"..e:EntIndex(),0.1,1,
+				function (p) 
+					e:SetMoveType(tonumber(e:GetNetworkedString("stargate_movetype")));
+					e:SetNetworkedString("stargate_movetype","");
+				end
+			,e);
+			e:SetPos(p.New);
+			e:SetEyeAngles(Angle(pitch,yaw+a.Delta.y,0));
+			e:SetVelocity(v.New-v.Old);
+		/*else
+			e:StripWeapons();
+			e:KillSilent();
+		end*/
+	end
+	-- ######### Entity teleport
+	if(t == "entity" or t == "npc" or t == "weapon") then
+		//if(not g[2]:IsBlocked()) then
+			-- Hoverball fix
+			if(e:GetClass() == "gmod_hoverball")then
+				local hp = (p.New-p.Old);
+				e.TargetZ = e.TargetZ + hp.z; -- Set changed hoverball heigh to the hoverball
+			end
+			
+			if (e:GetClass() == "gmod_toggleablehoverball")
+			or (e:GetClass() == "gmod_wire_hoverball") then
+				local hp = (p.New-p.Old);
+				e:SetTargetZ( e:GetTargetZ() + hp.z ); -- Set changed hoverball heigh to the hoverball
+			end
+			
+			local ph = e:GetPhysicsObject();
+			-- ######### Teleport
+			e:SetPos(p.New);
+			if(t == "npc") then a.Delta.p = 0 a.Delta.r = 0 end -- Remove roll and pitch from NPCs
+			e:SetAngles(a.Old + a.Delta + Angle(0,0,0));
+			e:SetVelocity(-1*v.Old) -- Substract old velocity first!
+			if(ph:IsValid()) then
+				local ma = ph:GetMass();
+				timer.Create("prop_velocity_"..e:EntIndex(),0.05,1,ph.ApplyForceCenter,ph,v.New*ma); -- Apply power so it has velocity again
+				//ph:ApplyForceCenter(v.New*ma); -- Apply power so it has velocity again
+			else
+				-- Try another method (for grenades etc)
+				e:SetVelocity(v.New);
+			end
+			-- ######### Move the bones of the entity
+			if(b) then
+				for _,v in pairs(b) do
+					v.Entity:SetPos(e:LocalToWorld(v.Position));
+					v.Entity:SetVelocity(e:LocalToWorld(v.Velocity)-e:GetPos());
+				end
+			end
+		/*else
+			e:Remove();
+		end*/
+	end
+	-- ######### Vehicle teleport
+	if(t == "vehicle") then
+		//if(not self.other_gate:IsBlocked()) then
+			e:SetAngles(a.New + Angle(0,0,0));
+			e:SetPos(p.New);
+			-- ######### Move the bones of the entity
+			for _,v in pairs(b) do
+				v.Entity:SetPos(e:LocalToWorld(v.Position));
+				v.Entity:SetVelocity(e:LocalToWorld(v.Velocity)-e:GetPos());
+			end
+		/*else
+			for _,p in pairs(player.GetAll()) do
+				if(p:GetParent() == e) then
+					p:StripWeapons();
+					p:KillSilent();
+					break;
+				end
+			end
+			e:Remove();
+		end*/
+	end
+	-- ######### Teleportation sounds (only for the base entity, not for the attached or you will have cummulated sounds)
+	if(e == base) then
+		//local mysound = ;self.snd[7]
+		//local yoursound = self.snd[7];
+		/*if(g[1].irisclosed) then
+			mysound = self.snd[12];
+		end
+		if(g[2].irisclosed) then
+			yoursound = self.other_gate.snd[12];
+			self.other_gate:IrisHitEffect();
+		end*/
+		//timer.Create("StarGate_"..g[1]:EntIndex(),0,1,g[2].EmitSound,g[2],yoursound);
+		//timer.Create("StarGate_"..g[1]:EntIndex().."_other_gate",0,1,g[1].EmitSound,g[1],self.snd[7]);
+		-- ######### Debug
+		if(self.debug) then
+			player.GetByID(1):SendLua("DrawVector(Vector("..p.other.x+p.differ.x..","..p.other.y+p.differ.y..","..p.other.z+p.differ.z.."),Vector("..v.new2.x..","..v.new2.y..","..v.new2.z.."))");
+		end
+		self.last_teleport = CurTime();
+	end
+	-- ######### Use energy equivalent to the mass of the object
+	//if(e and e:IsValid()) then
+		//DoPropSpawnedEffect( e )
+		/*local ph = e:GetPhysicsObject();
+		if(ph and ph:IsValid()) then
+			self:UseEnergy(ph:GetMass(),true);
+		end*/
+	//end
+end
 

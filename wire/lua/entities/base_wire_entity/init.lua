@@ -7,12 +7,15 @@ include('shared.lua')
 ENT.WireDebugName = "No Name"
 
 function ENT:Think()
-	if (self.NextOverlayTextTime) and (CurTime() >= self.NextOverlayTextTime) then
+	if (!Wire_DisableOverlayTextUpdate) and (self.NextOverlayTextTime) and (CurTime() >= self.NextOverlayTextTime) then
 		if (self.NextOverlayText) then
 			//self.BaseClass.BaseClass.SetOverlayText(self, self.NextOverlayText)
 			self.Entity:SetNetworkedBeamString( "GModOverlayText", self.NextOverlayText )
 			self.NextOverlayText = nil
 			self.NextOverlayTextTime = CurTime() + (self.OverlayDelay or 0.4) + math.random()*(self.OverlayRandom or 0.2)
+			if (Wire_SlowerOverlayTextUpdate) then
+				self.NextOverlayTextTime = self.NextOverlayTextTime + 1 //add a sec between updates
+			end
 		else
 			self.NextOverlayText = nil
 			self.NextOverlayTextTime = nil
@@ -21,10 +24,11 @@ function ENT:Think()
 end
 
 function ENT:SetOverlayText(txt)
+	if (Wire_DisableOverlayTextUpdate) then return end
 	
 	if (Wire_FastOverlayTextUpdate) then
 		
-		self.Entity:SetNetworkedBeamString( "GModOverlayText", txt )
+		self.Entity:SetNetworkedBeamString( "GModOverlayText", txt, true ) //send it now, damn it!
 		
 	else
 		
@@ -36,7 +40,7 @@ function ENT:SetOverlayText(txt)
 			
 			self.NextOverlayText = nil
 			
-			if (not self.OverlayDelay) or (self.OverlayDelay > 0) then
+			if (not self.OverlayDelay) or (self.OverlayDelay > 0) or (Wire_SlowerOverlayTextUpdate) or (!SinglePlayer()) or (Wire_ForceDelayOverlayTextUpdate) then
 				self.NextOverlayTextTime = CurTime() + (self.OverlayDelay or 0.6) + math.random()*(self.OverlayRandom or 0.2)
 			end
 		end

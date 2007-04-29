@@ -99,11 +99,13 @@ local function SendNetworkUpdate( VarType, Index, Key, Value, Player )
 end
 
 local function AddDelayedNetworkUpdate( VarType, Ent, Key, Value )
-	
-	DelayedUpdates[ VarType ] = DelayedUpdates[ VarType ] or {}
-	DelayedUpdates[ VarType ][Ent] = DelayedUpdates[ VarType ][Ent] or {}
-	DelayedUpdates[ VarType ][Ent][Key] = Value
-
+	if (Wire_FastOverlayTextUpdate) then
+		SendNetworkUpdate( VarType, Ent, Key, Value )
+	else
+		DelayedUpdates[ VarType ] = DelayedUpdates[ VarType ] or {}
+		DelayedUpdates[ VarType ][Ent] = DelayedUpdates[ VarType ][Ent] or {}
+		DelayedUpdates[ VarType ][Ent][Key] = Value
+	end
 end
 
 local function AddNetworkFunctions( name, SetFunction, GetFunction, Default )
@@ -118,7 +120,7 @@ local function AddNetworkFunctions( name, SetFunction, GetFunction, Default )
 		key = tostring(key)
 	
 		// The same - don't waste our time.
-		if ( value == GetNetworkTable( self, name )[ tostring(key) ] ) then return end
+		if ( value == GetNetworkTable( self, name )[ key ] ) then return end
 		
 		// Clients can set this too, but they should only really be setting it
 		// when they expect the exact same result coming over the wire (ie prediction)
@@ -324,28 +326,32 @@ saverestore.AddRestoreHook( "EntityNetworkedBeamVars", Restore )
 // own job and you come home every night and the fire is on full blast.
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////
+local NextBeamVarsDelayedSendTime = 0
 local function NetworkVarsSend()
-
-	for VarType, a in pairs(DelayedUpdates) do
-	
-		for Index, b in pairs(a) do
+	if (CurTime() >= NextBeamVarsDelayedSendTime) then
 		
-			for Key, Value in pairs(b) do
+		for VarType, a in pairs(DelayedUpdates) do
 			
-				SendNetworkUpdate( VarType, Index, Key, Value )
+			for Index, b in pairs(a) do
+			
+				for Key, Value in pairs(b) do
+				
+					SendNetworkUpdate( VarType, Index, Key, Value )
+					
+				end
 				
 			end
 			
 		end
 		
+		// Clear the sent entries
+		DelayedUpdates = {}
+		
+		NextBeamVarsDelayedSendTime = CurTime() +  .01
 	end
-	
-	// Clear the sent entries
-	DelayedUpdates = {}
-
 end
-
-timer.Create( "NetworkBeamVarsSend", 0.1, 0, NetworkVarsSend )
+//timer.Create( "NetworkBeamVarsSend", 0.01, 0, NetworkVarsSend )
+hook.Add("Think", "NetBeamLib_Think", NetworkVarsSend)
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
