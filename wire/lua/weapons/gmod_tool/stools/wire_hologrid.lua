@@ -96,8 +96,8 @@ if( SERVER ) then
 	duplicator.RegisterEntityClass(
 		"gmod_wire_hologrid",
 		MakeWireHologrid,
-		"Pos",
-		"Ang"
+		"Ang",
+		"Pos"
 	);
 
 end
