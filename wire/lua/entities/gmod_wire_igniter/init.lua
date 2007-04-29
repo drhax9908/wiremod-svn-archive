@@ -15,13 +15,15 @@ function ENT:Initialize()
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	self.Inputs = Wire_CreateInputs(self.Entity, { "A", "Length" })
 	self.IgniteLength = 10
+	self.TargetPlayers = false
 end
 
 function ENT:OnRemove()
 	Wire_Remove(self.Entity)
 end
 
-function ENT:Setup()
+function ENT:Setup(trgply)
+    self.TargetPlayers = trgply
 end
 
 function ENT:TriggerInput(iname, value)
@@ -36,9 +38,24 @@ function ENT:TriggerInput(iname, value)
 				 trace.filter = { self.Entity }
 			 local trace = util.TraceLine( trace ) 
 			
+			local svarTargetPlayers = false
+			if(GetConVarNumber('sbox_wire_igniters_allowtrgply') > 0)then
+			 svarTargetPlayers = true
+			else
+			 svarTargetPlayers = false
+			end
+			
+			Msg("TargetPlayersSvar:")
+			Msg(svarTargetPlayers)
+			Msg("\n")
+			
+			Msg("TargetPlayersIgniterVar:")
+			Msg(self.TargetPlayers)
+			Msg("\n")
+			
 			if (!trace.Entity) then return false end
             if (!trace.Entity:IsValid() ) then return false end
-            if (trace.Entity:IsPlayer()) then return false end
+            if (trace.Entity:IsPlayer() && (!self.TargetPlayers || !svarTargetPlayers)) then return false end
             if (trace.Entity:IsWorld()) then return false end
             if ( CLIENT ) then return true end
             trace.Entity:Extinguish()
