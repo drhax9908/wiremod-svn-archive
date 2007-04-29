@@ -243,3 +243,4 @@ local function WireDisableRender(pl, cmd, args)
 	Wire_DisableWireRender = tonumber(args[1])
 end
 concommand.Add( "cl_Wire_DisableWireRender", WireDisableRender )
+concommand.Add( "cl_Wire_SetWireRenderMode", WireDisableRender )
