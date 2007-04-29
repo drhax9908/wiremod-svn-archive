@@ -173,8 +173,8 @@ if( SERVER ) then
 	duplicator.RegisterEntityClass(
 		"gmod_wire_holoemitter",
 		MakeWireHoloemitter,
-		"Pos",
 		"Ang",
+		"Pos",
 		"r", "g", "b", "a"
 	);
 
