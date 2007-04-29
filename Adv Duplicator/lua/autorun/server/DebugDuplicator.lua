@@ -319,4 +319,35 @@ end
 
 
 
+
+
+
+function DebugDuplicator.GetAllConstrainedEntities( ent, EntTable, ConstraintTable)
+	
+	if ( !ent:IsValid() ) then return end
+
+	EntTable[ ent:EntIndex() ] = ent
+	
+	if ( !constraint.HasConstraints( ent ) ) then return end
+	
+	for key, ConstraintEntity in pairs( ent.Constraints ) do
+		if ( !ConstraintTable[ ConstraintEntity ] ) then
+			ConstraintTable[ ConstraintEntity ] = true
+			if ( ConstraintEntity[ "Ent" ] && ConstraintEntity[ "Ent" ]:IsValid() ) then
+				DebugDuplicator.GetAllConstrainedEntities( ConstraintEntity[ "Ent" ].Entity, EntTable, ConstraintTable)
+			else
+				for i=1, 6 do
+					if ( ConstraintEntity[ "Ent"..i ] && ConstraintEntity[ "Ent"..i ]:IsValid() ) then
+						DebugDuplicator.GetAllConstrainedEntities( ConstraintEntity[ "Ent"..i ].Entity, EntTable, ConstraintTable)
+					end
+				end
+			end
+		end
+	end
+	
+	return EntTable, ConstraintTable
+	
+end
+
+
 Msg("==== Advanced Duplicator v.1.62.2 debug duplicator module installed! ====\n")

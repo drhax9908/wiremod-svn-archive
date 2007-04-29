@@ -39,7 +39,7 @@ function ENT:DrawTranslucent()
 
 	if ( self.ShouldDraw == 0 ) then return end
 	
-	if (self:GetHoverMode()) then
+	if (self:GetHoverMode() > 0) then
 		local vOffset = self.Entity:GetPos()
 		local vPlayerEyes = LocalPlayer():EyePos()
 		local vDiff = (vOffset - vPlayerEyes):GetNormalized()

@@ -36,9 +36,9 @@ function ENT:SetSpeed( s )
 end
 
 function ENT:GetHoverMode()
-	return self.Entity:GetNetworkedBool( 0 )
+	return self.Entity:GetNetworkedInt( 0 )
 end
 
 function ENT:SetHoverMode( h )
-	return self.Entity:SetNetworkedBool( 0, h )
+	return self.Entity:SetNetworkedInt( 0, h )
 end

@@ -39,6 +39,7 @@ function ENT:Initialize()
 	//self:SetTargetY( self.Entity:GetPos().y )
 	self.Target = self.Entity:GetPos()
 	self:SetSpeed( 1 )
+	self:SetStrength( 10 )
 	self:EnableHover()
 
 	//self.Inputs = Wire_CreateInputs(self.Entity, { "X_Velocity", "Y_Velocity", "Z_Velocity", "HoverMode" })
@@ -57,12 +58,12 @@ function ENT:SpawnFunction( ply, tr )
 	ent:SetPos( SpawnPos )
 	ent:SetPlayer( ply )
 	ent:Spawn()
+	ent:Activate()
 	
 	ent:SetSpeed( 1 )
-	ent:SetAirResistance( 1 )
+	ent:SetAirResistance( 0 )
 	ent:SetStrength( 10 )
 	
-	ent:Activate()
 	return ent
 end
 
@@ -83,7 +84,7 @@ end
 
 
 function ENT:EnableHover()
-	self:SetHoverMode( true )
+	self:SetHoverMode( 1 )
 	self:SetStrength( self.strength or 1 ) //reset weight so it will work
 	self:SetTargetZ( self.Entity:GetPos().z ) //set height to current
 	self.Target = self.Entity:GetPos()
@@ -95,7 +96,7 @@ function ENT:EnableHover()
 end
 
 function ENT:DisableHover()
-	self:SetHoverMode( false )
+	self:SetHoverMode( 0 )
 	self:SetStrength(0.1) //for less dead weight while off
 	local phys = self.Entity:GetPhysicsObject()
 	if ( phys:IsValid() ) then
@@ -204,7 +205,7 @@ function ENT:PhysicsSimulate( phys, deltatime )
 	Wire_TriggerOutput(self.Entity, "C: Ypos", Pos.y)
 	
 	
-	if (self:GetHoverMode()) then
+	if (self:GetHoverMode() > 0) then
 		
 		txt = txt.."\n(on)"
 		self:SetOverlayText( txt )
