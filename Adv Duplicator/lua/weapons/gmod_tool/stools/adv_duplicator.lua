@@ -935,7 +935,7 @@ else	// CLIENT
 				CPanel:AddControl( "Label", { Text = "Desc: "..AdvDupeClient.LocadedDesc })
 				CPanel:AddControl( "Label", { Text = "NumOfEnts: "..AdvDupeClient.LocadedNumOfEnts })
 				CPanel:AddControl( "Label", { Text = "NumOfConst: "..AdvDupeClient.LocadedNumOfConst })
-				CPanel:AddControl( "Label", { Text = "FileVersion: "..AdvDupeClient.LocadedFileVersion })
+				CPanel:AddControl( "Label", { Text = "FileVersion: "..(AdvDupeClient.LocadedFileVersion or "n/a") })
 				
 			elseif (AdvDupeClient.Copied) then
 				CPanel:AddControl( "Label", { Text = "Unsaved Data Stored in Clipboard" })
