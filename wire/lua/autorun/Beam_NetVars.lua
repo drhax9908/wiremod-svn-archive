@@ -4,6 +4,7 @@ AddCSLuaFile( "autorun/Beam_NetVars.lua" )
 //		Get/Set Networked Beam Var
 //
 //	Basicly this one doesn't umsg.PoolString( Key )
+//	And has some other tweaks
 //***********************************************************
 
 local meta = FindMetaTable( "Entity" )
@@ -150,8 +151,8 @@ local function AddNetworkFunctions( name, SetFunction, GetFunction, Default )
 	
 		local out = GetNetworkTable( self, name )[ key ]
 		if ( out != nil ) then return out end
-		
-		default = default or Default
+		if ( default == nil ) then return Default end
+		//default = default or Default
 
 		return default
 		

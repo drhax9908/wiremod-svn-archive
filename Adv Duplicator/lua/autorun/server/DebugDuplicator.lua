@@ -15,12 +15,15 @@ function DebugDuplicator.GenericDuplicatorFunction( Player, data, ID )
 		Entity = ents.Create( "prop_physics" )
 		Entity:SetCollisionGroup( COLLISION_GROUP_WORLD )
 	end
-	Entity:SetModel( data.Model )
-	Entity:Spawn()
+	//Entity:SetModel( data.Model )
+	//Entity:Spawn()
+	//duplicator.DoGeneric( Entity, data )
+	//Entity:Activate()
 	
 	duplicator.DoGeneric( Entity, data )
-	
+	Entity:Spawn()
 	Entity:Activate()
+	duplicator.DoGenericPhysics( Entity, Player, data )
 	
 	table.Add( Entity:GetTable(), data )
 	
