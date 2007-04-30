@@ -1,5 +1,6 @@
 
 dupeshare = {}
+dupeshare.Version = 1.613
 
 dupeshare.BaseDir		= "adv_duplicator"
 dupeshare.PublicDirs	= { "=Public Folder=", "=Team Share Folder="}
@@ -132,7 +133,7 @@ function dupeshare.Compress(str, ForConCommand)
 	
 	local beforelen = string.len(str)
 	
-	for k=1,101 do
+	for k=1,116 do
 		local entry = dupeshare.Dictionary[k]
 		str = string.gsub(str, entry[2], entry[1])
 	end
@@ -477,5 +478,5 @@ function dupeshare.UpDir(path)
 end
 
 
-Msg("==== Advanced Duplicator v.1.61.2 shared module installed! ====\n")
+Msg("==== Advanced Duplicator v."..dupeshare.Version.." shared module installed! ====\n")
 if (!duplicator.EntityClasses) then Msg("=== Error: Your gmod is out of date! ===\n=== You'll want to fix that or the Advanced Duplicator is not going to work. ===\n") end
