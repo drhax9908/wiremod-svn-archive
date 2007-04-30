@@ -347,7 +347,7 @@ local function NetworkVarsSend()
 		// Clear the sent entries
 		DelayedUpdates = {}
 		
-		NextBeamVarsDelayedSendTime = CurTime() +  .01
+		NextBeamVarsDelayedSendTime = CurTime() +  .1
 	end
 end
 //timer.Create( "NetworkBeamVarsSend", 0.01, 0, NetworkVarsSend )
