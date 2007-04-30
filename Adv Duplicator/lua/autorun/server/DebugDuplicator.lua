@@ -1,5 +1,5 @@
 DebugDuplicator = {}
-
+DebugDuplicator.Vesion = 24.41
 
 /*---------------------------------------------------------
    Generic function for duplicating stuff
@@ -105,6 +105,7 @@ end
   Make a constraint from a constraint table
 ---------------------------------------------------------*/
 function DebugDuplicator.CreateConstraintFromTable( Constraint, EntityList )
+	if ( !Constraint ) then return end
 	
 	local Factory = duplicator.ConstraintType[ Constraint.Type ]
 	if ( !Factory ) then return end

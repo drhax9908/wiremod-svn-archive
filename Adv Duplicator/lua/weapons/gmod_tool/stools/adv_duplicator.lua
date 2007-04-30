@@ -48,9 +48,15 @@ function TOOL:LeftClick( trace )
 		
 		//paste using legacy data
 		Msg("===doing old paste===\n")
-		Ents, Constraints = AdvDupe.OldPaste( self:GetOwner(), self.Entities, self.Constraints, self.DupeInfo, self.DORInfo, HeadEntityID, trace.HitPos )
+		Ents, Constraints = AdvDupe.OldPaste( self:GetOwner(), self.Entities, self.Constraints, self.DupeInfo, self.DORInfo, self.HeadEntityIdx, trace.HitPos )
 		
 	else
+		
+		if ( self.NumOfEnts + self.NumOfConst > 75 ) then
+			Msg("===doing new timed paste===\n")
+			AdvDupe.OverTimePasteStart( self:GetOwner(), self.Entities, self.Constraints, self.HeadEntityIdx, trace.HitPos, angle - self.HoldAngle  )
+			return true
+		end
 		
 		// Create the entities at the clicked position at the angle we're facing right now	
 		AdvDupe.ConvertEntityPositionsToWorld( self.Entities, trace.HitPos, angle - self.HoldAngle )
@@ -70,7 +76,7 @@ function TOOL:LeftClick( trace )
 		
 		for k, ent in pairs( Ents ) do
 			undo.AddEntity( ent )
-			//self:GetOwner():AddCleanup( "duplicates", ent ) 
+			//self:GetOwner():AddCleanup( "duplicates", ent ) --move to paste command
 		end
 		
 		undo.SetPlayer( self:GetOwner() )
@@ -95,7 +101,7 @@ function TOOL:RightClick( trace )
 		self.GhostEntities = {}
 		
 		self.HeadEntityIdx	= nil
-		self.HoldAngle 	= nil
+		self.HoldAngle 		= nil
 		self.HoldPos 		= nil
 		self.Entities		= nil
 		self.Constraints	= nil
@@ -144,6 +150,11 @@ function TOOL:RightClick( trace )
 	self.Entities		= Entities
 	self.Constraints	= Constraints
 	self.Legacy			= false
+	
+	local NumOfEnts		= table.Count(Entities)		or 0
+	local NumOfConst	= table.Count(Constraints)	or 0
+	self.NumOfEnts		= NumOfEnts
+	self.NumOfConst		= NumOfConst
 	
 	self:GetOwner():SendLua( "AdvDupeClient.FileLoaded=false" )
 	self:GetOwner():SendLua( "AdvDupeClient.Copied=true" )
@@ -279,9 +290,9 @@ function TOOL:MakeGhostFromTable( EntTable, pParent, HoldAngle )
 end
 
 
-/*---------------------------------------------------------
-   Starts up the ghost entities
----------------------------------------------------------*/
+//
+//Starts up the ghost entities
+//
 function TOOL:StartGhostEntities( EntityTable, Head, HoldPos, HoldAngle )
 	
 	self:ReleaseGhostEntity()
@@ -313,9 +324,10 @@ function TOOL:StartGhostEntities( EntityTable, Head, HoldPos, HoldAngle )
 	end
 
 end
-/*---------------------------------------------------------
-   Update the ghost entity positions
----------------------------------------------------------*/
+
+//
+//Update the ghost entity positions
+//
 function TOOL:UpdateGhostEntities()
 
 	if (SERVER && !self.GhostEntities) then return end
@@ -442,6 +454,9 @@ function TOOL:LoadFile( filepath )
 		self.Constraints	= Constraints
 		self.DupeInfo		= DupeInfo
 		self.DORInfo		= DORInfo
+		
+		self.NumOfEnts		= NumOfEnts
+		self.NumOfConst		= NumOfConst
 		
 		//hack for constraints with "pl" keys
 		if self.Constraints then

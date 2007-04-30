@@ -4,7 +4,8 @@ WireLib = {}
 
 -- Compatibility Global
 WireAddon = 1
-WireVersion = 0.96
+WireVersion = 0.98
+WireLib.Version = WireVersion
 
 -- extra table functions
 
