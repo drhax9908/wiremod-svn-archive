@@ -18,20 +18,21 @@ end
 
 function ENT:Setup(xyz_mode)
 	self.XYZMode = xyz_mode
+	self:SetXYZMode( xyz_mode )
 	self.Value = 0
 	self.PrevOutput = nil
 
 	if (xyz_mode) then
 		Wire_AdjustOutputs(self.Entity, { "X", "Y", "Z" })
 
-		self:ShowOutput(0, 0, 0)
+		//self:ShowOutput(0, 0, 0)
 		Wire_TriggerOutput(self.Entity, "X", 0)
 		Wire_TriggerOutput(self.Entity, "Y", 0)
 		Wire_TriggerOutput(self.Entity, "Z", 0)
 	else
 		Wire_AdjustOutputs(self.Entity, { "Out" })
 
-		self:ShowOutput(0)
+		//self:ShowOutput(0)
 		Wire_TriggerOutput(self.Entity, "Out", 0)
 	end
 end
@@ -44,11 +45,11 @@ function ENT:Think()
 		Wire_TriggerOutput(self.Entity, "X", -vel.y)
 		Wire_TriggerOutput(self.Entity, "Y", vel.x)
 		Wire_TriggerOutput(self.Entity, "Z", vel.z)
-		self:ShowOutput(-vel.y, vel.x, vel.z)
+		//self:ShowOutput(-vel.y, vel.x, vel.z)
 	else
 	    local vel = self.Entity:GetVelocity():Length()
 		Wire_TriggerOutput(self.Entity, "Out", vel)
-		self:ShowOutput(vel)
+		//self:ShowOutput(vel)
 	end
 	
 	self.Entity:NextThink(CurTime()+0.04)

@@ -172,7 +172,7 @@ end
 //TODO: update paster to support new duplicator code
 //
 //make a paster ent
-function TOOL:Reload( trace )
+/*function TOOL:Reload( trace )
 	if (CLIENT) then return true end
 	if self.Legacy then
 		self:GetOwner():SendLua( "GAMEMODE:AddNotify('Paster does not support old saves!', NOTIFY_GENERIC, 7);" )
@@ -226,7 +226,7 @@ function TOOL:Reload( trace )
 	if undo_key > -1 then numpad.OnDown( self:GetOwner(), undo_key, "PasterUndo", paster, true ) end
 	
 	return true
-end
+end*/
 
 //just because
 function TOOL.BuildCPanel( CPanel )
@@ -922,9 +922,9 @@ else	// CLIENT
 				Command = "adv_duplicator_file_desc" })*/
 			
 			//TODO: fix paster
-			CPanel:AddControl( "Button", {
+			/*CPanel:AddControl( "Button", {
 				Text = "Open Paster Menu",
-				Command = "adv_duplicator_cl_menu paster" })
+				Command = "adv_duplicator_cl_menu paster" })*/
 			
 			
 			

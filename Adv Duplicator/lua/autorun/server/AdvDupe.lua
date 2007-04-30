@@ -15,7 +15,8 @@ AdvDupe = {}
 
 if (CLIENT) then return end
 
-AdvDupe.Version = 1.7
+AdvDupe.Version = 1.71
+AdvDupe.ToolVersion = 1.7
 AdvDupe.FileVersion = 0.62
 
 
@@ -58,13 +59,14 @@ function AdvDupe.SaveDupeTablesToFile( pl, EntTables, ConstraintTables, HeadEnti
 	if (debugsave) then
 		//currentfileversion = 0.601 //set the file version back 0.009 versions
 		temp["VersionInfo"]["FileInfo"]			= "Advanced Duplicator Save File (DebugSave)"
-		temp["VersionInfo"]["FileVersion"]		= AdvDupe.FileVersion - .009
+		//temp["VersionInfo"]["FileVersion"]		= AdvDupe.FileVersion - .009
 	else
-		temp["VersionInfo"]["FileInfo"]			= "Advanced Duplicator Save File"
-		temp["VersionInfo"]["FileVersion"]		= AdvDupe.FileVersion
+		temp["VersionInfo"]["FileInfo"]			= "Advanced Duplicator Save File"	
 	end
 	
+	temp["VersionInfo"]["FileVersion"]		= AdvDupe.FileVersion
 	temp["VersionInfo"]["AdvDupeVersion"]		= AdvDupe.Version
+	temp["VersionInfo"]["AdvDupeToolVersion"]	= AdvDupe.ToolVersion
 	temp["VersionInfo"]["AdvDupeSharedVersion"]	= dupeshare.Version
 	temp["VersionInfo"]["DebugDuplicatorVersion"]	= DebugDuplicator.Vesion
 	
@@ -613,18 +615,15 @@ local TimedPasteData = {}
 local NextPasteTime = 0
 local function AdvDupeThink()
 	if (CurTime() >= NextPasteTime) then
-		
-		//Player, EntityList, ConstraintList, HeadEntityIdx, Stage, LastID, EntIDList, CreatedEntities, CreatedConstraints, Shooting_Ent
-		
-			
 		if TimedPasteData[TimedPasteDataCurrent] then
 			if ( TimedPasteData[TimedPasteDataCurrent].Stage == 5 ) 
 			or ( !TimedPasteData[TimedPasteDataCurrent].Shooting_Ent )
 			or ( !TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity )
 			or ( !TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity:IsValid() ) then
-				TimedPasteData[TimedPasteDataCurrent] = nil
-				TimedPasteDataCurrent = TimedPasteDataCurrent + 1
-				NextPasteTime = CurTime() +  5
+				//TimedPasteData[TimedPasteDataCurrent] = nil
+				table.remove(TimedPasteData,TimedPasteDataCurrent)
+				//TimedPasteDataCurrent = TimedPasteDataCurrent + 1
+				NextPasteTime = CurTime() +  2
 			else
 				AdvDupe.OverTimePasteProcess(
 					TimedPasteData[TimedPasteDataCurrent].Player, 
@@ -640,8 +639,17 @@ local function AdvDupeThink()
 					TimedPasteDataCurrent
 				)
 				
-				NextPasteTime = CurTime() +  .1
+				NextPasteTime = CurTime() +  .08
+				
+				if TimedPasteData[TimedPasteDataCurrent + 1] then
+					TimedPasteDataCurrent = TimedPasteDataCurrent + 1
+				else
+					TimedPasteDataCurrent = 1
+				end
+				
 			end
+		elseif TimedPasteDataCurrent != 1 then
+			TimedPasteDataCurrent = 1
 		end
 	end
 end
@@ -670,9 +678,22 @@ local function RestartAdvDupeThink( ply, command, arguments )
 end 
 concommand.Add( "sv_AdvDupe_Restart_Think", RestartAdvDupeThink ) 
 
+local DoPasteFX = true
+local function SetDoPasteFX(pl, cmd, args)
+	if not args[1] then return end
+	if args[1] == "1" or args[1] == 1 then 
+		DoPasteFX = true
+	elseif args[1] == "0" or args[1] == 0 then
+		DoPasteFX = false
+	else
+		Msg("\n  sv_AdvDupe_DoPasteFX = "..tostring(DoPasteFX).."  ( norm: True(1) )\n")
+	end
+end
+concommand.Add( "sv_AdvDupe_DoPasteFX", SetDoPasteFX )
+
+
 
 function AdvDupe.OverTimePasteStart( Player, inEntityList, inConstraintList, HeadEntityIdx, HitPos, HoldAngle )
-	
 	// work with copies so the player can move on
 	
 	//EntityList = table.Copy(inEntityList)
@@ -714,7 +735,7 @@ function AdvDupe.OverTimePasteStart( Player, inEntityList, inConstraintList, Hea
 		undo.SetPlayer( Player )
 	undo.Finish()
 	
-	TimedPasteDataNum = TimedPasteDataNum + 1
+	/*TimedPasteDataNum = TimedPasteDataNum + 1
 	TimedPasteData[TimedPasteDataNum]						= {}
 	TimedPasteData[TimedPasteDataNum].Player				= Player
 	TimedPasteData[TimedPasteDataNum].EntityList			= EntityList
@@ -725,7 +746,21 @@ function AdvDupe.OverTimePasteStart( Player, inEntityList, inConstraintList, Hea
 	TimedPasteData[TimedPasteDataNum].EntIDList				= EntIDList
 	TimedPasteData[TimedPasteDataNum].CreatedEntities		= {}
 	TimedPasteData[TimedPasteDataNum].CreatedConstraints	= {}
-	TimedPasteData[TimedPasteDataNum].Shooting_Ent			= Shooting_Ent
+	TimedPasteData[TimedPasteDataNum].Shooting_Ent			= Shooting_Ent*/
+	
+	T						= {}
+	T.Player				= Player
+	T.EntityList			= EntityList
+	T.ConstraintList		= ConstraintList
+	T.HeadEntityIdx			= HeadEntityIdx
+	T.Stage					= 1
+	T.LastID				= 1
+	T.EntIDList				= EntIDList
+	T.CreatedEntities		= {}
+	T.CreatedConstraints	= {}
+	T.Shooting_Ent			= Shooting_Ent
+	
+	table.insert(TimedPasteData, T)
 	
 end
 
@@ -734,8 +769,6 @@ function AdvDupe.OverTimePasteProcess(Player, EntityList, ConstraintList, HeadEn
 	
 	
 	if Stage == 1 then
-		
-		DoPropSpawnedEffect( CreatedEntities[ EntID ] )
 		
 		//for i = 1,2 do
 			if EntIDList[ LastID ] then
@@ -755,6 +788,7 @@ function AdvDupe.OverTimePasteProcess(Player, EntityList, ConstraintList, HeadEn
 					CreatedEntities[ EntID ].EntityMods = table.Copy( EntTable.EntityMods )
 					CreatedEntities[ EntID ].PhysicsObjects = table.Copy( EntTable.PhysicsObjects )
 					
+					//freeze it and make it not solid so it can't be altered while the rest is made
 					if (CreatedEntities[ EntID ]:GetPhysicsObject():IsValid()) then
 						CreatedEntities[ EntID ]:GetPhysicsObject():EnableMotion(false)
 					end
@@ -765,13 +799,16 @@ function AdvDupe.OverTimePasteProcess(Player, EntityList, ConstraintList, HeadEn
 						CreatedEntities[ EntID ]:SetParent( CreatedEntities[ HeadEntityIdx ] )
 					end
 					
-					Shooting_Ent:EmitSound( "Airboat.FireGunRevDown" )
-					local effectdata = EffectData()
-						effectdata:SetOrigin( CreatedEntities[ EntID ]:GetPos() )
-						effectdata:SetStart( Shooting_Ent.Entity:GetPos() )
-						effectdata:SetAttachment( 1 )
-						effectdata:SetEntity( Shooting_Ent.Entity )
-					util.Effect( "ToolTracer", effectdata )
+					//do the effect
+					if (DoPasteFX) then
+						Shooting_Ent:EmitSound( "Airboat.FireGunRevDown" )
+						local effectdata = EffectData()
+							effectdata:SetOrigin( CreatedEntities[ EntID ]:GetPos() )
+							effectdata:SetStart( Shooting_Ent.Entity:GetPos() )
+						util.Effect( "PasteBeam", effectdata )
+					end
+					
+					DoPropSpawnedEffect( CreatedEntities[ EntID ] )
 					
 				else
 					Msg("Error:Created Entity Bad! Class: "..(EntTable.Class or "NIL").." Ent: "..EntID.."\n")
@@ -805,28 +842,28 @@ function AdvDupe.OverTimePasteProcess(Player, EntityList, ConstraintList, HeadEn
 		
 	elseif Stage == 3 then
 		
-		Shooting_Ent:EmitSound( "Airboat.FireGunRevDown" )
+		if (DoPasteFX) then Shooting_Ent:EmitSound( "Airboat.FireGunRevDown" ) end
 		
-		for i = 1,2 do
+		for i = 1,3 do
 			if ConstraintList and ConstraintList[ LastID ] then
 				
-				local Constraint	= ConstraintList[ LastID ] //k
+				local Constraint	= ConstraintList[ LastID ]
 				
 				local Entity = DebugDuplicator.CreateConstraintFromTable( Constraint, CreatedEntities )
 				
-				if ( Entity && Entity:IsValid() ) then
+				if ( Entity ) and ( Entity:IsValid() ) then
 					table.insert( CreatedConstraints, Entity )
 					
-					
-					local effectdata = EffectData()
-						effectdata:SetOrigin( CreatedEntities[ Constraint.Entity[1].Index ]:GetPos() )
-						effectdata:SetStart( Shooting_Ent.Entity:GetPos() )
-						effectdata:SetAttachment( 1 )
-						effectdata:SetEntity( Shooting_Ent.Entity )
-					util.Effect( "ToolTracer", effectdata )
+					if (DoPasteFX) then
+						local effectdata = EffectData()
+							effectdata:SetOrigin( CreatedEntities[ Constraint.Entity[1].Index ]:GetPos() )
+							effectdata:SetStart( Shooting_Ent.Entity:GetPos() )
+						util.Effect( "PasteBeam", effectdata )
+					end
 					
 				else
 					Msg("Error:Created Constraint Bad! Type= "..(Constraint.Type or "NIL").."\n")
+					Entity = nil
 				end
 				
 				LastID = LastID + 1
@@ -840,8 +877,6 @@ function AdvDupe.OverTimePasteProcess(Player, EntityList, ConstraintList, HeadEn
 		
 	elseif Stage == 4 then
 		
-		//AdvDupe.ResetPositions( EntityList, ConstraintList )
-		
 		// Add all of the created entities
 		//  to the undo system under one undo.
 		
@@ -849,7 +884,12 @@ function AdvDupe.OverTimePasteProcess(Player, EntityList, ConstraintList, HeadEn
 			for k, ent in pairs( CreatedEntities ) do
 				if (ent:IsValid()) then
 					if (ent:GetPhysicsObject():IsValid()) then
-						ent:GetPhysicsObject():EnableMotion(true)
+						local Phys = ent:GetPhysicsObject()
+						if ( EntityList[ k ].PhysicsObjects[0].Frozen ) then
+							Player:AddFrozenPhysicsObject( ent, Phys )
+						else
+							Phys:EnableMotion(true)
+						end
 					end
 					ent:SetNotSolid(false)
 					ent:SetParent()
