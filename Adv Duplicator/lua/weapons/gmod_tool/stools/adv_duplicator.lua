@@ -52,13 +52,17 @@ function TOOL:LeftClick( trace )
 		
 	else
 		
-		if ( self.NumOfEnts + self.NumOfConst > 75 ) then
-			Msg("===doing new timed paste===\n")
+		if ( self.NumOfEnts + self.NumOfConst > 200 ) then
+			Msg("===adding new timed paste===\n")
 			AdvDupe.OverTimePasteStart( self:GetOwner(), self.Entities, self.Constraints, self.HeadEntityIdx, trace.HitPos, angle - self.HoldAngle  )
+			return true
+		else
+			Msg("===adding new delayed paste===\n")
+			AdvDupe.AddDelayedPaste( self:GetOwner(), self.Entities, self.Constraints, self.HeadEntityIdx, trace.HitPos, angle - self.HoldAngle  )
 			return true
 		end
 		
-		// Create the entities at the clicked position at the angle we're facing right now	
+		/*// Create the entities at the clicked position at the angle we're facing right now	
 		AdvDupe.ConvertEntityPositionsToWorld( self.Entities, trace.HitPos, angle - self.HoldAngle )
 		AdvDupe.ConvertConstraintPositionsToWorld( self.Constraints, trace.HitPos, angle - self.HoldAngle )
 		
@@ -66,10 +70,10 @@ function TOOL:LeftClick( trace )
 		//Ents, Constraints = duplicator.Paste( self:GetOwner(), self.Entities, self.Constraints )
 		Ents, Constraints = DebugDuplicator.Paste( self:GetOwner(), self.Entities, self.Constraints )
 		
-		AdvDupe.ResetPositions( self.Entities, self.Constraints )
+		AdvDupe.ResetPositions( self.Entities, self.Constraints )*/
 		
 	end
-	
+	/*
 	// Add all of the created entities
 	//  to the undo system under one undo.
 	undo.Create( "Duplicator" )
@@ -83,7 +87,7 @@ function TOOL:LeftClick( trace )
 		
 	undo.Finish()
 	
-	return true
+	return true*/
 	
 end
 
@@ -755,7 +759,7 @@ else	// CLIENT
 		local ServerDirParams = {}
 		local ClientDirParams = {}
 		if (menu == "main") or (!menu) or (menu == "") or (menu == "serverdir") or (menu == "clientupload") then
-			ServerDirParams.Height = 180
+			ServerDirParams.Height = 220
 			ServerDirParams.Options = {}
 			if (!SinglePlayer()) then
 				ServerDirParams.Label = "Server: "..string.gsub(AdvDupeClient.SScdir, dupeshare.BaseDir, "")
