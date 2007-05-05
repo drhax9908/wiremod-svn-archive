@@ -94,7 +94,7 @@ function AdvDupe.SaveDupeTablesToFile( pl, EntTables, ConstraintTables, HeadEnti
 	temp = util.TableToKeyValues(temp)
 	file.Write(filename, temp)
 	
-	return filename, Creator, desc , NumOfEnts, NumOfConst, currentfileversion //for sending to client after saving
+	return filename, Creator, desc , NumOfEnts, NumOfConst, AdvDupe.FileVersion //for sending to client after saving
 end
 
 /*---------------------------------------------------------
