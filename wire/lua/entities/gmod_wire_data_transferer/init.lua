@@ -13,9 +13,9 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-	self.Inputs = Wire_CreateInputs(self.Entity, {/*"Send",*/"A","B","C","D","E","F","G","H"})
+	self.Inputs = Wire_CreateInputs(self.Entity, {"Send","A","B","C","D","E","F","G","H"})
 	self.Outputs = Wire_CreateOutputs(self.Entity, {"A","B","C","D","E","F","G","H"})
-	//self.Sending = false
+	self.Sending = false
 	self.Values = {};
 	self.Values["A"] = 0
 	self.Values["B"] = 0
@@ -25,6 +25,8 @@ function ENT:Initialize()
 	self.Values["F"] = 0
 	self.Values["G"] = 0
 	self.Values["H"] = 0
+	
+	self.Range = 25000
 end
 
 function ENT:OnRemove()
@@ -32,13 +34,13 @@ function ENT:OnRemove()
 end
 
 function ENT:TriggerInput(iname, value)
-    /*if(iname == "Send")then
+    if(iname == "Send")then
         if(value > 0)then
             self.Sending = true
         else
             self.Sending = false
         end
-	else*/if(iname == "A") then
+	elseif(iname == "A") then
 		self.Values.A = value
 	elseif(iname == "B") then
 		self.Values.B = value
@@ -63,7 +65,7 @@ function ENT:Think()
 	
     local trace = {}
 	   trace.start = vStart
-	   trace.endpos = vStart + (vForward * 2048)
+	   trace.endpos = vStart + (vForward * self.Range)
 	   trace.filter = { self.Entity }
 	local trace = util.TraceLine( trace ) 
 	
@@ -83,7 +85,7 @@ function ENT:Think()
         self.Entity:SetColor(0, 255, 0, 255)
     end
     
-    //if(trace.Entity:GetClass() == "gmod_wire_data_transferer")then
+    if(trace.Entity:GetClass() == "gmod_wire_data_transferer")then
     Wire_TriggerOutput(ent,"A",self.Values.A)
     Wire_TriggerOutput(ent,"B",self.Values.B)
     Wire_TriggerOutput(ent,"C",self.Values.C)
@@ -92,7 +94,7 @@ function ENT:Think()
     Wire_TriggerOutput(ent,"F",self.Values.F)
     Wire_TriggerOutput(ent,"G",self.Values.G)
     Wire_TriggerOutput(ent,"H",self.Values.H)
-    /*elseif(trace.Entity:GetClass() == "gmod_wire_data_satellitedish")then
+    elseif(trace.Entity:GetClass() == "gmod_wire_data_satellitedish")then
         Wire_TriggerOutput(ent.Transmitter,"A",self.Values.A)
         Wire_TriggerOutput(ent.Transmitter,"B",self.Values.B)
         Wire_TriggerOutput(ent.Transmitter,"C",self.Values.C)
@@ -111,16 +113,16 @@ function ENT:Think()
         Wire_TriggerOutput(self.Entity,"G",ent.Values.G)
         Wire_TriggerOutput(self.Entity,"H",ent.Values.H)
         if(self.Sending)then
-            ent.Values.A = self.Entity.Inputs["A"]
-            ent.Values.B = self.Entity.Inputs["B"]
-            ent.Values.C = self.Entity.Inputs["C"]
-            ent.Values.D = self.Entity.Inputs["D"]
-            ent.Values.E = self.Entity.Inputs["E"]
-            ent.Values.F = self.Entity.Inputs["F"]
-            ent.Values.G = self.Entity.Inputs["G"]
-            ent.Values.H = self.Entity.Inputs["H"]
+            ent.Values.A = self.Entity.Inputs["A"].Value
+            ent.Values.B = self.Entity.Inputs["B"].Value
+            ent.Values.C = self.Entity.Inputs["C"].Value
+            ent.Values.D = self.Entity.Inputs["D"].Value
+            ent.Values.E = self.Entity.Inputs["E"].Value
+            ent.Values.F = self.Entity.Inputs["F"].Value
+            ent.Values.G = self.Entity.Inputs["G"].Value
+            ent.Values.H = self.Entity.Inputs["H"].Value
         end
-    end*/
+    end
     self.Entity:NextThink(CurTime()+0.125)
 end
 

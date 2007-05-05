@@ -15,12 +15,12 @@ end
 
 function ENT:Setup( out180, xyz_mode )
 	
-	self.Out180 = out180
+	self.Out180 = out180 --wft is this used for
 	self.XYZMode = xyz_mode
 	self.Value = 0
 	self.PrevOutput = nil
 
-	self:ShowOutput(0, 0, 0)
+	--self:ShowOutput(0, 0, 0)
 	Wire_TriggerOutput(self.Entity, "Pitch", 0)
 	Wire_TriggerOutput(self.Entity, "Yaw", 0)
 	Wire_TriggerOutput(self.Entity, "Roll", 0)
@@ -37,7 +37,8 @@ function ENT:Think()
 	Wire_TriggerOutput(self.Entity, "Pitch", ang.p)
 	Wire_TriggerOutput(self.Entity, "Yaw", ang.y)
 	Wire_TriggerOutput(self.Entity, "Roll", ang.r)
-	self:ShowOutput(ang.p, ang.y, ang.r)
+	--now handled client side (TAD2020)
+	--self:ShowOutput(ang.p, ang.y, ang.r)
 
 	self.Entity:NextThink(CurTime()+0.04)
 	return true

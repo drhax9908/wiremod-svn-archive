@@ -189,13 +189,13 @@ function TOOL:RightClick( trace )
 		return false
 	end
 	
-	// Has the creator allowed this HUD Indicator to be hooked?
-	if (!trace.Entity:GetTable().AllowHook) then
-		self:GetOwner():SendLua( "GAMEMODE:AddNotify('You are not allowed to hook this HUD Indicator.', NOTIFY_GENERIC, 7);" )
-		return false
-	end
-	
 	if (!trace.Entity:GetTable():CheckRegister(ply)) then
+		// Has the creator allowed this HUD Indicator to be hooked?
+		if (!trace.Entity:GetTable().AllowHook) then
+			self:GetOwner():SendLua( "GAMEMODE:AddNotify('You are not allowed to hook this HUD Indicator.', NOTIFY_GENERIC, 7);" )
+			return false
+		end
+		
 		trace.Entity:GetTable():RegisterPlayer(ply, hookhidehud)
 	else
 		trace.Entity:GetTable():UnRegisterPlayer(ply)
