@@ -36,10 +36,12 @@ function ENT:Initialize()
 	self.Target = self.Entity:GetPos()
 	self:SetSpeed( 1 )
 	self:SetHoverMode( 1 )
+	self.TargetYaw = 0
+	self.YawVelocity = 0
 	
 	self.JumpTarget = Vector(0,0,0)
 
-	self.Inputs = Wire_CreateInputs(self.Entity, { "X_Velocity", "Y_Velocity", "Z_Velocity", "HoverMode", "Jump", "X_JumpTarget", "Y_JumpTarget", "Z_JumpTarget", "SetJumpTarget" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "X_Velocity", "Y_Velocity", "Z_Velocity", "HoverMode", "Yaw_Velocity", "Jump", "X_JumpTarget", "Y_JumpTarget", "Z_JumpTarget", "SetJumpTarget" })
 	self.Outputs = WireLib.CreateSpecialOutputs(self.Entity, {"Data"}, {"HOVERDATAPORT"})
 	
 end
@@ -77,6 +79,12 @@ function ENT:TriggerInput(iname, value)
 		elseif (value == 0) then
 			self:SetHoverMode( 0 )
 		end
+	elseif (iname == "Yaw_Velocity") then
+		self:SetYawVelocity( value )
+	/*elseif (iname == "") then
+		
+	elseif (iname == "") then*/
+		
 	elseif (iname == "Jump") and (value > 0) and (!self.Jumping) then
 		self:Jump()
 	elseif (iname == "X_JumpTarget") then
@@ -115,9 +123,7 @@ end*/
 
 
 local function GetTargetAndExponentVector(deltatime, Target, Velocity, AxisPos, AxisVel, AirResistance, Speed)
-	if ( Velocity != 0 ) then
-		Target = Target + ( Velocity * deltatime * Speed )
-	end
+	
 	
 	local Diff = Target - AxisPos
 	Diff.x = math.Clamp( Diff.x, -100, 100 )
@@ -151,6 +157,11 @@ end
 ---------------------------------------------------------*/
 function ENT:PhysicsSimulate( phys, deltatime )
 	
+	if ( self.YawVelocity != 0 ) then
+		self.TargetYaw = math.fmod( ( self.TargetYaw + ( self.YawVelocity * deltatime ) ), 360 )
+		Msg("self.TargetYaw =  "..self.TargetYaw.."\n")
+	end
+	
 	local Vel = self.Entity:GetPhysicsObject():LocalToWorldVector( self.Velocity )
 	
 	self.Target = self.Target + ( Vel * deltatime * self:GetSpeed() )
@@ -159,7 +170,9 @@ function ENT:PhysicsSimulate( phys, deltatime )
 	local data = {}
 	data.Hover = self:GetHoverMode()
 	data.Target = self.Target
-	data.ControlerPos = self.Entity:GetPos()
+	data.TargetYaw = self.TargetYaw
+	data.TargetAng = Angle(0,self.TargetYaw,0)
+	//data.ControlerPos = self.Entity:GetPos()
 	
 	Wire_TriggerOutput(self.Entity, "Data", data)
 	
@@ -235,12 +248,13 @@ end
 
 
 
-function ENT:DoOutput()
+/*function ENT:DoOutput()
 	
 	local data = {}
 	data.Hover = self:GetHoverMode()
 	data.Target = self.Target
-	data.ControlerPos = self.Entity:GetPos()
+	data.TargetNorm = self.Entity:GetForward()
+	//data.ControlerPos = self.Entity:GetPos()
 	
 	Wire_TriggerOutput(self.Entity, "Data", data)
 	
@@ -252,7 +266,7 @@ function ENT:DoOutput()
 		txt = txt.."\n(off)"
 		self:SetOverlayText( txt )
 	end	
-end
+end*/
 
 
 
@@ -277,6 +291,9 @@ function ENT:SetVelocity( vel )
 	self.Velocity = vel * FrameTime() * 5000
 end
 
+function ENT:SetYawVelocity( vel )
+	self.YawVelocity = vel * FrameTime() * 5000
+end
 
 /*---------------------------------------------------------
    GetAirFriction
@@ -775,3 +792,35 @@ function ENT:Teleport(tbl,base)
 	//end
 end
 
+if !math.RotationMatrix then //if we didn't get this function from some where else, define it now.
+	--################# Needed again to rotate the velocity correctly
+	function math.RotationMatrix(axis,angle,vector)
+		local a = axis;
+		local v = vector;
+		local p = math.rad(angle);
+		-- Regulary rotation matrix
+		local M = {
+			{
+				(math.cos(p) + (1-math.cos(p))*math.pow(a.x,2)),
+				((1-math.cos(p))*a.x*a.y - math.sin(p)*a.z),
+				((1-math.cos(p))*a.x*a.z+math.sin(p)*a.y),
+			},
+			{
+				((1-math.cos(p))*a.y*a.x+math.sin(p)*a.z),
+				(math.cos(p) + (1-math.cos(p))*math.pow(a.y,2)),
+				((1-math.cos(p))*a.y*a.z - math.sin(p)*a.x),
+			},
+			{
+				((1-math.cos(p))*a.x*a.z - math.sin(p)*a.y),
+				((1-math.cos(p))*a.z*a.y+math.sin(p)*a.x),
+				(math.cos(p) + (1-math.cos(p))*math.pow(a.z,2)),
+			}
+		}
+		-- Matrix/vector multiplication
+		local r = Vector();
+		for i=1,3 do
+				r[i] = v.x*M[i][1] + v.y*M[i][2] + v.z*M[i][3];
+		end
+		return r;
+	end
+end
