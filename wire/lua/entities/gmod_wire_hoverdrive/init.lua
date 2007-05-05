@@ -69,11 +69,24 @@ end
 
 function ENT:OnInputWireLink(iname, iType, src, oname, oType)
 	self.Offset = self.Entity:GetPos() - src.Entity:GetPos()
+	self.OffsetLen	= self.Offset:Length()
+	self.OffsetNorm	= self.Offset:Normalize()// - src.Entity:GetForward()
+	//self.OffsetAng	= self.Offset:Angle()
 end
 
 function ENT:TriggerInput(iname, value)
-	if (iname == "Data") then
-		self.Target = value.Target + self.Offset
+	if (iname == "Data") and (type(value) == "table") then
+		//self.Target = value.Target + self.Offset
+		//self.OffsetAng.y = self.OffsetAng.y - self.TargetYaw
+		//(self.Offset - value.TargetNorm):Normalize()
+		
+		
+		local norm = self.OffsetNorm
+		//norm:Rotate( value.TargetAng ) --doesn't work well for my use
+		norm = math.RotationMatrix(Vector(0,0,1), value.TargetYaw, norm)
+		
+		self.Target = value.Target + ( norm * self.OffsetLen )
+		
 		if (value.Hover >= 1) and (!self:GetHoverMode()) then
 			self:EnableHover()
 		elseif (value.Hover == 0) and (self:GetHoverMode()) then
@@ -134,7 +147,7 @@ function ENT:Think()
 end
 
 
-local function GetTargetAndExponent(deltatime, Target, Velocity, AxisPos, AxisVel, AirResistance, Speed)
+/*local function GetTargetAndExponent(deltatime, Target, Velocity, AxisPos, AxisVel, AirResistance, Speed)
 	if ( Velocity != 0 ) then
 		Target = Target + ( Velocity * deltatime * Speed )
 	end
@@ -155,7 +168,7 @@ local function GetTargetAndExponent(deltatime, Target, Velocity, AxisPos, AxisVe
 	//Exponent = Exponent//Exponent = math.Clamp( Exponent, -5000, 5000 )
 	
 	return Target, math.Clamp( Exponent, -5000, 5000 ) //Exponent
-end
+end*/
 
 local function GetTargetAndExponentVector(deltatime, Target, Velocity, AxisPos, AxisVel, AirResistance, Speed)
 	if ( Velocity != 0 ) then
