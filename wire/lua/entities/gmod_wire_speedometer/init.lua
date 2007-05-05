@@ -24,14 +24,14 @@ function ENT:Setup(xyz_mode)
 
 	if (xyz_mode) then
 		Wire_AdjustOutputs(self.Entity, { "X", "Y", "Z" })
-
+		
 		//self:ShowOutput(0, 0, 0)
 		Wire_TriggerOutput(self.Entity, "X", 0)
 		Wire_TriggerOutput(self.Entity, "Y", 0)
 		Wire_TriggerOutput(self.Entity, "Z", 0)
 	else
 		Wire_AdjustOutputs(self.Entity, { "Out" })
-
+		
 		//self:ShowOutput(0)
 		Wire_TriggerOutput(self.Entity, "Out", 0)
 	end
@@ -45,10 +45,12 @@ function ENT:Think()
 		Wire_TriggerOutput(self.Entity, "X", -vel.y)
 		Wire_TriggerOutput(self.Entity, "Y", vel.x)
 		Wire_TriggerOutput(self.Entity, "Z", vel.z)
+		--now handled client side (TAD2020)
 		//self:ShowOutput(-vel.y, vel.x, vel.z)
 	else
 	    local vel = self.Entity:GetVelocity():Length()
 		Wire_TriggerOutput(self.Entity, "Out", vel)
+		--now handled client side (TAD2020)
 		//self:ShowOutput(vel)
 	end
 	

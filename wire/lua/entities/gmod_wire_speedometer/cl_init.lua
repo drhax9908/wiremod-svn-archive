@@ -4,8 +4,7 @@ ENT.AdminSpawnable		= false
 
 include('shared.lua')
 
-
-
+--handle overlay text client side instead (TAD2020)
 function ENT:Think()
 	self.BaseClass.Think(self)
 
