@@ -9,9 +9,9 @@ function ENT:Think()
 	self.BaseClass.Think(self)
 
     local ang = self.Entity:GetAngles()
-	if (ang.p < 0 && !ENT:GetOut180()) then ang.p = ang.p + 360 end
-	if (ang.y < 0 && !ENT:GetOut180()) then ang.y = ang.y + 360 end
-	if (ang.r < 0 && !ENT:GetOut180()) then ang.r = ang.r + 360
+	if (ang.p < 0 && !self:GetOut180()) then ang.p = ang.p + 360 end
+	if (ang.y < 0 && !self:GetOut180()) then ang.y = ang.y + 360 end
+	if (ang.r < 0 && !self:GetOut180()) then ang.r = ang.r + 360
 	elseif (ang.r > 180 && ENT:GetOut180()) then ang.r = ang.r - 360 end
 	self:ShowOutput(ang.p, ang.y, ang.r)
 
