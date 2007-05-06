@@ -13,7 +13,7 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-	self.Inputs = Wire_CreateInputs(self.Entity, { "Grab","Release" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "Grab" })
 	self.Outputs = Wire_CreateOutputs(self.Entity, {"Holding"})
 	self.Weld = nil
 end
@@ -41,23 +41,21 @@ function ENT:TriggerInput(iname, value)
 			if (  !trace.Entity:IsValid() || trace.Entity:IsPlayer() ) then return end
 			// If there's no physics object then we can't constraint it!
 			if ( !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return end
-				// Weld them!
-				local const = constraint.Weld(self.Entity,trace.Entity,0,0,0)
-				
-				self.Weld = const
-				
-				self.Entity:SetColor(255, 0, 0, 255)
-				Wire_TriggerOutput(self.Entity,"Holding",1)
+			// Weld them!
+			local const = constraint.Weld(self.Entity, trace.Entity, 0, 0, 0)
+			
+			self.Weld = const
+			
+			self.Entity:SetColor(255, 0, 0, 255)
+			Wire_TriggerOutput(self.Entity, "Holding", 1)
+		else
+			if(self.Weld != nil)then
+				self.Weld:Remove()
+				self.Weld = nil
+				self.Entity:SetColor(255, 255, 255, 255)
+				Wire_TriggerOutput(self.Entity, "Holding", 0)
+	        end
 		end
-	elseif(iname == "Release")then
-	   if(value ~= 0)then
-            if(self.Weld != nil)then
-                self.Weld:Remove()
-                self.Weld = nil
-                self.Entity:SetColor(255,255,255,255)
-                Wire_TriggerOutput(self.Entity,"Holding",0)
-            end
-        end
     end
 end
 
