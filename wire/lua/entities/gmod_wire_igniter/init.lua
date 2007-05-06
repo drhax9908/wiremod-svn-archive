@@ -16,14 +16,17 @@ function ENT:Initialize()
 	self.Inputs = Wire_CreateInputs(self.Entity, { "A", "Length" })
 	self.IgniteLength = 10
 	self.TargetPlayers = false
+	self:SetBeamRange(2048)
+	self:ShowOutput()
 end
 
 function ENT:OnRemove()
 	Wire_Remove(self.Entity)
 end
 
-function ENT:Setup(trgply)
+function ENT:Setup(trgply,Range)
     self.TargetPlayers = trgply
+    self:SetBeamRange(Range)
 end
 
 function ENT:TriggerInput(iname, value)
@@ -34,7 +37,7 @@ function ENT:TriggerInput(iname, value)
 			 
 			 local trace = {}
 				 trace.start = vStart
-				 trace.endpos = vStart + (vForward * 2048)
+				 trace.endpos = vStart + (vForward * self:GetBeamRange())
 				 trace.filter = { self.Entity }
 			 local trace = util.TraceLine( trace ) 
 			
@@ -70,11 +73,8 @@ function ENT:TriggerInput(iname, value)
 	end
 end
 
-function ENT:ShowOutput(value)
-	if (value ~= self.PrevOutput) then
-		self:SetOverlayText( "Ingiter" )
-		self.PrevOutput = value
-	end
+function ENT:ShowOutput()
+	self:SetOverlayText( "Ingiter" )
 end
 
 function ENT:OnRestore()

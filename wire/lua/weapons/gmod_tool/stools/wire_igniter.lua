@@ -10,8 +10,9 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_igniter_0", "Primary: Create/Update Igniter" )
     language.Add( "WireIgniterTool_igniter", "Igniter:" )
     language.Add( "WireIgniterTool_trgply", "Allow Player Igniting:" )
+    language.Add( "WireIgniterTool_Range", "Max Range:" )
 	language.Add( "sboxlimit_wire_igniters", "You've hit igniters limit!" )
-	language.Add( "undone_wireigniter", "Undone Wire Igniter" )
+	language.Add( "undone_Wire Igniter", "Undone Wire Igniter" )
 end
 
 if (SERVER) then
@@ -21,6 +22,7 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "trgply" ] = "0"
+TOOL.ClientConVar[ "Range" ] = 2048
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
 
@@ -43,8 +45,9 @@ function TOOL:LeftClick( trace )
 	Ang.pitch = Ang.pitch + 90
 	
 	local targetPlayers	= (self:GetClientNumber( "trgply" ) ~= 0)
+	local Range = self:GetClientNumber("Range")
 
-	local wire_igniter = MakeWireIgniter( ply, trace.HitPos, targetPlayers, Ang )
+	local wire_igniter = MakeWireIgniter( ply, trace.HitPos, targetPlayers, Range, Ang )
 
 	local min = wire_igniter:OBBMins()
 	wire_igniter:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -78,7 +81,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireIgniter( pl, Pos, trgply, Ang )
+	function MakeWireIgniter( pl, Pos, trgply, Range, Ang )
 		if ( !pl:CheckLimit( "wire_igniters" ) ) then return false end
 	
 		local wire_igniter = ents.Create( "gmod_wire_igniter" )
@@ -88,12 +91,13 @@ if (SERVER) then
 		wire_igniter:SetPos( Pos )
 		wire_igniter:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
 		wire_igniter:Spawn()
-		wire_igniter:Setup(trgply)
+		wire_igniter:Setup(trgply,Range)
 
 		wire_igniter:GetTable():SetPlayer( pl )
 
 		local ttable = {
 		    TargetPlayers = trgply,
+		    Range = Range,
 			pl = pl
 		}
 
@@ -104,7 +108,7 @@ if (SERVER) then
 		return wire_igniter
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_igniter", MakeWireIgniter, "Pos", "TargetPlayers", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_igniter", MakeWireIgniter, "Pos", "TargetPlayers", "Range", "Ang", "Vel", "aVel", "frozen")
 
 end
 
@@ -156,6 +160,14 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("CheckBox", {
 		Label = "#WireIgniterTool_trgply",
 		Command = "wire_igniter_trgply"
+	})
+	
+		panel:AddControl("Slider", {
+		Label = "#WireIgniterTool_Range",
+		Type = "Float",
+		Min = "1",
+		Max = "10000",
+		Command = "wire_igniter_Range"
 	})
 end
 

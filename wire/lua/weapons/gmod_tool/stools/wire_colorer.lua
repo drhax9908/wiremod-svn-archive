@@ -10,8 +10,9 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_colorer_0", "Primary: Create/Update Colorer" )
     language.Add( "WireColorerTool_colorer", "Colorer:" )
     language.Add( "WireColorerTool_outColor", "Output Color:" )
+    language.Add( "WireColorerTool_Range", "Max Range:" )
 	language.Add( "sboxlimit_wire_colorers", "You've hit Colorers limit!" )
-	language.Add( "undone_wire_Colorer", "Undone Wire Colorer" )
+	language.Add( "undone_Wire Colorer", "Undone Wire Colorer" )
 end
 
 if (SERVER) then
@@ -21,6 +22,7 @@ end
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
 TOOL.ClientConVar[ "outColor" ] = "0"
+TOOL.ClientConVar[ "Range" ] = "2000"
 
 cleanup.Register( "wire_colorers" )
 
@@ -41,8 +43,9 @@ function TOOL:LeftClick( trace )
 	Ang.pitch = Ang.pitch + 90
 	
     local outColor = (self:GetClientNumber( "outColor" ) ~= 0)
+    local range = self:GetClientNumber("Range")
 
-	local wire_colorer = MakeWireColorer( ply, trace.HitPos, outColor, Ang )
+	local wire_colorer = MakeWireColorer( ply, trace.HitPos, outColor, range, Ang )
 
 	local min = wire_colorer:OBBMins()
 	wire_colorer:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -76,7 +79,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireColorer( pl, Pos, outColor, Ang )
+	function MakeWireColorer( pl, Pos, outColor, Range, Ang )
 		if ( !pl:CheckLimit( "wire_colorers" ) ) then return false end
 	
 		local wire_colorer = ents.Create( "gmod_wire_colorer" )
@@ -86,12 +89,13 @@ if (SERVER) then
 		wire_colorer:SetPos( Pos )
 		wire_colorer:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
 		wire_colorer:Spawn()
-		wire_colorer:Setup(outColor)
+		wire_colorer:Setup(outColor,Range)
 
 		wire_colorer:GetTable():SetPlayer( pl )
 
 		local ttable = {
 		    outColor = outColor,
+		    Range = Range,
 			pl = pl
 		}
 
@@ -102,7 +106,7 @@ if (SERVER) then
 		return wire_colorer
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_colorer", MakeWireColorer, "Pos", "outColor", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_colorer", MakeWireColorer, "Pos", "outColor", "Range", "Ang", "Vel", "aVel", "frozen")
 
 end
 
@@ -156,6 +160,14 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("CheckBox", {
 		Label = "#WireColorerTool_outColor",
 		Command = "wire_colorer_outColor"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireColorerTool_Range",
+		Type = "Float",
+		Min = "1",
+		Max = "10000",
+		Command = "wire_colorer_Range"
 	})
 end
 

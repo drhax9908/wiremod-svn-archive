@@ -19,13 +19,14 @@ function ENT:Initialize()
     self.ValueG = 255
     self.ValueB = 255
     self.ValueA = 255
+    self:SetBeamRange(2048)
 end
 
 function ENT:OnRemove()
 	Wire_Remove(self.Entity)
 end
 
-function ENT:Setup(outColor)
+function ENT:Setup(outColor,Range)
     Msg("setup\n")
     if(outColor)then
         local onames = {}
@@ -35,6 +36,8 @@ function ENT:Setup(outColor)
 	    table.insert(onames, "A")
 	    Wire_AdjustOutputs(self.Entity, onames)
 	end
+	self:SetBeamRange(Range)
+	self:ShowOutput()
 end
 
 function ENT:TriggerInput(iname, value)
@@ -45,7 +48,7 @@ function ENT:TriggerInput(iname, value)
 			 
 			 local trace = {}
 				 trace.start = vStart
-				 trace.endpos = vStart + (vForward * 2048)
+				 trace.endpos = vStart + (vForward * self:GetBeamRange())
 				 trace.filter = { self.Entity }
 			 local trace = util.TraceLine( trace ) 
 			
@@ -66,19 +69,16 @@ function ENT:TriggerInput(iname, value)
 	end
 end
 
-function ENT:ShowOutput(value)
-	if (value ~= self.PrevOutput) then
-	    local text = "Colorer"
-	    if(self.Outputs["R"])then
-	       text = text .. "\nColor = "
-			.. math.Round(self.Outputs["R"].Value*1000)/1000 .. ", "
-			.. math.Round(self.Outputs["G"].Value*1000)/1000 .. ", "
-			.. math.Round(self.Outputs["B"].Value*1000)/1000 .. ", "
-			.. math.Round(self.Outputs["A"].Value*1000)/1000
-		end
-		self:SetOverlayText( text )
-		self.PrevOutput = value
+function ENT:ShowOutput()
+	local text = "Colorer"
+	if(self.Outputs["R"])then
+	    text = text .. "\nColor = "
+		.. math.Round(self.Outputs["R"].Value*1000)/1000 .. ", "
+		.. math.Round(self.Outputs["G"].Value*1000)/1000 .. ", "
+		.. math.Round(self.Outputs["B"].Value*1000)/1000 .. ", "
+		.. math.Round(self.Outputs["A"].Value*1000)/1000
 	end
+	self:SetOverlayText( text )
 end
 
 function ENT:OnRestore()
@@ -92,7 +92,7 @@ function ENT:Think()
 			 
 	    local trace = {}
 		  trace.start = vStart
-		  trace.endpos = vStart + (vForward * 2048)
+		  trace.endpos = vStart + (vForward * self:GetBeamRange())
 		  trace.filter = { self.Entity }
 	    local trace = util.TraceLine( trace ) 
 			

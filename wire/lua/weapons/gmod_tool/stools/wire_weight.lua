@@ -10,7 +10,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_weight_0", "Primary: Create/Update weight" )
     language.Add( "WireDataWeightTool_weight", "Weight:" )
 	language.Add( "sboxlimit_wire_weights", "You've hit weights limit!" )
-	language.Add( "undone_wire_weight", "Undone Wire weight" )
+	language.Add( "undone_Wire Weight", "Undone Wire weight" )
 end
 
 if (SERVER) then

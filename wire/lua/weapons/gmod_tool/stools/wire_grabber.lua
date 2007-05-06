@@ -10,7 +10,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_grabber_0", "Primary: Create/Update Grabber" )
     language.Add( "WireGrabberTool_grabber", "Grabber:" )
 	language.Add( "sboxlimit_wire_grabbers", "You've hit grabbers limit!" )
-	language.Add( "undone_wiregrabber", "Undone Wire Grabber" )
+	language.Add( "undone_Wire Grabber", "Undone Wire Grabber" )
 end
 
 if (SERVER) then
