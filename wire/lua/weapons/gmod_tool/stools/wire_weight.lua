@@ -18,7 +18,8 @@ if (SERVER) then
 end
 
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
+//TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
+TOOL.Model = "models/props_interiors/pot01a.mdl"
 
 cleanup.Register( "wire_weights" )
 
