@@ -368,6 +368,43 @@ GateActions["Delta360"] = {
     end
 }
 
+GateActions["increment/decrement"] = {
+	group = "Arithmetic",
+	name = "Increment/Decrement",
+	inputs = { "A", "Increment", "Decrement" },
+	output = function(gate, A, Increment, Decrement)
+		local increment = ( Increment > 0 )
+		local decrement = ( Decrement > 0 )
+		
+		if ( gate.PrevValue ~=  increment ) then
+			gate.PrevValue = increment
+			if ( increment ) then
+				if ( gate.Memory == nil ) then
+					gate.Memory = A
+				else
+					gate.Memory = gate.Memory + A
+				end
+			end
+		end
+		
+		if ( gate.PrevValue ~=  decrement ) then
+			gate.PrevValue = decrement
+			if ( decrement ) then
+				if ( gate.Memory == nil ) then
+					gate.Memory = A
+				else
+					gate.Memory = gate.Memory - A
+				end
+			end
+		end
+		
+		return gate.Memory
+	end,
+	label = function(Out, A)
+		return "(" .. A .. " +/- LastNum) = " .. Out
+	end
+}
+
 
 
 
