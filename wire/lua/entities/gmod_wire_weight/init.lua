@@ -5,8 +5,10 @@ AddCSLuaFile( "shared.lua" )
 include('shared.lua')
 
 ENT.WireDebugName = "Weight"
+ENT.OverlayDelay = 0.1
 
-local MODEL = Model("models/jaanus/wiretool/wiretool_range.mdl")
+//local MODEL = Model("models/jaanus/wiretool/wiretool_range.mdl")
+local MODEL = Model("models/props_interiors/pot01a.mdl")
 
 function ENT:Initialize()
 	self.Entity:SetModel( MODEL )
@@ -18,32 +20,27 @@ function ENT:Initialize()
 	self:ShowOutput(self.Entity:GetPhysicsObject():GetMass())
 end
 
-function ENT:OnRemove()
-	Wire_Remove(self.Entity)
-end
-
 function ENT:TriggerInput(iname,value)
     if(value>0)then
-        self.Entity:GetPhysicsObject():SetMass(value)
-        Wire_TriggerOutput(self.Entity,"Weight",value)
-        self:ShowOutput(value)
+		local phys = self.Entity:GetPhysicsObject()
+		if ( phys:IsValid() ) then 
+			phys:SetMass(value)
+			phys:Wake()
+	        self:ShowOutput(value)
+	        Wire_TriggerOutput(self.Entity,"Weight",value)
+		end
     end
     return true
 end
 
 function ENT:Think()
+	self.BaseClass.Think(self)
 end
 
 function ENT:Setup()
 end
 
 function ENT:ShowOutput(value)
-	local text = "Weight:"
-	text = text..tostring(value)
-	self:SetOverlayText( text )
-end
-
-function ENT:OnRestore()
-    Wire_Restored(self.Entity)
+	self:SetOverlayText( "Weight: "..tostring(value) )
 end
 
