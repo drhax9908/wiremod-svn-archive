@@ -24,11 +24,16 @@ function ENT:TriggerInput(iname, value)
 	end
 end
 
-function ENT:Setup(SingleValue, SingleBigFont, TextA, TextB)
+function ENT:Setup(SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor)
 	// Extra stuff for Wire Screen (TheApathetic)
 	self:SetTextA(TextA)
 	self:SetTextB(TextB)
 	self:SetSingleBigFont(SingleBigFont)
+	
+	//LeftAlign (TAD2020)
+	self:SetLeftAlign(LeftAlign)
+	//Floor (TAD2020)
+	self:SetFloor(Floor)
 	
 	// Put it here to update inputs if necessary (TheApathetic)
 	self:SetSingleValue(SingleValue)

@@ -66,7 +66,7 @@ function ENT:TriggerInput(iname, value)
 		if (math.abs(value) >= 0 && math.abs(value) <= self.Throws) then
 			self:Switch(math.abs(value))
 		end
-	else
+	elseif (iname) then
 		self.Last[iname] = value or 0
 		self:Switch(self.SelInput)
 	end
