@@ -49,7 +49,7 @@ function ENT:TriggerInput(iname, value)
 			self.Entity:SetColor(255, 0, 0, 255)
 			Wire_TriggerOutput(self.Entity, "Holding", 1)
 		else
-			if(self.Weld != nil && self.Weld:IsValid())then
+			if(self.Weld != nil)then
 				if(self.Weld && self.Weld:IsValid())then
                     self.Weld:Remove()
                 end
