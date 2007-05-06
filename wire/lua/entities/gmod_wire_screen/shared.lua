@@ -65,3 +65,21 @@ end
 function ENT:GetTextB()
 	return self.Entity:GetNetworkedString("TextB")
 end
+
+//LeftAlign (TAD2020)
+function ENT:SetLeftAlign(leftalign)
+	self.Entity:SetNetworkedBool("LeftAlign",leftalign)
+end
+
+function ENT:GetLeftAlign()
+	return self.Entity:GetNetworkedBool("LeftAlign")
+end
+
+//Floor (TAD2020)
+function ENT:SetFloor(Floor)
+	self.Entity:SetNetworkedBool("Floor",Floor)
+end
+
+function ENT:GetFloor()
+	return self.Entity:GetNetworkedBool("Floor")
+end

@@ -7,7 +7,7 @@ ENT.RenderGroup 		= RENDERGROUP_BOTH
 
 function ENT:Initialize()
 
-	surface.CreateFont( "coolvetica", 80, 400, false, false, "screen_font" )
+	surface.CreateFont( "coolvetica", 64, 400, false, false, "screen_font" )
 
 	// Create new fonts here for Single Value screens
 	// According to the wiki, the font size is capped at 128 (TheApathetic)
@@ -103,9 +103,12 @@ function ENT:Draw()
 			
 			draw.DrawText(self:GetTextA(),"Trebuchet"..fontsize,(x + 92)/RatioX,y + 2,Color(255,255,255,255),1)
 				
-			local DisplayA = self:GetDisplayA( )
-			
-			draw.DrawText(DisplayA,"screen_font"..sf_suffix,(x + 92)/RatioX,y + rectheight,Color(255,255,255,255),1)
+			local DisplayA = math.floor(self:GetDisplayA( ) * 1000) / 1000
+			if (self:GetLeftAlign()) then
+				draw.DrawText(DisplayA,"screen_font"..sf_suffix,x/RatioX,y + rectheight,Color(255,255,255,255),0)
+			else
+				draw.DrawText(DisplayA,"screen_font"..sf_suffix,(x + 92)/RatioX,y + rectheight,Color(255,255,255,255),1)
+			end
 		else
 			// Normal two-value Wire Screen
 			surface.SetDrawColor(100,100,150,255)
@@ -118,11 +121,24 @@ function ENT:Draw()
 			draw.DrawText(self:GetTextA(),"Trebuchet18",(x + 92)/RatioX,y + 2,Color(255,255,255,255),1)
 			draw.DrawText(self:GetTextB(),"Trebuchet18",(x + 92)/RatioX,y + 96,Color(255,255,255,255),1)
 				
-			local DisplayA = self:GetDisplayA( )
-			local DisplayB = self:GetDisplayB( )
+			local DisplayA
+			local DisplayB
 			
-			draw.DrawText(DisplayA,"screen_font",(x + 92)/RatioX,y + 20,Color(255,255,255,255),1)
-			draw.DrawText(DisplayB,"screen_font",(x + 92)/RatioX,y + 114,Color(255,255,255,255),1)
+			if (self:GetFloor()) then
+				DisplayA = math.floor(self:GetDisplayA( ))
+				DisplayB = math.floor(self:GetDisplayB( ))
+			else
+				DisplayA = math.floor(self:GetDisplayA( ) * 1000) / 1000
+				DisplayB = math.floor(self:GetDisplayB( ) * 1000) / 1000
+			end
+			
+			if (self:GetLeftAlign()) then
+				draw.DrawText(DisplayA,"screen_font",x/RatioX,y + 20,Color(255,255,255,255),0)
+				draw.DrawText(DisplayB,"screen_font",x/RatioX,y + 114,Color(255,255,255,255),0)
+			else
+				draw.DrawText(DisplayA,"screen_font",(x + 90)/RatioX,y + 20,Color(255,255,255,255),1)
+				draw.DrawText(DisplayB,"screen_font",(x + 92)/RatioX,y + 114,Color(255,255,255,255),1)
+			end
 		end
 		
 	cam.End3D2D()

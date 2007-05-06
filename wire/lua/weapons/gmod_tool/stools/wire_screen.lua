@@ -16,6 +16,10 @@ if ( CLIENT ) then
 	language.Add("Tool_wire_screen_singlebigfont", "Use bigger font for single-value screen:")
 	language.Add("Tool_wire_screen_texta", "Text A:")
 	language.Add("Tool_wire_screen_textb", "Text B:")
+	
+	//left alignment  and floor options (TAD2020)
+	language.Add("Tool_wire_screen_leftalign", "Left alignment:")
+	language.Add("Tool_wire_screen_floor", "Floor screen value:")
 end
 
 if (SERVER) then
@@ -29,6 +33,9 @@ TOOL.ClientConVar["singlevalue"] = "0"
 TOOL.ClientConVar["singlebigfont"] = "1"
 TOOL.ClientConVar["texta"] = "Value A"
 TOOL.ClientConVar["textb"] = "Value B"
+//left alignment  and floor options (TAD2020)
+TOOL.ClientConVar["leftalign"] = "0"
+TOOL.ClientConVar["floor"] = "0"
 
 local MaxTextLength = 20
 
@@ -52,21 +59,25 @@ function TOOL:LeftClick( trace )
 	local SingleBigFont	= self:GetClientNumber("singlebigfont") == 1
 	local TextA			= self:GetClientInfo("texta")
 	local TextB			= self:GetClientInfo("textb")
+	local LeftAlign		= self:GetClientNumber("leftalign") == 1
+	local Floor			= self:GetClientNumber("floor") == 1
 
 	// Check to update screen if necessary (TheApathetic)
 	if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_screen" && trace.Entity.pl == ply) then
-		trace.Entity:Setup(SingleValue, SingleBigFont, TextA, TextB)
+		trace.Entity:Setup(SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor)
 		
 		trace.Entity.SingleValue	= SingleValue
 		trace.Entity.SingleBigFont	= SingleBigFont
-		trace.Entity.TextA = TextA
-		trace.Entity.TextB = TextB
+		trace.Entity.TextA			= TextA
+		trace.Entity.TextB 			= TextB
+		trace.Entity.LeftAlign 		= LeftAlign
+		trace.Entity.Floor	 		= Floor
 		return true
 	end
 
 	Ang.pitch = Ang.pitch + 90
 	
-	wire_screen = MakeWireScreen( ply, Ang, trace.HitPos, Smodel, SingleValue, SingleBigFont, TextA, TextB )
+	wire_screen = MakeWireScreen( ply, Ang, trace.HitPos, Smodel, SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor )
 	local min = wire_screen:OBBMins()
 	wire_screen:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
@@ -82,7 +93,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireScreen( pl, Ang, Pos, Smodel, SingleValue, SingleBigFont, TextA, TextB )
+	function MakeWireScreen( pl, Ang, Pos, Smodel, SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor )
 		
 		if ( !pl:CheckLimit( "wire_screens" ) ) then return false end
 		
@@ -93,7 +104,7 @@ if (SERVER) then
 		wire_screen:SetPos( Pos )
 		wire_screen:Spawn()
 		
-		wire_screen:Setup(SingleValue, SingleBigFont, TextA, TextB)
+		wire_screen:Setup(SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor)
 		
 		wire_screen:SetPlayer(pl)
 			
@@ -103,7 +114,9 @@ if (SERVER) then
 			SingleValue		= SingleValue,
 			SingleBigFont	= SingleBigFont,
 			TextA			= TextA,
-			TextB			= TextB
+			TextB			= TextB,
+			LeftAlign		= LeftAlign,
+			Floor			= Floor
 		}
 		
 		table.Merge(wire_screen:GetTable(), ttable )
@@ -114,7 +127,7 @@ if (SERVER) then
 		
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_screen", MakeWireScreen, "Ang", "Pos", "Smodel", "SingleValue", "SingleBigFont", "TextA", "TextB")
+	duplicator.RegisterEntityClass("gmod_wire_screen", MakeWireScreen, "Ang", "Pos", "Smodel", "SingleValue", "SingleBigFont", "TextA", "TextB", "LeftAlign", "Floor")
 
 end
 
@@ -172,6 +185,10 @@ function TOOL.BuildCPanel(panel)
 	// Extra stuff for Wire Screen (TheApathetic)
 	panel:AddControl("Checkbox", {Label = "#Tool_wire_screen_singlevalue", Command = "wire_screen_singlevalue"})
 	panel:AddControl("Checkbox", {Label = "#Tool_wire_screen_singlebigfont", Command = "wire_screen_singlebigfont"})
+	
+	//left alignment  and floor options (TAD2020)
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_screen_leftalign", Command = "wire_screen_leftalign"})
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_screen_floor", Command = "wire_screen_floor"})
 
 	panel:AddControl("TextBox", {Label = "#Tool_wire_screen_texta", MaxLength = tostring(MaxTextLength), Command = "wire_screen_texta"})
 	panel:AddControl("TextBox", {Label = "#Tool_wire_screen_textb", MaxLength = tostring(MaxTextLength), Command = "wire_screen_textb"})
