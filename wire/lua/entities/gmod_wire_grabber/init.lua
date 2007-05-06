@@ -16,6 +16,7 @@ function ENT:Initialize()
 	self.Inputs = Wire_CreateInputs(self.Entity, { "Grab" })
 	self.Outputs = Wire_CreateOutputs(self.Entity, {"Holding"})
 	self.Weld = nil
+	self.Entity:GetPhysicsObject():SetMass(200)
 end
 
 function ENT:OnRemove()
