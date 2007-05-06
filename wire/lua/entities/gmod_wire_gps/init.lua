@@ -20,7 +20,7 @@ function ENT:Setup()
 	self.Value = 0
 	self.PrevOutput = nil
 
-	self:ShowOutput(0, 0, 0)
+	//self:ShowOutput(0, 0, 0)
 	Wire_TriggerOutput(self.Entity, "X", 0)
 	Wire_TriggerOutput(self.Entity, "Y", 0)
 	Wire_TriggerOutput(self.Entity, "Z", 0)
@@ -33,12 +33,13 @@ function ENT:Think()
 	Wire_TriggerOutput(self.Entity, "X", pos.x)
 	Wire_TriggerOutput(self.Entity, "Y", pos.y)
 	Wire_TriggerOutput(self.Entity, "Z", pos.z)
-	self:ShowOutput(pos.x, pos.y, pos.z)
+	//moe to client side (TAD2020)
+	//self:ShowOutput(pos.x, pos.y, pos.z)
 	
 	self.Entity:NextThink(CurTime()+0.04)
 	return true
 end
 
-function ENT:ShowOutput(x, y, z)
+/*function ENT:ShowOutput(x, y, z)
 	self:SetOverlayText( "Position = " .. math.Round(x*1000)/1000 .. "," .. math.Round(y*1000)/1000 .. "," .. math.Round(z*1000)/1000 )
-end
+end*/
