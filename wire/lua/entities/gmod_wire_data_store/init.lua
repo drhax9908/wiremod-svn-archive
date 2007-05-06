@@ -22,6 +22,7 @@ function ENT:Initialize()
 	self.Values["F"] = 0
 	self.Values["G"] = 0
 	self.Values["H"] = 0
+	self:ShowOutput()
 end
 
 function ENT:OnRemove()
@@ -34,11 +35,8 @@ end
 function ENT:Setup()
 end
 
-function ENT:ShowOutput(value)
-	if (value ~= self.PrevOutput) then
-		self:SetOverlayText( "Data Store" )
-		self.PrevOutput = value
-	end
+function ENT:ShowOutput()
+	self:SetOverlayText( "Data Store" )
 end
 
 function ENT:OnRestore()

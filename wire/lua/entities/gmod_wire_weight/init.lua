@@ -15,6 +15,7 @@ function ENT:Initialize()
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	self.Inputs = Wire_CreateInputs(self.Entity,{"Weight"})
 	self.Outputs = Wire_CreateOutputs(self.Entity,{"Weight"})
+	self:ShowOutput(self.Entity:GetPhysicsObject():GetMass())
 end
 
 function ENT:OnRemove()
@@ -40,7 +41,6 @@ function ENT:ShowOutput(value)
 	local text = "Weight:"
 	text = text..tostring(value)
 	self:SetOverlayText( text )
-	self.PrevOutput = value
 end
 
 function ENT:OnRestore()

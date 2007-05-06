@@ -12,17 +12,15 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	self.Transmitter = nil
+	self:ShowOutput()
 end
 
 function ENT:OnRemove()
 	Wire_Remove(self.Entity)
 end
 
-function ENT:ShowOutput(value)
-	if (value ~= self.PrevOutput) then
-		self:SetOverlayText( "Satellite Dish" )
-		self.PrevOutput = value
-	end
+function ENT:ShowOutput()
+	self:SetOverlayText( "Satellite Dish" )
 end
 
 function ENT:OnRestore()

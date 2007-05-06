@@ -50,10 +50,12 @@ function ENT:TriggerInput(iname, value)
 			Wire_TriggerOutput(self.Entity, "Holding", 1)
 		else
 			if(self.Weld != nil)then
-				self.Weld:Remove()
-				self.Weld = nil
-				self.Entity:SetColor(255, 255, 255, 255)
-				Wire_TriggerOutput(self.Entity, "Holding", 0)
+				if(self.Weld && self.Weld:IsValid())then
+                    self.Weld:Remove()
+                end
+                self.Weld = nil
+                self.Entity:SetColor(255,255,255,255)
+                Wire_TriggerOutput(self.Entity,"Holding",0)
 	        end
 		end
     end

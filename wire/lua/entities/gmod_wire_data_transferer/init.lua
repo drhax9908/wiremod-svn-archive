@@ -26,7 +26,12 @@ function ENT:Initialize()
 	self.Values["G"] = 0
 	self.Values["H"] = 0
 	
-	self.Range = 25000
+	self:SetBeamRange(25000)
+	self:ShowOutput()
+end
+
+function ENT:Setup(Range)
+    self:SetBeamRange(Range)
 end
 
 function ENT:OnRemove()
@@ -65,7 +70,7 @@ function ENT:Think()
 	
     local trace = {}
 	   trace.start = vStart
-	   trace.endpos = vStart + (vForward * self.Range)
+	   trace.endpos = vStart + (vForward * self:GetBeamRange())
 	   trace.filter = { self.Entity }
 	local trace = util.TraceLine( trace ) 
 	
@@ -126,11 +131,8 @@ function ENT:Think()
     self.Entity:NextThink(CurTime()+0.125)
 end
 
-function ENT:ShowOutput(value)
-	if (value ~= self.PrevOutput) then
-		self:SetOverlayText( "Data Transferer" )
-		self.PrevOutput = value
-	end
+function ENT:ShowOutput()
+	self:SetOverlayText( "Data Transferer" )
 end
 
 function ENT:OnRestore()
