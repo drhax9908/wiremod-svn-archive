@@ -91,8 +91,10 @@ function TOOL:Reload( trace )
     if(trace.Entity and trace.Entity:IsValid()) then
         if(self.FirstSelected == nil)then
             self.FirstSelected = trace.Entity
+            Msg("First\n")
         else
             self.FirstSelected.Transmitter = trace.Entity
+            Msg("Linked\n")
         end
         return true
     end
