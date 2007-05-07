@@ -80,10 +80,11 @@ function ENT:TriggerInput(iname, value)
 		//self.OffsetAng.y = self.OffsetAng.y - self.TargetYaw
 		//(self.Offset - value.TargetNorm):Normalize()
 		
-		
 		local norm = self.OffsetNorm
 		//norm:Rotate( value.TargetAng ) --doesn't work well for my use
-		norm = math.RotationMatrix(Vector(0,0,1), value.TargetYaw, norm)
+		norm = math.RotationMatrix(Vector(1,0,0), value.TargetAngle.p, norm)
+		norm = math.RotationMatrix(Vector(0,0,1), value.TargetAngle.y, norm)
+		norm = math.RotationMatrix(Vector(0,1,0), value.TargetAngle.r, norm)
 		
 		self.Target = value.Target + ( norm * self.OffsetLen )
 		
@@ -176,17 +177,17 @@ local function GetTargetAndExponentVector(deltatime, Target, Velocity, AxisPos, 
 	end
 	
 	local Diff = Target - AxisPos
-	Diff.x = math.Clamp( Diff.x, -100, 100 )
-	Diff.y = math.Clamp( Diff.y, -100, 100 )
-	Diff.z = math.Clamp( Diff.z, -100, 100 )
+	Diff.x = math.Clamp( Diff.x, -50, 50 )
+	Diff.y = math.Clamp( Diff.y, -50, 50 )
+	Diff.z = math.Clamp( Diff.z, -20, 100 )
 	
 	if ( Diff == Vector(0,0,0) ) then
 		return Target, Vector(0,0,0)
 	end
 	
 	local Exponent = Vector()
-	Exponent.x = Diff.x^2
-	Exponent.y = Diff.y^2
+	Exponent.x = Diff.x^1.6
+	Exponent.y = Diff.y^1.6
 	Exponent.z = Diff.z^2
 	
 	if ( Diff.x < 0 ) then Exponent.x = Exponent.x * -1 end
