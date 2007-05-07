@@ -94,6 +94,7 @@ function TOOL:Reload( trace )
             Msg("First\n")
         else
             self.FirstSelected.Transmitter = trace.Entity
+            self.FirstSelected = nil
             Msg("Linked\n")
         end
         return true
