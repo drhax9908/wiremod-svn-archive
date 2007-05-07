@@ -15,7 +15,7 @@ AdvDupe = {}
 
 if (CLIENT) then return end
 
-AdvDupe.Version = 1.71
+AdvDupe.Version = 1.711
 AdvDupe.ToolVersion = 1.7
 AdvDupe.FileVersion = 0.62
 
@@ -46,7 +46,7 @@ function AdvDupe.SaveDupeTablesToFile( pl, EntTables, ConstraintTables, HeadEnti
 	temp.HoldPos			= HoldPos
 	
 	//make these tables smaller cause there too fucking huge otherwise
-	if (debugsave) then
+	if (debugsave) and SinglePlayer() then
 		temp.EntTables			= EntTables
 		temp.ConstraintTables	= ConstraintTables
 	else
