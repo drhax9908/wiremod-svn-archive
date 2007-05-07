@@ -36,12 +36,16 @@ function ENT:Initialize()
 	self.Target = self.Entity:GetPos()
 	self:SetSpeed( 1 )
 	self:SetHoverMode( 1 )
+	
 	self.TargetYaw = 0
 	self.YawVelocity = 0
 	
+	self.TargetAngle = Angle(0, 0, 0)
+	self.AngleVelocity = Angle(0, 0, 0)
+	
 	self.JumpTarget = Vector(0,0,0)
 
-	self.Inputs = Wire_CreateInputs(self.Entity, { "X_Velocity", "Y_Velocity", "Z_Velocity", "HoverMode", "Yaw_Velocity", "Jump", "X_JumpTarget", "Y_JumpTarget", "Z_JumpTarget", "SetJumpTarget" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "X_Velocity", "Y_Velocity", "Z_Velocity", "Pitch_Velocity", "Yaw_Velocity", "Roll_Velocity", "HoverMode", "Jump", "X_JumpTarget", "Y_JumpTarget", "Z_JumpTarget", "SetJumpTarget" })
 	self.Outputs = WireLib.CreateSpecialOutputs(self.Entity, {"Data"}, {"HOVERDATAPORT"})
 	
 end
@@ -79,12 +83,12 @@ function ENT:TriggerInput(iname, value)
 		elseif (value == 0) then
 			self:SetHoverMode( 0 )
 		end
+	elseif (iname == "Pitch_Velocity") then
+		self:SetPitchVelocity( value )
 	elseif (iname == "Yaw_Velocity") then
 		self:SetYawVelocity( value )
-	/*elseif (iname == "") then
-		
-	elseif (iname == "") then*/
-		
+	elseif (iname == "Roll_Velocity") then
+		self:SetRollVelocity( value )
 	elseif (iname == "Jump") and (value > 0) and (!self.Jumping) then
 		self:Jump()
 	elseif (iname == "X_JumpTarget") then
@@ -97,10 +101,11 @@ function ENT:TriggerInput(iname, value)
 		self.JumpTarget = self.JumpTarget or Vector(0,0,20)
 		self.JumpTarget.z = value
 	elseif (iname == "SetJumpTarget") then
+		//Msg("value = "..value.."\n")
 		if (value > 0) then
 			self.JumpTargetSet = true
-		else
-			self.JumpTargetSet = false
+		//else
+			//self.JumpTargetSet = false
 		end
 	end
 end
@@ -123,7 +128,6 @@ end*/
 
 
 local function GetTargetAndExponentVector(deltatime, Target, Velocity, AxisPos, AxisVel, AirResistance, Speed)
-	
 	
 	local Diff = Target - AxisPos
 	Diff.x = math.Clamp( Diff.x, -100, 100 )
@@ -157,9 +161,18 @@ end
 ---------------------------------------------------------*/
 function ENT:PhysicsSimulate( phys, deltatime )
 	
-	if ( self.YawVelocity != 0 ) then
+	/*if ( self.YawVelocity != 0 ) then
 		self.TargetYaw = math.fmod( ( self.TargetYaw + ( self.YawVelocity * deltatime ) ), 360 )
-		Msg("self.TargetYaw =  "..self.TargetYaw.."\n")
+		//Msg("self.TargetYaw =  "..self.TargetYaw.."\n")
+	end*/
+	if ( self.AngleVelocity.p != 0 ) then
+		self.TargetAngle.p = math.fmod( ( self.TargetAngle.p + ( self.AngleVelocity.p * deltatime ) ), 360 )
+	end
+	if ( self.AngleVelocity.y != 0 ) then
+		self.TargetAngle.y = math.fmod( ( self.TargetAngle.y + ( self.AngleVelocity.y * deltatime ) ), 360 )
+	end
+	if ( self.AngleVelocity.r != 0 ) then
+		self.TargetAngle.r = math.fmod( ( self.TargetAngle.r + ( self.AngleVelocity.r * deltatime ) ), 360 )
 	end
 	
 	local Vel = self.Entity:GetPhysicsObject():LocalToWorldVector( self.Velocity )
@@ -170,13 +183,13 @@ function ENT:PhysicsSimulate( phys, deltatime )
 	local data = {}
 	data.Hover = self:GetHoverMode()
 	data.Target = self.Target
-	data.TargetYaw = self.TargetYaw
-	data.TargetAng = Angle(0,self.TargetYaw,0)
+	//data.TargetYaw = self.TargetYaw
+	data.TargetAngle = self.TargetAngle
 	//data.ControlerPos = self.Entity:GetPos()
 	
 	Wire_TriggerOutput(self.Entity, "Data", data)
 	
-	local txt = "Target = "..tostring(self.Target)
+	local txt = "Hover Target = "..tostring(self.Target).."\nJump Target = "..tostring(self.JumpTarget)
 	if (self:GetHoverMode()) then
 		txt = txt.."\n(on)"
 		self:SetOverlayText( txt )
@@ -269,31 +282,48 @@ end
 end*/
 
 
-
-
+function ENT:WakePhys()
+	local phys = self.Entity:GetPhysicsObject()
+	if ( phys:IsValid() ) then 
+		phys:Wake()
+	end
+end
 
 function ENT:SetXVelocity( x )
 	self.Velocity.x = x * FrameTime() * 5000
-	//Msg("self.Velocity x = "..tostring(self.Velocity).."\n")
+	self:WakePhys()
 end
 
 function ENT:SetYVelocity( y )
 	self.Velocity.y = y * FrameTime() * 5000
-	//Msg("self.Velocity y = "..tostring(self.Velocity).."\n")
+	self:WakePhys()
 end
 
 function ENT:SetZVelocity( z )
 	self.Velocity.z = z * FrameTime() * 5000
-	//Msg("self.Velocity z = "..tostring(self.Velocity).."\n")
+	self:WakePhys()
 end
 
 function ENT:SetVelocity( vel )
 	self.Velocity = vel * FrameTime() * 5000
+	self:WakePhys()
+end
+
+function ENT:SetPitchVelocity( vel )
+	self.AngleVelocity.p = vel * FrameTime() * 2000
+	self:WakePhys()
 end
 
 function ENT:SetYawVelocity( vel )
-	self.YawVelocity = vel * FrameTime() * 5000
+	self.AngleVelocity.y = vel * FrameTime() * 2000
+	self:WakePhys()
 end
+
+function ENT:SetRollVelocity( vel )
+	self.AngleVelocity.r = vel * FrameTime() * 2000
+	self:WakePhys()
+end
+
 
 /*---------------------------------------------------------
    GetAirFriction
@@ -323,6 +353,7 @@ end
 
 
 
+
 ENT.JumpStage = 0
 
 function ENT:Jump()
@@ -340,7 +371,7 @@ end
 util.PrecacheSound("stargate/teleport.mp3")
 function ENT:Think()
 	if (self.JumpStage == 1) then
-		--Msg("Start Jump 1\n")
+		Msg("Start Jump 1\n")
 		
 		local attached = self:GetEntitiesForTeleport(self.Entity);
 		if(attached) then
@@ -376,9 +407,9 @@ function ENT:Think()
 			self.JumpStage = 0
 		end
 		
-		--Msg("End Jump 1\n")
+		Msg("End Jump 1\n")
 	elseif (self.JumpStage == 2) then
-		--Msg("Start Jump 2\n")
+		Msg("Start Jump 2\n")
 		
 		self:Teleport(self.ents.Entity, self.Entity);
 		
@@ -410,7 +441,7 @@ function ENT:Think()
 		self.JumpStage = 0
 		self.Jumping = false
 		
-		--Msg("End Jump 1\n")
+		Msg("End Jump 1\n")
 	end
 end
 
@@ -427,21 +458,21 @@ end
 function ENT:Allowed(e,auto_close_check)
 	local c = e:GetClass();
 	local t = type(e):lower();
-	local p = e:GetPhysicsObject();
+	/*local p = e:GetPhysicsObject();
 	local moveable = true;
 	if(p:IsValid() and t == "entity") then
 		if(not p:IsMoveable()) then
 			moveable = false;
 		end
-	end
+	end*/
 	if(((t == "player" and not e:InVehicle()) or 
 		(t == "entity" and (c:find("prop_[prv]") or (c:find("phys_") and not auto_close_check))) or -- Allow props and constraints
 		t == "vehicle" or -- Vehicles
-		(e.Type ~= nil and not c:find("stargate") and not (c:find("dhd") and auto_close_check)) or -- SENT's but not stargates - May cause into infinity selfteleportation - For more, watch this funny screeny ;)  http://forums.facepunchstudios.com/showpost.php?p=4747617&postcount=256
+		(e.Type ~= nil) or //and not c:find("stargate") and not (c:find("dhd") and auto_close_check)) or -- SENT's but not stargates - May cause into infinity selfteleportation - For more, watch this funny screeny ;)  http://forums.facepunchstudios.com/showpost.php?p=4747617&postcount=256
 		t == "npc" or -- NPC's
 		t == "weapon" or c == "npc_grenade_frag" or c == "rpg_missile" or c == "grenade_ar2" or c == "crossbow_bolt" or c == "npc_satchel" or c == "prop_combine_ball") and -- Weapons and grenades from weapons etc
 		e:GetParent():EntIndex() == 0 -- Only allow unparented props to get teleported
-		and (moveable or not auto_close_check) -- For the autoclose only - Is the object awake?
+		//and (moveable or not auto_close_check) -- For the autoclose only - Is the object awake?
 	) then  
 		return true 
 	end 
@@ -614,7 +645,8 @@ function ENT:GetEntitiesForTeleport(e)
 			end*/
 			//if(allow) then
 				for _,v in pairs(attached[1]) do
-					if(v:GetClass() ~= "gmod_spawner" and v ~= e and self:Allowed(v)) then
+					//if(v:GetClass() ~= "gmod_spawner" and 
+					if (v ~= e and self:Allowed(v)) then
 						table.insert(entities,v);
 					end
 				end
@@ -635,7 +667,7 @@ function ENT:GetEntitiesForTeleport(e)
 end
 
 -- The awesome StarGate sounds, ftw!
-ENT.snd = {
+/*ENT.snd = {
 	"stargate/gate_roll.mp3",
 	"stargate/chevron.mp3",
 	"stargate/chevron_inbound.mp3",
@@ -651,7 +683,7 @@ ENT.snd = {
 	"stargate/wormhole_loop.wav", -- Thx to appollo114 for sending me this sounds
 	"stargate/chevron2.mp3", -- Second engage sound
 	"stargate/chevron_lock.mp3", -- Chevron lock sound
-}
+}*/
 
 --################# Teleportation function
 function ENT:Teleport(tbl,base)
