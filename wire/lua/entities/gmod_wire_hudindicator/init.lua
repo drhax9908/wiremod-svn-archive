@@ -49,7 +49,7 @@ function ENT:Setup(a, ar, ag, ab, aa, b, br, bg, bb, ba)
 end
 
 // For HUD Indicators
-function ENT:HUDSetup(showinhud, huddesc, hudaddname, hudshowvalue, hudstyle, allowhook)
+function ENT:HUDSetup(showinhud, huddesc, hudaddname, hudshowvalue, hudstyle, allowhook, fullcircleangle)
 	local ply = self:GetPlayer()
 	local eindex = self.Entity:EntIndex()
 	// If user updates with the STool to take indicator off of HUD
@@ -94,6 +94,7 @@ function ENT:HUDSetup(showinhud, huddesc, hudaddname, hudshowvalue, hudstyle, al
 	self.HUDShowValue = hudshowvalue
 	self.HUDStyle = hudstyle
 	self.AllowHook = allowhook
+	self.FullCircleAngle = fullcircleangle
 
 	// To tell if you can hook a HUD Indicator at a glance
 	if (allowhook) then
@@ -133,6 +134,11 @@ function ENT:SetupHUDStyle(hudstyle, rplayer)
 			umsg.String(ainfo)
 			umsg.String(binfo)
 		umsg.End()
+	elseif (hudstyle == 3) then // Full Circle Gauge
+		umsg.Start("HUDIndicatorStyleFullCircle", pl)
+			umsg.Short(self.Entity:EntIndex())
+			umsg.Float(self.FullCircleAngle)
+		umsg.End()
 	end
 end
 
@@ -145,6 +151,8 @@ function ENT:RegisterPlayer(ply, hookhidehud, podonly)
 	// The podonly is used for players who are registered only because they are in a linked pod
 	if (!self.RegisteredPlayers[plyuid]) then
 		self.RegisteredPlayers[plyuid] = { pl = ply, hookhidehud = hookhidehud, podonly = podonly }
+		// This is used to check for pod-only status in ClientCheckRegister()
+		self.Entity:SetNetworkedBool( plyuid, util.tobool(podonly) )
 	end
 	
 	umsg.Start("HUDIndicatorRegister", pl)

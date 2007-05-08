@@ -31,11 +31,13 @@ function TOOL:LeftClick( trace )
 	if (CLIENT) then return true end
 	
 	local ply = self:GetOwner()
+
+	local _out180 = self:GetClientNumber( "out180" ) == 1
 	
-	// If we shot a wire_gyroscope do nothing
+	// If we shot a wire_gyroscope change its "Use +/-180?" property (TheApathetic)
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_gyroscope" && trace.Entity.pl == ply ) then
-		trace.Entity:Setup()
-		
+		trace.Entity:Setup( _out180 )
+		trace.Entity.out180 = _out180
 		return true
 	end
 	
@@ -43,8 +45,6 @@ function TOOL:LeftClick( trace )
 	
 	if (not util.IsValidModel(self.Model)) then return false end
 	if (not util.IsValidProp(self.Model)) then return false end		// Allow ragdolls to be used?
-	
-	local _out180 = self:GetClientNumber( "out180" ) == 1
 	
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
@@ -108,7 +108,7 @@ if (SERVER) then
 		return wire_gyroscope
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_gyroscope", MakeWireGyroscope, "Model", "Ang", "Pos", "nocollide", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_gyroscope", MakeWireGyroscope, "Model", "Ang", "Pos", "out180", "nocollide", "Vel", "aVel", "frozen")
 
 end
 

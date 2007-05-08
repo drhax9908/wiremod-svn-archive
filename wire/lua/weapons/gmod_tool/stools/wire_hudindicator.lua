@@ -8,7 +8,7 @@ TOOL.ConfigName		= ""
 if ( CLIENT ) then
     language.Add( "Tool_wire_hudindicator_name", "Hud Indicator Tool (Wire)" )
     language.Add( "Tool_wire_hudindicator_desc", "Spawns a Hud Indicator for use with the wire system." )
-    language.Add( "Tool_wire_hudindicator_0", "Primary: Create/Update Hud Indicator Secondary: Hook/Unhook someone else's Hud Indicator\nReload: Link HUD Indicator to vehicle" )
+    language.Add( "Tool_wire_hudindicator_0", "Primary: Create/Update Hud Indicator Secondary: Hook/Unhook someone else's Hud Indicator Reload: Link HUD Indicator to vehicle" )
 	language.Add( "Tool_wire_hudindicator_1", "Now use Reload on a vehicle to link this HUD Indicator to it, or on the same HUD Indicator to unlink it" )
     /* Don't need this stuff
 	language.Add( "ToolWireIndicator_Model", "Model:" )
@@ -39,6 +39,9 @@ if ( CLIENT ) then
 	language.Add( "ToolWireHudIndicator_allowhookdesc", "Allows others to hook this indicator with right-click")
 	language.Add( "ToolWireHudIndicator_hookhidehud", "Allow HideHUD on hooked:")
 	language.Add( "ToolWireHudIndicator_hookhidehuddesc", "Whether your next hooked indicator will be subject to the HideHUD input of that indicator")
+	language.Add( "ToolWireHudIndicator_fullcircleangle", "Start angle for full circle gauge (deg):")
+	language.Add( "ToolWireHudIndicator_registeredindicators", "Registered Indicators:")
+	language.Add( "ToolWireHudIndicator_deleteselected", "Unregister Selected Indicator")
 end
 
 if (SERVER) then
@@ -69,6 +72,8 @@ TOOL.ClientConVar[ "hudy" ] = "200"
 TOOL.ClientConVar[ "hudstyle" ] = "0"
 TOOL.ClientConVar[ "allowhook" ] = "1"
 TOOL.ClientConVar[ "hookhidehud" ] = "0" // Couldn't resist this name :P
+TOOL.ClientConVar[ "fullcircleangle" ] = "0"
+TOOL.ClientConVar[ "registerdelete" ] = "0"
 
 cleanup.Register( "wire_indicators" )
 
@@ -102,6 +107,7 @@ function TOOL:LeftClick( trace )
 	local hudshowvalue	= self:GetClientNumber( "hudshowvalue" )
 	local hudstyle		= self:GetClientNumber( "hudstyle" )
 	local allowhook		= (self:GetClientNumber( "allowhook" ) > 0)
+	local fullcircleangle = self:GetClientNumber( "fullcircleangle" )
 	
 	// If we shot a wire_indicator change its force
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_hudindicator" && trace.Entity.pl == ply ) then
@@ -121,7 +127,7 @@ function TOOL:LeftClick( trace )
 		trace.Entity.ba	= ba
 
 		// This will un-register if showinhud is false
-		trace.Entity:HUDSetup(showinhud, huddesc, hudaddname, hudshowvalue, hudstyle, allowhook)
+		trace.Entity:HUDSetup(showinhud, huddesc, hudaddname, hudshowvalue, hudstyle, allowhook, fullcircleangle)
 		
 		trace.Entity.showinhud = showinhud
 		trace.Entity.huddesc = huddesc
@@ -129,6 +135,7 @@ function TOOL:LeftClick( trace )
 		trace.Entity.hudshowvalue = hudshowvalue
 		trace.Entity.hudstyle = hudstyle
 		trace.Entity.allowhook = allowhook
+		trace.Entity.fullcircleangle = fullcircleangle
 		
 		return true
 	end
@@ -142,7 +149,7 @@ function TOOL:LeftClick( trace )
 	local Ang = self:GetSelectedAngle(trace.HitNormal:Angle())
 	Ang.pitch = Ang.pitch + 90
 
-	wire_indicator = MakeWireHudIndicator( ply, model, Ang, trace.HitPos, a, ar, ag, ab, aa, b, br, bg, bb, ba, material, showinhud, huddesc, hudaddname, hudshowvalue, hudstyle, allowhook )
+	wire_indicator = MakeWireHudIndicator( ply, model, Ang, trace.HitPos, a, ar, ag, ab, aa, b, br, bg, bb, ba, material, showinhud, huddesc, hudaddname, hudshowvalue, hudstyle, allowhook, fullcircleangle )
 	
 	local min = wire_indicator:OBBMins()
 	wire_indicator:SetPos( trace.HitPos - trace.HitNormal * self:GetSelectedMin(min) )
@@ -253,7 +260,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireHudIndicator( pl, Model, Ang, Pos, a, ar, ag, ab, aa, b, br, bg, bb, ba, material, showinhud, huddesc, hudaddname, hudshowvalue, hudstyle, allowhook, nocollide, Vel, aVel, frozen )
+	function MakeWireHudIndicator( pl, Model, Ang, Pos, a, ar, ag, ab, aa, b, br, bg, bb, ba, material, showinhud, huddesc, hudaddname, hudshowvalue, hudstyle, allowhook, fullcircleangle, nocollide, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_indicators" ) ) then return false end
 		
 		local wire_indicator = ents.Create( "gmod_wire_hudindicator" )
@@ -268,7 +275,7 @@ if (SERVER) then
 		wire_indicator:Setup(a, ar, ag, ab, aa, b, br, bg, bb, ba)
 		wire_indicator:SetPlayer(pl)
 		
-		wire_indicator:HUDSetup(showinhud, huddesc, hudaddname, hudshowvalue, hudstyle, allowhook)
+		wire_indicator:HUDSetup(showinhud, huddesc, hudaddname, hudshowvalue, hudstyle, allowhook, fullcircleangle)
 		
 		if (nocollide) then
 			local phys = wire_indicator:GetPhysicsObject()
@@ -294,7 +301,8 @@ if (SERVER) then
 			hudaddname = hudaddname,
 			hudshowvalue = hudshowvalue,
 			hudstyle = hudstyle,
-			allowhook = allowhook
+			allowhook = allowhook,
+			fullcircleangle = fullcircleangle
 			}
 		
 		table.Merge(wire_indicator:GetTable(), ttable )
@@ -305,7 +313,7 @@ if (SERVER) then
 	end
 
 	duplicator.RegisterEntityClass("gmod_wire_hudindicator", MakeWireHudIndicator, "Model", "Ang", "Pos", "a", "ar", "ag", "ab", "aa", "b", "br",
-	  "bg", "bb", "ba", "material", "showinhud", "huddesc", "hudaddname", "hudshowvalue", "hudstyle", "allowhook", "nocollide", "Vel", "aVel", "frozen")
+	  "bg", "bb", "ba", "material", "showinhud", "huddesc", "hudaddname", "hudshowvalue", "hudstyle", "allowhook", "fullcircleangle", "nocollide", "Vel", "aVel", "frozen")
 
 end
 
@@ -551,7 +559,9 @@ function TOOL.BuildCPanel(panel)
 		Options = {
 			["Basic"]		= { wire_hudindicator_hudstyle = "0" },
 			["Gradient"]	= { wire_hudindicator_hudstyle = "1" },
-			["Percent Bar"]	= { wire_hudindicator_hudstyle = "2" }
+			["Percent Bar"]	= { wire_hudindicator_hudstyle = "2" },
+			["Full Circle"] = { wire_hudindicator_hudstyle = "3" },
+			["Semi-circle"] = { wire_hudindicator_hudstyle = "4" }
 		}
 	})
 	
@@ -584,6 +594,36 @@ function TOOL.BuildCPanel(panel)
 		Description = "#ToolWireHudIndicator_hookhidehuddesc"
 	})
 	
+	panel:AddControl("Slider", {
+		Label = "#ToolWireHudIndicator_fullcircleangle",
+		Type = "Float",
+		Min = "0",
+		Max = "360",
+		Command = "wire_hudindicator_fullcircleangle"
+	})
+	
+	// Get the currently registered HUD Indicators for this player that can be unregistered
+	local registered = HUDIndicator_GetCurrentRegistered()
+	if (#registered > 0) then
+		local options = {}
+		for eindex,indinfo in pairs(registered) do
+			local txt = indinfo.Description or ("Indicator #"..indinfo.EIndex)
+			options[txt] = { wire_hudindicator_registerdelete = tostring(indinfo.EIndex) }
+		end
+		
+		panel:AddControl("ListBox", {
+			Label = "#ToolWireHudIndicator_registeredindicators",
+			MenuButton = 0,
+			Height = 120,
+			Options = options
+		})
+		
+		panel:AddControl("Button", {
+			Text = "#ToolWireHudIndicator_deleteselected",
+			Command = "wire_hudindicator_delete"
+		})
+	end
+	
 	panel:AddControl("TextBox", {
 		Label = "#ToolWireHudIndicator_hudx",
 		Command = "wire_hudindicator_hudx",
@@ -596,3 +636,14 @@ function TOOL.BuildCPanel(panel)
 		Description = "#ToolWireHudIndicator_hudydesc"
 	})
 end
+
+// Concommand to unregister HUD Indicator through control panel
+local function HUDIndicator_RemoteUnRegister(ply, cmd, arg)
+	local eindex = ply:GetInfoNum("wire_hudindicator_registerdelete")
+	if (eindex == 0) then return end
+	local ent = ents.GetByIndex(eindex)
+	if (ent && ent:IsValid()) then
+		ent:UnRegisterPlayer(ply)
+	end
+end
+concommand.Add("wire_hudindicator_delete", HUDIndicator_RemoteUnRegister)
