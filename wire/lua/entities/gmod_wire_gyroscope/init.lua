@@ -13,10 +13,10 @@ function ENT:Initialize()
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Pitch", "Yaw", "Roll" })
 end
 
-function ENT:Setup( out180, xyz_mode )
+function ENT:Setup( out180 )
 	
 	self.Out180 = out180 --wft is this used for
-	self.XYZMode = xyz_mode
+	self:SetOut180(out180)
 	self.Value = 0
 	self.PrevOutput = nil
 

@@ -12,9 +12,7 @@ ENT.Instructions	= ""
 ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
 
-
-
-
+/* Why are these here? (TheApathetic)
 function ENT:SetEffect( name )
 	self.Entity:SetNetworkedString( "Effect", name )
 end
@@ -39,3 +37,4 @@ end
 function ENT:GetOffset( name )
 	return self.Entity:GetNetworkedVector( "Offset" )
 end
+*/
