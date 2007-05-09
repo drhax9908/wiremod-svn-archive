@@ -1,6 +1,6 @@
 
 dupeshare = {}
-dupeshare.Version = 1.614
+dupeshare.Version = 1.615
 
 dupeshare.BaseDir		= "adv_duplicator"
 dupeshare.PublicDirs	= { "=Public Folder=", "=Team Share Folder="}
@@ -476,6 +476,31 @@ function dupeshare.UpDir(path)
 	end
 	
 	return "" //if path/.. is root
+end
+
+
+//
+// base255 conversion: based off the python module
+//
+function dupeshare.number_to_base255(number):
+	-- least significant "byte" will be first in result
+	local list = {}
+	-- take it apart as a series of numbers
+	while number != 0 do
+		table.insert(math.fmod(number, 255)+1)
+		number = number / 255
+	end
+	-- reassemble it as a string and return it
+	return string.char(unpack(list))
+end
+
+function dupeshare.base255_to_number(base255):
+	local temp = String.byte(base255, 1, string.len(base255))
+	local number = 0
+	for _,byte in pairs(temp) do
+		number = number * 255 + byte
+	end
+	return number
 end
 
 
