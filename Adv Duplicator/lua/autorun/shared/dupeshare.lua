@@ -482,7 +482,7 @@ end
 //
 // base255 conversion: based off the python module
 //
-function dupeshare.number_to_base255(number):
+function dupeshare.number_to_base255(number)
 	-- least significant "byte" will be first in result
 	local list = {}
 	-- take it apart as a series of numbers
@@ -494,7 +494,7 @@ function dupeshare.number_to_base255(number):
 	return string.char(unpack(list))
 end
 
-function dupeshare.base255_to_number(base255):
+function dupeshare.base255_to_number(base255)
 	local temp = String.byte(base255, 1, string.len(base255))
 	local number = 0
 	for _,byte in pairs(temp) do
