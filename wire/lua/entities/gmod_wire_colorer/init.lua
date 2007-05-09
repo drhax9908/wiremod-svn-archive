@@ -86,6 +86,7 @@ function ENT:OnRestore()
 end
 
 function ENT:Think()
+    self.BaseClass.Think(self)
     if(self.Outputs["R"])then
         local vStart = self.Entity:GetPos()
 	    local vForward = self.Entity:GetUp()
@@ -102,8 +103,8 @@ function ENT:Think()
         if ( CLIENT ) then return true end
     
         local r,g,b,a = trace.Entity:GetColor()
-        Msg("color check\n")
-        Msg("R-"..tostring(r).."\nG-"..tostring(g).."\nB-"..tostring(b).."\nA-"..tostring(a).."\n")
+        //Msg("color check\n")
+        //Msg("R-"..tostring(r).."\nG-"..tostring(g).."\nB-"..tostring(b).."\nA-"..tostring(a).."\n")
     
         Wire_TriggerOutput(self.Entity,"R",r)
         Wire_TriggerOutput(self.Entity,"G",g)
