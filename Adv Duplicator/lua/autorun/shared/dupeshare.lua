@@ -265,35 +265,23 @@ function dupeshare.PrepareTableToSave( t, done)
 		if ( type( v ) == "table" and !done[ v ] ) then
 			done[ v ] = true
 			tbl[ dupeshare.ProtectCase(k) ] = dupeshare.PrepareTableToSave( v, done )
-			--tbl[k].__name = k
 		else
 			if ( type(v) == "Vector" ) then
 				local x, y, z = v.x, v.y, v.z
-				/*if y == 0 then y = nil end
-				if z == 0 then z = nil end*/
-				--tbl[ dupeshare.ProtectCase(k) ] = { __type = "Vector", x = x, y = y, z = z}
 				tbl[ dupeshare.ProtectCase(k) ] = "V"..tostring(x).." "..tostring(y).." "..tostring(z)
-				--, __name = k }
 			elseif ( type(v) == "Angle" ) then
 				local p,y,r = v.pitch, v.yaw, v.roll
-				/*if p == 0 then p = nil end
-				if y == 0 then y = nil end
-				if r == 0 then r = nil end*/
-				--tbl[ dupeshare.ProtectCase(k) ] = { __type = "Angle", p = p, y = y, r = r }
 				tbl[ dupeshare.ProtectCase(k) ] = "A"..tostring(p).." "..tostring(y).." "..tostring(r)
-				--, __name = k }
 			elseif ( type(v) == "boolean" ) then
-				--tbl[ dupeshare.ProtectCase(k) ] = { __type = "Bool", v = tostring( v ) }
-				tbl[ dupeshare.ProtectCase(k) ] = "B"..tostring( v )
-				--, __name = k }
+				if v then
+					tbl[ dupeshare.ProtectCase(k) ] = "B1"
+				else
+					tbl[ dupeshare.ProtectCase(k) ] = "B0"
+				end
 			elseif ( type(v) == "number" ) then
-				--tbl[ dupeshare.ProtectCase(k) ] = { __type = "Number", v = tostring( v ) }
 				tbl[ dupeshare.ProtectCase(k) ] = "N"..tostring( v )
-				--, __name = k }
 			else
-				--tbl[ dupeshare.ProtectCase(k) ] = { __type = "String", v = tostring( v ) }
 				tbl[ dupeshare.ProtectCase(k) ] = "S"..tostring( v )
-				--, __name = k }
 			end
 		end
 	end
@@ -482,16 +470,22 @@ end
 //
 // base255 conversion: based off the python module
 //
+//	the idea sounds good, but it can't handel negitive or float numbers
+//
 function dupeshare.number_to_base255(number)
 	-- least significant "byte" will be first in result
 	local list = {}
 	-- take it apart as a series of numbers
+	local str = ""
 	while number != 0 do
-		table.insert(math.fmod(number, 255)+1)
+		local n = math.fmod(number, 255)+1
+		table.insert(list, n)
+		Msg("====n = "..n.."\n")
+		str = str .. string.char(math.floor(n))
 		number = number / 255
 	end
 	-- reassemble it as a string and return it
-	return string.char(unpack(list))
+	return str //string.char(unpack(list))
 end
 
 function dupeshare.base255_to_number(base255)
