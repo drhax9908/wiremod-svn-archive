@@ -17,7 +17,7 @@ if (CLIENT) then return end
 
 AdvDupe.Version = 1.711
 AdvDupe.ToolVersion = 1.7
-AdvDupe.FileVersion = 0.62
+AdvDupe.FileVersion = 0.63
 
 
 /*---------------------------------------------------------

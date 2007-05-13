@@ -19,6 +19,7 @@ local NetworkVars 			= {}
 
 local NetworkFunction 	= {}
 local DelayedUpdates 	= {}
+local DelayedUpdatesNum = 0
 
 local NextCleanup		= CurTime()
 
@@ -103,9 +104,11 @@ local function AddDelayedNetworkUpdate( VarType, Ent, Key, Value )
 	if (Wire_FastOverlayTextUpdate) then
 		SendNetworkUpdate( VarType, Ent, Key, Value )
 	else
-		DelayedUpdates[ VarType ] = DelayedUpdates[ VarType ] or {}
-		DelayedUpdates[ VarType ][Ent] = DelayedUpdates[ VarType ][Ent] or {}
-		DelayedUpdates[ VarType ][Ent][Key] = Value
+		DelayedUpdates[Ent] = DelayedUpdates[Ent] or {}
+		//DelayedUpdates[ VarType ] = DelayedUpdates[ VarType ] or {}
+		DelayedUpdates[Ent][ VarType ] = DelayedUpdates[Ent][ VarType ] or {}
+		DelayedUpdates[Ent][ VarType ][Key] = Value
+		DelayedUpdatesNum = DelayedUpdatesNum + 1
 	end
 end
 
@@ -283,8 +286,12 @@ local function FullUpdateEntityNetworkVars( ply )
 
 
 end
-
-hook.Add( "PlayerInitialSpawn", "FullUpdateEntityNetworkBeamVars", FullUpdateEntityNetworkVars )
+local function DelayedFullUpdateEntityNetworkVars( ply )
+	Msg("==starting timer for sending var data too "..tostring(ply).."\n")
+	timer.Simple(2, FullUpdateEntityNetworkVars, ply)
+end
+--hook.Add( "PlayerInitialSpawn", "FullUpdateEntityNetworkBeamVars", FullUpdateEntityNetworkVars )
+hook.Add( "PlayerInitialSpawn", "FullUpdateEntityNetworkBeamVars", DelayedFullUpdateEntityNetworkVars )
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -328,31 +335,147 @@ saverestore.AddRestoreHook( "EntityNetworkedBeamVars", Restore )
 ///////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////
 local NextBeamVarsDelayedSendTime = 0
+local NormalOpMode = true
 local function NetworkVarsSend()
-	if (CurTime() >= NextBeamVarsDelayedSendTime) then
+	if (CurTime() >= NextBeamVarsDelayedSendTime) and (DelayedUpdatesNum > 0) then
 		
-		for VarType, a in pairs(DelayedUpdates) do
+		if (NormalOpMode) and (DelayedUpdatesNum > 50) then
 			
-			for Index, b in pairs(a) do
+			Msg("========BeamVars leaving NormalOpMode | "..DelayedUpdatesNum.."\n")
+			NormalOpMode = false
+			--when a shit load has be added, delay for a few seconds to allow other things to calm down
+			NextBeamVarsDelayedSendTime = CurTime() +  2
+			Msg("=====BeamVars delay 2======\n")
+			return
 			
-				for Key, Value in pairs(b) do
-				
-					SendNetworkUpdate( VarType, Index, Key, Value )
-					
-				end
-				
-			end
+		elseif (!NormalOpMode) and (DelayedUpdatesNum < 50) then
+			
+			NormalOpMode = true
+			Msg("BeamVars retruning to NormalOpMode\n")
 			
 		end
 		
-		// Clear the sent entries
-		DelayedUpdates = {}
 		
-		NextBeamVarsDelayedSendTime = CurTime() +  .1
+		
+		
+		if (NormalOpMode) then --during normal mode, we send the whole buffer every 0.05 sec
+			
+			
+			for Index, a in pairs(DelayedUpdates) do
+				for VarType, b in pairs(a) do
+					for Key, Value in pairs(b) do
+						SendNetworkUpdate( VarType, Index, Key, Value )
+					end
+				end
+			end
+			DelayedUpdates = {}
+			DelayedUpdatesNum = 0
+			NextBeamVarsDelayedSendTime = CurTime() +  .1
+			
+		else --otherswise send 10 every 1/4 sec
+			
+			Msg("BeamVars sending non-NormalOpMode data | "..DelayedUpdatesNum.."\n")
+			
+			local i = 0
+			/*for VarType, a in pairs(DelayedUpdates) do
+				for Index, b in pairs(a) do*/
+			for Index, a in pairs(DelayedUpdates) do
+				for VarType, b in pairs(a) do
+					for Key, Value in pairs(b) do
+						SendNetworkUpdate( VarType, Index, Key, Value )
+						DelayedUpdatesNum = DelayedUpdatesNum - 1
+					end
+					
+				end
+				
+				a = nil
+				
+				i = i + 1
+				if i > 2 then
+					NextBeamVarsDelayedSendTime = CurTime() +  .25
+					return
+				end
+			end
+			
+			Msg("BeamVars retruning to NormalOpMode from not\n")
+			NormalOpMode = true
+			NextBeamVarsDelayedSendTime = CurTime() +  .1
+			
+		end
+		
+		
+		/*for VarType, a in pairs(DelayedUpdates) do
+			for Index, b in pairs(a) do
+				for Key, Value in pairs(b) do
+					SendNetworkUpdate( VarType, Index, Key, Value )
+				end
+			end
+		end
+		
+		// Clear the sent entries
+		DelayedUpdates = {}*/
+		
+		//NextBeamVarsDelayedSendTime = CurTime() +  .1
 	end
 end
 //timer.Create( "NetworkBeamVarsSend", 0.01, 0, NetworkVarsSend )
 hook.Add("Think", "NetBeamLib_Think", NetworkVarsSend)
+
+
+local NextBeamVarsDelayedSendTime = 0
+local NormalOpMode = true
+
+local function BeamVarsDelayedSend()
+	if (CurTime() >= NextBeamVarsDelayedSendTime) and (#DelaySendBeamData > 0) then
+		
+		if (NormalOpMode) and (#DelaySendBeamData > 20) then
+			
+			Msg("RDBeam leaving NormalOpMode\n")
+			NormalOpMode = false
+			if (#DelaySendBeamData > 100) then --when a shit load has be added, delay for a few seconds to allow other things to calm down
+				NextBeamVarsDelayedSendTime = CurTime() +  5
+				Msg("RDBeam delay 5\n")
+			else
+				NextBeamVarsDelayedSendTime = CurTime() +  2
+				Msg("RDBeam delay 2\n")
+			end
+			return
+			
+		elseif (!NormalOpMode) and (#DelaySendBeamData < 20) then
+			
+			NormalOpMode = true
+			Msg("RDBeam retruning to NormalOpMode\n")
+			
+		end
+		
+		
+		if (NormalOpMode) then --during normal mode, we send the whole buffer every 0.05 sec
+			
+			for _, data in pairs (DelaySendBeamData) do
+				if (data) and (data.info) then
+					SendBeamData( data.info, data.beam_data, data.ply )
+				end
+			end
+			DelaySendBeamData = {}
+			NextBeamVarsDelayedSendTime = CurTime() +  .05
+			
+		else --otherswise send 10 every 1/4 sec
+			
+			Msg("BeamVars sending non-NormalOpMode data\n")
+			for i=1,10 do
+				local data = table.remove(DelaySendBeamData, 1)
+				if (data) and (data.info) then
+					SendBeamData( data.info, data.beam_data, data.ply )
+				end
+			end
+			NextBeamVarsDelayedSendTime = CurTime() +  .25
+			
+		end
+		
+		
+	end
+end
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
