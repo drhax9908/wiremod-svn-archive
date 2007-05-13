@@ -235,7 +235,7 @@ if SERVER then
 	//need for the const to find the controler after being duplicator pasted
 	WireHydraulicTracking = {}
 	
-	function MakeWireHydraulicController( pl, Pos, Ang, MyId, const, rope )
+	function MakeWireHydraulicController( pl, Pos, Ang, MyEntId, const, rope )
 		local controller = ents.Create("gmod_wire_hydraulic")
 		
 		controller:SetPos( Pos )
@@ -244,7 +244,7 @@ if SERVER then
 		controller:SetPlayer(pl)
 		
 		if (!const) then
-			WireHydraulicTracking[ MyId ] = controller
+			WireHydraulicTracking[ MyEntId ] = controller
 		else
 			controller.MyId = controller:EntIndex()
 			const.MyCrtl = controller:EntIndex()
@@ -307,6 +307,7 @@ if SERVER then
 			local controller = WireHydraulicTracking[ MyCrtl ]
 			
 			const.MyCrtl = controller:EntIndex()
+			controller.MyId = controller:EntIndex()
 			
 			controller:SetConstraint( const )
 			controller:DeleteOnRemove( const )
