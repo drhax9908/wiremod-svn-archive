@@ -9,6 +9,8 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_grabber_desc", "Spawns a constant grabber prop for use with the wire system." )
     language.Add( "Tool_wire_grabber_0", "Primary: Create/Update Grabber" )
     language.Add( "WireGrabberTool_grabber", "Grabber:" )
+    language.Add( "WireGrabberTool_Range", "Max Range:" )
+    language.Add( "WireGrabberTool_DynamicWeight", "Enable Dynamic Weight:" )
 	language.Add( "sboxlimit_wire_grabbers", "You've hit grabbers limit!" )
 	language.Add( "undone_Wire Grabber", "Undone Wire Grabber" )
 end
@@ -19,6 +21,8 @@ end
 
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
+TOOL.ClientConVar[ "Range" ] = "100"
+TOOL.ClientConVar[ "DynamicWeight" ] = "0"
 
 cleanup.Register( "wire_grabbers" )
 
@@ -37,8 +41,11 @@ function TOOL:LeftClick( trace )
 
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
+	
+	local range = self:GetClientNumber("Range")
+	local DynamicWeight = (self:GetClientNumber( "DynamicWeight" ) ~= 0)
 
-	local wire_grabber = MakeWireGrabber( ply, trace.HitPos, Ang )
+	local wire_grabber = MakeWireGrabber( ply, trace.HitPos, range, DynamicWeight, Ang )
 
 	local min = wire_grabber:OBBMins()
 	wire_grabber:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -72,7 +79,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireGrabber( pl, Pos, Ang )
+	function MakeWireGrabber( pl, Pos, Range, DynamicWeight, Ang )
 		if ( !pl:CheckLimit( "wire_grabbers" ) ) then return false end
 	
 		local wire_grabber = ents.Create( "gmod_wire_grabber" )
@@ -82,11 +89,13 @@ if (SERVER) then
 		wire_grabber:SetPos( Pos )
 		wire_grabber:SetModel( Model("models/jaanus/wiretool/wiretool_range.mdl") )
 		wire_grabber:Spawn()
+		wire_grabber:Setup(Range,DynamicWeight)
 
-		wire_grabber:GetTable():Setup( flim )
 		wire_grabber:GetTable():SetPlayer( pl )
 
 		local ttable = {
+		    Range = Range,
+		    DynamicWeight = DynamicWeight,
 			pl = pl
 		}
 
@@ -97,7 +106,7 @@ if (SERVER) then
 		return wire_grabber
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_grabber", MakeWireGrabber, "Pos", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_grabber", MakeWireGrabber, "Pos", "Range", "DynamicWeight", "Ang", "Vel", "aVel", "frozen")
 
 end
 
@@ -145,6 +154,19 @@ function TOOL.BuildCPanel(panel)
 		},
 		CVars = {
 		}
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireGrabberTool_Range",
+		Type = "Float",
+		Min = "1",
+		Max = "10000",
+		Command = "wire_grabber_Range"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireGrabberTool_DynamicWeight",
+		Command = "wire_grabber_DynamicWeight"
 	})
 end
 

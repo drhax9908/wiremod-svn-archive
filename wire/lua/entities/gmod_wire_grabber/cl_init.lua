@@ -11,7 +11,7 @@ function ENT:Draw()
 	
     local trace = {}
 	   trace.start = vStart
-	   trace.endpos = vStart + (vForward * 100)
+	   trace.endpos = vStart + (vForward * self:GetBeamRange())
 	   trace.filter = { self.Entity }
 	local trace = util.TraceLine( trace ) 
 	
@@ -19,7 +19,7 @@ function ENT:Draw()
 	if(trace.Hit)then
 	   endpos = trace.HitPos
 	else
-	   endpos = vStart + (vForward * 100)
+	   endpos = vStart + (vForward * self:GetBeamRange())
 	end
 	render.SetMaterial(Material("tripmine_laser"))
 	render.DrawBeam(vStart, endpos, 6, 0, 10, Color(self.Entity:GetColor()))

@@ -39,3 +39,11 @@ end
 function ENT:GetOffset( name )
 	return self.Entity:GetNetworkedVector( "Offset" )
 end
+
+function ENT:SetBeamRange(length)
+	self.Entity:SetNetworkedFloat("BeamLength", length)
+end
+
+function ENT:GetBeamRange()
+	return self.Entity:GetNetworkedFloat("BeamLength") or 0
+end
