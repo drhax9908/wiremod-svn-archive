@@ -13,17 +13,27 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-	self.Inputs = Wire_CreateInputs(self.Entity, { "Grab" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "Grab","Strength" })
 	self.Outputs = Wire_CreateOutputs(self.Entity, {"Holding"})
+	self.WeldStrength = 0
 	self.Weld = nil
+	self.WeldEntity = nil
 	self.Entity:GetPhysicsObject():SetMass(200)
+	self.DynamicWeight = false
+	
+	self:SetBeamRange(100)
+	
+	self:ShowOutput()
 end
 
 function ENT:OnRemove()
 	Wire_Remove(self.Entity)
 end
 
-function ENT:Setup()
+function ENT:Setup(Range, DynamicWeight)
+    self:SetBeamRange(Range)
+    self.DynamicWeight = DynamicWeight
+    Msg("Setup:/n/tRange:"..tostring(Range).."/n")
 end
 
 function ENT:TriggerInput(iname, value)
@@ -34,7 +44,7 @@ function ENT:TriggerInput(iname, value)
 			 
 			 local trace = {}
 				 trace.start = vStart
-				 trace.endpos = vStart + (vForward * 100)
+				 trace.endpos = vStart + (vForward * self:GetBeamRange())
 				 trace.filter = { self.Entity }
 			 local trace = util.TraceLine( trace ) 
 			
@@ -43,8 +53,14 @@ function ENT:TriggerInput(iname, value)
 			// If there's no physics object then we can't constraint it!
 			if ( !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return end
 			// Weld them!
-			local const = constraint.Weld(self.Entity, trace.Entity, 0, 0, 0)
+			local const = constraint.Weld(self.Entity, trace.Entity, 0, 0, self.WeldStrength)
+			trace.Entity:GetPhysicsObject():EnableGravity(false)
 			
+			if(self.DynamicWeight)then
+			     self.Entity:GetPhysicsObject():SetMass((trace.Entity:GetPhysicsObject():GetMass()+50))
+			end
+			
+			self.WeldEntity = trace.Entity
 			self.Weld = const
 			
 			self.Entity:SetColor(255, 0, 0, 255)
@@ -53,16 +69,26 @@ function ENT:TriggerInput(iname, value)
 			if(self.Weld != nil)then
 				if(self.Weld && self.Weld:IsValid())then
                     self.Weld:Remove()
-                end
+                    self.WeldEntity:GetPhysicsObject():EnableGravity(true)
+                end                
+                
                 self.Weld = nil
+                self.WeldEntity = nil
+                
+                if(self.DynamicWeight)then
+			         self.Entity:GetPhysicsObject():SetMass(200)
+			    end
+                
                 self.Entity:SetColor(255,255,255,255)
                 Wire_TriggerOutput(self.Entity,"Holding",0)
 	        end
 		end
+    elseif(iname == "Strength")then
+        self.WeldStrength = math.max(value,0)
     end
 end
 
-function ENT:ShowOutput(value)
+function ENT:ShowOutput()
 	self:SetOverlayText( "Grabber" )
 end
 
