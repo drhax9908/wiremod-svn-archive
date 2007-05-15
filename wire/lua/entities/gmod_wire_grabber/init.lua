@@ -36,6 +36,27 @@ function ENT:Setup(Range, DynamicWeight)
     Msg("Setup:/n/tRange:"..tostring(Range).."/n")
 end
 
+function ENT:ResetGrab()
+    if(self.Weld && self.Weld:IsValid())then
+        self.Weld:Remove()
+        if(self.WeldEntity)then
+            if(self.WeldEntity:IsValid())then
+                self.WeldEntity:GetPhysicsObject():EnableGravity(true)
+            end
+        end
+    end                
+                
+    self.Weld = nil
+    self.WeldEntity = nil
+                
+    if(self.DynamicWeight)then
+		self.Entity:GetPhysicsObject():SetMass(200)
+	end
+                
+    self.Entity:SetColor(255,255,255,255)
+    Wire_TriggerOutput(self.Entity,"Holding",0)
+end
+
 function ENT:TriggerInput(iname, value)
 	if (iname == "Grab") then
 		if (value ~= 0 && self.Weld == nil) then
@@ -67,20 +88,7 @@ function ENT:TriggerInput(iname, value)
 			Wire_TriggerOutput(self.Entity, "Holding", 1)
 		else
 			if(self.Weld != nil)then
-				if(self.Weld && self.Weld:IsValid())then
-                    self.Weld:Remove()
-                    self.WeldEntity:GetPhysicsObject():EnableGravity(true)
-                end                
-                
-                self.Weld = nil
-                self.WeldEntity = nil
-                
-                if(self.DynamicWeight)then
-			         self.Entity:GetPhysicsObject():SetMass(200)
-			    end
-                
-                self.Entity:SetColor(255,255,255,255)
-                Wire_TriggerOutput(self.Entity,"Holding",0)
+				self:ResetGrab()
 	        end
 		end
     elseif(iname == "Strength")then
