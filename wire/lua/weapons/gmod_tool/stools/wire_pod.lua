@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Pod Controller"
 TOOL.Command		= nil
@@ -9,6 +8,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_pod_desc", "Spawn/link a Wire Pod controller." )
     language.Add( "Tool_wire_pod_0", "Primary: Create Pod controller. Secondary: Link controller." )
     language.Add( "WirePodTool_pod", "Pod:" )
+    language.Add( "WirePodTool_Advanced", "Advanced Controller?:" )
 	language.Add( "sboxlimit_wire_pods", "You've hit your Pod Controller limit!" )
 	language.Add( "undone_wirepod", "Undone Wire Pod Controller" )
 end
@@ -18,6 +18,7 @@ if (SERVER) then
 end
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
+TOOL.ClientConVar["Advanced"] = "0"
 
 cleanup.Register( "wire_pods" )
 
@@ -37,7 +38,9 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_pod = MakeWirePod( ply, trace.HitPos, Ang )
+    local Advanced = (self:GetClientNumber( "Advanced" ) ~= 0)
+
+	local wire_pod = MakeWirePod( ply, trace.HitPos, Advanced, Ang )
 
 	local min = wire_pod:OBBMins()
 	wire_pod:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -57,16 +60,16 @@ function TOOL:LeftClick( trace )
 end
 
 function TOOL:RightClick( trace )
-	if (!trace.HitPos) then return false end
-	--if trace.Entity:GetClass() != "gmod_wire_pod" || "prop_vehicle_prisoner_pod" then return false end
-	if ( CLIENT ) then return true end
-	if (self.Oldent) then
-		-- Don't ask...
-		if trace.Entity:GetClass() == "prop_vehicle_prisoner_pod" or true then self.Oldent:GetTable():Setup(trace.Entity); self.Oldent = nil; return true end
-	else
-		if trace.Entity:GetClass() == "gmod_wire_pod" then self.Oldent = trace.Entity; return true end
-	end
-	return false
+    if (!trace.HitPos) then return false end
+    --if trace.Entity:GetClass() != "gmod_wire_pod" || "prop_vehicle_prisoner_pod" then return false end
+    if ( CLIENT ) then return true end
+    if (self.Oldent) then
+        -- Don't ask...
+        if trace.Entity:GetClass() == "prop_vehicle_prisoner_pod" or true then self.Oldent:GetTable():Setup(trace.Entity); self.Oldent = nil; return true end
+    else
+        if (trace.Entity:GetClass() == "gmod_wire_pod" || trace.Entity:GetClass() == "gmod_wire_adv_pod") then self.Oldent = trace.Entity; return true end
+    end
+    return false
 end
 
 function TOOL:Reload(trace)
@@ -75,10 +78,16 @@ end
 
 if (SERVER) then
 
-	function MakeWirePod( pl, Pos, Ang, pod )
+	function MakeWirePod( pl, Pos, Advanced, Ang, pod )
 		if ( !pl:CheckLimit( "wire_pods" ) ) then return false end
-	
-		local wire_pod = ents.Create( "gmod_wire_pod" )
+	    
+	    local wire_pod
+	    if(Advanced)then
+	       wire_pod = ents.Create( "gmod_wire_adv_pod" )
+	    else
+		  wire_pod = ents.Create( "gmod_wire_pod" )
+		end
+		
 		if (!wire_pod:IsValid()) then return false end
 
 		wire_pod:SetAngles( Ang )
@@ -101,7 +110,7 @@ if (SERVER) then
 		return wire_pod
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_pod", MakeWirePod, "Pos", "Ang", "Pod", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_pod", MakeWirePod, "Pos", "Advanced", "Ang", "Pod", "Vel", "aVel", "frozen")
 
 end
 
@@ -149,5 +158,10 @@ function TOOL.BuildCPanel(panel)
 		},
 		CVars = {
 		}
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WirePodTool_Advanced",
+		Command = "wire_pod_Advanced"
 	})
 end
