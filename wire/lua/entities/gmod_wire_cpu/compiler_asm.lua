@@ -126,11 +126,11 @@ function ENT:DecodeOpcode( opcode )
 	//------------------------------------------------------------
 	elseif (opcode == "bit") then	//BIT X,Y : CMPR = BIT(X,Y)	//2.00
 		return 60
-	elseif (opcode == "sbit") then	//BIT X,Y : BIT(X,Y) = 1	//2.00
+	elseif (opcode == "sbit") then	//SBIT X,Y : BIT(X,Y) = 1	//2.00
 		return 61
-	elseif (opcode == "rbit") then	//BIT X,Y : BIT(X,Y) = 0	//2.00
+	elseif (opcode == "cbit") then	//CBIT X,Y : BIT(X,Y) = 0	//2.00
 		return 62
-	elseif (opcode == "tbit") then	//BIT X,Y : BIT(X,Y) = ~BIT(X,Y)//2.00
+	elseif (opcode == "tbit") then	//TBIT X,Y : BIT(X,Y) = ~BIT(X,Y)//2.00
 		return 63
 	elseif (opcode == "band") then	//AND X,Y : X = X AND Y		//2.00
 		return 64
@@ -203,6 +203,24 @@ function ENT:DecodeOpcode( opcode )
 		return 98
 	elseif (opcode == "lidtr") then //LIDTR X : IDTR = X		//2.00
 		return 99
+	//------------------------------------------------------------
+	elseif (opcode == "jner") || (opcode == "jnzr") then	//JNE X   : IP = IP+X, IF CMPR ~= 0	//2.00
+		return 101
+	elseif (opcode == "jmpr") then				//JMP X  : IP = IP+X			//2.00
+		return 102
+	elseif (opcode == "jgr") || (opcode == "jnler") then	//JG X 	 : IP = IP+X, IF CMPR > 0	//2.00
+		return 103
+	elseif (opcode == "jger") || (opcode == "jnlr") then	//JGE X  : IP = IP+X, IF CMPR >= 0	//2.00
+		return 104
+	elseif (opcode == "jlr") || (opcode == "jnger") then	//JL X 	 : IP = IP+X, IF CMPR < 0	//2.00
+		return 105
+	elseif (opcode == "jler") || (opcode == "jngr") then	//JLE X  : IP = IP+X, IF CMPR <= 0	//2.00
+		return 106
+	elseif (opcode == "jer") || (opcode == "jzr") then	//JE X   : IP = IP+X, IF CMPR = 0	//2.00
+		return 107
+	//------------------------------------------------------------
+	elseif (opcode == "nmiret") then //NMIRET X : NMIRESTORE;	//2.00
+		return 110
 	end
 	return -1
 end
@@ -228,6 +246,10 @@ function ENT:OpcodeParamCount( opcode )
 		return 2
 	elseif (opcode >= 90) && (opcode <= 99) then
 		return 1
+	elseif (opcode >= 100) && (opcode <= 109) then
+		return 1
+	elseif (opcode >= 110) && (opcode <= 119) then
+		return 0
 	end
 	return 0
 end
@@ -236,7 +258,8 @@ end
 function ENT:Digit( prefix )
 	return (prefix == "0") || (prefix == "1") || (prefix == "2") || (prefix == "3") ||
 	       (prefix == "4") || (prefix == "5") || (prefix == "6") || (prefix == "7") ||
-	       (prefix == "8") || (prefix == "9") || (prefix == ".") || (prefix == "-")
+	       (prefix == "8") || (prefix == "9") || (prefix == ".") || (prefix == "-") ||
+	       (prefix == "+")
 end
 
 function ENT:ValidNumber( line )
@@ -280,7 +303,7 @@ function ENT:Explode(seperator ,str)
 			end
 			ll=l+1
 		else
-			table.insert(tble, string.sub(str,prevll))
+			table.insert(tble, string.sub(str,math.min(prevll,ll)))
 			break
 		end
 	end
@@ -360,10 +383,16 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 				return false	
 			end
 		elseif (nextdb) then
+//			Msg("db explode:"..opcode..";\n")
 			local dbtable = self:Explode(",", opcode )
-			for _,dbvalue in pairs(dbtable) do
-				if (dbvalue ~= "") then
+//			PrintTable(dbtable)
+//			Msg("db start\n")
+//			for _,dbvalue in pairs(dbtable) do
+			for i=0,table.Count(dbtable) do
+				local dbvalue = dbtable[i]
+				if (dbvalue) && (dbvalue ~= "") then
 					dbvalue = string.Trim(dbvalue)
+//					Msg("dbvalue:"..dbvalue..";\n")
 					if self:ValidNumber(dbvalue) then
 						self:Write(dbvalue)
 					else
@@ -390,7 +419,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 			end
 		elseif (nextorg) then
 			if self:ValidNumber(opcode) then
-				self.WIP = opcode
+				self.WIP = tonumber(opcode)
 			else
 				pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E333) at line "..linenumber..": Invalid parameter in ORG macro\n")
 				return false
@@ -472,6 +501,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 
 			if (table.Count(paramtable) ~= self:OpcodeParamCount( dopcode )) then
 				pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E245) at line "..linenumber..": wrong number of parameters for opcode\n")
+				pl:PrintMessage(HUD_PRINTCONSOLE,"-> Code: ["..linenumber.."]"..self.WIP.." = "..line.."\n")
 				return false
 			end
 			paramtable[1] = string.Trim(paramtable[1])
