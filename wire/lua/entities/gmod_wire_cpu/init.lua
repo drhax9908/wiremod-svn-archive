@@ -11,7 +11,7 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	
-	self.Inputs = Wire_CreateInputs(self.Entity, { "MemBus", "IOBus", "Frequency", "Clk", "Reset"})
+	self.Inputs = Wire_CreateInputs(self.Entity, { "MemBus", "IOBus", "Frequency", "Clk", "Reset", "NMI"})
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Error" }) 
 
 	self.Memory = {}
@@ -625,7 +625,7 @@ function ENT:Execute( )
 	//============================================================
 	elseif (opcode == 8) then	//CPUID
 		if (params[1] == 0) then 	//CPU VERSION
-			self.EAX = 200		//= 2.00
+			self.EAX = 200		//= 2.20
 		elseif (params[1] == 1) then	//AMOUNT OF RAM
 			self.EAX = 65536	//= 64KB
 		elseif (params[1] == 2) then	//TYPE (0 - ZCPU; 1 - ZGPU)
@@ -838,9 +838,40 @@ function ENT:Execute( )
 	elseif (opcode == 59) then	//MOD
 		result = math.fmod(params[1],params[2])
 	//------------------------------------------------------------
-	elseif (opcode >= 60) && (opcode < 69) then
-		//Bitwise - coming soon
-		WriteBack = false
+	elseif (opcode == 60) then	//BIT
+		local temp = params[1]
+		for i = 0,params[2] do
+			temp = math.floor(temp / 10)
+		end
+		result = math.fmod(temp,10)
+	elseif (opcode == 60) then	//SBIT
+		local temp = params[1]
+		local temp2 = 0
+		local temp3 = 1
+		for i = 0,7 do
+			if (i == params[2]) then
+				temp2 = temp2 + temp3*1
+			else
+				temp2 = temp2 + temp3*math.fmod(temp,10)
+			end
+			temp = math.floor(temp / 10)
+			temp3 = temp3*10
+		end
+		result = temp2
+	elseif (opcode == 60) then	//CBIT
+		local temp = params[1]
+		local temp2 = 0
+		local temp3 = 1
+		for i = 0,7 do
+			if (i == params[2]) then
+				temp2 = temp2 + temp3*0
+			else
+				temp2 = temp2 + temp3*math.fmod(temp,10)
+			end
+			temp = math.floor(temp / 10)
+			temp3 = temp3*10
+		end
+		result = temp2
 	elseif (opcode == 69) then	//JMPF
 		self.CS = params[2]
 		self.IP = params[1]
@@ -1029,6 +1060,63 @@ function ENT:Execute( )
 		self.IDTR = params[1]
 		WriteBack = false
 	//------------------------------------------------------------
+	elseif (opcode == 101) then	//JNER
+		if (self.CMPR ~= 0) then
+			self.IP = self.IP + params[1]
+		end
+		WriteBack = false
+	elseif (opcode == 102) then	//JMPR
+		self.IP = self.IP + params[1]
+		WriteBack = false
+	elseif (opcode == 103) then	//JGR
+		if (self.CMPR > 0) then
+			self.IP = self.IP + params[1]
+		end
+		WriteBack = false
+	elseif (opcode == 104) then	//JGER
+		if (self.CMPR >= 0) then
+			self.IP = self.IP + params[1]
+		end
+		WriteBack = false
+	elseif (opcode == 105) then	//JLR
+		if (self.CMPR < 0) then
+			self.IP = self.IP + params[1]
+		end
+		WriteBack = false
+	elseif (opcode == 106) then	//JLER
+		if (self.CMPR <= 0) then
+			self.IP = self.IP + params[1]
+		end
+		WriteBack = false
+	elseif (opcode == 107) then	//JER
+		if (self.CMPR == 0) then
+			self.IP = self.IP + params[1]
+		end
+		WriteBack = false
+	//------------------------------------------------------------
+	elseif (opcode == 110) then	//NMIRET
+		local newval
+		newval = self:Pop() if (newval) then self.IP = newval else return end
+		newval = self:Pop() if (newval) then self.CMPR = newval else return end
+
+		newval = self:Pop() if (newval) then self.EAX = newval else return end
+		newval = self:Pop() if (newval) then self.EBX = newval else return end
+		newval = self:Pop() if (newval) then self.ECX = newval else return end
+		newval = self:Pop() if (newval) then self.EDX = newval else return end
+		newval = self:Pop() if (newval) then self.EBP = newval else return end
+		newval = self:Pop() if (newval) then else return end //ESP - not now
+		newval = self:Pop() if (newval) then self.ESI = newval else return end
+		newval = self:Pop() if (newval) then self.EDI = newval else return end
+
+		newval = self:Pop() if (newval) then self.CS = newval else return end
+		newval = self:Pop() if (newval) then else return end //SS - not now
+		newval = self:Pop() if (newval) then self.DS = newval else return end
+		newval = self:Pop() if (newval) then self.FS = newval else return end
+		newval = self:Pop() if (newval) then self.GS = newval else return end
+		newval = self:Pop() if (newval) then self.ES = newval else return end
+
+		WriteBack = false
+	//------------------------------------------------------------
 	else
 		self:Interrupt(4)
 	end
@@ -1089,7 +1177,7 @@ function ENT:TriggerInput(iname, value)
 		self.InputClk = value
 		self.PrevTime = CurTime()
 	elseif (iname == "Frequency") then
-		if (!SinglePlayer() && (value > 5000)) then return end
+		if (!SinglePlayer() && (value > 7500)) then return end
 		if (value ~= 0) then
 			self.ThinkTime = value/100
 		end
@@ -1103,5 +1191,29 @@ function ENT:TriggerInput(iname, value)
 		self.MemBus = self.Inputs.MemBus.Src /////////////
 	elseif (iname == "IOBus") then
 		self.IOBus = self.Inputs.IOBus.Src /////////////
+	elseif (iname == "NMI") then
+		if (value >= 32) then
+			if ((self.Clk >= 1.0) && (self.IF) &&
+			    self:Push(self.ES) && 
+			    self:Push(self.GS) && 
+    			    self:Push(self.FS) && 
+    			    self:Push(self.DS) && 
+			    self:Push(self.SS) && 
+			    self:Push(self.CS) && 
+
+			    self:Push(self.EDI) && 
+			    self:Push(self.ESI) && 
+			    self:Push(self.ESP) && 
+			    self:Push(self.EBP) && 
+			    self:Push(self.EDX) && 
+			    self:Push(self.ECX) && 
+			    self:Push(self.EBX) && 
+			    self:Push(self.EAX) && 
+
+			    self:Push(self.CMPR) && 
+			    self:Push(self.IP)) then
+				Interrupt(math.floor(value));
+			end
+		end
 	end
 end
