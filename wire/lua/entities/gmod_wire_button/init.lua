@@ -19,7 +19,7 @@ function ENT:Use(ply)
 	if (not ply:IsPlayer()) then return end
 	if (self.PrevUser) and (self.PrevUser:IsValid()) then return end
 
-	if (self.On) then
+	if (self:IsOn()) then
 		if (self.Toggle) then self:Switch(false) end
 		
 		return
@@ -32,7 +32,7 @@ end
 function ENT:Think()
 	self.BaseClass.Think(self)
 
-	if (self.On) then
+	if ( self:IsOn() ) then
 		if (not self.PrevUser) or (not self.PrevUser:IsValid()) or (not self.PrevUser:KeyDown(IN_USE)) then
 		    if (not self.Toggle) then
 				self:Switch(false)
@@ -51,7 +51,7 @@ function ENT:Setup(toggle, value_off, value_on)
 	self.ValueOff = value_off
 	self.ValueOn = value_on
 	self.Value = value_off
-	self.On = false
+	self:SetOn( false )
 
 	self:ShowOutput(self.ValueOff)
 	Wire_TriggerOutput(self.Entity, "Out", self.ValueOff)
@@ -60,7 +60,7 @@ end
 function ENT:Switch(on)
 	if (not self.Entity:IsValid()) then return end
 
-	self.On = on
+	self:SetOn( on )
 
 	if (on) then
 		self:ShowOutput(self.ValueOn)
