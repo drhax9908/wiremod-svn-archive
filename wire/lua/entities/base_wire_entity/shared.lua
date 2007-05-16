@@ -14,16 +14,19 @@ ENT.AdminSpawnable	= false
 
 ENT.IsWire          = true
 
-function ENT:GetOverlayText()
-	local name = self.Entity:GetNetworkedString("WireName")
+/*function ENT:GetOverlayText()
+	
 	//local txt = self.BaseClass.BaseClass.GetOverlayText(self) or ""
+	local txt = self.Entity:GetNetworkedString( "GModOverlayText" )
+	--local txt = self.Entity:GetNetworkedBeamString( "GModOverlayText" ) or ""
+	Msg("txt = "..txt.."\n")
 	
-	local txt = self.Entity:GetNetworkedBeamString( "GModOverlayText" ) or ""
+	local name = self.Entity:GetNetworkedString("WireName")
 	
-	if ( !SinglePlayer() ) then
+	/*if ( !SinglePlayer() ) then
 		local PlayerName = self:GetPlayerName()
 		txt = txt .. "\n(" .. PlayerName .. ")"
-	end
+	end*
 	
 	if (name) and (name ~= "") then
 	    if (txt == "") then
@@ -34,4 +37,4 @@ function ENT:GetOverlayText()
 	end
 	
 	return txt
-end
+end*/

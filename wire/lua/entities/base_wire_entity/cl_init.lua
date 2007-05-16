@@ -3,14 +3,14 @@ include('shared.lua')
 
 
 function ENT:Draw()
-	//self.BaseClass.BaseClass.Draw(self)
+	self.BaseClass.BaseClass.Draw(self)
 	
-	self:DoNormalDraw()
+	--self:DoNormalDraw()
 	
     Wire_Render(self.Entity)
 end
 
-function ENT:DoNormalDraw()
+/*function ENT:DoNormalDraw()
 	
 	if ( LocalPlayer():GetEyeTrace().Entity == self.Entity && EyePos():Distance( self.Entity:GetPos() ) < 512 ) then
 		
@@ -19,11 +19,12 @@ function ENT:DoNormalDraw()
 			self.RenderGroup = RENDERGROUP_TRANSLUCENT
 		end
 		
-		self:DrawEntityOutline( 1.0 )
+		//self:DrawEntityOutline( 1.0 )
 		self.Entity:DrawModel()
 		
 		if ( self:GetOverlayText() != "" ) then
 			AddWorldTip( self.Entity:EntIndex(), self:GetOverlayText(), 0.5, self.Entity:GetPos(), self.Entity  )
+			--AddWorldTip( self.Entity:EntIndex(), self.Entity:GetNetworkedBeamString("GModOverlayText"), 0.5, self.Entity:GetPos(), self.Entity  )
 		end
 		
 	else
@@ -38,7 +39,7 @@ function ENT:DoNormalDraw()
 		self.Entity:DrawModel()
 		
 	end
-end
+end*/
 
 function ENT:Think()
 	if (CurTime() >= (self.NextRBUpdate or 0)) then

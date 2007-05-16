@@ -20,5 +20,9 @@ function ENT:Think()
 end
 
 function ENT:ShowOutput(p, y, r)
+	--self.Entity:SetNetworkedString( "GModOverlayText", "Angles = " .. math.Round(p*1000)/1000 .. "," .. math.Round(y*1000)/1000 .. "," .. math.Round(r*1000)/1000 )
 	self.Entity:SetNetworkedBeamString( "GModOverlayText", "Angles = " .. math.Round(p*1000)/1000 .. "," .. math.Round(y*1000)/1000 .. "," .. math.Round(r*1000)/1000 )
+	//self.BaseClass.BaseClass.SetOverlayText(self, "Angles = " .. math.Round(p*1000)/1000 .. "," .. math.Round(y*1000)/1000 .. "," .. math.Round(r*1000)/1000 )
+	--self:SetOverlayText(self, "Angles = " .. math.Round(p*1000)/1000 .. "," .. math.Round(y*1000)/1000 .. "," .. math.Round(r*1000)/1000 )
+	--self.Txt = "Angles = " .. math.Round(p*1000)/1000 .. "," .. math.Round(y*1000)/1000 .. "," .. math.Round(r*1000)/1000
 end
