@@ -28,4 +28,6 @@ function ENT:ShowOutput(x, y, z)
 		txt =  "Speed = " .. math.Round((x or 0)*1000)/1000
 	end
 	self.Entity:SetNetworkedBeamString( "GModOverlayText", txt )
+	//self.Entity:SetNetworkedString( "GModOverlayText", txt )
+	//self.BaseClass.BaseClass.SetOverlayText( self, txt )
 end
