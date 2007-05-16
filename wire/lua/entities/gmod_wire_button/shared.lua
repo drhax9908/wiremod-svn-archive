@@ -11,3 +11,10 @@ ENT.Instructions	= ""
 
 ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
+
+function ENT:SetOn( bOn )
+	self.Entity:SetNetworkedBool( "OnOff", bOn, true )
+end
+function ENT:IsOn()
+	return self.Entity:GetNetworkedBool( "OnOff" )
+end
