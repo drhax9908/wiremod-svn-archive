@@ -168,6 +168,36 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_addressbus_name", Description = "#Tool_wire_addressbus_desc" })
+
+	panel:AddControl("ComboBox", {
+		Label = "#Presets",
+		MenuButton = "1",
+		Folder = "wire_addressbus",
+		
+		Options = {
+			Default = {
+				wire_addressbus_addrspace1st = "0",
+				wire_addressbus_addrspace1sz = "0",
+				wire_addressbus_addrspace2st = "0",
+				wire_addressbus_addrspace2sz = "0",
+				wire_addressbus_addrspace3st = "0",
+				wire_addressbus_addrspace3sz = "0",
+				wire_addressbus_addrspace4st = "0",
+				wire_addressbus_addrspace4sz = "0",
+			}
+		},
+		
+		CVars = {
+			[0] = "wire_addressbus_addrspace1st",
+			[1] = "wire_addressbus_addrspace1sz",
+			[2] = "wire_addressbus_addrspace2st",
+			[3] = "wire_addressbus_addrspace2sz",
+			[4] = "wire_addressbus_addrspace3st",
+			[5] = "wire_addressbus_addrspace3sz",
+			[6] = "wire_addressbus_addrspace4st",
+			[7] = "wire_addressbus_addrspace4sz",
+		}
+	})
 	
 	panel:AddControl("Slider", {
 		Label = "Address space 1 offset",

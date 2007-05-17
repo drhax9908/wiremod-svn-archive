@@ -356,9 +356,9 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 	local nextalloc = false
 	local nextdb = false
 	local programsize = 0
-	//if (string.Trim(line) ~= "") && (not firstpass) then
-	//	pl:PrintMessage(HUD_PRINTCONSOLE,"-> Code: ["..linenumber.."]"..self.WIP.." = "..line.."\n")
-	//end
+	if (self.MakeDump) && (string.Trim(line) ~= "") && (not firstpass) then
+		self.Dump = self.Dump.."["..linenumber.."]"..self.WIP.." = "..line.."\n"
+	end
 	for _,opcode in pairs(opcodetable) do
 		opcode = string.Trim(opcode)
 		if (nextdefine) then

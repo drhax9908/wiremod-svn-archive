@@ -43,6 +43,8 @@ function ENT:Initialize()
 	self.FatalError = false
 	self.Labels = {}
 	self.Compiling = false
+	self.Dump = ""
+	self.MakeDump = false
 	//=================================
 
 	self.ThinkTime = 10
@@ -212,7 +214,7 @@ function ENT:ReadCell( Address )
 		//self.LADD = math.floor(Address)
 		//self:Interrupt(8)
 		//return nil
-		return ReadPort(-Address-1)
+		return self.ReadPort(-Address-1)
 	end
 	if (Address < 65536) then
 		return self.Memory[math.floor(Address)]
@@ -577,6 +579,13 @@ function ENT:Execute( )
 		end
 	end
 
+	if (params[1]) then
+		params[1] = params[1] + 1 - 1
+	end
+	if (params[2]) then
+		params[2] = params[2] + 1 - 1
+	end
+
 	if (self.INTR) then
 		self.INTR = false
 		return
@@ -625,7 +634,7 @@ function ENT:Execute( )
 	//============================================================
 	elseif (opcode == 8) then	//CPUID
 		if (params[1] == 0) then 	//CPU VERSION
-			self.EAX = 200		//= 2.20
+			self.EAX = 220		//= 2.20
 		elseif (params[1] == 1) then	//AMOUNT OF RAM
 			self.EAX = 65536	//= 64KB
 		elseif (params[1] == 2) then	//TYPE (0 - ZCPU; 1 - ZGPU)
@@ -647,7 +656,7 @@ function ENT:Execute( )
 	elseif (opcode == 12) then	//MUL
 		result = params[1] * params[2]
 	elseif (opcode == 13) then	//DIV
-		if (math.abs(params[2]) < 0.0001) then
+		if (math.abs(params[2]) < 0.0000000001) then
 			self:Interrupt(3)
 		else
 			result = params[1] / params[2]
@@ -742,7 +751,7 @@ function ENT:Execute( )
 	elseif (opcode == 35) then	//FLOOR
 		result = params[1] - math.floor(params[1])
 	elseif (opcode == 36) then	//INV
-		if (math.abs(params[1]) < 0.0001) then
+		if (math.abs(params[1]) < 0.0000000001) then
 			self:Interrupt(3)
 			self.Clk = 0
 		else
@@ -797,8 +806,8 @@ function ENT:Execute( )
 			self.CS = newCS
 		end
 		WriteBack = false
-	elseif (opcode == 48) then	//I0
-		self:Interrupt(0)
+	elseif (opcode == 48) then	//RCMPR
+		self.EAX = self.CMPR
 		WriteBack = false
 	elseif (opcode == 49) then	//TMR
 		self.EAX = self.TMR
@@ -1013,8 +1022,8 @@ function ENT:Execute( )
 		while (tadd < params[1]*128+128) do
 			local val = self:ReadCell(tadd)
 			if (val == nil) then
-				tadd = params[1]*128+128
 				self.CMPR = tadd
+				tadd = params[1]*128+128
 			end
 			tadd = tadd + 1
 		end

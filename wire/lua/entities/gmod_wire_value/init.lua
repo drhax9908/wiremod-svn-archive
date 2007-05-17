@@ -45,3 +45,21 @@ function ENT:Setup(value)
 	self:SetOverlayText(txt)
 	
 end
+
+
+function ENT:ReadCell( Address )
+	Msg("Read: "..Address.." out of "..table.Count(self.value).."\n")
+	if (Address >= 0) && (Address < table.Count(self.value)) then
+		return self.value[Address+1]
+	else
+		return nil
+	end
+end
+
+function ENT:WriteCell( Address, value )
+	if (Address >= 0) && (Address < table.Count(self.value)) then
+		return true
+	else
+		return false
+	end
+end
