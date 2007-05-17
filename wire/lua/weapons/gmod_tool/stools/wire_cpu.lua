@@ -23,6 +23,9 @@ TOOL.ClientConVar[ "filename" ] = ""
 TOOL.ClientConVar[ "compiler" ] = "ZyeliosASM"
 TOOL.ClientConVar[ "userom" ] = 0
 TOOL.ClientConVar[ "dumpcode" ] = 0
+TOOL.ClientConVar[ "packet_bandwidth" ] = 50
+TOOL.ClientConVar[ "packet_rate_sp" ] = 0.1
+TOOL.ClientConVar[ "packet_rate_mp" ] = 0.4
 
 cleanup.Register( "wire_cpus" )
 
@@ -36,8 +39,7 @@ function TOOL:LeftClick( trace )
 		//trace.Entity:LoadProgram("CPUChip/"..TOOL.ClientConVar[ "filename" ])
 		if (self:GetClientInfo( "compiler") == "ZyeliosASM") then
 			//PrintTable(SourceCode)
-
-			ply:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 1.1 <----\n")
+			ply:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 1.2 <----\n")
 			ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compiling...\n")
 			ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 1\n")
 			trace.Entity.FatalError = false
@@ -49,8 +51,15 @@ function TOOL:LeftClick( trace )
 			else
 				trace.Entity.UseROM = false
 			end
+
+			if (self:GetClientInfo("dumpcode") == "enable") then
+				trace.Entity.MakeDump = true
+				trace.Entity.Dump = "Code listing:\n"
+			else
+				trace.Entity.MakeDump = false
+			end
 	
-			trace.Entity.Labels["version"] = 110
+			trace.Entity.Labels["version"] = 120
 			trace.Entity.Labels["platform"] = 0
 			trace.Entity.Labels["true"] = 1
 			trace.Entity.Labels["false"] = 0
@@ -76,17 +85,24 @@ function TOOL:LeftClick( trace )
 				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile aborted: fatal error has occured\n")			
 			else
 				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile succeded! "..table.Count(SourceCode).." lines, "..trace.Entity.WIP.." bytes, "..table.Count(trace.Entity.Labels).." definitions.\n")
-				if (self:GetClientInfo( "dumpcode") == 1) then //lololol codedump
-					ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dumping compiled data\n")
-					local codedump = ""
-					for i = 0,trace.Entity.WIP do
-						codedump = codedump..trace.Entity.Memory[i].."\n"
-					end
-					ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dumped, saving\n")
-					file.Write("codedump.txt",codedump)
-					ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dump Saved!\n")
-				end
 			end
+
+			if (self:GetClientInfo("dumpcode") == "enable") then //lololol codedump
+				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dumping data\n")
+				local codedump = "Count: "..trace.Entity.WIP.."\n"
+				local pointerdump = "Count: "..table.Count(trace.Entity.Labels).."\n"
+				for i = 0,trace.Entity.WIP do
+					codedump = codedump.."["..i.."]".."="..trace.Entity.Memory[i].."\n"
+				end
+				for k,v in pairs(trace.Entity.Labels) do
+					pointerdump = pointerdump.."#pointer "..k.." "..v.."\n"
+				end
+				file.Write("cdump.txt",codedump)
+				file.Write("ldump.txt",trace.Entity.Dump)
+				file.Write("pdump.txt",pointerdump)
+				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dumped!\n")
+			end
+
 			trace.Entity:Reset()
 			trace.Entity.Compiling = false
 			return true
@@ -233,7 +249,7 @@ if (CLIENT) then
 end
 
 local function UploadProgram( pl )
-	local SendLinesMax = SourceLinesSent + 50	
+	local SendLinesMax = SourceLinesSent + pl:GetInfo("wire_cpu_packet_bandwidth")	
 	if (SendLinesMax > table.Count(SourceLines)) then SendLinesMax = table.Count(SourceLines) end
 	while (SourceLinesSent <= SendLinesMax) do
 		SourceLinesSent = SourceLinesSent + 1
@@ -247,50 +263,39 @@ local function UploadProgram( pl )
 		end	
 	end
 	local TempPercent = ((SourceLinesSent-1)/table.Count(SourceLines))*100
-	pl:PrintMessage(HUD_PRINTCONSOLE,"CPU -> Sent packet ("..TempPercent.." )\n")
+	pl:PrintMessage(HUD_PRINTTALK,"CPU -> Sent packet ("..TempPercent.." )\n")
 	if (TempPercent == 100) then
-		pl:PrintMessage(HUD_PRINTTALK,"CPU Upload Done\n")
+		pl:PrintMessage(HUD_PRINTTALK,"CPU -> Program uploaded\n")
 	end
 end
 
-local function LoadProgram( pl, command, args )//
+local function LoadProgram( pl, command, args )
+	local fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename");
+	if (!file.Exists(fname)) then
+		fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename")..".txt";
+	end
+
+	if (!file.Exists(fname)) then
+		pl:PrintMessage(HUD_PRINTTALK,"CPU -> Sorry! Requested file was not found\n")
+		return
+	end
+	
 	//SP only:
-	//SourceCode = string.Explode("\n", file.Read("CPUChip\\"..pl:GetInfo("wire_cpu_filename")) )
+	//SourceCode = string.Explode("\n", file.Read(fname) )
 
 	pl:ConCommand('wire_cpu_clearsrc')
 
-	//timer.Create( String Name, Number delay, Number reps, Function func, ... )
-
-	SourceLines = string.Explode("\n", file.Read("CPUChip\\"..pl:GetInfo("wire_cpu_filename")) )
+	SourceLines = string.Explode("\n", file.Read(fname) )
 	SourceLinesSent = 0
 	//Send 50 lines
+	pl:PrintMessage(HUD_PRINTTALK,"CPU -> Starting uploading program...\n")
 	if (SinglePlayer()) then
-		local Reps = math.floor(table.Count(SourceLines)/50)+1	
-		timer.Create("CPUSendTimer",0.1,Reps,UploadProgram,pl)
+		local Reps = math.floor(table.Count(SourceLines)/pl:GetInfo("wire_cpu_packet_bandwidth"))+1	
+		timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_sp"),Reps,UploadProgram,pl)
 	else
-		local Reps = math.floor(table.Count(SourceLines)/50)+1	
-		timer.Create("CPUSendTimer",0.4,Reps,UploadProgram,pl)
+		local Reps = math.floor(table.Count(SourceLines)/pl:GetInfo("wire_cpu_packet_bandwidth"))+1	
+		timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_mp"),Reps,UploadProgram,pl)
 	end
-
-	//linen = 0
-	//for _,line in pairs(lines) do
-	//	if (line) && (line ~= "\n") && (string.gsub(line, "\n", "") ~= "") then
-	//		pl:ConCommand('wire_cpu_addsrc "'..linen..'" "' .. string.gsub(line, "\n", "") .. '"')
-	//	else
-	//		pl:ConCommand('wire_cpu_addsrc "'..linen..'" ""')
-	//	end
-	//	linen = linen + 1
-	//end
-
-	//SourceCode = {}
-	//local lines = string.Explode("\n", file.Read("CPUChip\\"..pl:GetInfo("wire_cpu_filename")) )
-	//for i = 1,256 do
-	//	if (lines[i]) && (lines[i] ~= "\n") && (string.gsub(lines[i], "\n", "") ~= "") then
-	//		pl:ConCommand('wire_cpu_line'..i..' "' .. string.gsub(lines[i], "\n", "") .. '"')
-	//	else
-	//		pl:ConCommand('wire_cpu_line'..i..' ""')
-	//	end
-	//end
 end
 concommand.Add( "wire_cpu_load", LoadProgram )
 
@@ -307,18 +312,6 @@ end
 concommand.Add( "wire_cpu_store", StoreProgram )
 
 local function ClearProgram( pl, command, args )
-//	local lines = "";
-//        for i = 1,256 do
-//		if (pl:GetInfo("wire_cpu_line"..i) ~= "") then
-//	                lines = lines .. pl:GetInfo("wire_cpu_line"..i) .. "\n"
-//			pl:ConCommand('wire_cpu_line'..i..' ""')
-//		end
-//        end
-//	local filenum = 0
-//	while (file.Exists("CPUChip\\ClearSave\\SavedCode"..filenum..".txt")) do
-//		filenum = filenum + 1
-//	end
-//        file.Write("CPUChip\\ClearSave\\SavedCode"..filenum..".txt",lines)
 	pl:ConCommand('wire_cpu_clearsrc')
 end
 concommand.Add( "wire_cpu_clear", ClearProgram ) 
