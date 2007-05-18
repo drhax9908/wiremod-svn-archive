@@ -855,6 +855,32 @@ GateActions["ram32k"] = {
     end
 }
 
+GateActions["ram128k"] = {
+    group = "Memory",
+    name = "RAM(128kb)",
+    inputs = { "Clk", "AddrRead", "AddrWrite", "Data" },
+    output = function(gate, Clk, AddrRead, AddrWrite, Data )
+        AddrRead = math.floor(tonumber(AddrRead))
+        AddrWrite = math.floor(tonumber(AddrWrite))
+        if (Clk > 0) then
+            if (AddrWrite < 32768) then
+                    gate.LatchStore[AddrWrite] = Data
+            end
+        end
+        return gate.LatchStore[AddrRead] or 0
+    end,
+    reset = function(gate)
+        gate.LatchStore = {}
+        for i = 0,32767 do
+            gate.LatchStore[i] = 0
+        end
+    end,
+    label = function(Out, Clk, AddrRead, AddrWrite, Data)
+        return "WriteAddr:"..AddrWrite.."  Data:"..Data.."  Clock:"..Clk..
+        	"\nReadAddr:"..AddrRead.." = "..Out
+    end
+}
+
 GateActions["ram64x64"] = {
     group = "Memory",
     name = "RAM(64x64 store)",

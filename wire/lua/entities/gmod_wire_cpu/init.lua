@@ -166,7 +166,7 @@ function ENT:Interrupt( intnumber )
 				self.INTR = true
 			else
 				//Msg("Baad thing\n")
-				self:Interrupt( 0 )
+				//self:Interrupt( 0 )
 			end
 		end
 	end
@@ -300,6 +300,7 @@ function ENT:WriteCell( Address, value )
 			return false
 		end
 	end
+	return true
 end
 
 function ENT:ReadPort( Address )
@@ -310,7 +311,7 @@ function ENT:ReadPort( Address )
 	
 	if (Address < 0) then
 		self.LADD = -math.floor(Address)
-		self:Interrupt(8)
+		self:Interrupt(10)
 		return nil
 	end
 	if (self.Inputs.IOBus.Src) then
@@ -337,9 +338,7 @@ function ENT:ReadPort( Address )
 			return nil
 		end
 	else
-		self.LADD = -math.floor(Address)
-		self:Interrupt(10)
-		return nil
+		return 0
 	end
 end
 
@@ -377,9 +376,7 @@ function ENT:WritePort( Address, value )
 			return false
 		end
 	else
-		self.LADD = -math.floor(Address)
-		self:Interrupt(10)
-		return false
+		return true
 	end
 end
 
@@ -849,11 +846,12 @@ function ENT:Execute( )
 	//------------------------------------------------------------
 	elseif (opcode == 60) then	//BIT
 		local temp = params[1]
-		for i = 0,params[2] do
+		for i = 0,params[2]-1 do
 			temp = math.floor(temp / 10)
 		end
-		result = math.fmod(temp,10)
-	elseif (opcode == 60) then	//SBIT
+		self.CMPR = math.fmod(temp,10)
+		WriteBack = false
+	elseif (opcode == 61) then	//SBIT
 		local temp = params[1]
 		local temp2 = 0
 		local temp3 = 1
@@ -867,7 +865,7 @@ function ENT:Execute( )
 			temp3 = temp3*10
 		end
 		result = temp2
-	elseif (opcode == 60) then	//CBIT
+	elseif (opcode == 62) then	//CBIT
 		local temp = params[1]
 		local temp2 = 0
 		local temp3 = 1
@@ -1186,7 +1184,10 @@ function ENT:TriggerInput(iname, value)
 		self.InputClk = value
 		self.PrevTime = CurTime()
 	elseif (iname == "Frequency") then
-		if (!SinglePlayer() && (value > 7500)) then return end
+		if (!SinglePlayer() && (value > 20000)) then 
+			self.ThinkTime = 200 
+			return
+		end
 		if (value ~= 0) then
 			self.ThinkTime = value/100
 		end
