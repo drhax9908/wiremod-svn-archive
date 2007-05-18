@@ -23,8 +23,8 @@ TOOL.ClientConVar[ "filename" ] = ""
 TOOL.ClientConVar[ "compiler" ] = "ZyeliosASM"
 TOOL.ClientConVar[ "userom" ] = 0
 TOOL.ClientConVar[ "dumpcode" ] = 0
-TOOL.ClientConVar[ "packet_bandwidth" ] = 50
-TOOL.ClientConVar[ "packet_rate_sp" ] = 0.1
+TOOL.ClientConVar[ "packet_bandwidth" ] = 100
+TOOL.ClientConVar[ "packet_rate_sp" ] = 0.05
 TOOL.ClientConVar[ "packet_rate_mp" ] = 0.4
 
 cleanup.Register( "wire_cpus" )
@@ -246,6 +246,7 @@ if (CLIENT) then
 	SourceLines = {}
 	SourceLineNumbers = {}
 	SourceLinesSent = 0
+	SourceSent = false
 end
 
 local function UploadProgram( pl )
@@ -264,8 +265,9 @@ local function UploadProgram( pl )
 	end
 	local TempPercent = ((SourceLinesSent-1)/table.Count(SourceLines))*100
 	pl:PrintMessage(HUD_PRINTTALK,"CPU -> Sent packet ("..TempPercent.." )\n")
-	if (TempPercent == 100) then
+	if (TempPercent == 100) && (!SourceSent) then
 		pl:PrintMessage(HUD_PRINTTALK,"CPU -> Program uploaded\n")
+		SourceSent = true
 	end
 end
 
@@ -285,8 +287,10 @@ local function LoadProgram( pl, command, args )
 
 	pl:ConCommand('wire_cpu_clearsrc')
 
+
 	SourceLines = string.Explode("\n", file.Read(fname) )
 	SourceLinesSent = 0
+	SourceSent = false
 	//Send 50 lines
 	pl:PrintMessage(HUD_PRINTTALK,"CPU -> Starting uploading program...\n")
 	if (SinglePlayer()) then

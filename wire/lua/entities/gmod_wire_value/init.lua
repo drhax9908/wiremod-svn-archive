@@ -48,7 +48,6 @@ end
 
 
 function ENT:ReadCell( Address )
-	Msg("Read: "..Address.." out of "..table.Count(self.value).."\n")
 	if (Address >= 0) && (Address < table.Count(self.value)) then
 		return self.value[Address+1]
 	else
