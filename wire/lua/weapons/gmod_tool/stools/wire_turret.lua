@@ -69,18 +69,6 @@ function TOOL:LeftClick( trace, worldweld )
 	local spread	 	= self:GetClientNumber( "spread" )
 	local numbullets 	= self:GetClientNumber( "numbullets" )
 	
-	if ( !SinglePlayer() ) then
-	
-		// Clamp stuff in multiplayer.. because people are idiots
-		
-		delay		= math.Clamp( delay, 0.05, 3600 )
-		numbullets	= 1
-		force		= math.Clamp( force, 0.01, 100 )
-		spread		= math.Clamp( spread, 0, 1 )
-		damage		= math.Clamp( damage, 0, 500 )
-	
-	end
-	
 	
 	// We shot an existing turret - just change its values
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_turret" && trace.Entity:GetTable().pl == ply ) then
@@ -119,19 +107,6 @@ function TOOL:LeftClick( trace, worldweld )
 	*/
 	turret:SetAngles( trace.HitNormal:Angle() )
 	
-	/*local weld
-	
-	// Don't weld to world
-	if ( trace.Entity != NULL && (!trace.Entity:IsWorld() || worldweld) ) then
-		
-		weld = constraint.Weld( turret, trace.Entity, trace.PhysicsBone, 0, 0, true, true )
-		
-		// Don't hit your parents or you will go to jail.
-		
-		turret:GetPhysicsObject():EnableCollisions( false )
-		turret:GetTable().nocollide = true
-		
-	end*/
 	local weld = WireLib.Weld(turret, trace.Entity, trace.PhysicsBone, true, false, worldweld)
 	
 	undo.Create("WireTurret")
@@ -153,13 +128,26 @@ if (SERVER) then
 	function MakeWireTurret( ply, Pos, Ang, trigger, delay, toggle, damage, force, sound, numbullets, spread, tracer, Vel, aVel, frozen, nocollide )
 	
 		if ( !ply:CheckLimit( "wire_turrets" ) ) then return nil end
-	
+		
 		local turret = ents.Create( "gmod_wire_turret" )
 		if (!turret:IsValid()) then return false end
-
+		
 		turret:SetPos( Pos )
 		if ( Ang ) then turret:SetAngles( Ang ) end
 		turret:Spawn()
+		
+		
+		if ( !SinglePlayer() ) then
+			
+			// Clamp stuff in multiplayer.. because people are idiots
+			
+			delay		= math.Clamp( delay, 0.05, 3600 )
+			numbullets	= 1
+			force		= math.Clamp( force, 0.01, 100 )
+			spread		= math.Clamp( spread, 0, 1 )
+			damage		= math.Clamp( damage, 0, 500 )
+			
+		end
 		
 		turret:GetTable():SetDamage( damage )
 		turret:GetTable():SetPlayer( ply )
