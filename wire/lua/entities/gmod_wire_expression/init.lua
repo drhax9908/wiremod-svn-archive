@@ -1,3 +1,4 @@
+// Written by Syranide, me@syranide.com
 
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
@@ -189,7 +190,7 @@ ENT._ln_1 =      function (self, n)    return math.log(n) / math.log(math.exp(1)
 ENT._log_2 =     function (self, n, k) return math.log(n) / math.log(k) end
 ENT._log2_1 =    function (self, n)    return math.log(n) end
 ENT._log10_1 =   function (self, n)    return math.log10(n) end
-ENT._mod_1 =     function (self, n)    return math.fmod(n) end
+ENT._mod_2 =     function (self, x, y) return math.fmod(x, y) end
 ENT._sgn_1 =     function (self, n)    if n > 0 then return 1 elseif n < 0 then return -1 else return 0 end end
 ENT._sqrt_1 =    function (self, n)    return math.sqrt(n) end
 ENT._cbrt_1 =    function (self, n)    return 10 ^ ((1 / 3) * math.log10(n ^ 3)) end
@@ -213,6 +214,7 @@ ENT._pi_0 =      function (self)       return math.pi end
 
 ENT._acosr_1 =   function (self, x)    return math.acos(x) end
 ENT._asinr_1 =   function (self, x)    return math.asin(x) end
+ENT._atanr_2 =   function (self, x, y) return math.atan2(x, y) end
 ENT._atan2r_2 =  function (self, x, y) return math.atan2(x, y) end
 ENT._atanr_1 =   function (self, x)    return math.atan(x) end
 ENT._coshr_1 =   function (self, r)    return math.cosh(r) end
@@ -224,6 +226,7 @@ ENT._tanhr_1 =   function (self, r)    return math.tanh(r) end
 
 ENT._acos_1 =    function (self, x)    return math.deg(math.acos(x)) end
 ENT._asin_1 =    function (self, x)    return math.deg(math.asin(x)) end
+ENT._atan_2 =    function (self, x, y) return math.deg(math.atan2(x, y)) end
 ENT._atan2_2 =   function (self, x, y) return math.deg(math.atan2(x, y)) end
 ENT._atan_1 =    function (self, x)    return math.deg(math.atan(x)) end
 ENT._cosh_1 =    function (self, d)    return math.cosh(math.rad(d)) end

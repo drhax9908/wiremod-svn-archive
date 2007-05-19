@@ -1,3 +1,5 @@
+// Written by Syranide, me@syranide.com
+
 -- check what approach angle does... useful?
 -- high speed links to memory some how would be nice    read()   write() ?
 -- fix playsound for errors in "init.lua"
@@ -489,64 +491,6 @@ if SERVER then
 	concommand.Add("wire_gate_expression_refresh", WireGateExpressionPanelRefresh)
 else
 	function WireGateExpressionPanelRefresh()
-		--[[
-		local gui = {}
-		gui.frame = vgui.Create( "Frame" )
-		gui.frame:SetName( "basic" )
-		gui.frame:LoadControlsFromString(AdvDupeClient.res.gengui("Save to File"))
-		gui.frame:SetName("AdvDuplicatorSave")
-		gui.frame:SetSize(320,135)
-		gui.frame:SetPos(400,250)
-		
-		
-		gui.lblFile = vgui.Create("Label",gui.frame,"lblFile")
-		gui.lblFile:SetPos(6,25)
-		gui.lblFile:SetSize(185,25)
-		gui.lblFile:SetText("Filename:")
-		
-		gui.lblDesc = vgui.Create("Label",gui.frame,"lblDesc")
-		gui.lblDesc:SetPos(6,65)
-		gui.lblDesc:SetSize(185,25)
-		gui.lblDesc:SetText("Description:")
-		
-		gui.btnSave = vgui.Create("Button",gui.frame,"btnSave")
-		gui.btnSave:SetPos(184,110)
-		gui.btnSave:SetSize(110,20)
-		gui.btnSave:SetText("Save")
-		gui.btnSave:SetCommand("Save")
-		
-		gui.txtFile = vgui.Create("TextEntry",gui.frame,"txtFile")
-		gui.txtFile:SetPos(6,45)
-		gui.txtFile:SetSize(289,100)
-		gui.txtFile:SetCommand("SetMultiline", "b", "1");
-
-
-		
-		
-		//gui.txtDesc = vgui.Create("TextEntry",gui.frame,"txtDesc")
-		//gui.txtDesc:SetPos(6,85)
-		//gui.txtDesc:SetSize(189,20)
-		
-		function gui.frame:ActionSignal(key,value)
-			if key == "Save" then
-				local filename	= gui.txtFile:GetValue()
-				local desc		= gui.txtDesc:GetValue()
-				
-				LocalPlayer():ConCommand("adv_duplicator_save \""..filename.."\" \""..desc.."\"")
-				
-				gui.frame:SetVisible(false)
-			end
-		end
-		
-		gui.txtFile:SetText("")
-		--gui.txtDesc:SetText("")
-		
-		gui.frame:SetKeyBoardInputEnabled( true )
-		gui.frame:SetMouseInputEnabled( true )
-		gui.frame:SetVisible( true )
-		--]]
-	
-	
 		WireGateExpressionUpdateFilelist()
 		WireGateExpressionRebuildCPanel()
 	end
@@ -793,6 +737,10 @@ if CLIENT then
 				})
 			end
 		end
+		
+		panel:AddControl("Label", {
+			Text = "              Documentation available at wiremod.com"
+		})
 		
 		panel:AddControl("Label", {
 			Text = "               Written by Syranide, me@syranide.com"
