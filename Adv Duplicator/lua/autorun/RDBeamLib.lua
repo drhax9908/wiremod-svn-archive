@@ -292,7 +292,7 @@ end
 //	sends all the BeamData to a player when they connect to the server
 //
 local function SendAll( ply )
-	Msg("==sending beam data too "..tostring(ply).."\n")
+	--Msg("==sending beam data too "..tostring(ply).."\n")
 	
 	for source_ent, source_ent_table in pairs(BeamData) do
 		for dest_ent, beam_data in pairs(source_ent_table) do
@@ -315,7 +315,7 @@ local function SendAll( ply )
 	end
 end
 local function FullUpdateEntityBeamVars( ply )
-	Msg("==starting timer for sending beam data too "..tostring(ply).."\n")
+	--Msg("==starting timer for sending beam data too "..tostring(ply).."\n")
 	timer.Simple(2, SendAll, ply)
 end
 
@@ -372,17 +372,17 @@ local function BeamVarsDelayedSend()
 		
 		if (NormalOpMode) and (#DelaySendBeamData > 20) then
 			
-			Msg("RDBeam leaving NormalOpMode | "..#DelaySendBeamData.."\n")
+			--Msg("RDBeam leaving NormalOpMode | "..#DelaySendBeamData.."\n")
 			NormalOpMode = false
 			--when a shit load has be added, delay for a few seconds to allow other things to calm down
 			NextBeamVarsDelayedSendTime = CurTime() +  3
-			Msg("RDBeam delay 3\n")
+			--Msg("RDBeam delay 3\n")
 			return
 			
 		elseif (!NormalOpMode) and (#DelaySendBeamData < 20) then
 			
 			NormalOpMode = true
-			Msg("RDBeam retruning to NormalOpMode\n")
+			--Msg("RDBeam retruning to NormalOpMode\n")
 			
 		end
 		
@@ -399,7 +399,7 @@ local function BeamVarsDelayedSend()
 			
 		else --otherswise send 10 every 1/4 sec
 			
-			Msg("RDBeam sending non-NormalOpMode data | "..#DelaySendBeamData.."\n")
+			--Msg("RDBeam sending non-NormalOpMode data | "..#DelaySendBeamData.."\n")
 			for i=1,10 do
 				local data = table.remove(DelaySendBeamData, 1)
 				if (data) and (data.info) then

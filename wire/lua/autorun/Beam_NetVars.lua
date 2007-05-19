@@ -287,7 +287,7 @@ local function FullUpdateEntityNetworkVars( ply )
 
 end
 local function DelayedFullUpdateEntityNetworkVars( ply )
-	Msg("==starting timer for sending var data too "..tostring(ply).."\n")
+	--Msg("==starting timer for sending var data too "..tostring(ply).."\n")
 	timer.Simple(2, FullUpdateEntityNetworkVars, ply)
 end
 --hook.Add( "PlayerInitialSpawn", "FullUpdateEntityNetworkBeamVars", FullUpdateEntityNetworkVars )
@@ -341,17 +341,17 @@ local function NetworkVarsSend()
 		
 		if (NormalOpMode) and (DelayedUpdatesNum > 50) then
 			
-			Msg("========BeamVars leaving NormalOpMode | "..DelayedUpdatesNum.."\n")
+			--Msg("========BeamVars leaving NormalOpMode | "..DelayedUpdatesNum.."\n")
 			NormalOpMode = false
 			--when a shit load has be added, delay for a few seconds to allow other things to calm down
 			NextBeamVarsDelayedSendTime = CurTime() +  2
-			Msg("=====BeamVars delay 2======\n")
+			--Msg("=====BeamVars delay 2======\n")
 			return
 			
 		elseif (!NormalOpMode) and (DelayedUpdatesNum < 50) then
 			
 			NormalOpMode = true
-			Msg("BeamVars retruning to NormalOpMode\n")
+			--Msg("BeamVars retruning to NormalOpMode\n")
 			
 		end
 		
@@ -374,7 +374,7 @@ local function NetworkVarsSend()
 			
 		else --otherswise send 10 every 1/4 sec
 			
-			Msg("BeamVars sending non-NormalOpMode data | "..DelayedUpdatesNum.."\n")
+			--Msg("BeamVars sending non-NormalOpMode data | "..DelayedUpdatesNum.."\n")
 			
 			local i = 0
 			/*for VarType, a in pairs(DelayedUpdates) do
@@ -397,7 +397,7 @@ local function NetworkVarsSend()
 				end
 			end
 			
-			Msg("BeamVars retruning to NormalOpMode from not\n")
+			--Msg("BeamVars retruning to NormalOpMode from not\n")
 			NormalOpMode = true
 			NextBeamVarsDelayedSendTime = CurTime() +  .1
 			
@@ -420,61 +420,6 @@ local function NetworkVarsSend()
 end
 //timer.Create( "NetworkBeamVarsSend", 0.01, 0, NetworkVarsSend )
 hook.Add("Think", "NetBeamLib_Think", NetworkVarsSend)
-
-
-local NextBeamVarsDelayedSendTime = 0
-local NormalOpMode = true
-
-local function BeamVarsDelayedSend()
-	if (CurTime() >= NextBeamVarsDelayedSendTime) and (#DelaySendBeamData > 0) then
-		
-		if (NormalOpMode) and (#DelaySendBeamData > 20) then
-			
-			Msg("RDBeam leaving NormalOpMode\n")
-			NormalOpMode = false
-			if (#DelaySendBeamData > 100) then --when a shit load has be added, delay for a few seconds to allow other things to calm down
-				NextBeamVarsDelayedSendTime = CurTime() +  5
-				Msg("RDBeam delay 5\n")
-			else
-				NextBeamVarsDelayedSendTime = CurTime() +  2
-				Msg("RDBeam delay 2\n")
-			end
-			return
-			
-		elseif (!NormalOpMode) and (#DelaySendBeamData < 20) then
-			
-			NormalOpMode = true
-			Msg("RDBeam retruning to NormalOpMode\n")
-			
-		end
-		
-		
-		if (NormalOpMode) then --during normal mode, we send the whole buffer every 0.05 sec
-			
-			for _, data in pairs (DelaySendBeamData) do
-				if (data) and (data.info) then
-					SendBeamData( data.info, data.beam_data, data.ply )
-				end
-			end
-			DelaySendBeamData = {}
-			NextBeamVarsDelayedSendTime = CurTime() +  .05
-			
-		else --otherswise send 10 every 1/4 sec
-			
-			Msg("BeamVars sending non-NormalOpMode data\n")
-			for i=1,10 do
-				local data = table.remove(DelaySendBeamData, 1)
-				if (data) and (data.info) then
-					SendBeamData( data.info, data.beam_data, data.ply )
-				end
-			end
-			NextBeamVarsDelayedSendTime = CurTime() +  .25
-			
-		end
-		
-		
-	end
-end
 
 
 
