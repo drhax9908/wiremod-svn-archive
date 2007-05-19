@@ -1,3 +1,5 @@
+// Written by Syranide, me@syranide.com
+
 WireGateExpressionParser = {}
 
 WireGateExpressionParser.toktable = {

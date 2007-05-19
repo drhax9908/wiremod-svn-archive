@@ -1,3 +1,4 @@
+// Written by Syranide, me@syranide.com
 
 ENT.Type 			= "anim"
 ENT.Base 			= "base_wire_entity"
