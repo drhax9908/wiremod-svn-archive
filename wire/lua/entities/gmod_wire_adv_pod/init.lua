@@ -7,9 +7,6 @@ ENT.WireDebugName = "Advanced Pod Controller"
 
 local MODEL = Model("models/jaanus/wiretool/wiretool_siren.mdl")
 
--- Number of pods (Used for creating an uniqe name)
--- wire_pod_count = 0
-
 function ENT:Initialize()
 	self.Entity:SetModel( MODEL )
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
@@ -69,9 +66,6 @@ end
 
 -- Link to pod
 function ENT:Setup( pod )
-	-- print("Setting up... ".."\"PlayerOn "..self.Tname..",start,1,0,-1\"")
-	-- print_r(pod)
-	-- 
 	self.Pod = pod
 	self.TTLFP = CurTime()
 end
@@ -108,26 +102,12 @@ function ENT:OnRestore()
     self.BaseClass.OnRestore(self)
 end
 
---[[
--- Gets called when the SENT get an input (i.e. from the pod)
-function ENT:AcceptInput( name, activator, caller )
-	-- print("Name = "..tostring(name))
-	if not activator:IsPlayer() then return end
-	if name == "start" then
-		self.Cply = activator
-		-- print("Activator: "..activator:GetClass().." Caller: "..caller:GetClass())
-	elseif name == "stop" then
-		self.Cply = nil
-	end
-	return true
-end
-]]
-
 -- Called every 0.01 seconds, check for key down
 function ENT:Think()
 	-- Check that we have a pod
 	if self.Pod then
 		-- Check if we should look for player entering/exiting the vehicle TTLFP = TimeToLookForPod
+		if ( !self.TTLFP ) then return end
 		if self.TTLFP < CurTime() then
 			-- Check if the old player is still in our vehicle
 			if !(self.Ply and self.Ply:GetVehicle() == self.Pod) then
@@ -153,8 +133,6 @@ function ENT:Think()
 				if self.Ply:KeyDownLast( v ) then Wire_TriggerOutput( self.Entity, k, 1 )-- ; print( "Pressed: "..k..":"..v )
 				else Wire_TriggerOutput( self.Entity, k, 0 ) end
 				]]
-				-- Optimising Optimising Optimising...
-				--print("SPAM!")
 				if self.Ply:KeyDownLast( v ) then Wire_TriggerOutput( self.Entity, k, 1 )
 				else Wire_TriggerOutput( self.Entity, k, 0 ) end
 				
