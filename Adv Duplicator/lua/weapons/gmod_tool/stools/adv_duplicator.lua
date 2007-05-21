@@ -52,7 +52,7 @@ function TOOL:LeftClick( trace )
 		
 	else
 		
-		if ( self.NumOfEnts + self.NumOfConst > 200 ) then
+		if ( self.NumOfEnts + self.NumOfConst > 200) then
 			Msg("===adding new timed paste===\n")
 			AdvDupe.OverTimePasteStart( self:GetOwner(), self.Entities, self.Constraints, self.HeadEntityIdx, trace.HitPos, angle - self.HoldAngle  )
 			return true
@@ -176,7 +176,7 @@ end
 //TODO: update paster to support new duplicator code
 //
 //make a paster ent
-/*function TOOL:Reload( trace )
+function TOOL:Reload( trace )
 	if (CLIENT) then return true end
 	if self.Legacy then
 		self:GetOwner():SendLua( "GAMEMODE:AddNotify('Paster does not support old saves!', NOTIFY_GENERIC, 7);" )
@@ -223,14 +223,14 @@ end
 	paster:Setup(
 		table.Copy(self.Entities),
 		table.Copy(self.Constraints),
-		self.HoldAngle, delay, undo_delay, range, show_beam
+		self.HoldAngle, delay, undo_delay, range, show_beam, self.HeadEntityIdx
 	)
 	
 	if key > -1 then numpad.OnDown( self:GetOwner(), key, "PasterCreate", paster, true ) end
 	if undo_key > -1 then numpad.OnDown( self:GetOwner(), undo_key, "PasterUndo", paster, true ) end
 	
 	return true
-end*/
+end
 
 //just because
 function TOOL.BuildCPanel( CPanel )
@@ -759,7 +759,7 @@ else	// CLIENT
 		local ServerDirParams = {}
 		local ClientDirParams = {}
 		if (menu == "main") or (!menu) or (menu == "") or (menu == "serverdir") or (menu == "clientupload") then
-			ServerDirParams.Height = 220
+			ServerDirParams.Height = 260
 			ServerDirParams.Options = {}
 			if (!SinglePlayer()) then
 				ServerDirParams.Label = "Server: "..string.gsub(AdvDupeClient.SScdir, dupeshare.BaseDir, "")
@@ -925,10 +925,10 @@ else	// CLIENT
 				Label = "Description:",
 				Command = "adv_duplicator_file_desc" })*/
 			
-			//TODO: fix paster
-			/*CPanel:AddControl( "Button", {
+			//TODO: fix paster -- done?
+			CPanel:AddControl( "Button", {
 				Text = "Open Paster Menu",
-				Command = "adv_duplicator_cl_menu paster" })*/
+				Command = "adv_duplicator_cl_menu paster" })
 			
 			
 			

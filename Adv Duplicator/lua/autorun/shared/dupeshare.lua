@@ -1,6 +1,6 @@
 
 dupeshare = {}
-dupeshare.Version = 1.615
+dupeshare.Version = 1.616
 
 dupeshare.BaseDir		= "adv_duplicator"
 dupeshare.PublicDirs	= { "=Public Folder=", "=Team Share Folder="}
@@ -10,6 +10,7 @@ dupeshare.UsePWSys = false //server admins, set this to ture to use the folder p
 
 
 //this is only usfull for old saves, it doesn't do much for new ones.
+dupeshare.DictionaryStart = 71
 dupeshare.DictionarySize = 116
 dupeshare.Dictionary = {
 	[1]		= {"|MCl", "\"\n\t\t\t}\n\t\t\t\"class\"\n\t\t\t{\n\t\t\t\t\"__name\"\t\t\"Class\"\n\t\t\t\t\"__type\"\t\t\"String\"\n\t\t\t\t\"V\"\t\t\""},
@@ -134,7 +135,7 @@ function dupeshare.Compress(str, ForConCommand)
 	
 	local beforelen = string.len(str)
 	
-	for k=1,dupeshare.DictionarySize do
+	for k=dupeshare.DictionaryStart,dupeshare.DictionarySize do
 		local entry = dupeshare.Dictionary[k]
 		str = string.gsub(str, entry[2], entry[1])
 	end
@@ -155,7 +156,7 @@ function dupeshare.DeCompress(str, FormConCommand)
 	
 	local afterlen = string.len(str)
 	
-	for k=dupeshare.DictionarySize,1,-1 do
+	for k=dupeshare.DictionarySize,dupeshare.DictionaryStart,-1 do
 		local entry = dupeshare.Dictionary[k]
 		str = string.gsub(str, entry[1], entry[2])
 	end
