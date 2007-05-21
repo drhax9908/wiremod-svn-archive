@@ -16,7 +16,18 @@ function ENT:Initialize()
 	
 	self.MySocket = nil
 	
-	self.Inputs = Wire_CreateInputs(self.Entity, { "A" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "A","B","C","D","E","F","G","H" })
+	self.Outputs = Wire_CreateOutputs(self.Entity, { "A","B","C","D","E","F","G","H" })
+end
+
+function ENT:SetValue(index,value)
+	if (self.MySocket.Const) and (self.MySocket.Const:IsValid()) then
+		Wire_TriggerOutput(self.Entity, index, value)
+	else
+		Wire_TriggerOutput(self.Entity, index, 0)
+	end
+	
+	self:ShowOutput()
 end
 
 function ENT:OnRemove()
@@ -27,23 +38,14 @@ function ENT:OnRemove()
 	end
 end
 
-function ENT:Setup(a,ar,ag,ab,aa)
-	self.A = a or 0
-	self.AR = ar or 255
-	self.AG = ag or 0
-	self.AB = ab or 0
-	self.AA = aa or 255
-	self.Entity:SetColor(ar, ag, ab, aa)
-	self:ShowOutput(0)
+function ENT:Setup()
+	self:ShowOutput()
 end
 
-function ENT:TriggerInput(iname, value, iter)
-	if (iname == "A") then
-		self:ShowOutput(value)
-
-		if (self.MySocket) and (self.MySocket:IsValid()) then
-			self.MySocket:SetValue(value, iter)
-		end
+function ENT:TriggerInput(iname, value)
+	self:ShowOutput()
+    if (self.MySocket) and (self.MySocket:IsValid()) then
+		self.MySocket:SetValue(iname, value)
 	end
 end
 
@@ -52,22 +54,15 @@ function ENT:SetSocket(socket)
 end
 
 function ENT:AttachedToSocket(socket)
-	socket:SetValue(self.Inputs.A.Value)
+    for i,v in pairs(self.Inputs)do
+        socket:SetValue(v,v.Value)
+ 	end
 end
 
 function ENT:ShowOutput(value)
-	if value ~= self.PrevValue then
-		self:SetOverlayText(math.Round(value*1000)/1000)
-		self.PrevValue = value
-	end
+	self:SetOverlayText("Plug")
 end
 
 function ENT:OnRestore()
-	self.A = self.A or 0
-	self.AR = self.AR or 255
-	self.AG = self.AG or 0
-	self.AB = self.AB or 0
-	self.AA = self.AA or 255
-
     self.BaseClass.OnRestore(self)
 end

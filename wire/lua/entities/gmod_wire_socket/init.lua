@@ -20,32 +20,30 @@ function ENT:Initialize()
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	
 	self.MyPlug = nil
-	self.ReceivedValue = nil
 	self.Const = nil
 	
-	self.Outputs = Wire_CreateOutputs(self.Entity, { "Out" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "A","B","C","D","E","F","G","H" })
+	self.Outputs = Wire_CreateOutputs(self.Entity, { "A","B","C","D","E","F","G","H" })
 end
 
-function ENT:SetValue(value, iter)
+function ENT:TriggerInput(iname, value)
+	self:ShowOutput()
+    if (self.MyPlug) and (self.MyPlug:IsValid()) then
+		self.MyPlug:SetValue(iname, value)
+	end
+end
+
+function ENT:SetValue(index,value)
 	if (self.Const) and (self.Const:IsValid()) then
-		self.ReceivedValue = value
-		Wire_TriggerOutput(self.Entity, "Out", value, iter)
+		Wire_TriggerOutput(self.Entity, index, value)
 	else
-		self.ReceivedValue = 0
-		Wire_TriggerOutput(self.Entity, "Out", 0, iter)
+		Wire_TriggerOutput(self.Entity, index, 0)
 	end
 	
-	self:ShowOutput(self.ReceivedValue)
+	self:ShowOutput()
 end
 
-function ENT:Setup(a,ar,ag,ab,aa)
-	self.A = a or 0
-	self.AR = ar or 255
-	self.AG = ag or 0
-	self.AB = ab or 0
-	self.AA = aa or 255
-
-	self.Entity:SetColor(ar, ag, ab, aa)
+function ENT:Setup()
 end
 
 function ENT:Think()
@@ -61,7 +59,9 @@ function ENT:Think()
 		end
 		
 		self.ReceivedValue = 0 //We're now getting no signal
-		Wire_TriggerOutput(self.Entity, "Out", 0)
+		for i,v in pairs(self.Outputs)do
+		  Wire_TriggerOutput(self.Entity, v, 0)
+		end
 
 		self.Entity:NextThink( CurTime() + NEW_PLUG_WAIT_TIME ) //Give time before next grabbing a plug.
 		return true
@@ -126,19 +126,10 @@ function ENT:AttachPlug( plug )
 	plug:AttachedToSocket(self.Entity)
 end
 
-function ENT:ShowOutput(value)
-	if value ~= self.PrevValue then
-		self:SetOverlayText(math.Round(value*1000)/1000)
-		self.PrevValue = value
-	end
+function ENT:ShowOutput()
+	self:SetOverlayText("Socket")
 end
 
 function ENT:OnRestore()
-	self.A = self.A or 0
-	self.AR = self.AR or 255
-	self.AG = self.AG or 0
-	self.AB = self.AB or 0
-	self.AA = self.AA or 255
-
-    self.BaseClass.OnRestore(self)
+	self.BaseClass.OnRestore(self)
 end
