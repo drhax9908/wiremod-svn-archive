@@ -45,7 +45,7 @@ function ENT:Initialize()
 	
 end
 
-function ENT:Setup(ents, const, holdangle, delay, undo_delay, max_range, show_beam)
+function ENT:Setup(ents, const, holdangle, delay, undo_delay, max_range, show_beam, HeadEntityIdx)
 	
 	self.MyEnts 			= ents
 	self.MyConstraints 		= const
@@ -57,6 +57,7 @@ function ENT:Setup(ents, const, holdangle, delay, undo_delay, max_range, show_be
 	self.undo_delay			= undo_delay
 	self.MaxRange			= max_range
 	self.ShowBeam			= show_beam
+	self.MyHeadEntityIdx	= HeadEntityIdx
 	
 	self:ShowOutput()
 	
@@ -111,14 +112,16 @@ function ENT:Paste()
 	angle.pitch = 0
 	angle.roll = 0
 	
-	AdvDupe.ConvertEntityPositionsToWorld( self.MyEnts, self.offset, angle - self.MyHoldAngle )
+	/*AdvDupe.ConvertEntityPositionsToWorld( self.MyEnts, self.offset, angle - self.MyHoldAngle )
 	AdvDupe.ConvertConstraintPositionsToWorld( self.MyConstraints, self.offset, angle - self.MyHoldAngle )
 	
 	Msg("===doing paster paste===\n")
 	//local Ents, Constraints = duplicator.Paste( self:GetPlayer(), self.MyEnts, self.MyConstraints )
 	local Ents, Constraints = DebugDuplicator.Paste( self:GetPlayer(), self.MyEnts, self.MyConstraints )
 	
-	AdvDupe.ResetPositions( self.MyEnts, self.MyConstraints )
+	AdvDupe.ResetPositions( self.MyEnts, self.MyConstraints )*/
+	
+	AdvDupe.AddDelayedPaste( self:GetPlayer(), self.MyEnts, self.MyConstraints, self.MyHeadEntityIdx, self.offset, angle - self.MyHoldAngle, true )
 	
 	// Add all of the created entities
 	//  to the undo system under one undo.

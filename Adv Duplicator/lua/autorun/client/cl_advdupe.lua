@@ -4,6 +4,9 @@ AdvDupeClient={}
 
 include( "autorun/shared/dupeshare.lua" )
 
+AdvDupeClient.version = 1.63
+local MAXUPLOADLENGTH = 100
+
 function AdvDupeClient.UpLoadFile( pl, filepath )
 	
 	if (AdvDupeClient.sending) then return end
@@ -18,7 +21,7 @@ function AdvDupeClient.UpLoadFile( pl, filepath )
 	
 	//this is where we send the data to the serer
 	local len = string.len(AdvDupeClient.temp2)
-	local last = math.ceil(len / 250)
+	local last = math.ceil(len / MAXUPLOADLENGTH)
 	
 	pl:ConCommand("DupeRecieveFileContentStart "..tostring(last).." \""..string.gsub(filename,".txt","").."\"")
 	
@@ -31,15 +34,15 @@ end
 function AdvDupeClient.SendSaveDataToServer(len, offset, last)
 	
 	if (offset <= last) then
-		Msg("sending string: "..tostring(offset * 250).." / "..len.." piece: "..offset.." / "..last.."\n")
+		Msg("sending string: "..tostring(offset * MAXUPLOADLENGTH).." / "..len.." piece: "..offset.." / "..last.."\n")
 		
 		local str = ""
 		if (offset == last) then
-			local pos = (len - ((last - 1) * 250))
+			local pos = (len - ((last - 1) * MAXUPLOADLENGTH))
 			str = string.Right(AdvDupeClient.temp2, pos)
 			Msg("last str len: "..tostring(string.len(str)).."\n")
 		else
-			str = string.Right(string.Left(AdvDupeClient.temp2, (offset * 250)),250)
+			str = string.Right(string.Left(AdvDupeClient.temp2, (offset * MAXUPLOADLENGTH)),MAXUPLOADLENGTH)
 		end
 		LocalPlayer():ConCommand("_DFC "..tostring(offset).." \""..str.."\"")
 	end
@@ -554,5 +557,5 @@ end
 concommand.Add( "adv_duplicator_confirmdelete_gui", AdvDupeClient.ConfirmDelete )
 
 
-Msg("==== Advanced Duplicator v.1.62.2 client module installed! ====\n")
+Msg("==== Advanced Duplicator v."..AdvDupeClient.version.." client module installed! ====\n")
 
