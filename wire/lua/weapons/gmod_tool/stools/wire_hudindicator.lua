@@ -8,8 +8,8 @@ TOOL.ConfigName		= ""
 if ( CLIENT ) then
     language.Add( "Tool_wire_hudindicator_name", "Hud Indicator Tool (Wire)" )
     language.Add( "Tool_wire_hudindicator_desc", "Spawns a Hud Indicator for use with the wire system." )
-    language.Add( "Tool_wire_hudindicator_0", "Primary: Create/Update Hud Indicator Secondary: Hook/Unhook someone else's Hud Indicator Reload: Link HUD Indicator to vehicle" )
-	language.Add( "Tool_wire_hudindicator_1", "Now use Reload on a vehicle to link this HUD Indicator to it, or on the same HUD Indicator to unlink it" )
+    language.Add( "Tool_wire_hudindicator_0", "Primary: Create/Update Hud Indicator Secondary: Hook/Unhook someone else's Hud Indicator Reload: Link Hud Indicator to vehicle" )
+	language.Add( "Tool_wire_hudindicator_1", "Now use Reload on a vehicle to link this Hud Indicator to it, or on the same Hud Indicator to unlink it" )
     /* Don't need this stuff
 	language.Add( "ToolWireIndicator_Model", "Model:" )
 	language.Add( "ToolWireIndicator_a_value", "A Value:" )
