@@ -82,7 +82,7 @@ local function DrawHUDIndicators()
 							textcolor = Color(32, 32, 32, 255)
 						end*/
 						
-						draw.WordBox(8, hudx, currenty, txt, "Default", indinfo.DisplayColor, indinfo.Textcolor)
+						draw.WordBox(8, hudx, currenty, txt, "Default", indinfo.DisplayColor, indinfo.TextColor)
 					elseif (indinfo.Style == 2) then // Percent Bar
 						//surface.SetFont("Default")
 						//local pbarwidth, h = surface.GetTextSize(txt)
@@ -181,7 +181,8 @@ local function HUDFormatDescription( eindex )
 			hudindicators[eindex].TextColor = textcolor
 		end
 	elseif (indinfo.Style == 2) then // Percent Bar
-		hudindicators[eindex].BoxWidth = math.max(textwidth + 16, 100) // The extra 16 pixels is a "buffer" to make it look better
+		local pbarwidth = math.max(textwidth + 16, 100) // The extra 16 pixels is a "buffer" to make it look better
+		hudindicators[eindex].BoxWidth = pbarwidth
 		hudindicators[eindex].W1 = math.floor((indinfo.Factor or 0) * pbarwidth)
 		hudindicators[eindex].W2 = math.ceil(pbarwidth - hudindicators[eindex].W1)
 	elseif (indinfo.Style == 3) then // Full Circle Gauge
@@ -197,12 +198,20 @@ local function HUDFormatDescription( eindex )
 	end
 end
 
+// Function to ensure that the respective table index is created before any elements are added or modified
+// The HUDIndicatorRegister umsg is *supposed* to arrive (and be processed) before all the others,
+// but for some reason (probably net lag or whatever) it isn't (TheApathetic)
+local function CheckHITableElement(eindex)
+	if (!hudindicators[eindex]) then
+		hudindicators[eindex] = {}
+	end
+end
+
 // UserMessage stuff
 local function HUDIndicatorRegister( um )
 	local eindex = um:ReadShort()
-	if (!hudindicators[eindex]) then // First-time register
-		hudindicators[eindex] = {}
-	end
+	CheckHITableElement(eindex)
+	
 	hudindicators[eindex].Description = um:ReadString()
 	hudindicators[eindex].ShowValue = um:ReadShort()
 	local tempstyle = um:ReadShort()
@@ -229,11 +238,8 @@ usermessage.Hook("HUDIndicatorUnRegister", HUDIndicatorUnRegister)
 
 local function HUDIndicatorFactor( um )
 	local eindex = um:ReadShort()
-	// HUDIndicatorRegister *should* be called before this,
-	// I don't know why it isn't (TheApathetic)
-	if (!hudindicators[eindex]) then
-		hudindicators[eindex] = {}
-	end
+	CheckHITableElement(eindex)
+	
 	hudindicators[eindex].Factor = um:ReadFloat()
 	hudindicators[eindex].Value = um:ReadFloat()
 	HUDFormatDescription( eindex )
@@ -242,6 +248,8 @@ usermessage.Hook("HUDIndicatorFactor", HUDIndicatorFactor)
 
 local function HUDIndicatorHideHUD( um )
 	local eindex = um:ReadShort()
+	CheckHITableElement(eindex)
+	
 	hudindicators[eindex].HideHUD = um:ReadBool()
 end
 usermessage.Hook("HUDIndicatorHideHUD", HUDIndicatorHideHUD)
@@ -250,6 +258,8 @@ local function HUDIndicatorStylePercent( um )
 	local eindex = um:ReadShort()
 	local ainfo = string.Explode("|", um:ReadString())
 	local binfo = string.Explode("|", um:ReadString())
+	CheckHITableElement(eindex)
+	
 	hudindicators[eindex].AColor = { r = ainfo[1], g = ainfo[2], b = ainfo[3]}
 	hudindicators[eindex].BColor = { r = binfo[1], g = binfo[2], b = binfo[3]}
 end
@@ -257,6 +267,8 @@ usermessage.Hook("HUDIndicatorStylePercent", HUDIndicatorStylePercent)
 
 local function HUDIndicatorStyleFullCircle( um )
 	local eindex = um:ReadShort()
+	CheckHITableElement(eindex)
+	
 	hudindicators[eindex].FullCircleAngle = um:ReadFloat()
 	HUDFormatDescription( eindex ) // So the gauge updates with FullCircleAngle factored in
 end
@@ -277,7 +289,7 @@ local function HUDIndicatorCheck()
 			if (indinfo.Style == 0) then // Basic
 				hudindicators[eindex].Ready = true // Don't need to do any additional checks
 			elseif (indinfo.Style == 1) then // Gradient
-				hudindicators[eindex].Ready = (indinfo.DisplayColor != nil && indinfo.TextColor != nil)
+				hudindicators[eindex].Ready = (indinfo.DisplayColor && indinfo.TextColor)
 			elseif (indinfo.Style == 2) then // Percent Bar
 				hudindicators[eindex].Ready = (indinfo.BoxWidth && indinfo.W1 && indinfo.W2 && indinfo.AColor && indinfo.BColor)
 			elseif (indinfo.Style == 3) then // Full Circle Gauge

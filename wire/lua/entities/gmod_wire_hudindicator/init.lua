@@ -105,7 +105,7 @@ function ENT:HUDSetup(showinhud, huddesc, hudaddname, hudshowvalue, hudstyle, al
 	
 	// Update all registered players with this info
 	for k,v in pairs(self.RegisteredPlayers) do
-		self:RegisterPlayer(v.pl, v.hookhidehud)
+		self:RegisterPlayer(v.ply, v.hookhidehud)
 	end
 	
 	// Only trigger this input on the
@@ -150,12 +150,12 @@ function ENT:RegisterPlayer(ply, hookhidehud, podonly)
 	// If player is already registered, this will send an update
 	// The podonly is used for players who are registered only because they are in a linked pod
 	if (!self.RegisteredPlayers[plyuid]) then
-		self.RegisteredPlayers[plyuid] = { pl = ply, hookhidehud = hookhidehud, podonly = podonly }
+		self.RegisteredPlayers[plyuid] = { ply = ply, hookhidehud = hookhidehud, podonly = podonly }
 		// This is used to check for pod-only status in ClientCheckRegister()
 		self.Entity:SetNetworkedBool( plyuid, util.tobool(podonly) )
 	end
 	
-	umsg.Start("HUDIndicatorRegister", pl)
+	umsg.Start("HUDIndicatorRegister", ply)
 		umsg.Short(eindex)
 		umsg.String(self.HUDDesc)
 		umsg.Short(self.HUDShowValue)
@@ -219,9 +219,9 @@ function ENT:ShowOutput(factor, value)
 		
 		// RecipientFilter will contain all registered players
 		for index,rplayer in pairs(self.RegisteredPlayers) do
-			if (rplayer.pl) then
-				if (rplayer.pl != pl || (self.ShowInHUD || self.PodPly == pl)) then
-					rf:AddPlayer(rplayer.pl)
+			if (rplayer.ply) then
+				if (rplayer.ply != pl || (self.ShowInHUD || self.PodPly == pl)) then
+					rf:AddPlayer(rplayer.ply)
 				end
 			else
 				self.RegisteredPlayers[index] = nil
@@ -242,9 +242,9 @@ function ENT:SendHUDInfo(hidehud)
 	local pl = self:GetPlayer()
 	
 	for index,rplayer in pairs(self.RegisteredPlayers) do
-		if (rplayer.pl) then
-			if (rplayer.pl != pl || (self.ShowInHUD || self.PodPly == pl)) then
-				umsg.Start("HUDIndicatorHideHUD", rplayer.pl)
+		if (rplayer.ply) then
+			if (rplayer.ply != pl || (self.ShowInHUD || self.PodPly == pl)) then
+				umsg.Start("HUDIndicatorHideHUD", rplayer.ply)
 					umsg.Short(self.Entity:EntIndex())
 					// Check player's preference
 					if (rplayer.hookhidehud) then
