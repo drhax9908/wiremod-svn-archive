@@ -825,6 +825,10 @@ function ENT:ParseProgram_ASM( pl, programtext, parsedline, firstpass )
 	if (self.FatalError) then
 		return false
 	end
+
+	if (programtext == nil) then
+		return
+	end
 	
 	//local programtext2 = string.gsub(programtext,"/*(.-)*/")
 	//Msg("!!: "..programtext2.."\n")

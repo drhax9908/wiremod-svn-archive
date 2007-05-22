@@ -114,9 +114,19 @@ if (SERVER) then
 
 		wire_addressbus:SetPlayer(pl)
 			
+		//KTNX TAD!
+
 		local ttable = {
 			pl = pl,
 			Smodel = Smodel,
+			Mem1st = Mem1st,
+			Mem2st = Mem2st,
+			Mem3st = Mem3st,
+			Mem4st = Mem4st,
+			Mem1sz = Mem1sz,
+			Mem2sz = Mem2sz,
+			Mem3sz = Mem3sz,
+			Mem4sz = Mem4sz,
 		}
 		
 		table.Merge(wire_addressbus:GetTable(), ttable )

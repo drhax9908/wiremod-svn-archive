@@ -577,10 +577,10 @@ function ENT:Execute( )
 	end
 
 	if (params[1]) then
-		params[1] = params[1] + 1 - 1
+		params[1] = tonumber(params[1])
 	end
 	if (params[2]) then
-		params[2] = params[2] + 1 - 1
+		params[2] = tonumber(params[2])
 	end
 
 	if (self.INTR) then
