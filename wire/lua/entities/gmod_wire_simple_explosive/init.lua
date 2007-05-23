@@ -92,7 +92,7 @@ function ENT:Explode( )
 	if ( !self.Entity:IsValid() ) then return end
 	if (self.Exploded) then return end
 	
-	ply = self.Entity
+	ply = self:GetPlayer() or self.Entity
 	
 	if ( self.DoBlastDamage ) then
 		util.BlastDamage( self.Entity, ply, self.Entity:GetPos(), self.Radius, self.Damage )
