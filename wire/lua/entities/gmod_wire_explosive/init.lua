@@ -186,7 +186,7 @@ function ENT:Explode( )
 	
 	if (!self.exploding) then return end //why are we exploding if we shouldn't be
 	
-	ply = self.Entity
+	ply = self:GetPlayer() or self.Entity
 	
 	if (self.InvisibleAtZero) then
 		ply:SetCollisionGroup(COLLISION_GROUP_DEBRIS)

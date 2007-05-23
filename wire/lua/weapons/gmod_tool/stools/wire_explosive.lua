@@ -137,6 +137,8 @@ function TOOL:LeftClick( trace )
 	
 	if (_weight <= 0) then _weight = 1 end
 	explosive.Entity:GetPhysicsObject():SetMass(_weight)
+	// Make sure the weight is duplicated as well (TheApathetic)
+	duplicator.StoreEntityModifier( explosive, "MassMod", {Mass = _weight} )
 	
 	undo.Create("WireExplosive")
 		undo.AddEntity( explosive )
@@ -230,6 +232,8 @@ function TOOL:RightClick( trace )
 		
 		if (_weight <= 0) then _weight = 1 end
 		trace.Entity:GetPhysicsObject():SetMass(_weight)
+		// Make sure the weight is duplicated as well (TheApathetic)
+		duplicator.StoreEntityModifier( trace.Entity, "MassMod", {Mass = _weight} )
 		
 		//reset color in case we turned the color effect off and it's still red
 		trace.Entity:SetColor(255, 255, 255, 255)

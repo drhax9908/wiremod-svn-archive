@@ -113,6 +113,8 @@ function TOOL:LeftClick( trace )
 	
 	if (_weight <= 0) then _weight = 1 end
 	explosive.Entity:GetPhysicsObject():SetMass(_weight)
+	// Make sure the weight is duplicated as well (TheApathetic)
+	duplicator.StoreEntityModifier( explosive, "MassMod", {Mass = _weight} )
 	
 	undo.Create("WireSimpleExplosive")
 		undo.AddEntity( explosive )
@@ -208,6 +210,8 @@ function TOOL:RightClick( trace )
 		
 		if (_weight <= 0) then _weight = 1 end
 		trace.Entity:GetPhysicsObject():SetMass(_weight)
+		// Make sure the weight is duplicated as well (TheApathetic)
+		duplicator.StoreEntityModifier( trace.Entity, "MassMod", {Mass = _weight} )
 		
 		return true
 	end
