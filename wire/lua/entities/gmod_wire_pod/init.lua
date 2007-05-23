@@ -38,7 +38,7 @@ function ENT:Initialize()
 
 	-- Create outputs
 	self.Outputs = Wire_CreateOutputs( self.Entity, outputs )
-	self.Inpust = Wire_CreateInputs( self.Entity, { "Lock" } )
+	self.Inputs = Wire_CreateInputs( self.Entity, { "Lock" } )
 	self:SetOverlayText( "Pod Controller" )
 end
 
