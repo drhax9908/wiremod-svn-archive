@@ -38,6 +38,7 @@ function ENT:Initialize()
 
 	-- Create outputs
 	self.Outputs = Wire_CreateOutputs( self.Entity, outputs )
+	self.Inpust = Wire_CreateInputs( self.Entity, { "Lock" } )
 	self:SetOverlayText( "Pod Controller" )
 end
 
@@ -105,6 +106,15 @@ function ENT:Think()
 	end
 	self.Entity:NextThink(CurTime() + 0.01)
 	return true
+end
+
+function ENT:TriggerInput(iname, value)
+	if !(self.Pod && self.Pod:IsValid()) then return end
+	if value > 0 then
+		self.Pod:Fire("Lock", "1", 0)
+	else
+		self.Pod:Fire("Unlock", "1", 0)
+	end
 end
 
 function ENT:GetBeaconPos(sensor)
