@@ -205,7 +205,7 @@ ENT._avg_x =     function (self, ...)  local n = 0 for _,v in ipairs({...}) do n
 ENT._sel_x =     function (self, i, ...) if ({...})[i] == nil then return -1 else return ({...})[i] end end
 
 ENT._random_0 =  function (self)       return math.random() end
-ENT._random_2 =  function (self, l, u) return math.random() * (u - l) - l end
+ENT._random_2 =  function (self, l, u) return math.random() * (u - l) + l end
 ENT._curtime_0 = function (self)       return CurTime() end
 
 ENT._deg_1 =     function (self, r)    return math.deg(r) end
