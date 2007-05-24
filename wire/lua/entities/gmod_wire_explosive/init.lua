@@ -26,6 +26,9 @@ function ENT:Initialize()
 	self.reloading = false
 	self.NormInfo = ""
 	self.count = 0
+	self.ExplodeTime = 0
+	self.ReloadTime = 0
+	self.CountTime = 0
 	
 	self.Inputs = Wire_CreateInputs(self.Entity, { "Detonate", "ResetHealth" })
 	
@@ -57,7 +60,7 @@ end
 function ENT:Setup( damage, delaytime, removeafter, doblastdamage, radius, affectother, notaffected, delayreloadtime, maxhealth, bulletproof, explosionproof, fallproof, explodeatzero, resetatexplode, fireeffect, coloreffect, invisibleatzero, nocollide )
 
 	self.Damage = damage 
-	self.Delayetime = delaytime
+	self.Delaytime = delaytime
 	self.Removeafter = removeafter
 	self.DoBlastDamage = doblastdamage
 	self.Radius = radius
@@ -93,9 +96,9 @@ function ENT:Setup( damage, delaytime, removeafter, doblastdamage, radius, affec
 	
 	self.NormInfo = "Explosive"
 	if (self.DoBlastDamage) then self.NormInfo = self.NormInfo.." (Damage: "..self.Damage..")" end
-	if (self.Radius > 0 || self.Delayetime > 0) then self.NormInfo = self.NormInfo.."\n" end
+	if (self.Radius > 0 || self.Delaytime > 0) then self.NormInfo = self.NormInfo.."\n" end
 	if (self.Radius > 0 ) then self.NormInfo = self.NormInfo.." Rad: "..self.Radius end
-	if (self.Delayetime > 0) then self.NormInfo = self.NormInfo.." Delay: "..self.Delayetime end
+	if (self.Delaytime > 0) then self.NormInfo = self.NormInfo.." Delay: "..self.Delaytime end
 	
 	self:ShowOutput()
 	
@@ -116,7 +119,7 @@ function ENT:ResetHealth( )
 	self.Entity:SetNoDraw( false )
 	
 	if (self.NoCollide) then
-		self.Entity:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
+		self.Entity:SetCollisionGroup(COLLISION_GROUP_WORLD)
 	else
 		self.Entity:SetCollisionGroup(COLLISION_GROUP_NONE)
 	end
@@ -162,16 +165,66 @@ end
    Desc: Start exploding
 ---------------------------------------------------------*/
 function ENT:Trigger()
-	if ( self.Delayetime > 0 ) then
-		self.exploding = true
-		if (self.FireEffect) then self.Entity:Ignite((self.Delayetime + 3),0) end
-		timer.Simple( self.Delayetime, self.Explode, self )
-		self.count = self.Delayetime
-		self:Countdown()
-	else
-		self.exploding = true
-		self:Explode()
+	if ( self.Delaytime > 0 ) then
+		//self.exploding = true
+		self.ExplodeTime = CurTime() + self.Delaytime
+		if (self.FireEffect) then self.Entity:Ignite((self.Delaytime + 3),0) end
+/*		timer.Simple( self.Delaytime, self.Explode, self )
+		//self.count = self.Delaytime
+		//self:Countdown()
+	//else
+		//self.exploding = true
+		//self:Explode()
+*/
 	end
+	self.exploding = true
+	// Force reset of counter
+	self.CountTime = 0
+end
+
+/*---------------------------------------------------------
+   Name: Think
+   Desc: Thinks :P
+---------------------------------------------------------*/
+function ENT:Think()
+	self.BaseClass.Think(self)
+	
+	if (self.exploding) then
+		if (self.ExplodeTime < CurTime()) then
+			self:Explode()
+		end
+	elseif (self.reloading) then
+		if (self.ReloadTime < CurTime()) then
+			self.reloading = false
+			if (self.ResetAtExplode) then
+				self:ResetHealth()
+			else
+				self:ShowOutput()
+			end
+		end
+	end
+	
+	// Do count check to ensure that
+	// ShowOutput() is called every second
+	// when exploding or reloading
+	if (self.CountTime < CurTime()) then
+		local temptime = 0
+		if (self.exploding) then
+			temptime = self.ExplodeTime
+		elseif (self.reloading) then
+			temptime = self.ReloadTime
+		end
+		
+		if (temptime > 0) then
+			self.count = math.ceil(temptime - CurTime())
+			self:ShowOutput()
+		end
+		
+		self.CountTime = CurTime() + 1
+	end
+	
+	self.Entity:NextThink(CurTime() + 0.05)
+	return true
 end
 
 /*---------------------------------------------------------
@@ -208,23 +261,28 @@ function ENT:Explode( )
 	end
 	
 	self.exploding = false
+
+	self.reloading = true
+	self.ReloadTime = CurTime() + math.max(1, self.Delayreloadtime)
+	// Force reset of counter
+	self.CountTime = 0
+	self:ShowOutput()
 	
-	
-	
-	if ( self.Delayreloadtime > 0 ) then
+	/*if ( self.Delayreloadtime > 0 ) then
 		//t = self.Delayreloadtime + 1
 		self.reloading = true
-		timer.Simple( self.Delayreloadtime, self.Reloaded, self )
-		self.count = self.Delayreloadtime
-		self:Countdown()
+		//timer.Simple( self.Delayreloadtime, self.Reloaded, self )
+		//self.count = self.Delayreloadtime
+		//self:Countdown()
 	else //keep it from going off again for at least another second
 		self.reloading = true
 		timer.Simple( 1, self.Reloaded, self )
 		self:ShowOutput(0)
-	end
+	end*/
 	
 end
 
+/* Don't need these anymore
 function ENT:Reloaded( )
 	self.reloading = false
 	if (self.ResetAtExplode) then self:ResetHealth() end
@@ -239,6 +297,7 @@ function ENT:Countdown( )
 		timer.Simple( 1, self.ShowOutput, self )
 	end
 end
+*/
 
 /*---------------------------------------------------------
    Name: ShowOutput
