@@ -8,7 +8,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_value_name", "Value Tool (Wire)" )
     language.Add( "Tool_wire_value_desc", "Spawns a constant value prop for use with the wire system." )
     language.Add( "Tool_wire_value_0", "Primary: Create/Update Value   Secondary: Copy Settings" )
-    language.Add( "WireValueTool_value", "Value:" )
+	language.Add( "WireValueTool_value", "Value:" )
     language.Add( "WireValueTool_model", "Model:" )
 	language.Add( "sboxlimit_wire_values", "You've hit values limit!" )
 	language.Add( "undone_wirevalue", "Undone Wire Value" )
@@ -94,7 +94,12 @@ function TOOL:RightClick( trace )
 	local ply = self:GetOwner()
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_value" ) then
-	    self:GetOwner():ConCommand("wire_value_value " .. trace.Entity.Value)
+	    local i = 0
+		for k,v in pairs(trace.Entity.value) do
+			self:GetOwner():ConCommand("wire_value_value"..k.." "..v)
+			i = i + 1
+		end
+		self:GetOwner():ConCommand("wire_value_numvalues "..i)
 		return true
 	end
 end
@@ -194,15 +199,17 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_value_numvalues"
 	})
 	
-	panel:AddControl("Slider", {
-		Label = "#WireValueTool_value",
-		Type = "Float",
-		Min = "-10",
-		Max = "10",
-		Command = "wire_value_value1"
-	})
+	for i = 1,12 do
+		panel:AddControl("Slider", {
+			Label = "Value"..i..":",
+			Type = "Float",
+			Min = "-10",
+			Max = "10",
+			Command = "wire_value_value"..i
+		})
+	end
 	
-	panel:AddControl("Slider", {
+	/*panel:AddControl("Slider", {
 		Label = "#WireValueTool_value",
 		Type = "Float",
 		Min = "-10",
@@ -288,7 +295,7 @@ function TOOL.BuildCPanel(panel)
 		Min = "-10",
 		Max = "10",
 		Command = "wire_value_value12"
-	})
+	})*/
 	
 	ModelPlug_AddToCPanel(panel, "value", "wire_value", "#WireValueTool_model", nil, "#WireValueTool_model")
 end
