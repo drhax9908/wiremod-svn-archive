@@ -143,8 +143,8 @@ function ENT:OnTakeDamage( dmginfo )
 		(dmginfo:IsFallDamage() && self.FallProof) then return end //fix fall damage, it doesn't happen
 	
 	if (self.Entity:Health() > 0) then //don't need to beat a dead horse
-		dammage = dmginfo:GetDamage()
-		h = self.Entity:Health() - dammage
+		local dammage = dmginfo:GetDamage()
+		local h = self.Entity:Health() - dammage
 		if (h < 0) then h = 0 end
 		self.Entity:SetHealth(h)
 		Wire_TriggerOutput(self.Entity, "Health", h)
@@ -207,7 +207,7 @@ function ENT:Think()
 	// Do count check to ensure that
 	// ShowOutput() is called every second
 	// when exploding or reloading
-	if (self.CountTime < CurTime()) then
+	if ((self.CountTime or 0) < CurTime()) then
 		local temptime = 0
 		if (self.exploding) then
 			temptime = self.ExplodeTime
