@@ -12,7 +12,7 @@ if ( CLIENT ) then
     language.Add( "WireGatesTool_noclip", "NoClip:" )
     language.Add( "WireGatesTool_model", "Model:" )
 	language.Add( "sboxlimit_wire_gates", "You've hit arithmetic gates limit!" )
-	language.Add( "undone_wiregates", "Undone Wire Arithmetic Gate" )
+	language.Add( "undone_wiregate", "Undone Wire Gate" )
 end
 
 if (SERVER) then
