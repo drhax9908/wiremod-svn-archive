@@ -33,6 +33,7 @@ if ( CLIENT ) then
 	language.Add("Tool_wire_textscreen_tsize", "Text size:")
 	language.Add("Tool_wire_textscreen_tjust", "Text justification:")
 	language.Add("Tool_wire_textscreen_colour", "Text colour:")
+	language.Add("Tool_wire_textscreen_createflat", "Create flat to surface:")
 end
 
 if (SERVER) then
@@ -47,6 +48,8 @@ TOOL.ClientConVar["tjust"] = 1
 TOOL.ClientConVar["tred"] = 255
 TOOL.ClientConVar["tblue"] = 255
 TOOL.ClientConVar["tgreen"] = 255
+// Create flat option (TheApathetic)
+TOOL.ClientConVar["createflat"] = 1
 
 local MaxTextLength = 80
 
@@ -74,6 +77,7 @@ function TOOL:LeftClick( trace )
 	local tRed		= math.min(self:GetClientNumber("tred"), 255)
 	local tGreen	= math.min(self:GetClientNumber("tgreen"), 255)
 	local tBlue		= math.min(self:GetClientNumber("tblue"), 255)
+	local CreateFlat = self:GetClientNumber("createflat")
 	--Msg(string.format("red = %d, blue = %d, green = %d, alpha = %d", tRed, tBlue, tGreen, tAlpha))
 	--update screen
 	if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_textscreen" && trace.Entity.pl == ply) then
@@ -82,14 +86,22 @@ function TOOL:LeftClick( trace )
 		return true
 	end
 
-	Ang.pitch = Ang.pitch + 90
+	// Create flat if desired (TheApathetic)
+	if (CreateFlat == 0) then
+		Ang.pitch = Ang.pitch + 90
+	end
+	
 	--make text screen
 	wire_textscreen = MakeWireTextScreen( ply, Ang, trace.HitPos, Model(self.Model), TextList, chrPerLine, textJust, tRed, tGreen, tBlue, tAlpha)
 	local min = wire_textscreen:OBBMins()
 	wire_textscreen:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
+	// Weld to surface (TheApathetic)
+	local const = WireLib.Weld(wire_textscreen, trace.Entity, trace.PhysicsBone, true)
+	
 	undo.Create("WireTextScreen")
 		undo.AddEntity( wire_textscreen )
+		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
@@ -142,7 +154,11 @@ function TOOL:UpdateGhostWireTextScreen( ent, player )
 		return
 	end
 	local Ang = trace.HitNormal:Angle()
-	Ang.pitch = Ang.pitch + 90
+	
+	// Check for create flat option (TheApathetic)
+	if (self:GetClientNumber("createflat") == 0) then
+		Ang.pitch = Ang.pitch + 90
+	end
 	local min = ent:OBBMins()
 	ent:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	ent:SetAngles( Ang )
@@ -197,6 +213,6 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("TextBox", {Label = "#Tool_wire_textscreen_text11", MaxLength = tostring(MaxTextLength), Command = "wire_textscreen_text11"})
 	panel:AddControl("TextBox", {Label = "#Tool_wire_textscreen_text12", MaxLength = tostring(MaxTextLength), Command = "wire_textscreen_text12"})
 	
-	
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_textscreen_createflat", Command = "wire_textscreen_createflat"})
 end
 	

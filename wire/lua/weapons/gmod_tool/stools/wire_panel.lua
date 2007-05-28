@@ -10,6 +10,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_panel_0", "Primary: Create/Update panel" )
 	language.Add( "sboxlimit_wire_panels", "You've hit panels limit!" )
 	language.Add( "undone_wirepanel", "Undone Wire Control Panel" )
+	language.Add( "Tool_wire_panel_createflat", "Create flat to surface:" )
 end
 
 if (SERVER) then
@@ -17,6 +18,8 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "model" ] = "models/props_lab/monitor01b.mdl"
+// Option to weld screen flat to surface shot (TheApathetic)
+TOOL.ClientConVar[ "createflat" ] = "1"
 
 cleanup.Register( "wire_panels" )
 
@@ -32,14 +35,23 @@ function TOOL:LeftClick( trace )
 	local ply = self:GetOwner()
 	local Ang = trace.HitNormal:Angle()
 	local Smodel = self:GetClientInfo( "model" )
-	Ang.pitch = Ang.pitch + 90
+	local CreateFlat = self:GetClientNumber( "createflat" )
+	
+	// Weld panel flat to surface shot instead of perpendicular to it? (TheApathetic)
+	if (CreateFlat == 0) then
+		Ang.pitch = Ang.pitch + 90
+	end
 	
 	wire_panel = MakeWirePanel( ply, Ang, trace.HitPos, Smodel )
 	local min = wire_panel:OBBMins()
 	wire_panel:SetPos( trace.HitPos - trace.HitNormal * min.z )
+	
+	// Welded to surface now (TheApathetic)
+	local const = WireLib.Weld(wire_panel, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WirePanel")
 		undo.AddEntity( wire_panel )
+		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
@@ -98,7 +110,9 @@ function TOOL:UpdateGhostWirePanel( ent, player )
 	end
 
 	local Ang = trace.HitNormal:Angle()
-	Ang.pitch = Ang.pitch + 90
+	if (self:GetClientNumber( "createflat" ) == 0) then
+		Ang.pitch = Ang.pitch + 90
+	end
 
 	local min = ent:OBBMins()
 	ent:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -131,5 +145,8 @@ function TOOL.BuildCPanel(panel)
 			["#Monitor Small"]	= { wire_panel_model = "models/kobilica/wiremonitorsmall.mdl" },
 		}
 	})
+	
+	// Weld flat option (TheApathetic)
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_panel_createflat", Command = "wire_panel_createflat"})
 end
 	
