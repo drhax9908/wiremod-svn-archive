@@ -20,6 +20,9 @@ if ( CLIENT ) then
 	//left alignment  and floor options (TAD2020)
 	language.Add("Tool_wire_screen_leftalign", "Left alignment:")
 	language.Add("Tool_wire_screen_floor", "Floor screen value:")
+	
+	// Weld flat option (TheApathetic)
+	language.Add("Tool_wire_screen_createflat", "Create flat to surface:")
 end
 
 if (SERVER) then
@@ -33,6 +36,7 @@ TOOL.ClientConVar["singlevalue"] = "0"
 TOOL.ClientConVar["singlebigfont"] = "1"
 TOOL.ClientConVar["texta"] = "Value A"
 TOOL.ClientConVar["textb"] = "Value B"
+TOOL.ClientConVar["createflat"] = "1"
 //left alignment  and floor options (TAD2020)
 TOOL.ClientConVar["leftalign"] = "0"
 TOOL.ClientConVar["floor"] = "0"
@@ -61,6 +65,7 @@ function TOOL:LeftClick( trace )
 	local TextB			= self:GetClientInfo("textb")
 	local LeftAlign		= self:GetClientNumber("leftalign") == 1
 	local Floor			= self:GetClientNumber("floor") == 1
+	local CreateFlat		= self:GetClientNumber("createflat")
 
 	// Check to update screen if necessary (TheApathetic)
 	if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_screen" && trace.Entity.pl == ply) then
@@ -75,14 +80,21 @@ function TOOL:LeftClick( trace )
 		return true
 	end
 
-	Ang.pitch = Ang.pitch + 90
+	// Make screens spawn flat on props instead of perpendicular to them (TheApathetic)
+	if (CreateFlat == 0) then
+		Ang.pitch = Ang.pitch + 90
+	end
 	
 	wire_screen = MakeWireScreen( ply, Ang, trace.HitPos, Smodel, SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor )
 	local min = wire_screen:OBBMins()
 	wire_screen:SetPos( trace.HitPos - trace.HitNormal * min.z )
+	
+	// Screens are now welded to the respective surface (TheApathetic)
+	local const = WireLib.Weld(wire_screen, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireScreen")
 		undo.AddEntity( wire_screen )
+		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
@@ -148,7 +160,10 @@ function TOOL:UpdateGhostWireScreen( ent, player )
 	end
 
 	local Ang = trace.HitNormal:Angle()
-	Ang.pitch = Ang.pitch + 90
+	// Make screens spawn flat on props instead of perpendicular to them (TheApathetic)
+	if (self:GetClientNumber("createflat") == 0) then
+		Ang.pitch = Ang.pitch + 90
+	end
 
 	local min = ent:OBBMins()
 	ent:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -192,5 +207,8 @@ function TOOL.BuildCPanel(panel)
 
 	panel:AddControl("TextBox", {Label = "#Tool_wire_screen_texta", MaxLength = tostring(MaxTextLength), Command = "wire_screen_texta"})
 	panel:AddControl("TextBox", {Label = "#Tool_wire_screen_textb", MaxLength = tostring(MaxTextLength), Command = "wire_screen_textb"})
+	
+	// Weld flat option (TheApathetic)
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_screen_createflat", Command = "wire_screen_createflat"})
 end
 	
