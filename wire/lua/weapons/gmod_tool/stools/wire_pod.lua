@@ -63,6 +63,8 @@ function TOOL:RightClick( trace )
     if (!trace.HitPos) then return false end
     --if trace.Entity:GetClass() != "gmod_wire_pod" || "prop_vehicle_prisoner_pod" then return false end
     if ( CLIENT ) then return true end
+    if!(trace.Entity)then return false end
+    if!(trace.Entity:IsValid())then return false end
     if (self.Oldent) then
         -- Don't ask...
         if trace.Entity:GetClass() == "prop_vehicle_prisoner_pod" or true then self.Oldent:GetTable():Setup(trace.Entity); self.Oldent = nil; return true end
