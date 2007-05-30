@@ -17,12 +17,12 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_grabbers', 20)
+	CreateConVar('sbox_wire_grabbers_onlyOwnersProps', 0)
 end
 
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
 TOOL.ClientConVar[ "Range" ] = "100"
-TOOL.ClientConVar[ "DynamicWeight" ] = "0"
 
 cleanup.Register( "wire_grabbers" )
 
@@ -43,9 +43,8 @@ function TOOL:LeftClick( trace )
 	Ang.pitch = Ang.pitch + 90
 	
 	local range = self:GetClientNumber("Range")
-	local DynamicWeight = (self:GetClientNumber( "DynamicWeight" ) ~= 0)
 
-	local wire_grabber = MakeWireGrabber( ply, trace.HitPos, range, DynamicWeight, Ang )
+	local wire_grabber = MakeWireGrabber( ply, trace.HitPos, range, Ang )
 
 	local min = wire_grabber:OBBMins()
 	wire_grabber:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -79,7 +78,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireGrabber( pl, Pos, Range, DynamicWeight, Ang )
+	function MakeWireGrabber( pl, Pos, Range, Ang )
 		if ( !pl:CheckLimit( "wire_grabbers" ) ) then return false end
 	
 		local wire_grabber = ents.Create( "gmod_wire_grabber" )
@@ -89,13 +88,12 @@ if (SERVER) then
 		wire_grabber:SetPos( Pos )
 		wire_grabber:SetModel( Model("models/jaanus/wiretool/wiretool_range.mdl") )
 		wire_grabber:Spawn()
-		wire_grabber:Setup(Range,DynamicWeight)
+		wire_grabber:Setup(Range)
 
 		wire_grabber:GetTable():SetPlayer( pl )
 
 		local ttable = {
 		    Range = Range,
-		    DynamicWeight = DynamicWeight,
 			pl = pl
 		}
 
@@ -106,7 +104,7 @@ if (SERVER) then
 		return wire_grabber
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_grabber", MakeWireGrabber, "Pos", "Range", "DynamicWeight", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_grabber", MakeWireGrabber, "Pos", "Range", "Ang", "Vel", "aVel", "frozen")
 
 end
 
@@ -162,11 +160,6 @@ function TOOL.BuildCPanel(panel)
 		Min = "1",
 		Max = "10000",
 		Command = "wire_grabber_Range"
-	})
-	
-	panel:AddControl("CheckBox", {
-		Label = "#WireGrabberTool_DynamicWeight",
-		Command = "wire_grabber_DynamicWeight"
 	})
 end
 

@@ -19,20 +19,27 @@ function ENT:Initialize()
 	self.Weld = nil
 	self.WeldEntity = nil
 	self.Entity:GetPhysicsObject():SetMass(200)
-	self.DynamicWeight = false
 	
 	self:SetBeamRange(100)
+	
+	if(GetConVarNumber('sbox_wire_grabbers_onlyOwnersProps') > 0)then
+		self.OnlyGrabOwners = true
+	else
+		self.OnlyGrabOwners = false
+	end
 	
 	self:ShowOutput()
 end
 
 function ENT:OnRemove()
+    if(self.Weld != nil)then
+		self:ResetGrab()
+	end
 	Wire_Remove(self.Entity)
 end
 
-function ENT:Setup(Range, DynamicWeight)
+function ENT:Setup(Range)
     self:SetBeamRange(Range)
-    self.DynamicWeight = DynamicWeight
     Msg("Setup:/n/tRange:"..tostring(Range).."/n")
 end
 
@@ -48,10 +55,6 @@ function ENT:ResetGrab()
                 
     self.Weld = nil
     self.WeldEntity = nil
-                
-    if(self.DynamicWeight)then
-		self.Entity:GetPhysicsObject():SetMass(200)
-	end
                 
     self.Entity:SetColor(255,255,255,255)
     Wire_TriggerOutput(self.Entity,"Holding",0)
@@ -73,13 +76,13 @@ function ENT:TriggerInput(iname, value)
 			if (  !trace.Entity:IsValid() || trace.Entity:IsPlayer() ) then return end
 			// If there's no physics object then we can't constraint it!
 			if ( !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return end
+			
+			if( self.OnlyGrabOwners)then
+			     if(trace.Entity.Owner != self.Owner)then return false end
+			end
 			// Weld them!
 			local const = constraint.Weld(self.Entity, trace.Entity, 0, 0, self.WeldStrength)
 			trace.Entity:GetPhysicsObject():EnableGravity(false)
-			
-			if(self.DynamicWeight)then
-			     self.Entity:GetPhysicsObject():SetMass((trace.Entity:GetPhysicsObject():GetMass()+50))
-			end
 			
 			self.WeldEntity = trace.Entity
 			self.Weld = const
