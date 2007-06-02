@@ -1087,7 +1087,18 @@ GateActions["7seg"] = {
 	end
 }
 
-
+GateActions["timedec"] = {
+	group = "Selection",
+	name = "Time/Date decoder",
+	inputs = { "Time", "Date" },
+	outputs = { "Hours","Minutes","Seconds","Year","Day" },
+	output = function(gate, Time, Date)
+	    return math.floor(Time / 3600),math.floor(Time / 60) % 60,math.floor(Time) % 60,math.floor(Date / 366),math.floor(Date) % 366
+	end,
+	label = function(Out, A)
+	    return "Date decoder"
+	end
+}
 
 
 //***********************************************************
@@ -1217,6 +1228,36 @@ GateActions["pulser"] = {
 	end,
 	label = function(Out, Run, Reset, TickTime)
 	    return "Run:"..Run.." Reset:"..Reset.."TickTime:"..TickTime.." = "..Out
+	end
+}
+
+GateActions["squarepulse"] = {
+	group = "Time",
+	name = "Square Pulse",
+	inputs = { "Run", "Reset", "PulseTime", "GapTime" },
+	timed = true,
+	output = function(gate, Run, Reset, PulseTime, GapTime)
+	    local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
+	    gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
+		if ( Reset > 0 ) then
+			gate.Accum = 0
+		elseif ( Run > 0 ) then
+			gate.Accum = gate.Accum+DeltaTime
+			if (gate.Accum >= GapTime) then
+				return 1
+			end
+			if (gate.Accum >= PulseTime + GapTime) then
+				gate.Accum = gate.Accum - PulseTime - GapTime
+			end
+		end
+		return 0
+	end,
+	reset = function(gate)
+	    gate.PrevTime = CurTime()
+	    gate.Accum = 0
+	end,
+	label = function(Out, Run, Reset, PulseTime, GapTime)
+	    return "Run:"..Run.." Reset:"..Reset.." PulseTime:"..PulseTime.." GapTime:"..GapTime.." = "..Out
 	end
 }
 
