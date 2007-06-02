@@ -33,7 +33,11 @@ if ( CLIENT ) then
 	language.Add("Tool_wire_textscreen_tsize", "Text size:")
 	language.Add("Tool_wire_textscreen_tjust", "Text justification:")
 	language.Add("Tool_wire_textscreen_colour", "Text colour:")
+
+	language.Add("Tool_wire_textscreen_ninputs", "Number of inputs:")
+
 	language.Add("Tool_wire_textscreen_createflat", "Create flat to surface:")
+
 end
 
 if (SERVER) then
@@ -48,8 +52,12 @@ TOOL.ClientConVar["tjust"] = 1
 TOOL.ClientConVar["tred"] = 255
 TOOL.ClientConVar["tblue"] = 255
 TOOL.ClientConVar["tgreen"] = 255
+
+TOOL.ClientConVar["ninputs"] = 3
+
 // Create flat option (TheApathetic)
 TOOL.ClientConVar["createflat"] = 1
+
 
 local MaxTextLength = 80
 
@@ -71,18 +79,22 @@ function TOOL:LeftClick( trace )
 	for i = 1, 12 do
 		TextList[i] = self:GetClientInfo("text"..i)
 	end
-	local chrPerLine = 16 - self:GetClientInfo("tsize")
+	local chrPerLine = 16 - tonumber(self:GetClientInfo("tsize"))
 	--Msg("cpl from stool = "..tostring(chrPerLine).."\n")
 	local textJust = self:GetClientInfo("tjust")
 	local tRed		= math.min(self:GetClientNumber("tred"), 255)
 	local tGreen	= math.min(self:GetClientNumber("tgreen"), 255)
 	local tBlue		= math.min(self:GetClientNumber("tblue"), 255)
+
+	local numInputs	= self:GetClientNumber("ninputs")
+
 	local CreateFlat = self:GetClientNumber("createflat")
+
 	--Msg(string.format("red = %d, blue = %d, green = %d, alpha = %d", tRed, tBlue, tGreen, tAlpha))
 	--update screen
 	if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_textscreen" && trace.Entity.pl == ply) then
 		--Msg("updateing\n")
-		trace.Entity:Setup(TextList, chrPerLine, textJust, tRed, tGreen, tBlue)
+		trace.Entity:Setup(TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs)
 		return true
 	end
 
@@ -92,7 +104,7 @@ function TOOL:LeftClick( trace )
 	end
 	
 	--make text screen
-	wire_textscreen = MakeWireTextScreen( ply, Ang, trace.HitPos, Model(self.Model), TextList, chrPerLine, textJust, tRed, tGreen, tBlue, tAlpha)
+	wire_textscreen = MakeWireTextScreen( ply, Ang, trace.HitPos, Model(self.Model), TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs)
 	local min = wire_textscreen:OBBMins()
 	wire_textscreen:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
@@ -112,13 +124,13 @@ end
 
 if (SERVER) then
 
-	function MakeWireTextScreen( pl, Ang, Pos, Smodel, TextList, chrPerLine, textJust, tRed, tGreen, tBlue)
+	function MakeWireTextScreen( pl, Ang, Pos, Smodel, TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs)
 		
 		if ( !pl:CheckLimit( "wire_textscreens" ) ) then return false end
 		local wire_textscreen = ents.Create( "gmod_wire_textscreen" )
 		if (!wire_textscreen:IsValid()) then return false end
 		wire_textscreen:SetModel(Smodel)
-		wire_textscreen:Setup(TextList, chrPerLine, textJust, tRed, tGreen, tBlue)
+		wire_textscreen:Setup(TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs)
 		wire_textscreen:SetAngles( Ang )
 		wire_textscreen:SetPos( Pos )
 		wire_textscreen:Spawn()
@@ -133,6 +145,7 @@ if (SERVER) then
 			tRed = tRed,
 			tGreen = tGreen,
 			tBlue = tBlue,
+			numInputs = numInputs
 		}
 		
 		table.Merge(wire_textscreen:GetTable(), ttable )
@@ -140,7 +153,7 @@ if (SERVER) then
 		pl:AddCount( "wire_textscreens", wire_textscreen )
 		return wire_textscreen
 	end
-	duplicator.RegisterEntityClass("gmod_wire_textscreen", MakeWireTextScreen, "Ang", "Pos", "Smodel", "TextList", "chrPerLine", "textJust", "tRed", "tGreen", "tBlue")
+	duplicator.RegisterEntityClass("gmod_wire_textscreen", MakeWireTextScreen, "Ang", "Pos", "Smodel", "TextList", "chrPerLine", "textJust", "tRed", "tGreen", "tBlue", "numInputs")
 end
 
 function TOOL:UpdateGhostWireTextScreen( ent, player )
@@ -190,6 +203,7 @@ function TOOL.BuildCPanel(panel)
 
 	panel:AddControl("Slider", {Label = "#Tool_wire_textscreen_tsize", Description = "", Type = "Integer", Min = "1", Max = "15", Command = "wire_textscreen_tsize"})
 	panel:AddControl("Slider", {Label = "#Tool_wire_textscreen_tjust", Description = "", Type = "Integer", Min = "0", Max = "2", Command = "wire_textscreen_tjust"})
+	panel:AddControl("Slider", {Label = "#Tool_wire_textscreen_ninputs", Description = "", Type = "Integer", Min = "1", Max = "10", Command = "wire_textscreen_ninputs"})
 	panel:AddControl("Color", {
 		Label = "#Tool_wire_textscreen_colour",
 		Red = "wire_textscreen_tred",
