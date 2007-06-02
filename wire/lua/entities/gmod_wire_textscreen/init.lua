@@ -12,34 +12,46 @@ ENT.WireDebugName = "Text Screen"
 ENT.initOn = true
 
 function ENT:Initialize()
-	
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-	
-	self.Inputs = Wire_CreateInputs(self.Entity, {"Clk", "Text", "Value A", "Value B", "Value C" })
-	self.clock = false	--somehow make text on by default!!
+			
+	self.clock = true
 	self.currentLine = 0
 	self.currentText = ""
 	self.currentTextnum = 0
-	self.ValA = 0
-	self.ValB = 0
-	self.ValC = 0
 	
-	self:TriggerInput("Clk", 1)	--make text on by default
-
 end
 
-function ENT:Setup(textTable, chrPl, textJust, tRed, tGreen, tBlue)
+function ENT:Setup(textTable, chrPl, textJust, tRed, tGreen, tBlue, numInputs)
 	self.textTable = textTable
+	self.textTable[0] = ""
 	self.maxLineLen = math.abs(chrPl)
 	self.maxLines = math.abs(chrPl) / 2
 	self.chrPerLine = math.abs(chrPl)
+	self.numInputs = math.abs(numInputs)
+	self.currentLine = 0
+	valInputs = {}
+	self.Val = {}
+	for n=1, numInputs do
+		table.insert(self.Val, 0)
+		table.insert(valInputs, "Value "..n)
+	end
+	--inputTable = {"Clk", "Text", "String"}
+	inputTable = {"Clk", "Text"}
+	table.Add(inputTable, valInputs)
+	self.Inputs = Wire_CreateInputs(self.Entity, inputTable)
+	self:TriggerInput("Clk", 1)	--make text on by default
+	self:TriggerInput("Text", 1)
+	timer.Simple (0.5, sendUmConfig, self.Entity, chrPl, textJust, tRed, tGreen, tBlue)
 
+end
+
+function sendUmConfig(ent, chrPl, textJust, tRed, tGreen, tBlue)
 	local allPlayers = RecipientFilter()
 	allPlayers:AddAllPlayers()
 	umsg.Start("umsgScreenConfig", allPlayers)
-		umsg.Entity(self.Entity)
+		umsg.Entity(ent)
 		umsg.Short(chrPl)
 		umsg.Short(textJust)
 		umsg.Short(tRed)
@@ -47,14 +59,15 @@ function ENT:Setup(textTable, chrPl, textJust, tRed, tGreen, tBlue)
 		umsg.Short(tBlue)
 		umsg.Bool(true)
 	umsg.End() 
-	self:WriteLine()
-
+	ent:WriteLine()
 end
 
 function ENT:Use()
 end
 
 function ENT:TriggerInput(iname, value)
+	--print (iname.."\n")
+	--print ("first = '"..string.sub(iname, 1, 6).."', second = '"..string.sub(iname, 7, -1).."'\n")
 	if (iname == "Text") then
 		self.currentTextnum = math.abs(value)
 		self:WriteLine()
@@ -65,15 +78,11 @@ function ENT:TriggerInput(iname, value)
 		else
 			self.clock = false
 		end
-	elseif (iname == "Value A") then
-		self.ValA = math.abs(value)
+	elseif (string.sub(iname, 1, 6) == "Value ") then
+		self.Val[tonumber(string.sub(iname, 7, -1))] = math.abs(value)
 		self:WriteLine()
-	elseif (iname == "Value B") then
-		self.ValB = math.abs(value)
-		self:WriteLine()
-	elseif (iname == "Value C") then
-		self.ValC = math.abs(value)
-		self:WriteLine()
+	--elseif (iname == "String") then
+	--	print ("string = '"..value.."'\n")
 	end
 end
 
@@ -82,15 +91,21 @@ function ENT:WriteLine()
 		local compstring = ""
 		local outString = ""
 		local intoText = false
-		local basestring = self.textTable[self.currentTextnum + 1]
+		local basestring = self.textTable[self.currentTextnum]
 		if (!basestring) then return false end
-		local aval = string.format("%G", self.ValA)
-		local bval = string.format("%G", self.ValB)
-		local cval = string.format("%G", self.ValC)
+		--local aval = string.format("%G", self.ValA)
+		--local bval = string.format("%G", self.ValB)
+		--local cval = string.format("%G", self.ValC)
 		
-		basestring = string.gsub(basestring, "<a>", aval)
-		basestring = string.gsub(basestring, "<b>", bval)
-		basestring = string.gsub(basestring, "<c>", cval)
+		for k,inp in ipairs(self.Val) do
+			local nString = string.format("%G", inp)
+			--print ("ns = "..nString.."\n")
+			basestring = string.gsub(basestring, "<"..k..">", nString)
+		end
+		
+		--basestring = string.gsub(basestring, "<a>", aval)
+		--basestring = string.gsub(basestring, "<b>", bval)
+		--basestring = string.gsub(basestring, "<c>", cval)
 		basestring = string.gsub(basestring, "<br>", "\n")
 		
 		compstring = basestring
