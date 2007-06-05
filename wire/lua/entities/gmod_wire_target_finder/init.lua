@@ -143,9 +143,11 @@ function ENT:Think()
 		local bogeys,dists = {},{}
 		for _,contact in pairs(contacts) do
 			// Multiple if statements replaced with one long one
+			// NOTE: If this is changed again, note "contact" under the
+			// target player part to not target owner (TheApathetic)
 			local contactClass = contact:GetClass()
 			if ((self.TargetNPC)			and (string.find(contactClass, "^npc_.*")) and (contactClass ~= "npc_heli_avoidsphere")) or
-				((self.TargetPlayer)		and (contactClass == "player") and ((!self.NoTargetOwner) or (self.pl != target))) or
+				((self.TargetPlayer)		and (contactClass == "player") and ((!self.NoTargetOwner) or (self.pl != contact))) or
 				((self.TargetBeacon)		and (contactClass == "gmod_wire_locator")) or
 				((self.TargetRPGs)			and (contactClass == "rpg_missile")) or
 				((self.TargetHoverballs)	and (contactClass == "gmod_hoverball" or contactClass == "gmod_wire_hoverball")) or
