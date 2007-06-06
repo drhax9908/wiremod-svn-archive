@@ -31,7 +31,7 @@ function SWEP:Reload()
 end
 
 function SWEP:PrimaryAttack()
-    Msg("Fire\n")
+    //Msg("Fire\n")
     if(self.pointing)then
         self.pointing = false
     else
@@ -75,6 +75,6 @@ function SWEP:Think()
         local recieverPos = self.reciever:GetPos()
         local length = recieverPos:Distance(point)
         Wire_TriggerOutput(self.reciever, "Dist", length)
-        Msg("Send!\n")
+        //Msg("Send!\n")
     end
 end       
