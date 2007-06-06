@@ -17,6 +17,6 @@ function SWEP:ViewModelDrawn()
         //Draw the laser beam.
         render.SetMaterial(Material("tripmine_laser"))
 	    render.DrawBeam(trace.StartPos, trace.HitPos, 6, 0, 10, Color(255,0,0,255))
-        Msg("Laser\n")
+        //Msg("Laser\n")
     end
 end
