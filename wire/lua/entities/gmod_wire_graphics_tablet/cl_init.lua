@@ -5,8 +5,8 @@
 --Credit to whoever created the first wire screen, from which all others seem to use the lagacy clientside drawing code (this one included)
 
 include('shared.lua')
-CreateClientConVar( "wire_graphics_tablet_xval", 1, true, true )
-CreateClientConVar( "wire_graphics_tablet_yval", 1, true, true ) 
+--CreateClientConVar( "wire_graphics_tablet_xval", 1, true, true )
+--CreateClientConVar( "wire_graphics_tablet_yval", 1, true, true ) 
 
 ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
@@ -101,6 +101,7 @@ function ENT:Draw()
 				surface.SetTexture(surface.GetTextureID("gui/arrow"))
 				surface.DrawTexturedRectRotated((x+(w*cx*.621)+ox)/RatioX,y+(h*cy*.621)+oy,16,16,45)
 			end
+			--[[
 			if (self.lastX ~= cx) then
 				LocalPlayer():ConCommand("wire_graphics_tablet_xval "..tostring(cx).."\n")
 				self.lastX = cx
@@ -109,6 +110,7 @@ function ENT:Draw()
 				LocalPlayer():ConCommand("wire_graphics_tablet_yval "..tostring(cy).."\n")
 				self.lastY = cy
 			end
+			]]--
 		end
 	cam.End3D2D()
 	Wire_Render(self.Entity)
