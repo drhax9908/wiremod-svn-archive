@@ -325,8 +325,11 @@ function TOOL.BuildCPanel(panel)
 			["Grave stone"]			= { wire_indicator_model = "models/props_c17/gravestone004a.mdl" },
 			["Pop can"]				= { wire_indicator_model = "models/props_junk/PopCan01a.mdl" },
 			["Traffic Cone"]		= { wire_indicator_model = "models/props_junk/TrafficCone001a.mdl" },
-			["Big Clock"]			= { wire_indicator_model = "models/props_trainstation/trainstation_clock001.mdl" }
-		}
+			["Big Clock"]			= { wire_indicator_model = "models/props_trainstation/trainstation_clock001.mdl" },
+			["LED small"]			= { wire_indicator_model = "models/led.mdl" },
+			["LED large"]			= { wire_indicator_model = "models/led2.mdl" },			
+			
+	}
 	})
 	
 	panel:AddControl("ComboBox", {
