@@ -18,6 +18,7 @@ function ENT:Initialize()
 	self.Memory = nil
 	
 	self.Inputs = Wire_CreateInputs(self.Entity, { "Memory" })
+	self:SetOverlayText( "Data plug" )
 end
 
 function ENT:OnRemove()

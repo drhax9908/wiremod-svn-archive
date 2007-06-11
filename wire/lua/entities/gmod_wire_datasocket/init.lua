@@ -24,6 +24,7 @@ function ENT:Initialize()
 	self.Const = nil
 	
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Memory" })
+	self:SetOverlayText( "Data socket" )
 end
 
 function ENT:SetMemory(mement)
