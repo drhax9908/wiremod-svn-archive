@@ -169,6 +169,16 @@ end
 function ENT:TriggerInput(iname, value)
 	if (iname == "Clk") then
 		self.Clk = value
+		if (self.Clk >= 1) then
+			self:WriteCell(self.AWrite, self.Data)
+			if (self.ARead == self.AWrite) then
+				local val = self:ReadCell(self.ARead)
+				if (val) then
+					Wire_TriggerOutput(self.Entity, "Data", val)
+					self.Out = val
+				end
+			end
+		end
 	elseif (iname == "AddrRead") then
 		self.ARead = value
 		local val = self:ReadCell(value)
@@ -185,6 +195,13 @@ function ENT:TriggerInput(iname, value)
 		self.Data = value
 		if (self.Clk >= 1) then
 			self:WriteCell(self.AWrite, self.Data)
+			if (self.ARead == self.AWrite) then
+				local val = self:ReadCell(self.ARead)
+				if (val) then
+					Wire_TriggerOutput(self.Entity, "Data", val)
+					self.Out = val
+				end
+			end
 		end
 	end
 
