@@ -18,6 +18,8 @@ function ENT:Initialize()
 	self.Clk = 0
 	self.AWrite = 0
 	self.Data = 0
+	self.ARead = 0
+	self.Out = 0
 
 	//Hard drive id/folder id:
 	self.DriveID = 0
@@ -39,7 +41,6 @@ function ENT:GetCap( steamid )
 		local temp = file.Read("WireFlash\\"..steamid.."\\"..self.DriveID.."\\_structure.txt")
 		if (tonumber(temp)) then
 			self.DriveCap = tonumber(temp)
-			self:SetOverlayText( "Flash memory - "..self.DriveCap.."kb" )
 		end
 	else
 		file.Write("WireFlash\\"..steamid.."\\"..self.DriveID.."\\_structure.txt", self.DriveCap)
@@ -62,7 +63,7 @@ function ENT:ReadCell( Address )
 		return nil
 	end
 
-	local player = self:GetOwner( )
+	local player = self.pl
 	if (player:IsValid()) then
 		local steamid = player:SteamID()
 		steamid = string.gsub(steamid, ":", "_")
@@ -169,9 +170,11 @@ function ENT:TriggerInput(iname, value)
 	if (iname == "Clk") then
 		self.Clk = value
 	elseif (iname == "AddrRead") then
+		self.ARead = value
 		local val = self:ReadCell(value)
 		if (val) then
 			Wire_TriggerOutput(self.Entity, "Data", val)
+			self.Out = val
 		end
 	elseif (iname == "AddrWrite") then
 		self.AWrite = value
@@ -184,4 +187,9 @@ function ENT:TriggerInput(iname, value)
 			self:WriteCell(self.AWrite, self.Data)
 		end
 	end
+
+	self:SetOverlayText( "Flash memory - "..self.DriveCap.."kb".."\nWriteAddr:"..self.AWrite.."  Data:"..self.Data.."  Clock:"..self.Clk..
+        	                                                     "\nReadAddr:"..self.ARead.." = ".. self.Out)
+
+
 end
