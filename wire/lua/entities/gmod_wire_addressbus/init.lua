@@ -23,6 +23,8 @@ function ENT:Initialize()
 		self.MemStart[i] = 0
 		self.MemEnd[i] = 0
 	end
+
+	self:SetOverlayText( "Address bus" )
 end
 
 /*function ENT:Think()

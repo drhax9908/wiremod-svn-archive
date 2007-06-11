@@ -49,6 +49,8 @@ function ENT:Initialize()
 
 	self.ThinkTime = 10
 	self.PrevTime = CurTime()
+
+	self:SetOverlayText( "CPU" )
 end
 
 function ENT:Reset()

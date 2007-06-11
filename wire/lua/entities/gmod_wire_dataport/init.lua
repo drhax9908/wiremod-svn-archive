@@ -25,6 +25,7 @@ function ENT:Initialize()
 	for i = 0,7 do
 		self.Ports[i] = 0
 	end
+	self:SetOverlayText( "Data port" )
 end
 
 /*function ENT:Think()
