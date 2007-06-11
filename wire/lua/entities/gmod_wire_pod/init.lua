@@ -85,7 +85,7 @@ function ENT:Think()
 				self.Ply = nil
 				-- Loop through all players and check if their vehicle is our vehicle
 				for k,v in pairs(plys) do
-					if v:GetVehicle() == self.Pod then self.Ply = v end
+					if v:GetVehicle() == self.Pod then self.Ply = v; break end
 				end
 				
 				if self.Ply then Wire_TriggerOutput( self.Entity, "Active", 1)
