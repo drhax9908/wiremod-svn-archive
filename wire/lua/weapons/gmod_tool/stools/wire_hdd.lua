@@ -153,7 +153,7 @@ function TOOL.BuildCPanel(panel)
 	})
 
 	panel:AddControl("Slider", {
-		Label = "Capicacity",
+		Label = "Capacity",
 		Type = "Integer",
 		Min = "0",
 		Max = "128",
