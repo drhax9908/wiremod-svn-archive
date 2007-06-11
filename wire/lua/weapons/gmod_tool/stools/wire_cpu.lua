@@ -247,79 +247,81 @@ if (CLIENT) then
 	SourceLineNumbers = {}
 	SourceLinesSent = 0
 	SourceSent = false
-end
-
-local function UploadProgram( pl )
-	local SendLinesMax = SourceLinesSent + pl:GetInfo("wire_cpu_packet_bandwidth")	
-	if (SendLinesMax > table.Count(SourceLines)) then SendLinesMax = table.Count(SourceLines) end
-	while (SourceLinesSent <= SendLinesMax) do
-		SourceLinesSent = SourceLinesSent + 1
-		local line = SourceLines[SourceLinesSent]
-		local linen = SourceLinesSent
-
-		if (line) && (line ~= "\n") && (string.gsub(line, "\n", "") ~= "") then
-			pl:ConCommand('wire_cpu_addsrc "'..linen..'" "' .. string.gsub(line, "\n", "") .. '"')
-		else
-			pl:ConCommand('wire_cpu_addsrc "'..linen..'" ""')
-		end	
-	end
-	local TempPercent = ((SourceLinesSent-1)/table.Count(SourceLines))*100
-	pl:PrintMessage(HUD_PRINTTALK,"CPU -> Sent packet ("..TempPercent.." )\n")
-	if (TempPercent == 100) && (!SourceSent) then
-		pl:PrintMessage(HUD_PRINTTALK,"CPU -> Program uploaded\n")
-		SourceSent = true
-	end
-end
-
-local function LoadProgram( pl, command, args )
-	local fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename");
-	if (!file.Exists(fname)) then
-		fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename")..".txt";
-	end
-
-	if (!file.Exists(fname)) then
-		pl:PrintMessage(HUD_PRINTTALK,"CPU -> Sorry! Requested file was not found\n")
-		return
+	
+	local function UploadProgram( pl )
+		local SendLinesMax = SourceLinesSent + pl:GetInfo("wire_cpu_packet_bandwidth")	
+		if (SendLinesMax > table.Count(SourceLines)) then SendLinesMax = table.Count(SourceLines) end
+		while (SourceLinesSent <= SendLinesMax) do
+			SourceLinesSent = SourceLinesSent + 1
+			local line = SourceLines[SourceLinesSent]
+			local linen = SourceLinesSent
+	
+			if (line) && (line ~= "\n") && (string.gsub(line, "\n", "") ~= "") then
+				pl:ConCommand('wire_cpu_addsrc "'..linen..'" "' .. string.gsub(line, "\n", "") .. '"')
+			else
+				pl:ConCommand('wire_cpu_addsrc "'..linen..'" ""')
+			end	
+		end
+		local TempPercent = ((SourceLinesSent-1)/table.Count(SourceLines))*100
+		pl:PrintMessage(HUD_PRINTTALK,"CPU -> Sent packet ("..TempPercent.." )\n")
+		Msg("Temp packet: "..TempPercent.."\n")
+		if (TempPercent == 100) && (!SourceSent) then
+			pl:PrintMessage(HUD_PRINTTALK,"CPU -> Program uploaded\n")
+			SourceSent = true
+		end
 	end
 	
-	//SP only:
-	//SourceCode = string.Explode("\n", file.Read(fname) )
-
-	pl:ConCommand('wire_cpu_clearsrc')
-
-
-	SourceLines = string.Explode("\n", file.Read(fname) )
-	SourceLinesSent = 0
-	SourceSent = false
-	//Send 50 lines
-	pl:PrintMessage(HUD_PRINTTALK,"CPU -> Starting uploading program...\n")
-	if (SinglePlayer()) then
-		local Reps = math.floor(table.Count(SourceLines)/pl:GetInfo("wire_cpu_packet_bandwidth"))+1	
-		timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_sp"),Reps,UploadProgram,pl)
-	else
-		local Reps = math.floor(table.Count(SourceLines)/pl:GetInfo("wire_cpu_packet_bandwidth"))+1	
-		timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_mp"),Reps,UploadProgram,pl)
+	local function LoadProgram( pl, command, args )
+		local fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename");
+		if (!file.Exists(fname)) then
+			fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename")..".txt";
+		end
+	
+		if (!file.Exists(fname)) then
+			pl:PrintMessage(HUD_PRINTTALK,"CPU -> Sorry! Requested file was not found\n")
+			return
+		end
+		
+		//SP only:
+		//SourceCode = string.Explode("\n", file.Read(fname) )
+	
+		pl:ConCommand('wire_cpu_clearsrc')
+	
+	
+		SourceLines = string.Explode("\n", file.Read(fname) )
+		SourceLinesSent = 0
+		SourceSent = false
+		//Send 50 lines
+		pl:PrintMessage(HUD_PRINTTALK,"CPU -> Starting uploading program...\n")
+		if (SinglePlayer()) then
+			local Reps = math.floor(table.Count(SourceLines)/pl:GetInfo("wire_cpu_packet_bandwidth"))+1	
+			timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_sp"),Reps,UploadProgram,pl)
+		else
+			local Reps = math.floor(table.Count(SourceLines)/pl:GetInfo("wire_cpu_packet_bandwidth"))+1	
+			timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_mp"),Reps,UploadProgram,pl)
+		end
 	end
-end
-concommand.Add( "wire_cpu_load", LoadProgram )
+	concommand.Add( "wire_cpu_load", LoadProgram )
+	
+	local function StoreProgram( pl, command, args )
+	        //local lines = "";
+	        //for i = 1,256 do
+		//	if (pl:GetInfo("wire_cpu_line"..i) ~= "") then
+		//                lines = lines .. pl:GetInfo("wire_cpu_line"..i) .. "\n"
+		//	end
+	        //end
+	        //file.Write("CPUChip\\"..pl:GetInfo("wire_cpu_filename"),lines)
+		Msg("Storing program is disabled - its readonly!\n")
+	end
+	concommand.Add( "wire_cpu_store", StoreProgram )
+	
+	local function ClearProgram( pl, command, args )
+		pl:ConCommand('wire_cpu_clearsrc')
+	end
+	concommand.Add( "wire_cpu_clear", ClearProgram ) 
 
-local function StoreProgram( pl, command, args )
-        //local lines = "";
-        //for i = 1,256 do
-	//	if (pl:GetInfo("wire_cpu_line"..i) ~= "") then
-	//                lines = lines .. pl:GetInfo("wire_cpu_line"..i) .. "\n"
-	//	end
-        //end
-        //file.Write("CPUChip\\"..pl:GetInfo("wire_cpu_filename"),lines)
-	Msg("Storing program is disabled - its readonly!\n")
 end
-concommand.Add( "wire_cpu_store", StoreProgram )
-
-local function ClearProgram( pl, command, args )
-	pl:ConCommand('wire_cpu_clearsrc')
-end
-concommand.Add( "wire_cpu_clear", ClearProgram ) 
-
+	
 if (SERVER) then
 
 	local function AddSourceLine( pl, command, args )
