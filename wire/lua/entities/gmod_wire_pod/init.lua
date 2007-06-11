@@ -101,7 +101,9 @@ function ENT:Think()
 				if self.Ply:KeyDownLast( v ) then Wire_TriggerOutput( self.Entity, k, 1 )
 				else Wire_TriggerOutput( self.Entity, k, 0 ) end
 			end
-			self.VPos = self.Ply:GetEyeTrace().HitPos
+			local trace = util.GetPlayerTrace(self.Ply)
+			trace.filter = self.Pod
+			self.VPos = util.TraceLine(trace).HitPos
 		end
 	end
 	self.Entity:NextThink(CurTime() + 0.01)
