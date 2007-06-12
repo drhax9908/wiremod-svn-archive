@@ -24,7 +24,7 @@ function ENT:OnRemove()
 	self.ValueOn = nil
 	self.target = nil
 	gmod_tool.stool.wire_data_forcer.Firstlink = nil
-	Msg("Removed.")
+	//Msg("Removed.")
 end
 
 
@@ -50,17 +50,17 @@ function ENT:Think()
             end
 	    end
 	end
-		self.Entity:NextThink(CurTime()+0.05)
-		return true
+	self.Entity:NextThink(CurTime()+0.05)
+	return true
 end
 
 function ENT:Setup(target)
 	self.target = target
 	local outs = {};
 	outs = self.target.Entity.Outputs
-	Wire_AdjustOutputs(self.Entity,outs)
+	Wire_AdjustOutputs(self.Entity, outs)
 	outs["Force"] = 0
-	Wire_AdjustInputs(self.Entity,outs)
+	Wire_AdjustInputs(self.Entity, outs)
 	self:ShowOutput()
 end
 
