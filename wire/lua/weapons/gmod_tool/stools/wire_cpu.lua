@@ -242,7 +242,7 @@ function TOOL:Think()
 	self:UpdateGhostWireCpu( self.GhostEntity, self:GetOwner() )
 end
 
-if (CLIENT) then
+//if (CLIENT) then
 	SourceLines = {}
 	SourceLineNumbers = {}
 	SourceLinesSent = 0
@@ -320,7 +320,7 @@ if (CLIENT) then
 	end
 	concommand.Add( "wire_cpu_clear", ClearProgram ) 
 
-end
+//end
 	
 if (SERVER) then
 
