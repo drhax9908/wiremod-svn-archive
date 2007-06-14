@@ -13,7 +13,7 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-	self.Outputs = Wire_CreateOutputs(self.Entity,{"X","Y","Z","Dist"})
+	self.Outputs = Wire_CreateOutputs(self.Entity,{"X","Y","Z","Dist","Active"})
 end
 
 function ENT:OnRemove()

@@ -17,11 +17,24 @@ function SWEP:Reload()
 	
 end
 
+// Message
+
+function SWEP:Message(Text)
+	if SERVER then
+		self.Owner:SendLua("GAMEMODE:AddNotify('"..Text.."', NOTIFY_GENERIC, 10)")
+		self.Owner:SendLua("surface.PlaySound('ambient/water/drip"..math.random(1, 4)..".wav')")
+	end
+end
+
 function SWEP:PrimaryAttack()
     Msg("Fire\n")
 	self.Pointing = !self.Pointing
 	Msg("self.Pointing = " .. tostring(self.Pointing) .. "\n")
 	self.Weapon:SetNWBool("Active", self.Pointing)
+	//self:Message("Pointing on = "..tostring(self.Pointing))
+	if(self.Receiver && self.Receiver:IsValid())then
+	   Wire_TriggerOutput(self.Reciever,"Active",self.Pointing)
+	end
 end
 
 function SWEP:SecondaryAttack()
@@ -33,8 +46,10 @@ function SWEP:SecondaryAttack()
 	    tracedata.filter = self.Owner
     local trace = util.TraceLine(tracedata)
     
-    if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_las_Receiver") then
+    if (trace.Entity:GetClass() == "gmod_wire_las_reciever") then
+        //Msg("Link\n")
         self.Receiver = trace.Entity
+        self:Message("Linked Sucessfully")
         return true
     end
 end
