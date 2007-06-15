@@ -73,7 +73,7 @@ function ENT:TriggerInput(iname, value)
 			 local trace = util.TraceLine( trace ) 
 			
 			// Bail if we hit world or a player
-			if (  !trace.Entity:IsValid() || trace.Entity:IsPlayer() ) then return end
+			if (  (!trace.Entity:IsValid() && trace.Entity != GetWorldEntity())  || trace.Entity:IsPlayer() ) then return end
 			// If there's no physics object then we can't constraint it!
 			if ( !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return end
 			
