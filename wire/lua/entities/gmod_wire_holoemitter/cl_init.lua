@@ -37,7 +37,13 @@ function ENT:Think( )
 		local _, _, _, a = self.Entity:GetColor();
 	
 		// store this point inside the point list
-		table.insert( self.PointList, { pos = self.ActivePoint, alpha = a, faderate = math.Clamp( self.Entity:GetNetworkedFloat( "FadeRate" ), 10, 255 ) } );
+		local tempfaderate
+		if (SinglePlayer()) then
+			tempfaderate = math.Clamp( self.Entity:GetNetworkedFloat( "FadeRate" ), 0.1, 255 )
+		else
+			tempfaderate = math.Clamp( self.Entity:GetNetworkedFloat( "FadeRate" ), 10, 255 )
+		end
+		table.insert( self.PointList, { pos = self.ActivePoint, alpha = a, faderate = tempfaderate } );
 		
 		// store new active point
 		self.ActivePoint = point;
