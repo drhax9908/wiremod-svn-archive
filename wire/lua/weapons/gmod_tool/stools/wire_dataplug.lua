@@ -26,8 +26,8 @@ TOOL.ClientConVar[ "ag" ] = "255"
 TOOL.ClientConVar[ "ab" ] = "255"
 TOOL.ClientConVar[ "aa" ] = "255"
 
-TOOL.PlugModel = "models/props_lab/tpplug.mdl"
-TOOL.SocketModel = "models/props_lab/tpplugholder_single.mdl"
+TOOL.PlugModel = "models/hammy/pci_card.mdl"
+TOOL.SocketModel = "models/hammy/pci_slot.mdl"
 
 cleanup.Register( "wire_dataplugs" )
 
@@ -71,9 +71,10 @@ function TOOL:LeftClick( trace )
 	
 	local Pos = trace.HitPos
 	
-	Pos = Pos + self:Offset( trace.HitNormal:Angle(), Vector(-12, 13, 0) )
+	//Pos = Pos + self:Offset( trace.HitNormal:Angle(), Vector(-12, 13, 0) )
+	Ang.pitch = Ang.pitch + 90
 	
-	local wire_datasocket = MakeWireSocket( ply, Pos, Ang, a, ar, ag, ab, aa )
+	local wire_datasocket = MakeWireDataSocket( ply, Pos, Ang, a, ar, ag, ab, aa )
 
 	//local min = wire_datasocket:OBBMins()
 	//wire_datasocket:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -143,7 +144,7 @@ function TOOL:RightClick( trace )
 
 	local Ang = trace.HitNormal:Angle()
 
-	local wire_dataplug = MakeWirePlug( ply, trace.HitPos, Ang, a, ar, ag, ab, aa )
+	local wire_dataplug = MakeWireDataPlug( ply, trace.HitPos, Ang, a, ar, ag, ab, aa )
 	
 	local min = wire_dataplug:OBBMins()
 	wire_dataplug:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -164,7 +165,7 @@ end
 
 if (SERVER) then
 
-	function MakeWirePlug( pl, Pos, Ang, a, ar, ag, ab, aa )
+	function MakeWireDataPlug( pl, Pos, Ang, a, ar, ag, ab, aa )
 		if ( !pl:CheckLimit( "wire_dataplugs" ) ) then return false end
 	
 		local wire_dataplug = ents.Create( "gmod_wire_dataplug" )
@@ -172,7 +173,7 @@ if (SERVER) then
 
 		wire_dataplug:SetAngles( Ang )
 		wire_dataplug:SetPos( Pos )
-		wire_dataplug:SetModel( Model("models/props_lab/tpplug.mdl") )
+		wire_dataplug:SetModel( Model("models/hammy/pci_card.mdl") )
 		wire_dataplug:Spawn()
 
 		wire_dataplug:Setup( a, ar, ag, ab, aa)
@@ -195,10 +196,10 @@ if (SERVER) then
 		return wire_dataplug
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_dataplug", MakeWirePlug, "Pos", "Ang", "a", "ar", "ag", "ab", "aa")
+	duplicator.RegisterEntityClass("gmod_wire_dataplug", MakeWireDataPlug, "Pos", "Ang", "a", "ar", "ag", "ab", "aa")
 
 
-	function MakeWireSocket( pl, Pos, Ang, a, ar, ag, ab, aa )
+	function MakeWireDataSocket( pl, Pos, Ang, a, ar, ag, ab, aa )
 		if ( !pl:CheckLimit( "wire_datasockets" ) ) then return false end
 	
 		local wire_datasocket = ents.Create( "gmod_wire_datasocket" )
@@ -206,7 +207,7 @@ if (SERVER) then
 
 		wire_datasocket:SetAngles( Ang )
 		wire_datasocket:SetPos( Pos )
-		wire_datasocket:SetModel( Model("models/props_lab/tpplugholder_single.mdl") )
+		wire_datasocket:SetModel( Model("models/hammy/pci_slot.mdl") )
 		wire_datasocket:Spawn()
 
 		wire_datasocket:Setup( a, ar, ag, ab, aa)
@@ -229,11 +230,11 @@ if (SERVER) then
 		return wire_datasocket
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_datasocket", MakeWireSocket, "Pos", "Ang", "a", "ar", "ag", "ab", "aa")
+	duplicator.RegisterEntityClass("gmod_wire_datasocket", MakeWireDataSocket, "Pos", "Ang", "a", "ar", "ag", "ab", "aa")
 
 end
 
-function TOOL:UpdateGhostWireSocket( ent, player )
+function TOOL:UpdateGhostWireDataSocket( ent, player )
 	if ( !ent || !ent:IsValid() ) then return end
 
 	local tr 	= utilx.GetPlayerTrace( player, player:GetCursorAimVector() )
@@ -247,8 +248,10 @@ function TOOL:UpdateGhostWireSocket( ent, player )
 	local Ang = trace.HitNormal:Angle()
 
 	local Pos = trace.HitPos
+
+	Ang.pitch = Ang.pitch + 90
 	
-	Pos = Pos + self:Offset( trace.HitNormal:Angle(), Vector(-12, 13, 0) )
+	//Pos = Pos + self:Offset( trace.HitNormal:Angle(), Vector(-12, 13, 0) )
 
 	//local min = ent:OBBMins()
 	//ent:SetPos( Pos - trace.HitNormal * min.z )
@@ -272,7 +275,7 @@ function TOOL:Think()
 		self:MakeGhostEntity( self.SocketModel, Vector(0,0,0), Angle(0,0,0) )
 	end
 
-	self:UpdateGhostWireSocket( self.GhostEntity, self:GetOwner() )
+	self:UpdateGhostWireDataSocket( self.GhostEntity, self:GetOwner() )
 end
 
 function TOOL.BuildCPanel(panel)

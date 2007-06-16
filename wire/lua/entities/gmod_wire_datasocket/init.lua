@@ -6,7 +6,7 @@ include('shared.lua')
 
 ENT.WireDebugName = "Socket"
 
-local MODEL = Model( "models/props_lab/tpplugholder_single.mdl" )
+local MODEL = Model( "models/hammy/pci_slot.mdl" )
 
 //Time after loosing one plug to search for another
 local NEW_PLUG_WAIT_TIME = 2
@@ -87,7 +87,7 @@ function ENT:Think()
 	if (not self.MyPlug) or (not self.MyPlug:IsValid()) then
 		
 		// Find entities near us
-		local sockCenter = self:GetOffset( Vector(8, -13, -10) )
+		local sockCenter = self:GetOffset( Vector(-1.75, 0, 0) )
 		local local_ents = ents.FindInSphere( sockCenter, PLUG_IN_ATTACH_RANGE )
 		for key, plug in pairs(local_ents) do
 
@@ -112,7 +112,7 @@ function ENT:AttachPlug( plug )
 	self.MyPlug = plug
 	
 	// Position plug
-	local newpos = self:GetOffset( Vector(8, -13, -5) )
+	local newpos = self:GetOffset( Vector(-1.75, 0, 0) )
 	local socketAng = self.Entity:GetAngles()
 	plug:SetPos( newpos )
 	plug:SetAngles( socketAng )
