@@ -4,7 +4,7 @@ AddCSLuaFile( "shared.lua" )
 
 include('shared.lua')
 
-local MODEL = Model( "models/props_lab/tpplug.mdl" )
+local MODEL = Model( "models/hammy/pci_card.mdl" )
 
 ENT.WireDebugName = "DataPlug"
 
