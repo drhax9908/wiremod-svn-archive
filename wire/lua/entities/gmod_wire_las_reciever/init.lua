@@ -4,7 +4,7 @@ AddCSLuaFile( "shared.lua" )
 
 include('shared.lua')
 
-ENT.WireDebugName = "Laser Reciever"
+ENT.WireDebugName = "Laser Receiver"
 
 local MODEL = Model("models/jaanus/wiretool/wiretool_range.mdl")
 
@@ -25,7 +25,7 @@ end
 
 function ENT:ShowOutput(value)
 	if (value ~= self.PrevOutput) then
-		self:SetOverlayText( "Laser Reciever" )
+		self:SetOverlayText( "Laser Receiver" )
 		self.PrevOutput = value
 	end
 end
