@@ -1,26 +1,26 @@
 
 TOOL.Category		= "Wire - Detection"
-TOOL.Name			= "Laser Pointer Reciever"
+TOOL.Name			= "Laser Pointer Receiver"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
 if ( CLIENT ) then
-    language.Add( "Tool_wire_las_reciever_name", "Laser Reciever Tool (Wire)" )
-    language.Add( "Tool_wire_las_reciever_desc", "Spawns a constant laser reciever prop for use with the wire system." )
-    language.Add( "Tool_wire_las_reciever_0", "Primary: Create/Update Laser Reciever" )
-    language.Add( "WireILaserRecieverTool_ilas_reciever", "Laser Reciever:" )
-	language.Add( "sboxlimit_wire_las_recievers", "You've hit laser recievers limit!" )
-	language.Add( "undone_wireigniter", "Undone Wire Laser Reciever" )
+    language.Add( "Tool_wire_las_reciever_name", "Laser Receiver Tool (Wire)" )
+    language.Add( "Tool_wire_las_reciever_desc", "Spawns a constant laser receiver prop for use with the wire system." )
+    language.Add( "Tool_wire_las_reciever_0", "Primary: Create/Update Laser Receiver" )
+    language.Add( "WireILaserRecieverTool_ilas_reciever", "Laser Receiver:" )
+	language.Add( "sboxlimit_wire_las_recievers", "You've hit laser receivers limit!" )
+	language.Add( "undone_wireigniter", "Undone Wire Laser Receiver" )
 end
 
 if (SERVER) then
-	CreateConVar('sbox_maxwire_las_recievers', 20)
+	CreateConVar('sbox_maxwire_las_receivers', 20)
 end
 
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
 
-cleanup.Register( "wire_las_recievers" )
+cleanup.Register( "wire_las_receivers" )
 
 function TOOL:LeftClick( trace )
 	if (!trace.HitPos) then return false end
@@ -33,7 +33,7 @@ function TOOL:LeftClick( trace )
 		return true
 	end
 
-	if ( !self:GetSWEP():CheckLimit( "wire_las_recievers" ) ) then return false end
+	if ( !self:GetSWEP():CheckLimit( "wire_las_receivers" ) ) then return false end
 
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
@@ -54,14 +54,14 @@ function TOOL:LeftClick( trace )
 	end*/
 	local const = WireLib.Weld(wire_las_reciever, trace.Entity, trace.PhysicsBone, true)
 
-	undo.Create("Wire Laser Reciever")
+	undo.Create("Wire Laser Receiver")
 		undo.AddEntity( wire_las_reciever )
 		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
 
-	ply:AddCleanup( "wire_las_recievers", wire_las_reciever )
+	ply:AddCleanup( "wire_las_receivers", wire_las_reciever )
 
 	return true
 end
@@ -73,7 +73,7 @@ end
 if (SERVER) then
 
 	function MakeWireLaserReciever( pl, Pos, Ang )
-		if ( !pl:CheckLimit( "wire_las_recievers" ) ) then return false end
+		if ( !pl:CheckLimit( "wire_las_receivers" ) ) then return false end
 	
 		local wire_las_reciever = ents.Create( "gmod_wire_las_reciever" )
 		if (!wire_las_reciever:IsValid()) then return false end
@@ -91,7 +91,7 @@ if (SERVER) then
 
 		table.Merge(wire_las_reciever:GetTable(), ttable )
 		
-		pl:AddCount( "wire_las_recievers", wire_las_reciever )
+		pl:AddCount( "wire_las_receivers", wire_las_reciever )
 
 		return wire_las_reciever
 	end
