@@ -41,19 +41,19 @@ function DigitalScreen_DataMessage( um )
 		//2041 - Hardware Clear Screen
 
 		if (address == 2039) then
-			for i = 0, 29 do
+			for i = 0, 31 do
 				ent.Memory1[value*30+i] = 0
 				ent.Memory2[value*30+i] = 0
 			end
 		end
 		if (address == 2040) then
-			for i = 0, 17 do
+			for i = 0, 31 do
 				ent.Memory1[i*30+value] = 0
 				ent.Memory2[i*30+value] = 0
 			end
 		end
 		if (address == 2041) then
-			for i = 0, 18*30*2 do 
+			for i = 0, 32*32-1 do 
 				ent.Memory1[i] = value
 				ent.Memory2[i] = value
 			end

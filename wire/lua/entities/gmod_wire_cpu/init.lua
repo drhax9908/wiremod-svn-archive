@@ -471,7 +471,7 @@ function ENT:Execute( )
 	//Fix problem here (the lua buttfux one):
 	if (opcode > 1000) then
 		if (opcode > 10000) then
-			segment2 = self:Read()
+			segment2 = self:Read() //FIXME wrong order
 			opcode = opcode-10000
 			if (opcode > 1000) then
 				segment1 = self:Read()
