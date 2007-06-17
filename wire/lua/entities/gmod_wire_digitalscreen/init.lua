@@ -94,8 +94,8 @@ function ENT:TriggerInput(iname, value)
 	elseif (iname == "FillColor") then
 		self:WriteCell(2041,value)
 	elseif (iname == "ClearCol") then
-		self:WriteCell(2040,value)
+		self:WriteCell(2040,math.Clamp( value, 0, 31 ))
 	elseif (iname == "ClearRow") then
-		self:WriteCell(2039,value)
+		self:WriteCell(2039,math.Clamp( value, 0, 31 ))
 	end
 end
