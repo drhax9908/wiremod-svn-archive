@@ -45,18 +45,69 @@ function ConsoleScreen_DataMessage( um )
 		//2040 - Hardware Clear Column (Writing clears column)
 		//2041 - Hardware Clear Screen
 
+		if (address == 2037) then
+			local delta = value
+			if (delta > 0) then
+				for j = 0, 17 do
+					for i = 29,delta do
+						if (clk == 1) then
+							ent.Memory1[j*60+i*2] = ent.Memory1[j*60+i*2-delta*2]
+							ent.Memory1[j*60+i*2+1] = ent.Memory1[j*60+i*2+1-delta*2]
+						end
+						ent.Memory2[j*60+i*2] = ent.Memory2[j*60+i*2-delta*2]
+						ent.Memory2[j*60+i*2+1] = ent.Memory2[j*60+i*2+1-delta*2]
+					end
+				end
+				for j = 0,17 do
+					for i = 0, delta-1 do
+						if (clk == 1) then
+							ent.Memory1[j*60+i*2] = 0
+							ent.Memory1[j*60+i*2+1] = 0
+						end
+						ent.Memory2[j*60+i*2] = 0
+						ent.Memory2[j*60+i*2+1] = 0
+					end
+				end
+			else
+				delta = -delta
+				for j = 0,17 do
+					for i = 0,29-delta do
+						if (clk == 1) then
+							ent.Memory1[j*60+i*2] = ent.Memory1[j*60+i*2+delta*2]
+							ent.Memory1[j*60+i*2+1] = ent.Memory1[j*60+i*2+1+delta*2]
+						end
+						ent.Memory2[j*60+i*2] = ent.Memory2[j*60+i*2+delta*2]
+						ent.Memory2[j*60+i*2+1] = ent.Memory2[j*60+i*2+1+delta*2]
+					end
+				end
+				for j = 0,17 do
+					for i = 29-delta+1,29 do
+						if (clk == 1) then
+							ent.Memory1[j*60+i*2] = 0
+							ent.Memory1[j*60+i*2+1] = 0
+						end
+						ent.Memory2[j*60+i*2] = 0
+						ent.Memory2[j*60+i*2+1] = 0
+					end
+				end
+			end
+		end
 		if (address == 2038) then
 			local delta = value
 			if (delta > 0) then
 				for j = 0, 17-delta do
 					for i = 0, 59 do
-						ent.Memory1[j*60+i] = ent.Memory1[(j+delta)*60+i]
+						if (clk == 1) then
+							ent.Memory1[j*60+i] = ent.Memory1[(j+delta)*60+i]
+						end
 						ent.Memory2[j*60+i] = ent.Memory2[(j+delta)*60+i]
 					end
 				end
 				for j = 17-delta+1,17 do
 					for i = 0, 59 do
-						ent.Memory1[j*60+i] = 0
+						if (clk == 1) then
+							ent.Memory1[j*60+i] = 0
+						end
 						ent.Memory2[j*60+i] = 0
 					end
 				end
@@ -64,13 +115,17 @@ function ConsoleScreen_DataMessage( um )
 				delta = -delta
 				for j = 17,delta do
 					for i = 0, 59 do
-						ent.Memory1[j*60+i] = ent.Memory1[(j-delta)*60+i]
+						if (clk == 1) then
+							ent.Memory1[j*60+i] = ent.Memory1[(j-delta)*60+i]
+						end
 						ent.Memory2[j*60+i] = ent.Memory2[(j-delta)*60+i]
 					end
 				end
 				for j = delta+1,0 do
 					for i = 0, 59 do
-						ent.Memory1[j*60+i] = 0
+						if (clk == 1) then
+							ent.Memory1[j*60+i] = 0
+						end
 						ent.Memory2[j*60+i] = 0
 					end
 				end
