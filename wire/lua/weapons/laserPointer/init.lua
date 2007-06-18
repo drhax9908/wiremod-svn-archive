@@ -18,7 +18,7 @@ function SWEP:Reload()
 end
 
 // Message
-
+// Function taken from connas stools all credit for this function goes to him.
 function SWEP:Message(Text)
 	if SERVER then
 		self.Owner:SendLua("GAMEMODE:AddNotify('"..Text.."', NOTIFY_GENERIC, 10)")
