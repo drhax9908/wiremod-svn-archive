@@ -103,6 +103,7 @@ if (SERVER) then
 
 		local ttable = {
 			pl = pl,
+			Advanced = Advanced,
 		}
 
 		table.Merge(wire_pod:GetTable(), ttable )
@@ -113,6 +114,10 @@ if (SERVER) then
 	end
 	
 	duplicator.RegisterEntityClass("gmod_wire_pod", MakeWirePod, "Pos", "Advanced", "Ang", "Pod", "Vel", "aVel", "frozen")
+	local function  MakeWireAdvPod( pl, Pos, Advanced, Ang, pod )
+		return MakeWirePod( pl, Pos, true, Ang, pod )
+	end
+	duplicator.RegisterEntityClass("gmod_wire_adv_pod", MakeWireAdvPod, "Pos", "Advanced", "Ang", "Pod", "Vel", "aVel", "frozen")
 
 end
 
