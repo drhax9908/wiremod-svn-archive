@@ -16,9 +16,19 @@ function ENT:Initialize()
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 
 	self.Inputs = Wire_CreateInputs( self.Entity, { "Length" } )
+	self.Outputs = Wire_CreateOutputs( self.Entity, { "Length" } )
+	
 	self.Trigger = 0
 end
 
+function ENT:Think()
+	local c = self.constraint
+	local p1 = self:GetWPos(c:GetTable().Ent1, c:GetTable().Phys1, c:GetTable().LPos1)
+	local p2 = self:GetWPos(c:GetTable().Ent2, c:GetTable().Phys2, c:GetTable().LPos2)
+
+	Wire_TriggerOutput(self.Entity, "Length", (p1 - p2):Length())	
+	self.Entity:NextThink(CurTime()+0.04)
+end
 
 function ENT:Setup()
 	self.current_length = 0
