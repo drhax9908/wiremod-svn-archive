@@ -5,7 +5,6 @@ include('shared.lua')
 ENT.WireDebugName = "Screen"
 
 function ENT:Initialize()
-	
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
@@ -17,10 +16,11 @@ function ENT:Use()
 end
 
 function ENT:TriggerInput(iname, value)
+	// Removed improper rounding (Syranide)
 	if (iname == "A") then
-		self:SetDisplayA( string.format("%.2f", value) )
+		self:SetDisplayA(value)
 	elseif (iname == "B") then
-		self:SetDisplayB( string.format("%.2f", value) )
+		self:SetDisplayB(value)
 	end
 end
 
