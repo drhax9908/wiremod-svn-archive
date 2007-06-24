@@ -10,6 +10,9 @@ include('shared.lua')
 
 ENT.WireDebugName = "Text Screen"
 ENT.initOn = true
+ENT.firstConfig = true
+
+wire_text_screen_lastCreated = nil
 
 function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
@@ -20,16 +23,21 @@ function ENT:Initialize()
 	self.currentLine = 0
 	self.currentText = ""
 	self.currentTextnum = 0
-	
+	--holds the last created screen (possible fuckup if two screens created by different players at almost the same time.)
+	wire_text_screen_lastCreated = self.Entity
 end
 
-function ENT:Setup(textTable, chrPl, textJust, tRed, tGreen, tBlue, numInputs)
+function ENT:Setup(textTable, chrPl, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
 	self.textTable = textTable
 	self.textTable[0] = ""
 	self.maxLineLen = math.abs(chrPl)
 	self.maxLines = math.abs(chrPl) / 2
 	self.chrPerLine = math.abs(chrPl)
 	self.numInputs = math.abs(numInputs)
+	self.textJust = textJust
+	self.tRed = tRed
+	self.tGreen = tGreen
+	self.tBlue = tBlue
 	self.currentLine = 0
 	valInputs = {}
 	self.Val = {}
@@ -41,16 +49,23 @@ function ENT:Setup(textTable, chrPl, textJust, tRed, tGreen, tBlue, numInputs)
 	inputTable = {"Clk", "Text"}
 	table.Add(inputTable, valInputs)
 	self.Inputs = Wire_CreateInputs(self.Entity, inputTable)
-	self:TriggerInput("Clk", 1)	--make text on by default
-	self:TriggerInput("Text", 1)
-	timer.Simple (0.5, sendUmConfig, self.Entity, chrPl, textJust, tRed, tGreen, tBlue)
-
+	--Msg("defaulon = "..tostring(defaultOn).."\n")
+	self.defaultOn = defaultOn
+	
+	--timer.Simple (0.5, sendUmConfig, self.Entity, chrPl, textJust, tRed, tGreen, tBlue)
+	if !self.firstConfig then
+		umTextScreenSendConfig(self.Entity, nil, true, chrPl, textJust, tRed, tGreen, tBlue)
+	end
 end
 
-function sendUmConfig(ent, chrPl, textJust, tRed, tGreen, tBlue)
-	local allPlayers = RecipientFilter()
-	allPlayers:AddAllPlayers()
-	umsg.Start("umsgScreenConfig", allPlayers)
+--sends config to client(s), includes colour, justification etc. can be used to send to a specific player (sendAll = false) or all players (sendAll = true)
+function umTextScreenSendConfig(ent, player, sendAll, chrPl, textJust, tRed, tGreen, tBlue)
+	local sendPlayer = player
+	if sendAll then
+		sendPlayer = RecipientFilter()
+		sendPlayer:AddAllPlayers()
+	end
+	umsg.Start("umsgScreenConfig", sendPlayer)
 		umsg.Entity(ent)
 		umsg.Short(chrPl)
 		umsg.Short(textJust)
@@ -62,12 +77,33 @@ function sendUmConfig(ent, chrPl, textJust, tRed, tGreen, tBlue)
 	ent:WriteLine()
 end
 
+--Called by a client when the entity is created client side to request config data
+function clientTextScreenConfigRequest(player, commandName, args)
+	local ent = wire_text_screen_lastCreated
+	umTextScreenSendConfig(ent, player, false, ent.chrPerLine, ent.textJust, ent.tRed, ent.tGreen, ent.tBlue)
+	if (ent.defaultOn == 1) then	
+		ent:TriggerInput("Clk", 1)	--make text on by default
+		ent:TriggerInput("Text", 1)
+		ent.defaultOn = 0
+	end
+end
+concommand.Add("cTextScreenConfig", clientTextScreenConfigRequest)
+
+--Sends text to clients for drawing
+function umTextScreenSendText(ent, text)
+	local allPlayers = RecipientFilter()
+	allPlayers:AddAllPlayers()
+	umsg.Start("umsgTextScreenSetText", allPlayers)
+		umsg.Entity(ent)
+		umsg.String(text)
+	umsg.End()
+end
+
 function ENT:Use()
 end
 
+--wire input routine
 function ENT:TriggerInput(iname, value)
-	--print (iname.."\n")
-	--print ("first = '"..string.sub(iname, 1, 6).."', second = '"..string.sub(iname, 7, -1).."'\n")
 	if (iname == "Text") then
 		self.currentTextnum = math.abs(value)
 		self:WriteLine()
@@ -86,6 +122,7 @@ function ENT:TriggerInput(iname, value)
 	end
 end
 
+--format text and send it to the client(s)
 function ENT:WriteLine()
 	if (self.clock && (self.currentLine <= self.maxLines)) then
 		local compstring = ""
@@ -93,9 +130,6 @@ function ENT:WriteLine()
 		local intoText = false
 		local basestring = self.textTable[self.currentTextnum]
 		if (!basestring) then return false end
-		--local aval = string.format("%G", self.ValA)
-		--local bval = string.format("%G", self.ValB)
-		--local cval = string.format("%G", self.ValC)
 		
 		for k,inp in ipairs(self.Val) do
 			local nString = string.format("%G", inp)
@@ -103,11 +137,7 @@ function ENT:WriteLine()
 			basestring = string.gsub(basestring, "<"..k..">", nString)
 		end
 		
-		--basestring = string.gsub(basestring, "<a>", aval)
-		--basestring = string.gsub(basestring, "<b>", bval)
-		--basestring = string.gsub(basestring, "<c>", cval)
 		basestring = string.gsub(basestring, "<br>", "\n")
-		
 		compstring = basestring
 		local outString = ""
 		if (string.len(compstring) > self.maxLineLen) then
@@ -149,7 +179,8 @@ function ENT:WriteLine()
 			outString = compstring
 		end
 		--Msg("setting line now ("..outString..")\n")
-		self:SetLine(self.currentLine, outString)
+		--self:SetLine(self.currentLine, outString)
+		umTextScreenSendText(self.Entity, outString)
 	end
 end
 
