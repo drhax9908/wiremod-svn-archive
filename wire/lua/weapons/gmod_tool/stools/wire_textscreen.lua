@@ -37,7 +37,7 @@ if ( CLIENT ) then
 	language.Add("Tool_wire_textscreen_ninputs", "Number of inputs:")
 
 	language.Add("Tool_wire_textscreen_createflat", "Create flat to surface:")
-
+	language.Add("Tool_wire_textscreen_defaulton", "Force show text without connecting wires:")
 end
 
 if (SERVER) then
@@ -54,6 +54,7 @@ TOOL.ClientConVar["tblue"] = 255
 TOOL.ClientConVar["tgreen"] = 255
 
 TOOL.ClientConVar["ninputs"] = 3
+TOOL.ClientConVar["defaulton"] = 1
 
 // Create flat option (TheApathetic)
 TOOL.ClientConVar["createflat"] = 1
@@ -87,14 +88,14 @@ function TOOL:LeftClick( trace )
 	local tBlue		= math.min(self:GetClientNumber("tblue"), 255)
 
 	local numInputs	= self:GetClientNumber("ninputs")
-
 	local CreateFlat = self:GetClientNumber("createflat")
-
+	local defaultOn = self:GetClientNumber("defaulton")
+	--Msg("dfo = "..tostring(defaultOn).."\n")
 	--Msg(string.format("red = %d, blue = %d, green = %d, alpha = %d", tRed, tBlue, tGreen, tAlpha))
 	--update screen
 	if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_textscreen" && trace.Entity.pl == ply) then
-		--Msg("updateing\n")
-		trace.Entity:Setup(TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs)
+		Msg("updateing\n")
+		trace.Entity:Setup(TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
 		return true
 	end
 
@@ -104,7 +105,7 @@ function TOOL:LeftClick( trace )
 	end
 	
 	--make text screen
-	wire_textscreen = MakeWireTextScreen( ply, Ang, trace.HitPos, Model(self.Model), TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs)
+	wire_textscreen = MakeWireTextScreen( ply, Ang, trace.HitPos, Model(self.Model), TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
 	local min = wire_textscreen:OBBMins()
 	wire_textscreen:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
@@ -123,14 +124,12 @@ function TOOL:LeftClick( trace )
 end
 
 if (SERVER) then
-
-	function MakeWireTextScreen( pl, Ang, Pos, Smodel, TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs)
-		
+	function MakeWireTextScreen( pl, Ang, Pos, Smodel, TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
 		if ( !pl:CheckLimit( "wire_textscreens" ) ) then return false end
 		local wire_textscreen = ents.Create( "gmod_wire_textscreen" )
 		if (!wire_textscreen:IsValid()) then return false end
 		wire_textscreen:SetModel(Smodel)
-		wire_textscreen:Setup(TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs)
+		wire_textscreen:Setup(TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
 		wire_textscreen:SetAngles( Ang )
 		wire_textscreen:SetPos( Pos )
 		wire_textscreen:Spawn()
@@ -145,7 +144,8 @@ if (SERVER) then
 			tRed = tRed,
 			tGreen = tGreen,
 			tBlue = tBlue,
-			numInputs = numInputs
+			numInputs = numInputs,
+			defaultOn = defaultOn
 		}
 		
 		table.Merge(wire_textscreen:GetTable(), ttable )
@@ -153,7 +153,7 @@ if (SERVER) then
 		pl:AddCount( "wire_textscreens", wire_textscreen )
 		return wire_textscreen
 	end
-	duplicator.RegisterEntityClass("gmod_wire_textscreen", MakeWireTextScreen, "Ang", "Pos", "Smodel", "TextList", "chrPerLine", "textJust", "tRed", "tGreen", "tBlue", "numInputs")
+	duplicator.RegisterEntityClass("gmod_wire_textscreen", MakeWireTextScreen, "Ang", "Pos", "Smodel", "TextList", "chrPerLine", "textJust", "tRed", "tGreen", "tBlue", "numInputs", "defaultOn")
 end
 
 function TOOL:UpdateGhostWireTextScreen( ent, player )
@@ -187,19 +187,6 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_textscreen_name", Description = "#Tool_wire_textscreen_desc" })
-	
---	panel:AddControl("ComboBox", {
---		Label = "#WireTextScreenTool_Model", --exist?
---		MenuButton = "0",
---
---		Options = {
---			["#Small tv"]		= { wire_textscreen_model = "models/props_lab/monitor01b.mdl" },
---			["#Plasma tv"]		= { wire_textscreen_model = "models/props/cs_office/TV_plasma.mdl" },
---			["#LCD monitor"]	= { wire_textscreen_model = "models/props/cs_office/computer_monitor.mdl" },
---			["#Monitor Big"]	= { wire_textscreen_model = "models/kobilica/wiremonitorbig.mdl" },
---			["#Monitor Small"]	= { wire_textscreen_model = "models/kobilica/wiremonitorsmall.mdl" },
---		}
---	})
 
 	panel:AddControl("Slider", {Label = "#Tool_wire_textscreen_tsize", Description = "", Type = "Integer", Min = "1", Max = "15", Command = "wire_textscreen_tsize"})
 	panel:AddControl("Slider", {Label = "#Tool_wire_textscreen_tjust", Description = "", Type = "Integer", Min = "0", Max = "2", Command = "wire_textscreen_tjust"})
@@ -214,6 +201,9 @@ function TOOL.BuildCPanel(panel)
 		ShowRGB = "1",
 		Multiplier = "255"
 	})
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_textscreen_createflat", Command = "wire_textscreen_createflat"})
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_textscreen_defaulton", Command = "wire_textscreen_defaulton"})
+	
 	panel:AddControl("TextBox", {Label = "#Tool_wire_textscreen_text1", MaxLength = tostring(MaxTextLength), Command = "wire_textscreen_text1"})
 	panel:AddControl("TextBox", {Label = "#Tool_wire_textscreen_text2", MaxLength = tostring(MaxTextLength), Command = "wire_textscreen_text2"})
 	panel:AddControl("TextBox", {Label = "#Tool_wire_textscreen_text3", MaxLength = tostring(MaxTextLength), Command = "wire_textscreen_text3"})
@@ -227,6 +217,6 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("TextBox", {Label = "#Tool_wire_textscreen_text11", MaxLength = tostring(MaxTextLength), Command = "wire_textscreen_text11"})
 	panel:AddControl("TextBox", {Label = "#Tool_wire_textscreen_text12", MaxLength = tostring(MaxTextLength), Command = "wire_textscreen_text12"})
 	
-	panel:AddControl("Checkbox", {Label = "#Tool_wire_textscreen_createflat", Command = "wire_textscreen_createflat"})
+	
 end
 	
