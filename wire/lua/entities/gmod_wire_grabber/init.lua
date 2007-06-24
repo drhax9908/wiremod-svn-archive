@@ -18,6 +18,9 @@ function ENT:Initialize()
 	self.WeldStrength = 0
 	self.Weld = nil
 	self.WeldEntity = nil
+	self.ExtraProp = nil
+	self.ExtraPropWeld = nil
+	self.Gravity = true
 	self.Entity:GetPhysicsObject():SetMass(200)
 	
 	self:SetBeamRange(100)
@@ -38,23 +41,30 @@ function ENT:OnRemove()
 	Wire_Remove(self.Entity)
 end
 
-function ENT:Setup(Range)
+function ENT:Setup(Range,Gravity)
     self:SetBeamRange(Range)
-    Msg("Setup:/n/tRange:"..tostring(Range).."/n")
+    self.Gravity = Gravity
+    Msg("Setup:\n\tRange:"..tostring(Range).."\n\tGravity:"..tostring(Gravity).."\n")
 end
 
 function ENT:ResetGrab()
     if(self.Weld && self.Weld:IsValid())then
         self.Weld:Remove()
+        Msg("-Weld1\n")
         if(self.WeldEntity)then
             if(self.WeldEntity:IsValid())then
                 self.WeldEntity:GetPhysicsObject():EnableGravity(true)
             end
         end
+    end
+    if(self.ExtraPropWeld && self.ExtraPropWeld:IsValid())then
+        self.ExtraPropWeld:Remove()
+        Msg("-Weld2\n")
     end                
                 
     self.Weld = nil
     self.WeldEntity = nil
+    self.ExtraPropWeld = nil
                 
     self.Entity:SetColor(255,255,255,255)
     Wire_TriggerOutput(self.Entity,"Holding",0)
@@ -82,15 +92,26 @@ function ENT:TriggerInput(iname, value)
 			end
 			// Weld them!
 			local const = constraint.Weld(self.Entity, trace.Entity, 0, 0, self.WeldStrength)
-			trace.Entity:GetPhysicsObject():EnableGravity(false)
+			local const2
+			Msg("+Weld1\n")
+			if(self.ExtraProp)then
+			     if(self.ExtraProp:IsValid())then
+			         const2 = constraint.Weld(self.ExtraProp, trace.Entity, 0, 0, self.WeldStrength)
+			         Msg("+Weld2\n")
+			     end
+			end
+			if(self.Gravity)then
+			     trace.Entity:GetPhysicsObject():EnableGravity(false)
+			end
 			
 			self.WeldEntity = trace.Entity
 			self.Weld = const
+			self.ExtraPropWeld = const2
 			
 			self.Entity:SetColor(255, 0, 0, 255)
 			Wire_TriggerOutput(self.Entity, "Holding", 1)
 		else
-			if(self.Weld != nil)then
+			if(self.Weld != nil || self.ExtraPropWeld != nil)then
 				self:ResetGrab()
 	        end
 		end
