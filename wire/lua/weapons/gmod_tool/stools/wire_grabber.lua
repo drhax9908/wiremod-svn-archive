@@ -7,10 +7,10 @@ TOOL.ConfigName		= ""
 if ( CLIENT ) then
     language.Add( "Tool_wire_grabber_name", "Grabber Tool (Wire)" )
     language.Add( "Tool_wire_grabber_desc", "Spawns a constant grabber prop for use with the wire system." )
-    language.Add( "Tool_wire_grabber_0", "Primary: Create/Update Grabber" )
+    language.Add( "Tool_wire_grabber_0", "Primary: Create/Update Grabber Secondary: link the grabber to its extra prop that is attached for stabilty" )
     language.Add( "WireGrabberTool_grabber", "Grabber:" )
     language.Add( "WireGrabberTool_Range", "Max Range:" )
-    language.Add( "WireGrabberTool_DynamicWeight", "Enable Dynamic Weight:" )
+    language.Add( "WireGrabberTool_Gravity", "Disable Gravity:" )
 	language.Add( "sboxlimit_wire_grabbers", "You've hit grabbers limit!" )
 	language.Add( "undone_Wire Grabber", "Undone Wire Grabber" )
 end
@@ -23,6 +23,7 @@ end
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
 TOOL.ClientConVar[ "Range" ] = "100"
+TOOL.ClientConVar[ "Gravity" ] = "1"
 
 cleanup.Register( "wire_grabbers" )
 
@@ -43,8 +44,9 @@ function TOOL:LeftClick( trace )
 	Ang.pitch = Ang.pitch + 90
 	
 	local range = self:GetClientNumber("Range")
+	local gravity = (self:GetClientNumber("Gravity") != 0)
 
-	local wire_grabber = MakeWireGrabber( ply, trace.HitPos, range, Ang )
+	local wire_grabber = MakeWireGrabber( ply, trace.HitPos, range, gravity, Ang )
 
 	local min = wire_grabber:OBBMins()
 	wire_grabber:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -73,12 +75,25 @@ function TOOL:LeftClick( trace )
 end
 
 function TOOL:RightClick( trace )
-	return false
+	if (!trace.HitPos) then return false end
+    if ( CLIENT ) then return true end
+    if!(trace.Entity)then return false end
+    if!(trace.Entity:IsValid())then return false end
+    if (self.Oldent) then
+        self.Oldent.ExtraProp = trace.Entity;
+        self.Oldent = nil;
+        return true
+    else
+        if (trace.Entity:GetClass() == "gmod_wire_grabber") then
+            self.Oldent = trace.Entity;
+            return true
+        end
+    end
 end
 
 if (SERVER) then
 
-	function MakeWireGrabber( pl, Pos, Range, Ang )
+	function MakeWireGrabber( pl, Pos, Range, Gravity, Ang )
 		if ( !pl:CheckLimit( "wire_grabbers" ) ) then return false end
 	
 		local wire_grabber = ents.Create( "gmod_wire_grabber" )
@@ -88,12 +103,13 @@ if (SERVER) then
 		wire_grabber:SetPos( Pos )
 		wire_grabber:SetModel( Model("models/jaanus/wiretool/wiretool_range.mdl") )
 		wire_grabber:Spawn()
-		wire_grabber:Setup(Range)
+		wire_grabber:Setup(Range, Gravity)
 
 		wire_grabber:GetTable():SetPlayer( pl )
 
 		local ttable = {
 		    Range = Range,
+		    Gravity = Gravity,
 			pl = pl
 		}
 
@@ -104,7 +120,7 @@ if (SERVER) then
 		return wire_grabber
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_grabber", MakeWireGrabber, "Pos", "Range", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_grabber", MakeWireGrabber, "Pos", "Range", "Gravity", "Ang", "Vel", "aVel", "frozen")
 
 end
 
@@ -152,6 +168,10 @@ function TOOL.BuildCPanel(panel)
 		},
 		CVars = {
 		}
+	})
+	panel:AddControl("CheckBox", {
+		Label = "#WireGrabberTool_Gravity",
+		Command = "wire_grabber_Gravity"
 	})
 	
 	panel:AddControl("Slider", {
