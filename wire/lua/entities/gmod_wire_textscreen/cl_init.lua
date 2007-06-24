@@ -8,7 +8,9 @@ include('shared.lua')
 ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
 ENT.RenderGroup 		= RENDERGROUP_BOTH
+ENT.currentText = ""
 
+--recieve screen config
 function umScreenConfig(um)
 	local ent = um:ReadEntity()
 	ent.chrPerLine = um:ReadShort()
@@ -19,6 +21,13 @@ function umScreenConfig(um)
 	ent.activeC = um:ReadBool()
 end
 usermessage.Hook("umsgScreenConfig", umScreenConfig) 
+
+--recieve screen text
+function umTextScreenSetText(um)
+	local ent = um:ReadEntity()
+	ent.currentText = um:ReadString()
+end
+usermessage.Hook("umsgTextScreenSetText", umTextScreenSetText)
 
 function ENT:Initialize()
 	local fontSize = 380
@@ -38,6 +47,9 @@ function ENT:Initialize()
 	surface.CreateFont( "coolvetica", fontSize / 14, 400, false, false, "font14" )
 	surface.CreateFont( "coolvetica", fontSize / 15, 400, false, false, "font15" )
 	self.activeI = true
+	--table.insert(wire_text_screen_table, self.Entity)
+	--self.screenIndex = table.getn(wire_text_screen_table)
+	LocalPlayer():ConCommand("cTextScreenConfig\n")
 end
 
 function ENT:Draw()
@@ -66,8 +78,8 @@ function ENT:Draw()
 		surface.DrawRect(x/RatioX,y,(x+w)/RatioX,y+h)
 		
 		local justOffset = (w / 3) + (self.textJust * (w / 3.5))
-		local lineText = self:GetLine(0)
-		draw.DrawText(lineText, "font"..tostring(self.chrPerLine), (x + justOffset - 92) / RatioX, y + 2, Color(self.tRed, self.tGreen, self.tBlue, 255), self.textJust)
+		--local lineText = self:GetLine(0)
+		draw.DrawText(self.currentText, "font"..tostring(self.chrPerLine), (x + justOffset - 92) / RatioX, y + 2, Color(self.tRed, self.tGreen, self.tBlue, 255), self.textJust)
 
 	cam.End3D2D()
 	Wire_Render(self.Entity)

@@ -14,6 +14,8 @@ ENT.Instructions	= ""
 ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
 
+
+--[[
 function ENT:SetLine(num, text)
 	self.Entity:SetNetworkedString("TLine"..num, text)
 end
@@ -21,7 +23,9 @@ end
 function ENT:GetLine(num)
 	return self.Entity:GetNetworkedString("TLine"..num)
 end
-
+]]--
 --example manual calls of inputs
 --Wire_AdjustInputs(self.Entity, {"A"})
 --Wire_AdjustInputs(self.Entity, {"A","B"})
+
+--wire_text_screen_table = {}
