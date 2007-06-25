@@ -128,3 +128,20 @@ function ENT:OnRestore()
     Wire_Restored(self.Entity)
 end
 
+function ENT:BuildDupeInfo()
+    local info = self.BaseClass.BuildDupeInfo(self) or {}
+    if (self.ExtraProp) and (self.ExtraProp:IsValid()) then
+            info.ExtraProp = self.ExtraProp:EntIndex()
+    end
+    return info
+end 
+
+function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
+    self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
+    if (info.ExtraProp) then
+        self.ExtraProp = GetEntByID(info.ExtraProp)
+        if (!self.ExtraProp) then
+            self.ExtraProp = ents.GetByIndex(info.ExtraProp)                                        
+        end    
+    end
+end
