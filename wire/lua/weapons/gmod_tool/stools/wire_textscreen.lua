@@ -37,7 +37,7 @@ if ( CLIENT ) then
 	language.Add("Tool_wire_textscreen_ninputs", "Number of inputs:")
 
 	language.Add("Tool_wire_textscreen_createflat", "Create flat to surface:")
-	language.Add("Tool_wire_textscreen_defaulton", "Force show text without connecting wires:")
+	language.Add("Tool_wire_textscreen_defaulton", "Force show text (make wires optional):")
 end
 
 if (SERVER) then
@@ -56,9 +56,8 @@ TOOL.ClientConVar["tgreen"] = 255
 TOOL.ClientConVar["ninputs"] = 3
 TOOL.ClientConVar["defaulton"] = 1
 
-// Create flat option (TheApathetic)
+-- Create flat option (TheApathetic)
 TOOL.ClientConVar["createflat"] = 1
-
 
 local MaxTextLength = 80
 
@@ -90,11 +89,9 @@ function TOOL:LeftClick( trace )
 	local numInputs	= self:GetClientNumber("ninputs")
 	local CreateFlat = self:GetClientNumber("createflat")
 	local defaultOn = self:GetClientNumber("defaulton")
-	--Msg("dfo = "..tostring(defaultOn).."\n")
-	--Msg(string.format("red = %d, blue = %d, green = %d, alpha = %d", tRed, tBlue, tGreen, tAlpha))
+
 	--update screen
 	if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_textscreen" && trace.Entity.pl == ply) then
-		Msg("updateing\n")
 		trace.Entity:Setup(TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
 		return true
 	end
