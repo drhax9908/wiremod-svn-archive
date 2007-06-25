@@ -1,8 +1,6 @@
---Wire text screen by greenarrow
+--Wire text screen by greenarrow + wire team
 --http://gmodreviews.googlepages.com/
 --http://forums.facepunchstudios.com/greenarrow
---There are a few bits of code from wire digital screen here and there, mainly just
---the values to correctly format cam3d2d for the screen, and a few standard things in the stool.
 
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
@@ -11,6 +9,10 @@ include('shared.lua')
 ENT.WireDebugName = "Text Screen"
 ENT.initOn = true
 ENT.firstConfig = true
+ENT.clock = false
+ENT.currentLine = 0
+ENT.currentText = ""
+ENT.currentTextnum = 0
 
 wire_text_screen_lastCreated = nil
 
@@ -18,18 +20,12 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-			
-	self.clock = true
-	self.currentLine = 0
-	self.currentText = ""
-	self.currentTextnum = 0
-	--holds the last created screen (possible fuckup if two screens created by different players at almost the same time.)
-	wire_text_screen_lastCreated = self.Entity
 end
 
 function ENT:Setup(textTable, chrPl, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
-	self.textTable = textTable
+	self.textTable = textTable	--table of text lines
 	self.textTable[0] = ""
+	
 	self.maxLineLen = math.abs(chrPl)
 	self.maxLines = math.abs(chrPl) / 2
 	self.chrPerLine = math.abs(chrPl)
@@ -39,91 +35,58 @@ function ENT:Setup(textTable, chrPl, textJust, tRed, tGreen, tBlue, numInputs, d
 	self.tGreen = tGreen
 	self.tBlue = tBlue
 	self.currentLine = 0
+	
+	--setup input with required number of value inputs
 	valInputs = {}
 	self.Val = {}
 	for n=1, numInputs do
 		table.insert(self.Val, 0)
 		table.insert(valInputs, "Value "..n)
 	end
-	--inputTable = {"Clk", "Text", "String"}
 	inputTable = {"Clk", "Text"}
 	table.Add(inputTable, valInputs)
 	self.Inputs = Wire_CreateInputs(self.Entity, inputTable)
-	--Msg("defaulon = "..tostring(defaultOn).."\n")
+
 	self.defaultOn = defaultOn
 	
-	--timer.Simple (0.5, sendUmConfig, self.Entity, chrPl, textJust, tRed, tGreen, tBlue)
-	if !self.firstConfig then
-		umTextScreenSendConfig(self.Entity, nil, true, chrPl, textJust, tRed, tGreen, tBlue)
+	--send config to client
+	self:SetConfig()
+	--format text and send to client
+	self:UpdateScreen()
+	
+	--if option is selected, show text without the need for wire inputs
+	if (defaultOn == 1) then
+		Msg("dfo\n")
+		self:TriggerInput("Clk", 1)	--make text on by default
+		self:TriggerInput("Text", 1)
+	else
+		self:TriggerInput("Clk", 0)
+		self:TriggerInput("Text", 0)
 	end
-end
-
---sends config to client(s), includes colour, justification etc. can be used to send to a specific player (sendAll = false) or all players (sendAll = true)
-function umTextScreenSendConfig(ent, player, sendAll, chrPl, textJust, tRed, tGreen, tBlue)
-	local sendPlayer = player
-	if sendAll then
-		sendPlayer = RecipientFilter()
-		sendPlayer:AddAllPlayers()
-	end
-	umsg.Start("umsgScreenConfig", sendPlayer)
-		umsg.Entity(ent)
-		umsg.Short(chrPl)
-		umsg.Short(textJust)
-		umsg.Short(tRed)
-		umsg.Short(tGreen)
-		umsg.Short(tBlue)
-		umsg.Bool(true)
-	umsg.End() 
-	ent:WriteLine()
-end
-
---Called by a client when the entity is created client side to request config data
-function clientTextScreenConfigRequest(player, commandName, args)
-	local ent = wire_text_screen_lastCreated
-	umTextScreenSendConfig(ent, player, false, ent.chrPerLine, ent.textJust, ent.tRed, ent.tGreen, ent.tBlue)
-	if (ent.defaultOn == 1) then	
-		ent:TriggerInput("Clk", 1)	--make text on by default
-		ent:TriggerInput("Text", 1)
-		ent.defaultOn = 0
-	end
-end
-concommand.Add("cTextScreenConfig", clientTextScreenConfigRequest)
-
---Sends text to clients for drawing
-function umTextScreenSendText(ent, text)
-	local allPlayers = RecipientFilter()
-	allPlayers:AddAllPlayers()
-	umsg.Start("umsgTextScreenSetText", allPlayers)
-		umsg.Entity(ent)
-		umsg.String(text)
-	umsg.End()
-end
-
-function ENT:Use()
 end
 
 --wire input routine
 function ENT:TriggerInput(iname, value)
 	if (iname == "Text") then
 		self.currentTextnum = math.abs(value)
-		self:WriteLine()
+		self:UpdateScreen()
 	elseif (iname == "Clk") then
 		if (math.abs(value) > 0) then
 			self.clock = true
-			self:WriteLine()
+			self:UpdateScreen()
 		else
 			self.clock = false
 		end
 	elseif (string.sub(iname, 1, 6) == "Value ") then
 		self.Val[tonumber(string.sub(iname, 7, -1))] = math.abs(value)
-		self:WriteLine()
+		self:UpdateScreen()
 	--elseif (iname == "String") then
 	--	print ("string = '"..value.."'\n")
 	end
 end
 
 --format text and send it to the client(s)
-function ENT:WriteLine()
+function ENT:UpdateScreen()
 	if (self.clock && (self.currentLine <= self.maxLines)) then
 		local compstring = ""
 		local outString = ""
@@ -178,9 +141,7 @@ function ENT:WriteLine()
 		else
 			outString = compstring
 		end
-		--Msg("setting line now ("..outString..")\n")
-		--self:SetLine(self.currentLine, outString)
-		umTextScreenSendText(self.Entity, outString)
+		self:SetText (outString)
 	end
 end
 

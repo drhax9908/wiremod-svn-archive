@@ -14,18 +14,27 @@ ENT.Instructions	= ""
 ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
 
-
---[[
-function ENT:SetLine(num, text)
-	self.Entity:SetNetworkedString("TLine"..num, text)
+function ENT:SetText(text)
+	self.Entity:SetNetworkedString("TLine", text)
 end
 
-function ENT:GetLine(num)
-	return self.Entity:GetNetworkedString("TLine"..num)
+function ENT:GetText()
+	return self.Entity:GetNetworkedString("TLine")
 end
-]]--
---example manual calls of inputs
---Wire_AdjustInputs(self.Entity, {"A"})
---Wire_AdjustInputs(self.Entity, {"A","B"})
 
---wire_text_screen_table = {}
+function ENT:GetConfig()
+	self.chrPerLine = self.Entity:GetNetworkedInt("chrpl")
+	self.textJust = self.Entity:GetNetworkedInt("textjust")
+	self.tRed = self.Entity:GetNetworkedInt("colourr")
+	self.tGreen = self.Entity:GetNetworkedInt("colourg")
+	self.tBlue = self.Entity:GetNetworkedInt("colourb")
+	return 
+end
+
+function ENT:SetConfig()
+	self.Entity:SetNetworkedInt("chrpl", self.chrPerLine)
+	self.Entity:SetNetworkedInt("textjust", self.textJust)
+	self.Entity:SetNetworkedInt("colourr", self.tRed)
+	self.Entity:SetNetworkedInt("colourg", self.tGreen)
+	self.Entity:SetNetworkedInt("colourb", self.tBlue)
+end
