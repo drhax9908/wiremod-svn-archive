@@ -13,20 +13,20 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	
-	-- Output keys. Format: keys["name"] = IN_*
-	keys = { }
-	keys["W"] = IN_FORWARD
-	keys["A"] = IN_MOVELEFT
-	keys["S"] = IN_BACK
-	keys["D"] = IN_MOVERIGHT
-	keys["Mouse1"] = IN_ATTACK
-	keys["R"] = IN_RELOAD
+	-- Output self.Keys. Format: self.Keys["name"] = IN_*
+	self.Keys = { }
+	self.Keys["W"] = IN_FORWARD
+	self.Keys["A"] = IN_MOVELEFT
+	self.Keys["S"] = IN_BACK
+	self.Keys["D"] = IN_MOVERIGHT
+	self.Keys["Mouse1"] = IN_ATTACK
+	self.Keys["R"] = IN_RELOAD
 	
 	-- Invert the table to use it with Wire_CreateOutputs
 	local outputs = { }
 	local n = 1
 	
-	for k, v in pairs( keys ) do
+	for k, v in pairs( self.Keys ) do
 		outputs[n] = k
 		n = n + 1
 	end
@@ -61,13 +61,13 @@ function ENT:ShowOutput(value)
 end
 
 function ENT:OnRestore()
-	keys = { }
-	keys["W"] = IN_FORWARD
-	keys["A"] = IN_MOVELEFT
-	keys["S"] = IN_BACK
-	keys["D"] = IN_MOVERIGHT
-	keys["Mouse1"] = IN_ATTACK
-	keys["R"] = IN_RELOAD
+	self.Keys = { }
+	self.Keys["W"] = IN_FORWARD
+	self.Keys["A"] = IN_MOVELEFT
+	self.Keys["S"] = IN_BACK
+	self.Keys["D"] = IN_MOVERIGHT
+	self.Keys["Mouse1"] = IN_ATTACK
+	self.Keys["R"] = IN_RELOAD
 	
     self.BaseClass.OnRestore(self)
 end
@@ -96,8 +96,8 @@ function ENT:Think()
 		end
 		
 		if self.Ply then
-			-- Loop through all the keys, and check if they was pressed last frame
-			for k, v in pairs( keys )  do
+			-- Loop through all the self.Keys, and check if they was pressed last frame
+			for k, v in pairs( self.Keys )  do
 				if self.Ply:KeyDownLast( v ) then Wire_TriggerOutput( self.Entity, k, 1 )
 				else Wire_TriggerOutput( self.Entity, k, 0 ) end
 			end

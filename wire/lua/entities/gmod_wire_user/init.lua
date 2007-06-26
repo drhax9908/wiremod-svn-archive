@@ -42,7 +42,6 @@ function ENT:TriggerInput(iname, value)
 			if (!trace.Entity) then return false end
             if (!trace.Entity:IsValid() ) then return false end
             if (trace.Entity:IsWorld()) then return false end
-            if ( CLIENT ) then return true end
             trace.Entity:Fire("use","1",0)
 		end
     end
