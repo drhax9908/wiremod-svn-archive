@@ -15,7 +15,7 @@ AdvDupe = {}
 
 if (CLIENT) then return end
 
-AdvDupe.Version = 1.83
+AdvDupe.Version = 1.831
 AdvDupe.ToolVersion = 1.81
 AdvDupe.FileVersion = 0.83
 local MAXDOWNLOADLENGTH = 200
