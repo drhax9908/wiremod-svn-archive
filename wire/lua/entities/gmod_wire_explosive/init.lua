@@ -63,7 +63,7 @@ function ENT:Setup( damage, delaytime, removeafter, doblastdamage, radius, affec
 	self.Delaytime = delaytime
 	self.Removeafter = removeafter
 	self.DoBlastDamage = doblastdamage
-	self.Radius = radius
+	self.Radius = math.max(radius, 1)
 	self.Affectother = affectother
 	self.Notaffected = notaffected
 	self.Delayreloadtime = delayreloadtime

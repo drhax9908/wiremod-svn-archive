@@ -8,7 +8,7 @@ include('shared.lua')
 function ENT:Think()
 	self.BaseClass.Think(self)
 
-	if (self.XYZMode) then
+	if (self:GetXYZMode()) then
 	    local vel = self.Entity:WorldToLocal(self.Entity:GetVelocity()+self.Entity:GetPos())
 		self:ShowOutput(-vel.y, vel.x, vel.z)
 	else
