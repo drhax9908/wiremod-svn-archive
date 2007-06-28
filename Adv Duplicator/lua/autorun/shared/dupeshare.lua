@@ -1,13 +1,14 @@
 
 dupeshare = {}
-dupeshare.Version = 1.616
+dupeshare.Version = 1.72
 
 dupeshare.BaseDir		= "adv_duplicator"
-dupeshare.PublicDirs	= { "=Public Folder=", "=Team Share Folder="}
+dupeshare.PublicDirs	= { "=Public Folder=", "=Team Share Folder=" }
 
 //TODO
 dupeshare.UsePWSys = false //server admins, set this to ture to use the folder password system
 
+dupeshare.UseFileDictionary = false
 
 //this is only usfull for old saves, it doesn't do much for new ones.
 dupeshare.DictionaryStart = 71
@@ -135,9 +136,11 @@ function dupeshare.Compress(str, ForConCommand)
 	
 	local beforelen = string.len(str)
 	
-	for k=dupeshare.DictionaryStart,dupeshare.DictionarySize do
-		local entry = dupeshare.Dictionary[k]
-		str = string.gsub(str, entry[2], entry[1])
+	if ( string.Left(str, 5) == "\"Out\"") then
+		for k = dupeshare.DictionaryStart,dupeshare.DictionarySize do
+			local entry = dupeshare.Dictionary[k]
+			str = string.gsub(str, entry[2], entry[1])
+		end
 	end
 	
 	if (ForConCommand) then //„…ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ ¡¢£¤¥¦§¨©ª unused special chars
@@ -201,10 +204,9 @@ end
 
 
 //checks if the player's active weapon is a duplicator
-function dupeshare.CurrentToolIsDuplicator(tool, advdupeonly)
-	if (tool) and (tool:GetClass() == "gmod_tool" )
-	and ((tool:GetTable():GetToolObject().Name == "#AdvancedDuplicator")
-	or ((tool:GetTable():GetToolObject().Name == "Duplicator") and !advdupeonly)) then
+function dupeshare.CurrentToolIsDuplicator(tool)
+	if (tool) and (tool:GetClass() == "gmod_tool" ) and ( tool:GetTable():GetToolObject() )
+	and (tool:GetTable():GetToolObject().Name == "#AdvancedDuplicator") then
 		return true
 	else
 		return false
@@ -257,37 +259,51 @@ function dupeshare.PrepareTableToSave_Old( t, done)
 	
 	return tbl
 end
-function dupeshare.PrepareTableToSave( t, done)
+function dupeshare.PrepareTableToSave( t, done, StrTbl, StrIdxTbl, StrNum, Saved)
 	
+	local DontPoolFirst = not done
 	local done = done or {}
 	local tbl = {}
+	local StrTbl = StrTbl or {}
+	local StrIdxTbl = StrIdxTbl or {}
+	local StrNum = StrNum or 0
+	local Saved = Saved or 0
 	
 	for k, v in pairs ( t ) do
-		if ( type( v ) == "table" and !done[ v ] ) then
+		local VType = type( v )
+		local CaseKey
+		CaseKey, StrTbl, StrIdxTbl, StrNum, Saved = dupeshare.ProtectCase(k, StrTbl, StrIdxTbl, StrNum, Saved, DontPoolFirst)
+		if ( VType == "table" and !done[ v ] ) then
 			done[ v ] = true
-			tbl[ dupeshare.ProtectCase(k) ] = dupeshare.PrepareTableToSave( v, done )
-		else
-			if ( type(v) == "Vector" ) then
-				local x, y, z = v.x, v.y, v.z
-				tbl[ dupeshare.ProtectCase(k) ] = "V"..tostring(x).." "..tostring(y).." "..tostring(z)
-			elseif ( type(v) == "Angle" ) then
-				local p,y,r = v.pitch, v.yaw, v.roll
-				tbl[ dupeshare.ProtectCase(k) ] = "A"..tostring(p).." "..tostring(y).." "..tostring(r)
-			elseif ( type(v) == "boolean" ) then
-				if v then
-					tbl[ dupeshare.ProtectCase(k) ] = "B1"
-				else
-					tbl[ dupeshare.ProtectCase(k) ] = "B0"
-				end
-			elseif ( type(v) == "number" ) then
-				tbl[ dupeshare.ProtectCase(k) ] = "N"..tostring( v )
+			if (CaseKey == "^Version^Info") then
+				tbl[ CaseKey ], StrTbl, StrIdxTbl, StrNum, Saved = dupeshare.PrepareTableToSave( v, nil, StrTbl, StrIdxTbl, StrNum, Saved )
 			else
-				tbl[ dupeshare.ProtectCase(k) ] = "S"..tostring( v )
+				tbl[ CaseKey ], StrTbl, StrIdxTbl, StrNum, Saved = dupeshare.PrepareTableToSave( v, done, StrTbl, StrIdxTbl, StrNum, Saved )
+			end
+		else
+			if ( VType == "Vector" ) then
+				tbl[ CaseKey ] = "V"..tostring(v.x).." "..tostring(v.y).." "..tostring(v.z)
+			elseif ( VType == "Angle" ) then
+				tbl[ CaseKey ] = "A"..tostring(v.pitch).." "..tostring(v.yaw).." "..tostring(v.roll)
+			elseif ( VType == "boolean" ) then
+				if v then
+					tbl[ CaseKey ] = "T"
+				else
+					tbl[ CaseKey ] = "F"
+				end
+			elseif ( VType == "number" ) then
+				tbl[ CaseKey ] = "N"..tostring( v )
+			elseif ( VType == "string" ) then
+				if (dupeshare.UseFileDictionary) and (!DontPoolFirst) and (string.len(v) > 3) then //pool comon strngs
+					tbl[ CaseKey ], StrTbl, StrIdxTbl, StrNum, Saved = dupeshare.MakeStringCommon(v, StrTbl, StrIdxTbl, StrNum, Saved)
+				else
+					tbl[ CaseKey ] = "S"..v
+				end
 			end
 		end
 	end
-	
-	return tbl
+	--Msg("=Saved = "..Saved.." =\n")
+	return tbl, StrTbl, StrIdxTbl, StrNum, Saved
 end
 
 /*---------------------------------------------------------
@@ -328,34 +344,44 @@ function dupeshare.RebuildTableFromLoad_Old( t, done )
 	return tbl
 	
 end
-function dupeshare.RebuildTableFromLoad( t, done )
+function dupeshare.RebuildTableFromLoad( t, done, StrTbl )
 	
 	local done = done or {}
 	local tbl = {}
+	local StrTbl = StrTbl or {}
 	
 	for k, v in pairs ( t ) do
+		local CaseKey = dupeshare.UnprotectCase(k, StrTbl)
 		if ( type( v ) == "table" and !done[ v ] ) then
 			done[ v ] = true
-			tbl[ dupeshare.UnprotectCase(k) ] = dupeshare.RebuildTableFromLoad( v, done )
+			tbl[ CaseKey ] = dupeshare.RebuildTableFromLoad( v, done, StrTbl )
 		else
 			local t = string.sub(v,1,1)
 			local d = string.sub(v,2)
 			if ( t == "V" ) then
 				d = string.Explode(" ", d)
 				--Msg("Vector: "..tostring(Vector( tonumber(d[1]), tonumber(d[2]), tonumber(d[3]) )).."\n")
-				tbl[ dupeshare.UnprotectCase(k) ] = Vector( tonumber(d[1]), tonumber(d[2]), tonumber(d[3]) )
+				tbl[ CaseKey ] = Vector( tonumber(d[1]), tonumber(d[2]), tonumber(d[3]) )
 			elseif (t == "A" ) then
 				d = string.Explode(" ", d)
 				--Msg("Angle: "..tostring(Angle( d[1], d[2], d[3] )).."\n")
-				tbl[ dupeshare.UnprotectCase(k) ] = Angle( tonumber(d[1]), tonumber(d[2]), tonumber(d[3]) )
+				tbl[ CaseKey ] = Angle( tonumber(d[1]), tonumber(d[2]), tonumber(d[3]) )
 			elseif ( t == "B" ) then
-				tbl[ dupeshare.UnprotectCase(k)] = util.tobool( d )
+				tbl[ CaseKey ] = util.tobool( d )
+			elseif ( t == "T" ) then //bool true
+				tbl[ CaseKey ] = true
+			elseif ( t == "F" ) then //bool false
+				tbl[ CaseKey ] = false
 			elseif ( t == "N" ) then
-				tbl[ dupeshare.UnprotectCase(k) ] = tonumber( d )
+				tbl[ CaseKey ] = tonumber( d )
+			elseif ( t == "&" ) then //pooled comon strngs
+				tbl[ CaseKey ] = tostring( dupeshare.StringDictionary[ tonumber(d) ] )
+			elseif ( t == "*" ) then //pooled comon strngs
+				tbl[ CaseKey ] = tostring( StrTbl[ d ] )
 			elseif ( t == "S" ) then
-				tbl[ dupeshare.UnprotectCase(k) ] = tostring( d )
+				tbl[ CaseKey ] = tostring( d )
 			else
-				tbl[ dupeshare.UnprotectCase(k) ] = v
+				tbl[ CaseKey ] = v
 			end
 		end
 	end
@@ -365,27 +391,40 @@ function dupeshare.RebuildTableFromLoad( t, done )
 end
 
 //used by above functions to protect case from evil KeyValuesToTable
-function dupeshare.ProtectCase(str)
-	str2=""
+function dupeshare.ProtectCase(str, StrTbl, StrIdxTbl, StrNum, Saved, DontPoolFirst)
+	local str2 = ""
 	
 	//mark numeric index and return
-	if type(str) == "number" then return "#"..tostring(str) end
-	
-	//puts a carrot in front of capatials
-	for i = 1, string.len(str) do
-		local chr = string.sub(str, i, i)
-		if (chr != string.lower(chr)) then chr = "^"..chr end
-		str2 = str2..chr
+	if type(str) == "number" then
+		str2 = "#"..tostring(str)
+	elseif (dupeshare.UseFileDictionary) and (!DontPoolFirst) and (string.len(str) > 3) then //pool comon strngs
+		//local StrIndx
+		str2, StrTbl, StrIdxTbl, StrNum, Saved = dupeshare.MakeStringCommon(str, StrTbl, StrIdxTbl, StrNum, Saved, DontPoolFirst)
+		//str2 = StrIndx
+	else
+		//puts a carrot in front of capatials
+		for i = 1, string.len(str) do
+			local chr = string.sub(str, i, i)
+			if (chr != string.lower(chr)) then chr = "^"..chr end
+			str2 = str2..chr
+		end
+		--Msg("  str= "..str.." > "..str2)
 	end
-	--Msg("  str= "..str.." > "..str2)
-	return str2
+	return str2, StrTbl, StrIdxTbl, StrNum, Saved
 end
 
-function dupeshare.UnprotectCase(str)
-	local str2=""
+function dupeshare.UnprotectCase(str, StrTbl)
+	local str2 = ""
 	
 	//index was a number, make it so and return
-	if string.sub(str,1,1) == "#" then return tonumber(string.sub(str,2)) end
+	local k = string.sub(str,1,1)
+	if (k == "#") then
+		return tonumber(string.sub(str,2))
+	elseif (k == "&") then
+		return dupeshare.StringDictionary[ tonumber(string.sub(str,2)) ]
+	elseif (k == "*") then
+		return StrTbl[ string.sub(str,2) ]
+	end
 	
 	//make char fallowing a carrot a capatical
 	for i = 1, string.len(str) do
@@ -395,6 +434,24 @@ function dupeshare.UnprotectCase(str)
 	end
 	--Msg("  str= "..str.." > "..str2)
 	return str2
+end
+
+function dupeshare.MakeStringCommon(str, StrTbl, StrIdxTbl, StrNum, Saved)
+	local StrIndx
+	if dupeshare.StringIdxDictionary[ str ] then
+		StrIndx = "&" .. tostring( dupeshare.StringIdxDictionary[ str ] )
+		Saved = Saved + 1
+	elseif StrIdxTbl[ str ] then
+		StrIndx = "*" .. tostring( StrIdxTbl[ str ] )
+		Saved = Saved + 1
+	else
+		StrNum = StrNum + 1
+		--Msg("StrNum= "..StrNum.."\n")
+		StrIdxTbl[ str ] = StrNum
+		StrTbl[ StrNum ] = str
+		StrIndx = "*"..StrNum
+	end
+	return StrIndx, StrTbl, StrIdxTbl, StrNum, Saved
 end
 
 
@@ -466,6 +523,18 @@ function dupeshare.UpDir(path)
 	
 	return "" //if path/.. is root
 end
+
+
+
+//
+//	Common Strings Dictionary
+//
+dupeshare.StringDictionary = {}
+dupeshare.StringIdxDictionary = {}
+/*for k,s in ipairs(dupeshare.StringDictionary) do
+	dupeshare.StringIdxDictionary[ s ] = k
+end*/
+
 
 
 //

@@ -5,7 +5,7 @@ AddCSLuaFile( "autorun/RDBeamLib.lua" )
 //	By: TAD2020
 //	Designed for use in Shanjaq's Resource Distribution mod
 //***********************************************************
-local ThisRDBeamLibVersion = 0.25
+local ThisRDBeamLibVersion = 0.5
 
 //
 //	Check if there was another version loaded before this one and override if older, skip is same or newer
@@ -44,6 +44,13 @@ end
 //
 //	checks if the source_ent and dest_ent are valid and will clear data as needed
 //
+local function SourceEntValid( source_ent )
+	if (source_ent == NULL) then
+		RDbeamlib.ClearAllBeamsOnEnt( source_ent )
+		return false
+	end
+	return true
+end
 local function SourceAndDestEntValid( source_ent, dest_ent )
 	if (BeamData[ dest_ent ]) and (BeamData[ dest_ent ][ source_ent ]) then
 		RDbeamlib.ClearBeam( dest_ent, source_ent )
@@ -63,14 +70,21 @@ end
 //
 //	makes a simple beam from a source ent to dest ent
 //
-function RDbeamlib.MakeSimpleBeam(source_ent, start_pos, dest_ent, dest_pos, material, color, width)
+function RDbeamlib.MakeSimpleBeam(source_ent, start_pos, dest_ent, dest_pos, material, color, width, NoCheckLength)
 	if (!SourceAndDestEntValid( source_ent, dest_ent )) then return end
 	
-	//things the draw overide doesn't work on
-	local Ent1_class = source_ent:GetClass()
-	if (Ent1_class == "prop_vehicle_prisoner_pod")
-	or (Ent1_class == "prop_vehicle_airboat")
-	or (Ent1_class == "prop_vehicle_jeep") then
+	if (SERVER) and ( !source_ent.RDbeamlibDrawer ) and ( !dest_ent.RDbeamlibDrawer ) then
+		local Drawer = ents.Create( "Beam_Drawer" )
+		Drawer:SetPos( source_ent:GetPos() )
+		Drawer:SetAngles( source_ent:GetAngles() )
+		Drawer:SetParent( source_ent )
+		Drawer:Spawn()
+		Drawer:Activate()
+		source_ent:DeleteOnRemove( Drawer )
+		Drawer:SetEnt( source_ent, not NoCheckLength )
+		source_ent.RDbeamlibDrawer = Drawer
+		source_ent.Entity:SetNetworkedEntity( "RDbeamlibDrawer", Drawer )
+	elseif (SERVER) and ( !source_ent.RDbeamlibDrawer ) and ( dest_ent.RDbeamlibDrawer ) then
 		local ent = source_ent
 		local pos = start_pos
 		source_ent = dest_ent
@@ -87,59 +101,7 @@ function RDbeamlib.MakeSimpleBeam(source_ent, start_pos, dest_ent, dest_pos, mat
 	BeamData[ source_ent ][ dest_ent ].width		= width
 	BeamData[ source_ent ][ dest_ent ].color		= color
 	
-	if (CLIENT) then
-		// override some functions for the beams, but only do it once!!!!
-		if (!source_ent.OldDrawFunction) then
-			// make this ent draw it's beams
-			source_ent.OldDrawFunction = source_ent.Draw
-			source_ent.Draw = function(self)
-				RDbeamlib.BeamRender(self.Entity)
-				if (WireAddon) then Wire_Render(self.Entity) end
-				self:OldDrawFunction(self)
-			end
-			
-			//save the orginal render bounds for compariason
-			local bbmin, bbmax = source_ent:GetRenderBounds()
-			source_ent.OrgRBWS_bbmin = source_ent:LocalToWorld(bbmin)
-			source_ent.OrgRBWS_bbmax = source_ent:LocalToWorld(bbmax)
-			
-			// make the ent update it's render bounds
-			source_ent.OldThinkFunction = source_ent.Think
-			source_ent.Think = function(self)
-				if (CurTime() >= (self.NextRBUpdate or 0)) then
-					RDbeamlib.UpdateRenderBounds(self.Entity)
-					if (WireAddon) then Wire_UpdateRenderBounds(self.Entity) end
-				    self.NextRBUpdate = CurTime()+3
-				end
-				self:OldThinkFunction(self)
-			end
-		end
-		RDbeamlib.UpdateRenderBounds(source_ent)
-	end
-	
-	//same here, but for both
-	if (!source_ent.OldOnRemoveFunction) then
-		// make the end remove its beams when removed
-		source_ent.OldOnRemoveFunction = source_ent.OnRemove
-		source_ent.OnRemove = function(self)
-			RDbeamlib.ClearAllBeamsOnEnt(self.Entity)
-			self:OldOnRemoveFunction(self)
-		end
-	end
-	
 	if (SERVER) then
-		// make the ent check the length of it's links
-		if (!source_ent.OldThinkFunction) then
-			source_ent.OldThinkFunction = source_ent.Think
-			source_ent.Think = function(self)
-				if (CurTime() >= (self.NextCheckLengthTime or 0)) then
-					RDbeamlib.CheckLength(self.Entity)
-					self.NextCheckLengthTime = CurTime() + ( math.random(30, 60) / 100 )
-				end
-				self:OldThinkFunction(self)
-			end
-		end
-		
 		BeamData[ source_ent ][ dest_ent ].colv = Vector(color.r, color.g, color.b)
 		BeamData[ source_ent ][ dest_ent ].Length = ( dest_ent:GetPos() - source_ent:GetPos() ):Length() + (RD_EXTRA_LINK_LENGTH or 64)
 		
@@ -152,6 +114,9 @@ function RDbeamlib.MakeSimpleBeam(source_ent, start_pos, dest_ent, dest_pos, mat
 	end
 	
 end
+
+duplicator.RegisterEntityClass("Beam_Drawer", function() return end, "pl" )
+
 
 //
 //	Clears the beam between two ents
@@ -168,6 +133,13 @@ function RDbeamlib.ClearBeam( source_ent, dest_ent )
 		RDbeamlib.UpdateRenderBounds(dest_ent)
 	end
 	if (SERVER) then
+		
+		for _, data in pairs (ExtraDelaySendBeamData) do
+			if (data.type == "simple") and (data.source_ent == source_ent) and (data.dest_ent == dest_ent) then
+				data = nil
+			end
+		end
+		
 		local info			= {}
 		info.type			= "clearbeam"
 		info.source_ent		= source_ent
@@ -194,6 +166,13 @@ function RDbeamlib.ClearAllBeamsOnEnt( source_ent )
 		RDbeamlib.UpdateRenderBounds(source_ent)
 	end
 	if (SERVER) then
+		
+		for _, data in pairs (ExtraDelaySendBeamData) do
+			if (data.type == "simple") and ((data.source_ent == source_ent) or (data.dest_ent == source_ent)) then
+				data = nil
+			end
+		end
+		
 		local info			= {}
 		info.type			= "clearallentbeams"
 		info.source_ent		= source_ent
@@ -271,6 +250,7 @@ local function SendBeamData( info, beam_data, ply )
 		umsg.End()
 		
 	elseif (info.type == "clearbeam") then
+		if (!SourceAndDestEntValid( info.source_ent, info.dest_ent )) then return end
 		
 		umsg.Start( "RcvRDClearBeam", ply )
 			umsg.Entity(	info.source_ent )
@@ -278,6 +258,7 @@ local function SendBeamData( info, beam_data, ply )
 		umsg.End()
 		
 	elseif (info.type == "clearallentbeams") then
+		if (!SourceEntValid( source_ent )) then return end
 		
 		umsg.Start( "RcvRDClearAllBeamsOnEnt", ply )
 			umsg.Entity(	info.source_ent )
@@ -286,42 +267,6 @@ local function SendBeamData( info, beam_data, ply )
 	end
 	
 end
-
-
-//
-//	sends all the BeamData to a player when they connect to the server
-//
-local function SendAll( ply )
-	--Msg("==sending beam data too "..tostring(ply).."\n")
-	
-	for source_ent, source_ent_table in pairs(BeamData) do
-		for dest_ent, beam_data in pairs(source_ent_table) do
-			
-			local info			= {}
-			info.type			= "simple"
-			info.source_ent		= source_ent
-			info.dest_ent		= dest_ent
-			
-			AddDelaySendBeamData( info, beam_data, ply )
-			
-			/*local info			= {}
-			info.type			= "simple"
-			info.source_ent		= source_ent
-			info.dest_ent		= dest_ent
-			
-			AddDelaySendBeamData( info, BeamData[ source_ent ][ dest_ent ], ply )*/
-			
-		end
-	end
-end
-local function FullUpdateEntityBeamVars( ply )
-	--Msg("==starting timer for sending beam data too "..tostring(ply).."\n")
-	timer.Simple(2, SendAll, ply)
-end
-
-hook.Add( "PlayerInitialSpawn", "FullUpdateEntityBeamVars_hook", FullUpdateEntityBeamVars )
-concommand.Add( "RDBeamLib_FullUpdateEntityBeamVars",  FullUpdateEntityBeamVars)
-concommand.Add( "RDBeamLib_SendAllEntityBeamVars",  SendAll)
 
 
 //
@@ -368,26 +313,42 @@ local NextBeamVarsDelayedSendTime = 0
 local NormalOpMode = true
 
 local function BeamVarsDelayedSend()
-	if (CurTime() >= NextBeamVarsDelayedSendTime) and (#DelaySendBeamData > 0) then
+	if (CurTime() >= NextBeamVarsDelayedSendTime) and (#DelaySendBeamData > 0 or #ExtraDelaySendBeamData > 0) then
 		
-		if (NormalOpMode) and (#DelaySendBeamData > 20) then
+		/*if (NormalOpMode) and (#DelaySendBeamData > 20) then
 			
-			--Msg("RDBeam leaving NormalOpMode | "..#DelaySendBeamData.."\n")
+			Msg("RDBeam leaving NormalOpMode | "..#DelaySendBeamData.."\n")
 			NormalOpMode = false
 			--when a shit load has be added, delay for a few seconds to allow other things to calm down
-			NextBeamVarsDelayedSendTime = CurTime() +  3
+			NextBeamVarsDelayedSendTime = CurTime() +  .5
 			--Msg("RDBeam delay 3\n")
 			return
 			
 		elseif (!NormalOpMode) and (#DelaySendBeamData < 20) then
 			
 			NormalOpMode = true
-			--Msg("RDBeam retruning to NormalOpMode\n")
+			Msg("RDBeam retruning to NormalOpMode\n")
 			
+		end*/
+		
+		
+		if (#DelaySendBeamData > 50) then
+			if (NormalOpMode) then
+				Msg("==========RD Beam leaving NormalOpMode | "..#DelaySendBeamData.."\n")
+				NormalOpMode = false
+			end
+			NextBeamVarsDelayedSendTime = CurTime() +  .25
+		else
+			if (!NormalOpMode) then
+				Msg("==========RD Beam returning to NormalOpMode | "..#DelaySendBeamData.."\n")
+				NormalOpMode = true
+			end
+			NextBeamVarsDelayedSendTime = CurTime() +  .05
 		end
 		
 		
-		if (NormalOpMode) then --during normal mode, we send the whole buffer every 0.05 sec
+		
+		//if (NormalOpMode) then --during normal mode, we send the whole buffer every 0.05 sec
 			
 			for _, data in pairs (DelaySendBeamData) do
 				if (data) and (data.info) then
@@ -395,7 +356,21 @@ local function BeamVarsDelayedSend()
 				end
 			end
 			DelaySendBeamData = {}
+			
+			//we send a few entities' ExtraDelaySendBeamData each tick
+			for i = 1,5 do
+				local data = table.remove(ExtraDelaySendBeamData, 1)
+				if (data) and (data.info) then
+					SendBeamData( data.info, data.beam_data, data.ply )
+					data = nil
+				else
+					break
+				end
+			end
+			
 			NextBeamVarsDelayedSendTime = CurTime() +  .05
+			
+		/*	NextBeamVarsDelayedSendTime = CurTime() +  .05
 			
 		else --otherswise send 10 every 1/4 sec
 			
@@ -408,12 +383,42 @@ local function BeamVarsDelayedSend()
 			end
 			NextBeamVarsDelayedSendTime = CurTime() +  .25
 			
-		end
+		end*/
 		
 		
 	end
 end
 hook.Add("Think", "RDBeamLib_Think", BeamVarsDelayedSend)
+
+
+//
+//	sends all the BeamData to a player when they connect to the server
+//
+local function SendAll( ply )
+	Msg("==sending RDbeam data to "..tostring(ply).."\n")
+	
+	for source_ent, source_ent_table in pairs(BeamData) do
+		for dest_ent, beam_data in pairs(source_ent_table) do
+			
+			local info			= {}
+			info.type			= "simple"
+			info.source_ent		= source_ent
+			info.dest_ent		= dest_ent
+			
+			//AddDelaySendBeamData( info, beam_data, ply )
+			AddExtraDelaySendBeamData( info, beam_data, ply )
+			
+		end
+	end
+end
+local function FullUpdateEntityBeamVars( ply )
+	Msg("==starting timer for sending RDBeam data to "..tostring(ply).."\n")
+	timer.Simple(5, SendAll, ply)
+	hook.Add("Think", "RDBeamLib_Think", BeamVarsDelayedSend)
+end
+hook.Add( "PlayerInitialSpawn", "FullUpdateEntityRDBeamVars", FullUpdateEntityBeamVars )
+concommand.Add( "RDBeamLib_FullUpdateEntityBeamVars",  FullUpdateEntityBeamVars)
+concommand.Add( "RDBeamLib_SendAllEntityBeamVars",  SendAll)
 
 
 end
@@ -452,18 +457,13 @@ local DisableBeamRender = 0
 //	renders all the beams on the source_ent
 //
 function RDbeamlib.BeamRender( source_ent )
-    if (not source_ent:IsValid()) then return end
+    if ( !source_ent or !source_ent:IsValid() ) then return end
 	if (DisableBeamRender > 0) then return end
 	
 	if ( BeamData[ source_ent ] ) then
 		
-		//local bbmin = source_ent:LocalToWorld(source_ent:OBBMins())
-		//local bbmax = source_ent:LocalToWorld(source_ent:OBBMaxs())
-		//local bbmin, bbmax = source_ent:GetRenderBounds()
-		//bbmin = source_ent:LocalToWorld(bbmin)
-		//bbmax = source_ent:LocalToWorld(bbmax)
-		local bbmin = source_ent.OrgRBWS_bbmin
-		local bbmax = source_ent.OrgRBWS_bbmax
+		local bbmin = Vector(16,16,16)
+		local bbmax = Vector(-16,-16,-16)
 		
 		for dest_ent, beam_data in pairs( BeamData[ source_ent ] ) do
 		    
@@ -478,25 +478,26 @@ function RDbeamlib.BeamRender( source_ent )
 				render.SetMaterial( Material(beam_data.material) )
 				render.DrawBeam(startpos, endpos, width, scroll, scroll+(endpos-startpos):Length()/10, color)
 				
-				if (startpos.x < bbmin.x) then bbmin.x = startpos.x end
-				if (startpos.y < bbmin.y) then bbmin.y = startpos.y end
-				if (startpos.z < bbmin.z) then bbmin.z = startpos.z end
-				if (startpos.x > bbmax.x) then bbmax.x = startpos.x end
-				if (startpos.y > bbmax.y) then bbmax.y = startpos.y end
-				if (startpos.z > bbmax.z) then bbmax.z = startpos.z end
+				/*if (beam_data.start_pos.x < bbmin.x) then bbmin.x = beam_data.start_pos.x end
+				if (beam_data.start_pos.y < bbmin.y) then bbmin.y = beam_data.start_pos.y end
+				if (beam_data.start_pos.z < bbmin.z) then bbmin.z = beam_data.start_pos.z end
+				if (beam_data.start_pos.x > bbmax.x) then bbmax.x = beam_data.start_pos.x end
+				if (beam_data.start_pos.y > bbmax.y) then bbmax.y = beam_data.start_pos.y end
+				if (beam_data.start_pos.z > bbmax.z) then bbmax.z = beam_data.start_pos.z end
 				
+				endpos	= source_ent:WorldToLocal( endpos )
 				if (endpos.x < bbmin.x) then bbmin.x = endpos.x end
 				if (endpos.y < bbmin.y) then bbmin.y = endpos.y end
 				if (endpos.z < bbmin.z) then bbmin.z = endpos.z end
 				if (endpos.x > bbmax.x) then bbmax.x = endpos.x end
 				if (endpos.y > bbmax.y) then bbmax.y = endpos.y end
-				if (endpos.z > bbmax.z) then bbmax.z = endpos.z end
+				if (endpos.z > bbmax.z) then bbmax.z = endpos.z end*/
 			else
 				beam_data = nil
 			end
 		end
 		
-		source_ent:SetRenderBoundsWS(bbmin, bbmax, Vector()*6)
+		//source_ent.Entity:GetNetworkedEntity( "RDbeamlibDrawer" ):SetRenderBounds( bbmin, bbmax )
 		
 	end
 end
@@ -508,28 +509,24 @@ end
 function RDbeamlib.UpdateRenderBounds(source_ent)
 	if (!source_ent) or (!source_ent:IsValid()) then return end
 	
-	//local bbmin = source_ent:LocalToWorld(source_ent:OBBMins())
-	//local bbmax = source_ent:LocalToWorld(source_ent:OBBMaxs())
-	//local bbmin, bbmax = source_ent:GetRenderBounds()
-	//bbmin = source_ent:LocalToWorld(bbmin)
-	//bbmax = source_ent:LocalToWorld(bbmax)
-	local bbmin = source_ent.OrgRBWS_bbmin or source_ent:LocalToWorld(source_ent:OBBMins())
-	local bbmax = source_ent.OrgRBWS_bbmax or source_ent:LocalToWorld(source_ent:OBBMaxs())
+	local Drawer = source_ent.Entity:GetNetworkedEntity( "RDbeamlibDrawer" )
+	if ( !Drawer:IsValid() ) then return end
+	
+	local bbmin = Vector(16,16,16)
+	local bbmax = Vector(-16,-16,-16)
 	
 	if (BeamData[ source_ent ]) then
 		
 		for dest_ent, beam_data in pairs( BeamData[ source_ent ] ) do
 			if (dest_ent:IsValid()) then
-				local startpos = source_ent:LocalToWorld(beam_data.start_pos)
-				local endpos = dest_ent:LocalToWorld(beam_data.dest_pos)
+				if (beam_data.start_pos.x < bbmin.x) then bbmin.x = beam_data.start_pos.x end
+				if (beam_data.start_pos.y < bbmin.y) then bbmin.y = beam_data.start_pos.y end
+				if (beam_data.start_pos.z < bbmin.z) then bbmin.z = beam_data.start_pos.z end
+				if (beam_data.start_pos.x > bbmax.x) then bbmax.x = beam_data.start_pos.x end
+				if (beam_data.start_pos.y > bbmax.y) then bbmax.y = beam_data.start_pos.y end
+				if (beam_data.start_pos.z > bbmax.z) then bbmax.z = beam_data.start_pos.z end
 				
-				if (startpos.x < bbmin.x) then bbmin.x = startpos.x end
-				if (startpos.y < bbmin.y) then bbmin.y = startpos.y end
-				if (startpos.z < bbmin.z) then bbmin.z = startpos.z end
-				if (startpos.x > bbmax.x) then bbmax.x = startpos.x end
-				if (startpos.y > bbmax.y) then bbmax.y = startpos.y end
-				if (startpos.z > bbmax.z) then bbmax.z = startpos.z end
-				
+				local endpos = source_ent:WorldToLocal( dest_ent:LocalToWorld( beam_data.dest_pos ) )
 				if (endpos.x < bbmin.x) then bbmin.x = endpos.x end
 				if (endpos.y < bbmin.y) then bbmin.y = endpos.y end
 				if (endpos.z < bbmin.z) then bbmin.z = endpos.z end
@@ -541,7 +538,8 @@ function RDbeamlib.UpdateRenderBounds(source_ent)
 		
 	end
 	
-	source_ent:SetRenderBoundsWS(bbmin, bbmax, Vector()*6)
+	Drawer:SetRenderBounds( bbmin, bbmax )
+	
 end
 
 
