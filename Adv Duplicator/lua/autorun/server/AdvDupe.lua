@@ -1444,7 +1444,7 @@ local function SetUseTaskSwitchingPaste(pl, cmd, args)
 	end
 	pl:PrintMessage(HUD_PRINTCONSOLE, "\n  AdvDupe_UseTaskSwitchingPaste = "..tostring(UseTaskSwitchingPaste).."  ( norm: False(0) )\n")
 end
-concommand.Add( "AdvDupe_DoPasteFX", SetUseTaskSwitchingPaste )
+concommand.Add( "AdvDupe_UseTaskSwitchingPaste", SetUseTaskSwitchingPaste )
 
 local function SetDoPasteFX(pl, cmd, args)
 	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
@@ -1655,8 +1655,12 @@ function AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offse
 	//
 	for EntID, Ent in pairs( CreatedEntities ) do	
 		
-		AdvDupe.AfterPateApply( Ent, CreatedEntities )
-		
+		//AdvDupe.AfterPasteApply( Player, Ent, CreatedEntities )
+		local NoFail, Result = pcall( AdvDupe.AfterPasteApply, Player, Ent, CreatedEntities ) )
+		if ( !NoFail ) then
+			Msg("AdvDupeERROR: AfterPasteApply, Error: "..tostring(Result).."\n")
+		end
+				
 	end
 	
 	
@@ -1809,21 +1813,11 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 				local EntID		= EntIDList[ LastID ]
 				local Ent		= CreatedEntities[ EntID ]
 				
-				AdvDupe.AfterPateApply( Ent, CreatedEntities )
-				
-				/*if ( Ent.PostEntityPaste ) then
-					Ent:PostEntityPaste( Player, Ent, CreatedEntities )
+				//AdvDupe.AfterPasteApply( Player, Ent, CreatedEntities )
+				local NoFail, Result = pcall( AdvDupe.AfterPasteApply, Player, Ent, CreatedEntities ) )
+				if ( !NoFail ) then
+					Msg("AdvDupeERROR: AfterPasteApply, Error: "..tostring(Result).."\n")
 				end
-				
-				//clean up
-				if (CreatedEntities[ EntID ].EntityMods) then
-					if (CreatedEntities[ EntID ].EntityMods.RDDupeInfo) then // fix: RDDupeInfo leak 
-						CreatedEntities[ EntID ].EntityMods.RDDupeInfo = nil
-					end
-					if (CreatedEntities[ EntID ].EntityMods.WireDupeInfo) then 
-						CreatedEntities[ EntID ].EntityMods.WireDupeInfo = nil
-					end
-				end*/
 				
 				LastID = LastID + 1
 				
@@ -2154,7 +2148,7 @@ end
 //
 //	Apply after paste stuff
 //
-function AdvDupe.AfterPateApply( Ent, CreatedEntities )
+function AdvDupe.AfterPasteApply( Player, Ent, CreatedEntities )
 	
 	if ( Ent.PostEntityPaste ) then
 		Ent:PostEntityPaste( Player, Ent, CreatedEntities )
