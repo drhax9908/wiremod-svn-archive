@@ -35,7 +35,7 @@ end
 function ENT:Setup( damage, delaytime, removeafter, doblastdamage, radius, nocollide )
 
 	self.Damage			= damage 
-	self.Radius			= radius
+	self.Radius			= math.max(radius, 1)
 	self.NoCollide		= nocollide
 	self.DoBlastDamage	= doblastdamage
 	self.Exploded		= false
