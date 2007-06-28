@@ -4,9 +4,14 @@ AdvDupeClient={}
 
 include( "autorun/shared/dupeshare.lua" )
 
-AdvDupeClient.version = 1.63
-local MAXUPLOADLENGTH = 100
+AdvDupeClient.version = 1.73
+local MAXUPLOADLENGTH = 200
 
+
+
+//
+//	Upload functions
+//
 function AdvDupeClient.UpLoadFile( pl, filepath )
 	
 	if (AdvDupeClient.sending) then return end
@@ -25,33 +30,43 @@ function AdvDupeClient.UpLoadFile( pl, filepath )
 	
 	pl:ConCommand("DupeRecieveFileContentStart "..tostring(last).." \""..string.gsub(filename,".txt","").."\"")
 	
+	AdvDupeClient.SetPercentText( "Uploading" )
+	
 	timer.Simple( 0.2, AdvDupeClient.SendSaveDataToServer, len, 1, last )
 	
 	AdvDupeClient.sending = true
 end
 
-
+local PiecesPerSend = 4
+local SendDelay = 0.25
 function AdvDupeClient.SendSaveDataToServer(len, offset, last)
 	
-	if (offset <= last) then
-		Msg("sending string: "..tostring(offset * MAXUPLOADLENGTH).." / "..len.." piece: "..offset.." / "..last.."\n")
-		
-		local str = ""
-		if (offset == last) then
-			local pos = (len - ((last - 1) * MAXUPLOADLENGTH))
-			str = string.Right(AdvDupeClient.temp2, pos)
-			Msg("last str len: "..tostring(string.len(str)).."\n")
-		else
-			str = string.Right(string.Left(AdvDupeClient.temp2, (offset * MAXUPLOADLENGTH)),MAXUPLOADLENGTH)
+	for i = 1,PiecesPerSend do
+		if (offset <= last) then
+			Msg("sending string: "..tostring(offset * MAXUPLOADLENGTH).." / "..len.." piece: "..offset.." / "..last.."\n")
+			if ( AdvDupeClient.PercentText == "Uploading" ) then
+				AdvDupeClient.UpdatePercent( math.ceil(offset / last * 100) )
+			end
+			
+			local str = ""
+			if (offset == last) then
+				local pos = (len - ((last - 1) * MAXUPLOADLENGTH))
+				str = string.Right(AdvDupeClient.temp2, pos)
+				Msg("last str len: "..tostring(string.len(str)).."\n")
+				timer.Simple(.1, AdvDupeClient.UpdatePercent, -1)
+			else
+				str = string.Right(string.Left(AdvDupeClient.temp2, (offset * MAXUPLOADLENGTH)),MAXUPLOADLENGTH)
+			end
+			LocalPlayer():ConCommand("_DFC "..tostring(offset).." \""..str.."\"")
 		end
-		LocalPlayer():ConCommand("_DFC "..tostring(offset).." \""..str.."\"")
+		offset = offset + 1
 	end
 	
-	if (offset + 1) <= last then
+	if (offset <= last) then
 		//send slowly or the server will boot player or just crash
-		timer.Simple( 0.02, AdvDupeClient.SendSaveDataToServer, len, (offset + 1), last )
+		timer.Simple( SendDelay, AdvDupeClient.SendSaveDataToServer, len, offset, last )
 	else
-		timer.Simple( 0.5, 
+		timer.Simple( 1, 
 			function()
 				LocalPlayer():ConCommand("DupeRecieveFileContentFinish")  
 				AdvDupeClient.temp2 = ""
@@ -67,9 +82,26 @@ local function SendFinished( um )
 end
 usermessage.Hook("AdvDupeClientSendFinished", SendFinished)
 
+local function SendFinishedFailed( um )
+	if (SendDelay < .5) then
+		SendDelaqqqqy = SendDelay + 0.05
+		Msg("AdvDupe: increasing SendDelay to "..SendDelay.."\n")
+	elseif (PiecesPerSend > 1) then
+		PiecesPerSend = PiecesPerSend - 1
+		Msg("AdvDupe: decreasing PiecesPerSend to "..PiecesPerSend.."\n")
+	else
+		Msg("AdvDupeERROR: SendDelay and PiecesPerSend maxed to .5 and 1, there's a problem if it's failed this many times.\n")
+	end
+	AdvDupeClient.sending = false
+	AdvDuplicator_UpdateControlPanel()
+end
+usermessage.Hook("AdvDupeClientSendFinishedFailed", SendFinishedFailed)
 
 
 
+//
+//	Download functions
+//
 local function ClientRecieveSaveStart( um )
 	Msg("=========  ClientRecieveSaveStart  ==========\n")
 	AdvDupeClient.temp = {}
@@ -109,18 +141,16 @@ function AdvDupeClient.ClientSaveRecievedFile()
 	local filepath, filename = dupeshare.FileNoOverWriteCheck( AdvDupeClient.temp.dir, AdvDupeClient.temp.filename )
 	
 	//reassemble the pieces
-	local temp = string.Implode("", AdvDupeClient.temp.pieces)
-	/*local temp = ""
-	for k, v in pairs(AdvDupeClient.temp.pieces) do
-		temp = temp .. v
-	end*/
+	//local temp = string.Implode("", AdvDupeClient.temp.pieces)
+	local temp = table.concat(AdvDupeClient.temp.pieces)
 	
 	temp = dupeshare.DeCompress(temp, false)
 	
 	file.Write(filepath, temp)
 	
-	LocalPlayer():PrintMessage(HUD_PRINTCONSOLE, "Your file: \""..filepath.."\" was downloaded form the server\n")
-	LocalPlayer():PrintMessage(HUD_PRINTTALK, "Your file: \""..filename.."\" was downloaded form the server\n")
+	AdvDupeClient.Error( "Your file: \""..filepath.."\" was downloaded form the server", false, true )
+	//LocalPlayer():PrintMessage(HUD_PRINTTALK, "Your file: \""..filename.."\" was downloaded form the server")
+	Msg("Your file: \""..filepath.."\" was downloaded form the server\n")
 	
 	
 	LocalPlayer():ConCommand("adv_duplicator_updatelist")
@@ -171,7 +201,6 @@ local function FileOptsCommand(pl, cmd, args)
 	
 end
 concommand.Add("adv_duplicator_cl_fileopts", FileOptsCommand)
-
 
 function AdvDupeClient.FileOpts(action, filename, dir, dir2)
 	if not filename or not dir then return end
@@ -237,16 +266,115 @@ end
 
 
 //simple error msg display
-function AdvDupeClient.Error( errormsg )
+function AdvDupeClient.Error( errormsg, NoSound, NotError )
 	if !errormsg then return end
-	GAMEMODE:AddNotify( "AdvDupe-ERROR: "..tostring(errormsg), NOTIFY_ERROR, 6 );
-	surface.PlaySound( "buttons/button10.wav" )
+	if (NotError) then
+		GAMEMODE:AddNotify( "AdvDupe: "..tostring(errormsg), NOTIFY_GENERIC, 10 );
+	else
+		GAMEMODE:AddNotify( "AdvDupe-ERROR: "..tostring(errormsg), NOTIFY_ERROR, 10 );
+	end
+	if (!NoSound) then
+		if (NotError) then
+			surface.PlaySound( "buttons/button10.wav" )
+		else
+			surface.PlaySound("ambient/water/drip"..math.random(1, 4)..".wav")
+		end
+	end
 end
 
 local function AdvDupeCLError( um )
-	AdvDupeClient.Error( um:ReadString() )
+	AdvDupeClient.Error( um:ReadString(), um:ReadBool() )
 end
 usermessage.Hook("AdvDupeCLError", AdvDupeCLError)
+
+local function AdvDupeCLInfo( um )
+	AdvDupeClient.Error( um:ReadString(), um:ReadBool(), true )
+end
+usermessage.Hook("AdvDupeCLInfo", AdvDupeCLInfo)
+
+
+
+
+local function SetPasting( um )
+	AdvDupeClient.Pasting = um:ReadBool()
+end
+usermessage.Hook("AdvDupeSetPasting", SetPasting)
+
+
+
+
+
+
+	//HUD progress bar stuff
+	//kinda based on wired HUD indicators (TheApathic), but most everything was replaced to make it work as a single centered progress bar
+	//TODO: this is a mess, needs clean up
+	AdvDupeClient.Factor = 0
+	surface.SetFont("Default")
+	local pwidth, pheight = surface.GetTextSize("NoColliding: 100%")
+	pheight = pheight + 16
+	local halfpwidth = pwidth / 2
+	local halfpheight = pheight / 2
+	local bw1 = halfpwidth + 6
+	local bw2 = pwidth + 12
+	local fh1 = 3
+	local fh2 = pheight - 6
+	local bcolor = Color(150, 150, 255, 190)
+	local fcolor = Color(150, 255, 150, 240)
+	local txtcolor = Color(0, 0, 0, 255)
+	
+	local function DrawProgressBar()
+		if (AdvDupeClient.Done) and (AdvDupeClient.Done > -1) then
+			local w1 = AdvDupeClient.hudx - math.floor(AdvDupeClient.Factor * halfpwidth) - 4
+			local w2 = math.floor(AdvDupeClient.Factor * pwidth) + 8
+			draw.RoundedBox(6, (AdvDupeClient.hudx - bw1), AdvDupeClient.hudy, bw2, pheight, bcolor)
+			draw.RoundedBox(4, w1, (AdvDupeClient.hudy + fh1), w2, fh2, fcolor)
+			local txt
+			if ( AdvDupeClient.PercentText == "Copying..." ) then
+				txt = AdvDupeClient.PercentText
+			else
+				txt = AdvDupeClient.PercentText..": "..AdvDupeClient.Done.."%"
+			end
+			draw.SimpleText(txt, "Default", AdvDupeClient.hudx, (AdvDupeClient.hudy + halfpheight), txtcolor, 1, 1)
+		end
+	end
+	hook.Add("HUDPaint", "AdvDupeProgressBar", DrawProgressBar)
+	
+	
+	function AdvDupeClient.UpdatePercent( Percent )
+		AdvDupeClient.Done = Percent
+		AdvDupeClient.Factor = AdvDupeClient.Done / 100
+	end
+	
+	local function UpdatePercent( um )
+		AdvDupeClient.UpdatePercent( um:ReadShort() )
+	end
+	usermessage.Hook("AdvDupe_Update_Percent", UpdatePercent)
+	
+	function AdvDupeClient.SetPercentText( PercentText )
+		AdvDupeClient.PercentText = PercentText
+		AdvDupeClient.Done = 0
+		AdvDupeClient.Factor = 0
+		
+		AdvDupeClient.hudx = ScrW() / 2
+		AdvDupeClient.hudy = ScrH() / 1.8
+		
+		surface.SetFont("Default")
+		pwidth, pheight = surface.GetTextSize(AdvDupeClient.PercentText..": 100%")
+		pheight = pheight + 16
+		halfpwidth = pwidth / 2
+		halfpheight = pheight / 2
+		bw1 = halfpwidth + 6
+		bw2 = pwidth + 12
+		fh2 = pheight - 6
+	end
+	
+	local function StartPercent( um ) 
+		AdvDupeClient.SetPercentText( um:ReadString() )
+	end
+	usermessage.Hook("AdvDupe_Start_Percent", StartPercent)
+	
+
+
 
 
 
@@ -297,6 +425,9 @@ end
 AdvDupeClient.gui = {}
 
 function AdvDupeClient.SaveGUI( pl, command, args )
+	if (!AdvDupeClient.Copied) then return end
+	
+	LocalPlayer():ConCommand("adv_duplicator_hideghost 1")
 	
 	if !AdvDupeClient.gui.save or !AdvDupeClient.gui.save.frame then
 		AdvDupeClient.gui.save = {}
@@ -326,12 +457,12 @@ function AdvDupeClient.SaveGUI( pl, command, args )
 		
 		AdvDupeClient.gui.save.txtFile = vgui.Create("TextEntry",AdvDupeClient.gui.save.frame,"txtFile")
 		AdvDupeClient.gui.save.txtFile:SetPos(6,45)
-		AdvDupeClient.gui.save.txtFile:SetSize(289,20)
+		AdvDupeClient.gui.save.txtFile:SetSize(290,20)
 		
 		
 		AdvDupeClient.gui.save.txtDesc = vgui.Create("TextEntry",AdvDupeClient.gui.save.frame,"txtDesc")
 		AdvDupeClient.gui.save.txtDesc:SetPos(6,85)
-		AdvDupeClient.gui.save.txtDesc:SetSize(189,20)
+		AdvDupeClient.gui.save.txtDesc:SetSize(290,20)
 		
 		function AdvDupeClient.gui.save.frame:ActionSignal(key,value)
 			if key == "Save" then
@@ -356,6 +487,8 @@ concommand.Add( "adv_duplicator_save_gui", AdvDupeClient.SaveGUI )
 
 function AdvDupeClient.MakeDir( pl, command, args )
 	if !args or !args[1] then return end
+	
+	LocalPlayer():ConCommand("adv_duplicator_hideghost 1")
 	
 	if !AdvDupeClient.gui.makedir or !AdvDupeClient.gui.makedir.frame then
 		AdvDupeClient.gui.makedir = {}
@@ -432,6 +565,8 @@ concommand.Add( "adv_duplicator_makedir_gui", AdvDupeClient.MakeDir )
 function AdvDupeClient.RenameFile( pl, cmd, args )
 	if !args or !args[1] then return end
 	
+	LocalPlayer():ConCommand("adv_duplicator_hideghost 1")
+	
 	if !AdvDupeClient.gui.rename or !AdvDupeClient.gui.rename.frame then
 		AdvDupeClient.gui.rename = {}
 		AdvDupeClient.gui.rename.frame = vgui.Create( "Frame" )
@@ -497,6 +632,8 @@ concommand.Add( "adv_duplicator_renamefile_gui", AdvDupeClient.RenameFile )
 
 function AdvDupeClient.ConfirmDelete( pl, cmd, args )
 	if !args or !args[1] then return end
+	
+	LocalPlayer():ConCommand("adv_duplicator_hideghost 1")
 	
 	if !AdvDupeClient.gui.delete or !AdvDupeClient.gui.delete.frame then
 		AdvDupeClient.gui.delete = {}
