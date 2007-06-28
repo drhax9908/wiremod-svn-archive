@@ -1,8 +1,8 @@
 "AddonInfo"
 {
 	"name"				"Advanced Duplicator"
-	"version"			"0.83"
-	"up_date"			"June 28th 2007"
+	"version"			"0.831"
+	"up_date"			"June 29th 2007"
 	"author_name"			"TAD2020"
 	"author_email"			""
 	"author_url"			"http://www.wiremod.com/"
