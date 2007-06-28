@@ -1656,11 +1656,11 @@ function AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offse
 	for EntID, Ent in pairs( CreatedEntities ) do	
 		
 		//AdvDupe.AfterPasteApply( Player, Ent, CreatedEntities )
-		local NoFail, Result = pcall( AdvDupe.AfterPasteApply, Player, Ent, CreatedEntities ) )
+		local NoFail, Result = pcall( AdvDupe.AfterPasteApply, Player, Ent, CreatedEntities )
 		if ( !NoFail ) then
 			Msg("AdvDupeERROR: AfterPasteApply, Error: "..tostring(Result).."\n")
 		end
-				
+		
 	end
 	
 	
@@ -1814,7 +1814,7 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 				local Ent		= CreatedEntities[ EntID ]
 				
 				//AdvDupe.AfterPasteApply( Player, Ent, CreatedEntities )
-				local NoFail, Result = pcall( AdvDupe.AfterPasteApply, Player, Ent, CreatedEntities ) )
+				local NoFail, Result = pcall( AdvDupe.AfterPasteApply, Player, Ent, CreatedEntities )
 				if ( !NoFail ) then
 					Msg("AdvDupeERROR: AfterPasteApply, Error: "..tostring(Result).."\n")
 				end
