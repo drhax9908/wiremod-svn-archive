@@ -19,7 +19,7 @@ function TOOL:LeftClick(trace)
 	local dbgname = trace.Entity.WireDebugName
 	if (not dbgname) then return end
 
-	ply_idx = self:GetOwner():UniqueID()
+	ply_idx = self:GetOwner()//:UniqueID()
     Components[ply_idx] = Components[ply_idx] or {}
 
 	for k,cmp in ipairs(Components[ply_idx]) do
@@ -39,7 +39,7 @@ function TOOL:RightClick(trace)
 	local dbgname = trace.Entity.WireDebugName
 	if (not dbgname) then return end
 
-	ply_idx = self:GetOwner():UniqueID()
+	ply_idx = self:GetOwner()//:UniqueID()
     Components[ply_idx] = Components[ply_idx] or {}
 
 	for k,cmp in ipairs(Components[ply_idx]) do
@@ -52,7 +52,8 @@ end
 
 
 function TOOL:Reload(trace)
-	Components[self:GetOwner():UniqueID()] = {}
+	if (CLIENT) then return end
+	Components[self:GetOwner()] = {}
 end
 
 
@@ -62,8 +63,8 @@ if (SERVER) then
 	local dbg_line_time = {}
 
 	function DebuggerThink()
-	    for i,cmps in pairs(Components) do
-	        local ply = player.GetByUniqueID(i)
+	    for ply,cmps in pairs(Components) do
+	        //local ply = player.GetByUniqueID(i)
 
 	    	table.Compact(cmps, function(cmp) return cmp:IsValid() end)
 
@@ -78,7 +79,9 @@ if (SERVER) then
 			        dbginfo = dbginfo .. "IN "
 		            for _,k in ipairs(table.MakeSortedKeys(cmp.Inputs)) do
 		                local input = cmp.Inputs[k]
-			        	dbginfo = dbginfo .. k .. ":" .. math.Round(input.Value*1000)/1000 .. " "
+						if (type(input.Value) == "number") then
+							dbginfo = dbginfo .. k .. ":" .. math.Round(input.Value*1000)/1000 .. " "
+						end
 		            end
 		        end
 
@@ -86,7 +89,9 @@ if (SERVER) then
 			        dbginfo = dbginfo .. "OUT "
 		            for _,k in ipairs(table.MakeSortedKeys(cmp.Outputs)) do
 		                local output = cmp.Outputs[k]
-			        	dbginfo = dbginfo .. k .. ":" .. math.Round(output.Value*1000)/1000 .. " "
+						if (type(output.Value) == "number") then
+							dbginfo = dbginfo .. k .. ":" .. math.Round(output.Value*1000)/1000 .. " "
+						end
 		            end
 		        end
 
