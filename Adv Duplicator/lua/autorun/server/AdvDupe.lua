@@ -15,7 +15,7 @@ AdvDupe = {}
 
 if (CLIENT) then return end
 
-AdvDupe.Version = 1.833
+AdvDupe.Version = 1.834
 AdvDupe.ToolVersion = 1.811
 AdvDupe.FileVersion = 0.83
 local MAXDOWNLOADLENGTH = 200
@@ -1215,11 +1215,7 @@ function AdvDupe.SendSaveToClientData(pl, len, offset, last)
 	for k=0,2 do //sends three pieces
 		
 		if ((offset + k + 1) <= last) then
-			Msg("AdvDupe: sending string: "..tostring((offset + k) * MAXDOWNLOADLENGTH).." / "..len.." k: "..k.." piece: "..(offset + k + 1).." / "..last.."\n")
-			/*if ( AdvDupe[pl].PercentText == "Downloading" ) 
-			and ( 0 == math.fmod( (((offset + k + 1) / last) * 100), 5 ) ) then
-				AdvDupe.SetPercent(pl, ((offset + k + 1) / last) * 100 )
-			end*/
+			//Msg("AdvDupe: sending string: "..tostring((offset + k) * MAXDOWNLOADLENGTH).." / "..len.." k: "..k.." piece: "..(offset + k + 1).." / "..last.."\n")
 			
 			umsg.Start("AdvDupeRecieveSaveData", pl)
 				umsg.Short(offset + k + 1) //cause sometimes these are reccieved out of order
@@ -1762,7 +1758,6 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 					CreatedEntities[ EntID ].EntityMods = table.Copy( EntTable.EntityMods )
 					CreatedEntities[ EntID ].PhysicsObjects = table.Copy( EntTable.PhysicsObjects )
 					
-					
 					local NoFail, Result = pcall( duplicator.ApplyEntityModifiers, Player, CreatedEntities[ EntID ] )
 					if ( !NoFail ) then
 						Msg("AdvDupeERROR: ApplyEntityModifiers, Error: "..tostring(Result).."\n")
@@ -1773,22 +1768,16 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 						Msg("AdvDupeERROR: ApplyBoneModifiers Error: "..tostring(Result).."\n")
 					end
 					
-					
 					//freeze it and make it not solid so it can't be altered while the rest is made
 					if (CreatedEntities[ EntID ]:GetPhysicsObject():IsValid()) then
+						CreatedEntities[ EntID ]:GetPhysicsObject():Sleep()
 						CreatedEntities[ EntID ]:GetPhysicsObject():EnableMotion(false)
 					end
-					CreatedEntities[ EntID ]:SetNotSolid(true)
-					if ( CreatedEntities[ EntID ] == CreatedEntities[ HeadEntityIdx ] ) then
-						CreatedEntities[ EntID ]:SetParent( Shooting_Ent )
-					else
-						CreatedEntities[ EntID ]:SetParent( CreatedEntities[ HeadEntityIdx ] )
-					end
+					CreatedEntities[ EntID ].Freeze_o_Matic_NoPickUp = true
 					
 					//do the effect
 					if (DoPasteFX) and (math.random(5) > 3) then
 						TingerFX( Shooting_Ent, CreatedEntities[ EntID ]:GetPos() )
-						//DoPropSpawnedEffect( CreatedEntities[ EntID ] )
 					end
 					
 				else
@@ -1814,7 +1803,6 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 				local EntID		= EntIDList[ LastID ]
 				local Ent		= CreatedEntities[ EntID ]
 				
-				//AdvDupe.AfterPasteApply( Player, Ent, CreatedEntities )
 				local NoFail, Result = pcall( AdvDupe.AfterPasteApply, Player, Ent, CreatedEntities )
 				if ( !NoFail ) then
 					Msg("AdvDupeERROR: AfterPasteApply, Error: "..tostring(Result).."\n")
@@ -1871,29 +1859,37 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 		AdvDupe.ResetPositions( EntityList, ConstraintList )
 		
 		undo.Create( "Duplicator" )
-			for k, ent in pairs( CreatedEntities ) do
-				if (ent:IsValid()) then
-					ent:SetNotSolid(false)
-					ent:SetParent()
-					if ( ent:GetPhysicsObject():IsValid() ) then
-						local Phys = ent:GetPhysicsObject()
-						if ( PasteFrozen ) or ( PastewoConst ) or ( EntityList[ k ].PhysicsObjects[0].Frozen ) then
-							Player:AddFrozenPhysicsObject( ent, Phys )
+			for EntID, Ent in pairs( CreatedEntities ) do
+				if (Ent:IsValid()) then
+					
+					if ( Ent:GetPhysicsObject():IsValid() ) then
+						local Phys = Ent:GetPhysicsObject()
+						if ( PasteFrozen ) or ( PastewoConst ) or ( EntityList[ EntID ].PhysicsObjects[0].Frozen ) then
+							Player:AddFrozenPhysicsObject( Ent, Phys )
 						else
 							Phys:EnableMotion(true)
 						end
 					end
-					if ( ent.RDbeamlibDrawer ) then
-						ent.RDbeamlibDrawer:SetParent( ent )
+					
+					if ( Ent.EntityMods ) and !( ( FreezeoMaticInstalled ) and ( Ent.EntityMods.Freeze_o_Matic_SuperFreeze ) and ( Ent.EntityMods.Freeze_o_Matic_SuperFreeze.NoPickUp ) ) then
+						Ent.Freeze_o_Matic_NoPickUp = nil
 					end
-					undo.AddEntity( ent )
-					//AdvDupe.ApplyParenting( ent, k, EntityList, CreatedEntities ) --will crash
+					
+					if ( Ent.RDbeamlibDrawer ) then
+						Ent.RDbeamlibDrawer:SetParent( Ent )
+					end
+					undo.AddEntity( Ent )
+					
 				else
-					ent = nil
+					Ent = nil
 				end
 			end
 			undo.SetPlayer( Player )
 		undo.Finish()
+		
+		for EntID, Ent in pairs( CreatedEntities ) do
+			AdvDupe.ApplyParenting( Ent, EntID, EntityList, CreatedEntities ) --will crash
+		end
 		
 		Stage = 5 //done!
 		
@@ -2170,15 +2166,12 @@ function AdvDupe.ApplyParenting( Ent, EntID, EntityList, CreatedEntities )
 	if ( EntityList[ EntID ].SavedParentIdx ) then
 		local Ent2 = CreatedEntities[ EntityList[ EntID ].SavedParentIdx ]
 		if ( Ent2 ) and ( Ent2:IsValid() ) then
-		if ( Ent == Ent2 ) then
-			Msg("Ent == Ent2\n")
-		else
-			Ent:SetParent() //safe guard
+		if ( Ent != Ent2 ) then
+			Ent:SetParent()
 			if ( Ent == Ent2:GetParent() ) then
 				Ent2:SetParent()
 			end
 			Ent:SetParent( Ent2 )
-			Msg("set "..EntID.." parent to "..EntityList[ EntID ].SavedParentIdx.."\n")
 		end
 		end
 	end
@@ -2734,6 +2727,9 @@ end
 end
 */
 
+
+
+
 //
 //	Register camera entity class
 //	fixes key not being saved (Conna)
@@ -2783,6 +2779,22 @@ local function CamRegister(Player, Pos, Ang, Key, Locked, Toggle, Vel, aVel, Fro
 end
 duplicator.RegisterEntityClass("gmod_cameraprop", CamRegister, "Pos", "Ang", "key", "locked", "toggle", "Vel", "aVel", "frozen", "nocollide")
 
+
+
+//
+//	Super Freeze no touch hook
+//
+function PhysgunPickup( pl, ent )
+	if ( ent.Freeze_o_Matic_NoPickUp ) then
+		return false
+	end
+end
+hook.Remove( "GravGunPickupAllowed", "Freeze_o_MaticGravGunPunt")
+hook.Remove( "PhysgunPickup", "Freeze_o_MaticGravGunPickupAllowed")
+hook.Remove( "PhysgunPickup", "Freeze_o_MaticPhysgunPickup")
+hook.Add( "GravGunPickupAllowed", "Freeze_o_MaticGravGunPickupAllowed", PhysgunPickup)
+hook.Add( "PhysgunPickup", "Freeze_o_MaticPhysgunPickup", PhysgunPickup)
+hook.Add( "PhysgunDrop", "Freeze_o_MaticPhysgunDrop", PhysgunPickup)
 
 
 
