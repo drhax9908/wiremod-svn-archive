@@ -1426,7 +1426,7 @@ local function SetTimedPasteVars(pl, cmd, args)
 		if args[4] then
 			PasteConstsPerTick = tonumber( args[4] )
 		end
-		pl:PrintMessage(HUD_PRINTCONSOLE, "/nAdvDupe_SetTimedPasteVars:\n\tUseTimedPasteThreshold = "..UseTimedPasteThreshold.."\n\tPasteEntsPerTick = "..PasteEntsPerTick.."\n\tPostEntityPastePerTick = "..PostEntityPastePerTick.."\n\tPasteConstsPerTick = "..PasteConstsPerTick.."\nDefault: 100, 2, 20, 10\n")
+		pl:PrintMessage(HUD_PRINTCONSOLE, "\nAdvDupe_SetTimedPasteVars:\n\tUseTimedPasteThreshold = "..UseTimedPasteThreshold.."\n\tPasteEntsPerTick = "..PasteEntsPerTick.."\n\tPostEntityPastePerTick = "..PostEntityPastePerTick.."\n\tPasteConstsPerTick = "..PasteConstsPerTick.."\nDefault: 100, 2, 20, 10\n")
 	else
 		pl:PrintMessage(HUD_PRINTCONSOLE, "Usage: \n  AdvDupe_SetTimedPasteVars <UseTimedPasteThreshold> [PasteEntsPerTick] [PostEntityPastePerTick] [PasteConstsPerTick]\nDefault: 100, 2, 20, 10\n")
 	end
