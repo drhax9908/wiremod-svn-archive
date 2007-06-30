@@ -12,38 +12,34 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
+	self.lockvar = 0
+	self.disablevar = 0
+	self.laservar = 0
+	self.crossvar = 0
 	
-	--[[
-	-- Set the name of self (To let us have several controllers)
-	-- Note: Player:GetVehicle does actually work on pods. (&/(%&/(/&%)(/( wiki)
-	self.Tname = "wpod"..wire_pod_count
-	wire_pod_count = wire_pod_count + 1
-	self.Entity:SetName(self.Tname)
 	
-	]]
-	
-	-- Output keys. Format: keys["name"] = IN_*
-	keys = { }
-	keys["Mouse1"] = IN_ATTACK
-	keys["Mouse2"] = IN_ATTACK2
-	keys["MWHEELUP"] = IN_INVPREV
-	keys["MWHEELDOWN"] = IN_INVNEXT
-	keys["W"] = IN_FORWARD
-	keys["A"] = IN_MOVELEFT
-	keys["S"] = IN_BACK
-	keys["D"] = IN_MOVERIGHT
-	keys["R"] = IN_RELOAD
-	keys["Space"] = IN_JUMP
-	keys["Ctrl"] = IN_DUCK
-	keys["Shift"] = IN_SPEED
-	keys["Zoom"] = IN_ZOOM
+	-- Output keys. Format: self.keys["name"] = IN_*
+	self.keys = { }
+	self.keys["Mouse1"] = IN_ATTACK
+	self.keys["Mouse2"] = IN_ATTACK2
+	self.keys["MWHEELUP"] = IN_INVPREV
+	self.keys["MWHEELDOWN"] = IN_INVNEXT
+	self.keys["W"] = IN_FORWARD
+	self.keys["A"] = IN_MOVELEFT
+	self.keys["S"] = IN_BACK
+	self.keys["D"] = IN_MOVERIGHT
+	self.keys["R"] = IN_RELOAD
+	self.keys["Space"] = IN_JUMP
+	self.keys["Ctrl"] = IN_DUCK
+	self.keys["Shift"] = IN_SPEED
+	self.keys["Zoom"] = IN_ZOOM
 
 	
 	-- Invert the table to use it with Wire_CreateOutputs
 	local outputs = { }
 	local n = 1
 	
-	for k, v in pairs( keys ) do
+	for k, v in pairs( self.keys ) do
 		outputs[n] = k
 		n = n + 1
 	end
@@ -58,22 +54,23 @@ function ENT:Initialize()
 	
 	n = n + 1
 	outputs[n] = "Distance"
-	--[[ elevation / bearing outputs
-	n = n + 1
-	outputs[n] = "Bearing"
-	
-	n = n + 1
-	outputs[n] = "Elevation"
-	--]]
 	n = n + 1
 	outputs[n] = "Active"
 	
 	n = n + 1
-	outputs[n] = "team"
+	outputs[n] = "Team"
+	
+	n = n + 1
+	outputs[n] = "Health"
+	
+	n = n + 1
+	outputs[n] = "Armor"
+	
+	self.VPos = Vector(0, 0, 0)
 	
 	-- Create outputs
 	self.Outputs = Wire_CreateOutputs( self.Entity, outputs )
-	self.Inputs = Wire_CreateInputs( self.Entity, { "Lock", "Terminate", "Strip weapons", "Eject" } )
+	self.Inputs = Wire_CreateInputs( self.Entity, { "Lock", "Terminate", "Strip weapons", "Eject", "Disable", "Crosshairs", "LaserSight"} )
 	self:SetOverlayText( "Adv. Pod Controller" )
 end
 
@@ -86,31 +83,67 @@ end
 function ENT:TriggerInput(iname, value)
 		if (iname == "Lock") then
 			if !(self.Pod && self.Pod:IsValid()) then return end
-				if value > 0 then
-					self.Pod:Fire("Lock", "1", 0)
-				else
-					self.Pod:Fire("Unlock", "1", 0)
+				if (value >= 1) then
+					if (self.lockvar == 0) then
+						self.Pod:Fire("Lock", "1", 0)
+						self.lockvar = 1
+					else
+						self.Pod:Fire("Unlock", "1", 0)
+						self.lockvar = 0
+					end
 				end
-	elseif (iname == "Terminate") then
-		if self.Ply then
-			if (value >= 1) then
-				self.Ply:Kill()
+			end
+		if (iname == "Terminate") then
+			if self.Ply then
+				if (value > 0) then
+					self.Ply:Kill()
+				end
 			end
 		end
-	elseif (iname == "Strip weapons") then
-		if self.Ply then
-			if (value >= 1) then
-				self.Ply:StripWeapons( )
-				self.Ply:PrintMessage(HUD_PRINTTALK,"Your weapons have been stripped!\n")
+		if (iname == "Strip weapons") then
+			if self.Ply then
+				if (value > 0) then
+					self.Ply:StripWeapons( )
+					self.Ply:PrintMessage(HUD_PRINTTALK,"Your weapons have been stripped!\n")
+				end
 			end
 		end
-	elseif (iname == "Eject") then
-		if self.Ply then
-			if (value >= 1) then
-				self.Ply:ExitVehicle( )
+		if (iname == "Eject") then
+			if self.Ply then
+				if (value > 0) then
+					self.Ply:ExitVehicle( )
+				end
 			end
 		end
-	end
+		if (iname == "Disable") then
+			if (value >= 1) then
+				if (self.disablevar == 0) then
+					self.disablevar = 1
+				else
+					self.disablevar = 0
+				end
+			end
+		end
+		if (iname == "Crosshairs") then
+			if (value >= 1) then
+				if (self.crossvar == 0) then
+					self.Ply:CrosshairEnable()
+					self.crossvar = 1
+				else
+					self.Ply:CrosshairDisable()
+					self.crossvar = 0
+				end
+			end
+		end
+		if (iname == "LaserSight") then
+			if (value >= 1) then
+				if (self.laservar == 0) then
+					self.laservar = 1
+				else
+					self.laservar = 0
+				end
+			end
+		end
 end
 
 function ENT:ShowOutput(value)
@@ -121,20 +154,20 @@ function ENT:ShowOutput(value)
 end
 
 function ENT:OnRestore()
-	keys = { }
-	keys["Mouse1"] = IN_ATTACK
-	keys["Mouse2"] = IN_ATTACK2
-	keys["MWHEELUP"] = IN_INVPREV
-	keys["MWHEELDOWN"] = IN_INVNEXT
-	keys["W"] = IN_FORWARD
-	keys["A"] = IN_MOVELEFT
-	keys["S"] = IN_BACK
-	keys["D"] = IN_MOVERIGHT
-	keys["R"] = IN_RELOAD
-	keys["Space"] = IN_JUMP
-	keys["Ctrl"] = IN_DUCK
-	keys["Shift"] = IN_SPEED
-	keys["Zoom"] = IN_ZOOM
+	self.keys = { }
+	self.keys["Mouse1"] = IN_ATTACK
+	self.keys["Mouse2"] = IN_ATTACK2
+	self.keys["MWHEELUP"] = IN_INVPREV
+	self.keys["MWHEELDOWN"] = IN_INVNEXT
+	self.keys["W"] = IN_FORWARD
+	self.keys["A"] = IN_MOVELEFT
+	self.keys["S"] = IN_BACK
+	self.keys["D"] = IN_MOVERIGHT
+	self.keys["R"] = IN_RELOAD
+	self.keys["Space"] = IN_JUMP
+	self.keys["Ctrl"] = IN_DUCK
+	self.keys["Shift"] = IN_SPEED
+	self.keys["Zoom"] = IN_ZOOM
 
 	
     self.BaseClass.OnRestore(self)
@@ -169,51 +202,58 @@ local brng = Angle(0, 0, 0)
 		end
 		
 		if self.Ply then
-			-- Loop through all the keys, and check if they was pressed last frame
-			for k, v in pairs( keys )  do
-				--[[
-				if self.Ply:KeyDownLast( v ) then Wire_TriggerOutput( self.Entity, k, 1 )-- ; print( "Pressed: "..k..":"..v )
-				else Wire_TriggerOutput( self.Entity, k, 0 ) end
-				]]
+			-- Loop through all the self.keys, and check if they was pressed last frame
+			for k, v in pairs( self.keys )  do
 				if self.Ply:KeyDownLast( v ) then Wire_TriggerOutput( self.Entity, k, 1 )
 				else Wire_TriggerOutput( self.Entity, k, 0 ) end
-				
-				local tmp = self.Ply:GetEyeTrace().HitPos
-				Wire_TriggerOutput( self.Entity, "X", tmp.x )
-				Wire_TriggerOutput( self.Entity, "Y", tmp.y )
-				Wire_TriggerOutput( self.Entity, "Z", tmp.z )
-				local MyPos = self.Entity:GetPos()
-				dist = (tmp-MyPos):Length()
-				Wire_TriggerOutput( self.Entity, "Distance", dist)
-				--[[ Non-working elevation / bearing code
-				local DeltaPos = self.Entity:WorldToLocal(tmp)
-				brng = DeltaPos:Angle( )
-				local pitch = brng.p
-				local yaw = brng.y
-				if (yaw > 180) then yaw = yaw - 360 end
-				if (yaw < -180) then yaw = yaw + 360 end
-				if (yaw > 180) then yaw = yaw - 360 end
-				if (yaw < -180) then yaw = yaw + 360 end
-				if (pitch > 180) then pitch = ypitch - 360 end
-				if (pitch < -180) then pitch = pitch + 360 end
-				if (pitch > 180) then pitch = pitch - 360 end
-				if (pitch < -180) then pitch = pitch + 360 end
-				Wire_TriggerOutput(self.Entity, "Bearing", -yaw - 90)
-				Wire_TriggerOutput(self.Entity, "Elevation", -pitch)
-				--]]
-				local plyteam = self.Ply:Team( )
-				Wire_TriggerOutput( self.Entity, "Team", plyteam)
-				
-				
 			end
+			local tmp2 = self.Ply:GetEyeTrace()
+			tmp2.Filter = self.Pod
+			local tmp = tmp2.HitPos
+			local MyPos = self.Ply:GetShootPos() + Vector(0,0,-20)
+			Wire_TriggerOutput( self.Entity, "X", tmp.x )
+			Wire_TriggerOutput( self.Entity, "Y", tmp.y )
+			Wire_TriggerOutput( self.Entity, "Z", tmp.z )
+			dist = (tmp-MyPos):Length()
+			Wire_TriggerOutput( self.Entity, "Distance", dist)
+			self.MyPos = MyPos
+			self.tmp = tmp
+			local plyteam = self.Ply:Team( )
+			Wire_TriggerOutput( self.Entity, "Team", plyteam)
+			local plyheal = self.Ply:Health( )
+			Wire_TriggerOutput( self.Entity, "Health", plyheal)
+			local plyarm = self.Ply:Armor( )
+			Wire_TriggerOutput( self.Entity, "Armor", plyarm)
+			local rp = RecipientFilter() // Grab a RecipientFilter object
+			rp:AddAllPlayers() // Send to all players!
+			umsg.Start("AdvPodInfo", rp)
+				umsg.Vector( self.MyPos )
+				umsg.Vector( self.tmp )
+				umsg.Long( self.laservar )
+			umsg.End()
+			--Beacon sensor compbatability stuff
+			local trace = util.GetPlayerTrace(self.Ply)
+			trace.Filter = self.Pod
+			self.VPos = util.TraceLine(trace).HitPos
+		end
+		if (self.disablevar == 1) then
+			for k, v in pairs( self.keys )  do
+				Wire_TriggerOutput( self.Entity, k, 0 )
+			end
+			Wire_TriggerOutput( self.Entity, "Disabled", 1)
+		else
+			Wire_TriggerOutput( self.Entity, "Disabled", 0)
 		end
 	end
 	self.Entity:NextThink(CurTime() + 0.01)
 	return true
 end
 
+function ENT:GetBeaconPos(sensor)
+	return self.VPos
+end
 
-//Duplicator support to save pod link (TAD2020)
+--Duplicator support to save pod link (TAD2020)
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
 
