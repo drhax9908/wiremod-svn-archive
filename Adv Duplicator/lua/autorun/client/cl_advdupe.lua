@@ -4,7 +4,7 @@ AdvDupeClient={}
 
 include( "autorun/shared/dupeshare.lua" )
 
-AdvDupeClient.version = 1.74
+AdvDupeClient.version = 1.741
 local MAXUPLOADLENGTH = 200
 
 
@@ -43,7 +43,7 @@ function AdvDupeClient.SendSaveDataToServer(len, offset, last)
 	
 	for i = 1,PiecesPerSend do
 		if (offset <= last) then
-			Msg("sending string: "..tostring(offset * MAXUPLOADLENGTH).." / "..len.." piece: "..offset.." / "..last.."\n")
+			//Msg("sending string: "..tostring(offset * MAXUPLOADLENGTH).." / "..len.." piece: "..offset.." / "..last.."\n")
 			if ( AdvDupeClient.PercentText == "Uploading" ) then
 				AdvDupeClient.UpdatePercent( math.ceil(offset / last * 100) )
 			end
@@ -52,7 +52,7 @@ function AdvDupeClient.SendSaveDataToServer(len, offset, last)
 			if (offset == last) then
 				local pos = (len - ((last - 1) * MAXUPLOADLENGTH))
 				str = string.Right(AdvDupeClient.temp2, pos)
-				Msg("last str len: "..tostring(string.len(str)).."\n")
+				Msg("sending last string\n") //len: "..tostring(string.len(str)).."\n")
 				AdvDupeClient.UpdatePercent( 100 )
 				timer.Simple(.2, AdvDupeClient.UpdatePercent, -1)
 			else

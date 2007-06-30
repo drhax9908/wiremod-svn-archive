@@ -1,7 +1,7 @@
 "AddonInfo"
 {
 	"name"				"Advanced Duplicator"
-	"version"			"1.833"
+	"version"			"1.834"
 	"up_date"			"June 30th 2007"
 	"author_name"			"TAD2020"
 	"author_email"			""
