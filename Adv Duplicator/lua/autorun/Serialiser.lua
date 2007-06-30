@@ -290,8 +290,6 @@ function Serialiser.DeserialiseWithHeaders( InData, CallBack, pl, filepath, tool
 						local key,cstr = line:match("(.-):(.+)")
 						if ( cstr ) then
 							StrTbl[ key ] = cstr:sub(2, -2)
-						else
-							Msg("Deserialise_ERROR: Bad line in Dict: \""..key.."\"\n")
 						end
 					end
 					
@@ -422,5 +420,5 @@ function Serialiser.SaveTablesToFile( pl, FileName, Header, ExtraHeader, NumOfEn
 		AdvDupe.MakeTimer(.1, save2, {pl, FileName, Header, ExtraHeader, EntsStr, NumOfConst, ConstsTable, StrTbl, dontpoolstrings}, OnFailFunc, {pl, "Saving"} )
 	end
 	
-	AdvDupe.MakeTimer(.1, save1, {pl, FileName, Header, ExtraHeader, NumOfEnts, EntTables, NumOfConst, ConstsTable, StrTbl, dontpoolstrings}, OnFailFunc, {pl, "Saving"} )
+	AdvDupe.MakeTimer(.1, save1, {pl, FileName, Header, ExtraHeader, NumOfEnts, EntTables, NumOfConst, ConstsTable, StrTbl, false}, OnFailFunc, {pl, "Saving"} )
 end
