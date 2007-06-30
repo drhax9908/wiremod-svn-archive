@@ -281,16 +281,18 @@ function Serialiser.DeserialiseWithHeaders( InData, CallBack, pl, filepath, tool
 						CallBack( pl, filepath, tool, HeaderTbl, ExtraHeaderTbl, OutputTable )
 					end
 					
-					//timer.Simple(.1, DWH3, HeaderTbl, ExtraHeaderTbl, block, StrTbl, CallBack, pl, filepath, tool )
 					AdvDupe.MakeTimer(.1, DWH3, {HeaderTbl, ExtraHeaderTbl, block, StrTbl, CallBack, pl, filepath, tool}, OnFailFunc, {pl, "Loading"} )
 					
 				else
 					
 					local StrTbl = {}
-					//for i = 1, (#DictBlock) do
 					for k,line in pairs(string.Explode("\n", DictBlock)) do
 						local key,cstr = line:match("(.-):(.+)")
-						StrTbl[ key ] = cstr:sub(2, -2)
+						if ( cstr ) then
+							StrTbl[ key ] = cstr:sub(2, -2)
+						else
+							Msg("Deserialise_ERROR: Bad line in Dict: \""..key.."\"\n")
+						end
 					end
 					
 					local function DWH3( HeaderTbl, ExtraHeaderTbl, DataBlock, StrTbl, CallBack, pl, filepath, tool )
@@ -306,20 +308,17 @@ function Serialiser.DeserialiseWithHeaders( InData, CallBack, pl, filepath, tool
 								AdvDupe.SetPercent(pl, 60 + (k * 10) )
 								OutputTable[key] = Serialiser.DeserialiseBlock( block, StrTbl )
 							end
-							//timer.Simple( delay, DWH4, block, StrTbl, OutputTable, k )
 							AdvDupe.MakeTimer( delay, DWH4, {block, StrTbl, OutputTable, k}, OnFailFunc, {pl, "Loading"} )
 							delay = delay + .1
 						end
 						
 						AdvDupe.SetPercent(pl, 60)
-						//timer.Simple( delay, CallBack, pl, filepath, tool, HeaderTbl, ExtraHeaderTbl, OutputTable )
 						AdvDupe.MakeTimer( delay, CallBack, {pl, filepath, tool, HeaderTbl, ExtraHeaderTbl, OutputTable}, OnFailFunc, {pl, "Loading"} )
 						
 						
 					end
 					
 					AdvDupe.SetPercent(pl, 50)
-					//timer.Simple(.1, DWH3, HeaderTbl, ExtraHeaderTbl, DataBlock, StrTbl, CallBack, pl, filepath, tool )
 					AdvDupe.MakeTimer(.1, DWH3, {HeaderTbl, ExtraHeaderTbl, DataBlock, StrTbl, CallBack, pl, filepath, tool}, OnFailFunc, {pl, "Loading"} )
 					
 				end
@@ -327,17 +326,14 @@ function Serialiser.DeserialiseWithHeaders( InData, CallBack, pl, filepath, tool
 			end
 			
 			AdvDupe.SetPercent(pl, 40)
-			//timer.Simple(.1, DWH3, HeaderTbl, ExtraHeaderTbl, DataBlock, DictBlock, CallBack, pl, filepath, tool )
 			AdvDupe.MakeTimer(.1, DWH3, {HeaderTbl, ExtraHeaderTbl, DataBlock, DictBlock, CallBack, pl, filepath, tool}, OnFailFunc, {pl, "Loading"} )
 		end
 		
 		AdvDupe.SetPercent(pl, 30)
-		//timer.Simple(.1, DWH2, HeaderTbl, ExtraHeader, DataBlock, DictBlock, CallBack, pl, filepath, tool )
 		AdvDupe.MakeTimer(.1, DWH2, {HeaderTbl, ExtraHeader, DataBlock, DictBlock, CallBack, pl, filepath, tool}, OnFailFunc, {pl, "Loading"} )
 	end
 	
 	AdvDupe.SetPercent(pl, 20)
-	//timer.Simple(.1, DWH1, Header, ExtraHeader, DataBlock, DictBlock, CallBack, pl, filepath, tool )
 	AdvDupe.MakeTimer(.1, DWH1, {Header, ExtraHeader, DataBlock, DictBlock, CallBack, pl, filepath, tool}, OnFailFunc, {pl, "Loading"} )
 	
 end
@@ -415,20 +411,16 @@ function Serialiser.SaveTablesToFile( pl, FileName, Header, ExtraHeader, NumOfEn
 				end
 				
 				AdvDupe.SetPercent(pl, 75)
-				//timer.Simple(.1, save4, pl, FileName, Header, ExtraHeader, EntsStr, ConstsStr, DictStr )
 				AdvDupe.MakeTimer(.1, save4, {pl, FileName, Header, ExtraHeader, EntsStr, ConstsStr, DictStr}, OnFailFunc, {pl, "Saving"} )
 			end
 			
 			AdvDupe.SetPercent(pl, 50)
-			//timer.Simple(.1, save3, pl, FileName, Header, ExtraHeader, EntsStr, ConstsStr, StrTbl )
 			AdvDupe.MakeTimer(.1, save3, {pl, FileName, Header, ExtraHeader, EntsStr, ConstsStr, StrTbl}, OnFailFunc, {pl, "Saving"} )
 		end
 		
 		AdvDupe.SetPercent(pl, 25)
-		//timer.Simple(.1, save2, pl, FileName, Header, ExtraHeader, EntsStr, NumOfConst, ConstsTable, StrTbl, dontpoolstrings)
 		AdvDupe.MakeTimer(.1, save2, {pl, FileName, Header, ExtraHeader, EntsStr, NumOfConst, ConstsTable, StrTbl, dontpoolstrings}, OnFailFunc, {pl, "Saving"} )
 	end
 	
-	//timer.Simple(.1, save1, pl, FileName, Header, ExtraHeader, NumOfEnts, EntTables, NumOfConst, ConstsTable, StrTbl, dontpoolstrings )
 	AdvDupe.MakeTimer(.1, save1, {pl, FileName, Header, ExtraHeader, NumOfEnts, EntTables, NumOfConst, ConstsTable, StrTbl, dontpoolstrings}, OnFailFunc, {pl, "Saving"} )
 end

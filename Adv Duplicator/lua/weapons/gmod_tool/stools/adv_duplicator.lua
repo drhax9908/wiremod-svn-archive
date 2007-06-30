@@ -32,6 +32,7 @@ TOOL.ClientConVar[ "LimitedGhost" ]		= "0"
 TOOL.ClientConVar[ "pasterkey" ]		= -1
 TOOL.ClientConVar[ "pasterundo_key" ]	= -1
 TOOL.ClientConVar[ "height" ]			= 0
+TOOL.ClientConVar[ "angle" ]			= 0
 TOOL.ClientConVar[ "worldOrigin" ]		= 0
 TOOL.ClientConVar[ "pastefrozen" ]		= 0
 TOOL.ClientConVar[ "pastewoconst" ]		= 0
@@ -49,9 +50,16 @@ function TOOL:LeftClick( trace )
 	if ( CLIENT ) then	return true	end
 	if ( self:GetPasting() ) or (!self.Entities) then return end
 	
+	local Snaping = self:GetOwner():KeyDown(IN_SPEED)
+	
 	local angle  = self:GetOwner():GetAngles()
 	angle.pitch = 0
-	angle.roll = 0	
+	angle.roll = 0
+	
+	if ( Snaping ) then
+		angle.yaw = math.Round( angle.yaw / 45 ) * 45
+	end
+	angle.yaw = angle.yaw + self:GetClientNumber( "angle" )
 	
 	local Ents, Constraints = nil,nil
 	
@@ -71,7 +79,9 @@ function TOOL:LeftClick( trace )
 		PastewoConst = ( self:GetClientNumber( "pastewoconst" ) == 1 )
 		
 		if ( self:GetClientNumber( "worldOrigin" ) == 0 ) then
-			AdvDupe.StartPaste( self:GetOwner(), self.Entities, self.Constraints, self.HeadEntityIdx, trace.HitPos + Vector(0,0,self:GetClientNumber( "height" )), angle - self.HoldAngle, self.NumOfEnts, self.NumOfConst, PasteFrozen, PastewoConst  )
+			local HoldAngle = self.HoldAngle
+			//HoldAngle.yaw = self:GetClientNumber( "angle" )
+			AdvDupe.StartPaste( self:GetOwner(), self.Entities, self.Constraints, self.HeadEntityIdx, trace.HitPos + Vector(0,0,self:GetClientNumber( "height" )), angle - HoldAngle, self.NumOfEnts, self.NumOfConst, PasteFrozen, PastewoConst  )
 		else
 			AdvDupe.StartPaste( self:GetOwner(), self.Entities, self.Constraints, self.HeadEntityIdx, self.StartPos + Vector(0,0,self:GetClientNumber( "height" )), Angle(0,0,0), self.NumOfEnts, self.NumOfConst, PasteFrozen, PastewoConst )
 		end
@@ -368,14 +378,20 @@ function TOOL:UpdateGhostEntities()
 	
 	if (SERVER && !self.GhostEntities) then return end
 	
-	local Owner = self:GetOwner()
-	
-	local tr = utilx.GetPlayerTrace( Owner, Owner:GetCursorAimVector() )
+	local tr = utilx.GetPlayerTrace( self:GetOwner(), self:GetOwner():GetCursorAimVector() )
 	local trace = util.TraceLine( tr )
 	if (!trace.Hit) then return end
 	
-	local angle  = self:GetOwner():GetAngles()
+	local Snaping = self:GetOwner():KeyDown(IN_SPEED)
 	
+	local angle  = self:GetOwner():GetAngles()
+	angle.pitch = 0
+	angle.roll = 0
+	
+	if ( Snaping ) then
+		angle.yaw = math.Round( angle.yaw / 45 ) * 45
+	end
+	angle.yaw = angle.yaw + self:GetClientNumber( "angle" )
 	
 	local GhostEnt = nil
 	local HoldPos = nil
@@ -394,7 +410,6 @@ function TOOL:UpdateGhostEntities()
 			self.Weapon:SetNetworkedBool( "worldOrigin", ( self:GetClientNumber( "worldOrigin" ) == 1 ) )
 			self.Weapon:SetNetworkedVector( "StartPos", self.StartPos )
 			trace.HitPos = self.StartPos + Vector(0,0,height)
-			//angle = (GhostEnt.Angle or Angle(0,0,0)) + self.HoldAngle
 		end
 		
 	else
@@ -407,7 +422,6 @@ function TOOL:UpdateGhostEntities()
 			trace.HitPos = trace.HitPos + Vector(0,0,self.Weapon:GetNetworkedFloat( "height" ))
 		else
 			trace.HitPos = self.Weapon:GetNetworkedVector( "StartPos" ) + Vector(0,0,self.Weapon:GetNetworkedFloat( "height" ))
-			//angle = GhostEnt.Angle + self.Weapon:GetNetworkedAngle( "HoldAngle", Angle(0,0,0) )	
 		end
 		
 	end
@@ -418,9 +432,6 @@ function TOOL:UpdateGhostEntities()
 	
 	GhostEnt:SetMoveType( MOVETYPE_VPHYSICS )
 	GhostEnt:SetNotSolid( true )
-	
-	angle.pitch = 0
-	angle.roll = 0
 	
 	local TargetPos = GhostEnt:GetPos() - GhostEnt:LocalToWorld( HoldPos )
 	
@@ -589,6 +600,7 @@ function TOOL:ClearClipBoard()
 	end
 	
 	self:GetOwner():ConCommand( "adv_duplicator_height 0")
+	self:GetOwner():ConCommand( "adv_duplicator_angle 0")
 	self:GetOwner():ConCommand( "adv_duplicator_worldOrigin 0")
 	self:GetOwner():ConCommand( "adv_duplicator_pastefrozen 0")
 	self:GetOwner():ConCommand( "adv_duplicator_pastewoconst 0")
@@ -672,14 +684,7 @@ function TOOL:LoadFileCallBack( filepath, Entities, Constraints, DupeInfo, DORIn
 		self.Info.FileDate		= FileDate
 		self.Info.FileTime		= FileTime
 		
-		//hack for constraints with "pl" keys
-		/*if self.Constraints then
-			for k, Constraint in pairs( self.Constraints ) do
-				if ( Constraint && Constraint.pl ) then
-					Constraint.pl = self:GetOwner()
-				end
-			end
-		end*/
+		//self:GetOwner():ConCommand( "adv_duplicator_angle "..self.HoldAngle.yaw)
 		
 		self:UpdateLoadedFileInfo()
 		
@@ -1158,6 +1163,14 @@ else	// CLIENT
 					Min = "-128",
 					Max = "128",
 					Command = "adv_duplicator_height"
+				})
+				
+				CPanel:AddControl("Slider", {
+					Label = "Angle Offset:",
+					Type = "Integer",
+					Min = "-180",
+					Max = "180",
+					Command = "adv_duplicator_angle"
 				})
 				
 				CPanel:AddControl("CheckBox", {
