@@ -15,8 +15,8 @@ AdvDupe = {}
 
 if (CLIENT) then return end
 
-AdvDupe.Version = 1.831
-AdvDupe.ToolVersion = 1.81
+AdvDupe.Version = 1.832
+AdvDupe.ToolVersion = 1.811
 AdvDupe.FileVersion = 0.83
 local MAXDOWNLOADLENGTH = 200
 
@@ -678,7 +678,11 @@ function AdvDupe.GetSaveableConst( ConstraintEntity, Offset )
 				SaveableConst.Entity[ i ].Length 	= ConstTable[ "Length"..i ]
 				if ConstTable[ "Ent"..i ]:IsWorld() then
 					SaveableConst.Entity[ i ].World = true
-					SaveableConst.Entity[ i ].LPos = ConstTable[ "LPos"..i ] - Offset
+					if ( ConstTable[ "LPos"..i ] ) then
+						SaveableConst.Entity[ i ].LPos = ConstTable[ "LPos"..i ] - Offset
+					else
+						SaveableConst.Entity[ i ].LPos = Offset
+					end
 				else
 					SaveableConst.Entity[ i ].LPos = ConstTable[ "LPos"..i ]
 				end
@@ -695,7 +699,6 @@ end
 //	Built for speed and saveablity
 //	Compatable in place of duplicator.GetAllConstrainedEntitiesAndConstraints
 //	Do not steal
-//GetAllConstrainedEntitiesAndConstraints
 function AdvDupe.Copy( Ent, EntTable, ConstraintTable, Offset )
 	
 	if ( !Ent or !Ent:IsValid() ) or ( EntTable[ Ent:EntIndex() ] ) 
@@ -2052,11 +2055,11 @@ function AdvDupe.CreateConstraintFromTable( Player, Constraint, EntityList, Offs
 		
 		for i=1, 6 do 
 			if ( Constraint.Entity[ i ] ) then
-				if ( Key == "Ent"..i ) or ( Key == "Ent" ) then	
-					Val = EntityList[ Constraint.Entity[ i ].Index ] 
+				if ( Key == "Ent"..i ) or ( Key == "Ent" ) then						
 					if ( Constraint.Entity[ i ].World ) then
 						Val = GetWorldEntity()
 					else
+						Val = EntityList[ Constraint.Entity[ i ].Index ] 
 						if (!Val) or (!Val:IsValid()) then
 							Msg("AdvDupeERROR: Problem with = "..(Constraint.Type or "NIL").." Constraint. Could not find Ent: "..Constraint.Entity[ i ].Index.."\n")
 							return
@@ -2065,14 +2068,12 @@ function AdvDupe.CreateConstraintFromTable( Player, Constraint, EntityList, Offs
 				end
 				if ( Key == "Bone"..i ) or ( Key == "Bone" ) then Val = Constraint.Entity[ i ].Bone end
 				if ( Key == "LPos"..i ) then
-					
 					if (Constraint.Entity[ i ].World && Constraint.Entity[ i ].LPos) then
 						local NewPos, NewAngle = LocalToWorld( Constraint.Entity[ i ].LPos, Angle(0,0,0), Offset, HoldAngle )
-						Constraint.Entity[ i ].LPosOld = Constraint.Entity[ i ].LPos
-						Constraint.Entity[ i ].LPos = NewPos
+						Val = NewPos
+					else
+						Val = Constraint.Entity[ i ].LPos
 					end
-					
-					Val = Constraint.Entity[ i ].LPos
 				end
 				if ( Key == "WPos"..i ) then Val = Constraint.Entity[ i ].WPos end
 				if ( Key == "Length"..i ) then Val = Constraint.Entity[ i ].Length end
@@ -2838,7 +2839,7 @@ function AdvDupe.ResetPositions( EntTable, Constraints )
 		end
 	end
 	
-	if (!Constraints) then return end
+	/*if (!Constraints) then return end
 	for k, Constraint in pairs( Constraints ) do
 		if ( Constraint.Entity ) then
 			for k, Entity in pairs( Constraint.Entity ) do
@@ -2848,7 +2849,7 @@ function AdvDupe.ResetPositions( EntTable, Constraints )
 				end
 			end
 		end
-	end
+	end*/
 	
 end
 
