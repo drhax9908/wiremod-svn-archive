@@ -15,7 +15,7 @@ AdvDupe = {}
 
 if (CLIENT) then return end
 
-AdvDupe.Version = 1.832
+AdvDupe.Version = 1.833
 AdvDupe.ToolVersion = 1.811
 AdvDupe.FileVersion = 0.83
 local MAXDOWNLOADLENGTH = 200
@@ -1204,7 +1204,7 @@ function AdvDupe.SendSaveToClient( pl, filename )
 		//umsg.String(ndir)
 	umsg.End()
 	Msg("AdvDupe: sending file \""..filename..".txt\" in "..tostring(last).." pieces. len: "..tostring(len).."\n")
-	AdvDupe.SetPercentText( pl, "Downloading" )
+	//AdvDupe.SetPercentText( pl, "Downloading" )
 	
 	AdvDupe.SendSaveToClientData(pl, len, 0, last)
 	
@@ -1216,10 +1216,10 @@ function AdvDupe.SendSaveToClientData(pl, len, offset, last)
 		
 		if ((offset + k + 1) <= last) then
 			Msg("AdvDupe: sending string: "..tostring((offset + k) * MAXDOWNLOADLENGTH).." / "..len.." k: "..k.." piece: "..(offset + k + 1).." / "..last.."\n")
-			if ( AdvDupe[pl].PercentText == "Downloading" ) 
+			/*if ( AdvDupe[pl].PercentText == "Downloading" ) 
 			and ( 0 == math.fmod( (((offset + k + 1) / last) * 100), 5 ) ) then
 				AdvDupe.SetPercent(pl, ((offset + k + 1) / last) * 100 )
-			end
+			end*/
 			
 			umsg.Start("AdvDupeRecieveSaveData", pl)
 				umsg.Short(offset + k + 1) //cause sometimes these are reccieved out of order
@@ -1228,8 +1228,6 @@ function AdvDupe.SendSaveToClientData(pl, len, offset, last)
 					umsg.String(string.Right(AdvDupe[pl].temp, (len - ((last - 2) * MAXDOWNLOADLENGTH))))
 					//umsg.String(string.sub(AdvDupe[pln].temp, ((offset + k) * 220)))
 					Msg("AdvDupe: send last piece\n")
-					AdvDupe.SetPercent(pl, 100)
-					timer.Simple(.1, AdvDupe.SetPercent, pl, -1)
 				else
 					umsg.String(string.Right(string.Left(AdvDupe[pl].temp, ((offset + k) * MAXDOWNLOADLENGTH)),MAXDOWNLOADLENGTH))
 					//local pos = ((offset + k) * 220)

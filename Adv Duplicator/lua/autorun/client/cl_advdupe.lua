@@ -4,7 +4,7 @@ AdvDupeClient={}
 
 include( "autorun/shared/dupeshare.lua" )
 
-AdvDupeClient.version = 1.73
+AdvDupeClient.version = 1.74
 local MAXUPLOADLENGTH = 200
 
 
@@ -53,7 +53,8 @@ function AdvDupeClient.SendSaveDataToServer(len, offset, last)
 				local pos = (len - ((last - 1) * MAXUPLOADLENGTH))
 				str = string.Right(AdvDupeClient.temp2, pos)
 				Msg("last str len: "..tostring(string.len(str)).."\n")
-				timer.Simple(.1, AdvDupeClient.UpdatePercent, -1)
+				AdvDupeClient.UpdatePercent( 100 )
+				timer.Simple(.2, AdvDupeClient.UpdatePercent, -1)
 			else
 				str = string.Right(string.Left(AdvDupeClient.temp2, (offset * MAXUPLOADLENGTH)),MAXUPLOADLENGTH)
 			end
@@ -63,7 +64,6 @@ function AdvDupeClient.SendSaveDataToServer(len, offset, last)
 	end
 	
 	if (offset <= last) then
-		//send slowly or the server will boot player or just crash
 		timer.Simple( SendDelay, AdvDupeClient.SendSaveDataToServer, len, offset, last )
 	else
 		timer.Simple( 1, 
@@ -109,13 +109,14 @@ local function ClientRecieveSaveStart( um )
 	
 	AdvDupeClient.temp.numofpieces	= um:ReadShort()
 	AdvDupeClient.temp.filename		= um:ReadString()
-	AdvDupeClient.temp.dir			= AdvDupeClient.CLcdir //um:ReadString()
+	AdvDupeClient.temp.dir			= AdvDupeClient.CLcdir
 	
 	AdvDupeClient.temp.recievedpieces = 0
 	AdvDupeClient.downloading = true
 	AdvDuplicator_UpdateControlPanel()
 	
 	Msg("NumToRecieve= "..AdvDupeClient.temp.numofpieces.."\n==========\n")
+	AdvDupeClient.SetPercentText( "Downloading" )
 end
 usermessage.Hook("AdvDupeRecieveSaveStart", ClientRecieveSaveStart)
 
@@ -125,11 +126,16 @@ local function ClientRecieveSaveData( um )
 	AdvDupeClient.temp.recievedpieces = AdvDupeClient.temp.recievedpieces + 1
 	
 	Msg("getting file data, piece: "..piece.." of "..AdvDupeClient.temp.numofpieces.."\n")
+	if ( AdvDupeClient.PercentText == "Downloading" ) then
+		AdvDupeClient.UpdatePercent( math.ceil( piece / AdvDupeClient.temp.numofpieces ) )
+	end
 	
 	AdvDupeClient.temp.pieces[piece] = temp
 	
 	if (AdvDupeClient.temp.recievedpieces >= AdvDupeClient.temp.numofpieces) then
 		Msg("recieved last piece\n")
+		AdvDupeClient.UpdatePercent( 100 )
+		timer.Simple(.2, AdvDupeClient.UpdatePercent, -1)
 		//LocalPlayer():ConCommand("adv_duplicator_clientsavefile")
 		AdvDupeClient.ClientSaveRecievedFile()
 	end
@@ -141,7 +147,6 @@ function AdvDupeClient.ClientSaveRecievedFile()
 	local filepath, filename = dupeshare.FileNoOverWriteCheck( AdvDupeClient.temp.dir, AdvDupeClient.temp.filename )
 	
 	//reassemble the pieces
-	//local temp = string.Implode("", AdvDupeClient.temp.pieces)
 	local temp = table.concat(AdvDupeClient.temp.pieces)
 	
 	temp = dupeshare.DeCompress(temp, false)
@@ -149,7 +154,6 @@ function AdvDupeClient.ClientSaveRecievedFile()
 	file.Write(filepath, temp)
 	
 	AdvDupeClient.Error( "Your file: \""..filepath.."\" was downloaded form the server", false, true )
-	//LocalPlayer():PrintMessage(HUD_PRINTTALK, "Your file: \""..filename.."\" was downloaded form the server")
 	Msg("Your file: \""..filepath.."\" was downloaded form the server\n")
 	
 	
@@ -167,29 +171,9 @@ usermessage.Hook("AdvDupeClientDownloadFinished", DownloadFinished)
 
 
 
-function AdvDupeClient.MakeDir(foldername) //pl, cmd, args)
-	//if !pl:IsValid() or !pl:IsPlayer() or !args[1] then return end
-	if !foldername and type(foldername) != "String" then return end
-	
-	local dir = AdvDupeClient.CLcdir
-	local foldername = dupeshare.ReplaceBadChar(foldername)
-	
-	AdvDupeClient.FileOpts(action, foldername, dir)
-	
-	/*local dir = AdvDupeClient.CLcdir.."/"..dupeshare.ReplaceBadChar(foldername) //args[1]
-	
-	if file.Exists(dir) and file.IsDir(dir) then 
-		AdvDupeClient.Error("Local Folder Already Exists!")
-		return
-	end
-	
-	file.CreateDir(dir)*/
-	
-end
-concommand.Add("adv_duplicator_cl_makedir", AdvDupeClient.MakeDir)
 	
 local function FileOptsCommand(pl, cmd, args)
-	if !pl:IsValid() or !pl:IsPlayer() or !args[1] then return end
+	if ( !pl:IsValid() ) or ( !pl:IsPlayer() ) or ( !args[1] ) then return end
 	
 	local action = args[1]
 	local filename = dupeshare.GetFileFromFilename(pl:GetInfo( "adv_duplicator_load_filename_cl" ))..".txt"
@@ -203,7 +187,7 @@ end
 concommand.Add("adv_duplicator_cl_fileopts", FileOptsCommand)
 
 function AdvDupeClient.FileOpts(action, filename, dir, dir2)
-	if not filename or not dir then return end
+	if ( !action ) or ( !filename ) or ( !dir ) then return end
 	
 	local file1 = dir.."/"..filename
 	Msg("action= "..action.."  filename= "..filename.."  dir= "..dir.."  dir2= "..(dir2 or "none").."\n")
@@ -525,7 +509,7 @@ function AdvDupeClient.MakeDir( pl, command, args )
 		
 		function AdvDupeClient.gui.makedir.frame:ActionSignal(key,value)
 			if key == "MakeDirServer" then
-				local dir	= tostring(AdvDupeClient.gui.makedir.txtDir:GetValue())
+				local dir = tostring(AdvDupeClient.gui.makedir.txtDir:GetValue())
 				
 				if (dupeshare.UsePWSys) and (!SinglePlayer()) then
 					local pass	= AdvDupeClient.gui.makedir.txtPass:GetValue()
@@ -536,8 +520,11 @@ function AdvDupeClient.MakeDir( pl, command, args )
 				
 				AdvDupeClient.gui.makedir.frame:SetVisible(false)
 			elseif key == "MakeDirClient" then
-				local dir	= AdvDupeClient.gui.makedir.txtDir:GetValue()
-				AdvDupeClient.MakeDir(dir)
+				local newdir = dupeshare.ReplaceBadChar( AdvDupeClient.gui.makedir.txtDir:GetValue() )
+				local dir	= AdvDupeClient.CLcdir
+				
+				AdvDupeClient.FileOpts("makedir", newdir, dir)
+				
 				AdvDupeClient.gui.makedir.frame:SetVisible(false)
 			end
 		end
@@ -599,10 +586,10 @@ function AdvDupeClient.RenameFile( pl, cmd, args )
 				AdvDupeClient.gui.rename.frame:SetVisible(false)
 			elseif key == "RenameClient" then
 				local newname	= dupeshare.ReplaceBadChar(dupeshare.GetFileFromFilename(AdvDupeClient.gui.rename.txtNewName:GetValue()))..".txt"
-				local filename = pl:GetInfo( "adv_duplicator_open_cl" )
+				local filename = dupeshare.GetFileFromFilename(pl:GetInfo( "adv_duplicator_load_filename_cl" ))..".txt"
 				local dir	= AdvDupeClient.CLcdir
 				
-				AdvDupeClient.FileOpts(pl, "rename", filename, dir, newname)
+				AdvDupeClient.FileOpts("rename", filename, dir, newname)
 				
 				AdvDupeClient.gui.rename.frame:SetVisible(false)
 			end
@@ -666,7 +653,7 @@ function AdvDupeClient.ConfirmDelete( pl, cmd, args )
 			elseif key == "DeleteClient" then
 				local filename = pl:GetInfo( "adv_duplicator_open_cl" )
 				local dir	= AdvDupeClient.CLcdir
-				AdvDupeClient.FileOpts(pl, "delete", filename, dir)
+				AdvDupeClient.FileOpts("delete", filename, dir)
 				AdvDupeClient.gui.delete.frame:SetVisible(false)
 			elseif key == "Cancel" then
 				AdvDupeClient.gui.delete.frame:SetVisible(false)
