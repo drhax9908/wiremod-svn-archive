@@ -38,28 +38,29 @@ function ENT:TriggerInput(key, value)
 		self.deltavars[key] = self.inputvars[key]
 		self.inputvars[key] = value
 		self.triggvars[key] = true
-		self:Update(false)
+		self:Update()
 		--self.Entity:NextThink(CurTime()+0.001)
 	end
 end
 
 function ENT:Think()
-	if !self.schedule or self.schedule == 0 then return end
+	if !self.schedule then return true end
+	if self.schedule == 0 then return true end
 
 	self.curtime = self.curtime + self.schedule / 1000
 	if math.abs(self.curtime - CurTime()) > 0.1 then self.curtime = CurTime() end
 
 	self.schedule = 0
-	self:Update(true)
+	self.clocked = true
+	self:Update()
+	self.clocked = nil
 
 	if self.schedule == 0 then self.curtime = nil end
 
 	return true
 end
 
-function ENT:Update(scheduled)
-	if scheduled then self.clocked = true end
-
+function ENT:Update()
 	for _,key in pairs(self.Xinputs) do
 		self.variables[key] = self.inputvars[key]
 	end
@@ -73,19 +74,17 @@ function ENT:Update(scheduled)
 	end
 
 	if self.schedule and self.schedule > 0 then
-		if !self.curtime then self.curtime = CurTime() end
+		if !self.clocked or !self.curtime then self.curtime = CurTime() end
 		if self.schedule < 20 then self.schedule = 20 end
 		self.Entity:NextThink(self.curtime + self.schedule / 1000)
 	end
-
-	if scheduled then self.clocked = nil end
 end
 
 function ENT:Reset()
 	for _,key in ipairs(self.Xlocals)  do self.variables[key] = 0 self.deltavars[key] = 0 end
 	for _,key in ipairs(self.Xoutputs) do self.variables[key] = 0 self.deltavars[key] = 0 end
 
-	self:Update(true)
+	self:Update()
 end
 
 function ENT:Setup(name, parser)
@@ -145,7 +144,7 @@ function ENT:Setup(name, parser)
 	if name == "" then name = "generic" end
 	self:SetOverlayText("Expression (" .. name .. ")")
 	
-	self:Update(true)
+	self:Update()
 	return true
 end
 
