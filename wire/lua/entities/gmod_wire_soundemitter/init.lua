@@ -16,6 +16,11 @@ function ENT:Initialize()
 	self.Inputs = Wire_CreateInputs(self.Entity, { "A" })
 end
 
+function ENT:OnRemove()
+	-- Immediately stops annoying saunds, when getting removed
+	self:StopSounds(self.sound);
+end
+
 function ENT:Think()
 	self.BaseClass.Think(self)
 
@@ -33,18 +38,21 @@ function ENT:Switch( on, mul )
 	if (on) then 
 		self:SetOverlayText( "Sound: " .. self.sound .. "\nVolume: " .. string.format("%.2f", vol) )
 		
-		self:StartSound( self.sound, 100*vol )
+		self:StartSounds( self.sound, 100*vol )
 	else
 		self:SetOverlayText( "Sound: " .. self.sound .. "\nVolume: Off" )
 
-		self:StopSound( self.sound )
+		self:StopSounds( self.sound )
 	end
 
 	return true
 end
 
-function ENT:SetSound( sound )
-	if (sound) then	self.sound = sound end
+function ENT:SetSound(sound)
+	if (sound) then
+		self:StopSounds(self.sound);
+		self.sound = sound;
+	end
 end
 
 function ENT:OnRestore()
