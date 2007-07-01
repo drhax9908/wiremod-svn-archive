@@ -16,6 +16,7 @@ if ( CLIENT ) then
 	language.Add( "sboxlimit_wire_graphics_tablets", "You've hit graphics tablets limit!" )
 	language.Add( "undone_wire_graphics_tablet", "Undone Wire Graphics Tablet" )
 	language.Add( "Tool_wire_graphics_tablet_mode", "Output mode: -1 to 1 (ticked), 0 to 1 (unticked)" )
+	language.Add("Tool_wire_graphics_tablet_createflat", "Create flat to surface:")
 end
 
 if (SERVER) then
@@ -24,6 +25,7 @@ end
 
 TOOL.ClientConVar["model"] = "models/kobilica/wiremonitorbig.mdl"
 TOOL.ClientConVar["outmode"] = 0
+TOOL.ClientConVar["createflat"] = 1
 
 cleanup.Register( "wire_graphics_tablets" )
 
@@ -40,14 +42,18 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	local Smodel = self:GetClientInfo("model")
 	local gmode = (self:GetClientNumber("outmode") ~= 0)
+	local CreateFlat = self:GetClientNumber("createflat")
 	
-	Msg("gmod = "..tostring(gmode).."\n")
 	if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_graphics_tablet" && trace.Entity.pl == ply) then
 		trace.Entity:Setup(gmode)
 		return true
 	end
 	
-	Ang.pitch = Ang.pitch + 90
+	if (CreateFlat == 0) then
+		Ang.pitch = Ang.pitch + 90
+	end
+	
+	--Ang.pitch = Ang.pitch + 90
 	
 	wire_graphics_tablet = MakeWireGraphicsTablet(ply, Ang, trace.HitPos, Smodel, gmode)
 	local min = wire_graphics_tablet:OBBMins()
@@ -64,9 +70,7 @@ function TOOL:LeftClick( trace )
 end
 
 if (SERVER) then
-
 	function MakeWireGraphicsTablet( pl, Ang, Pos, Smodel, gmode )
-		
 		if ( !pl:CheckLimit( "wire_graphics_tablets" ) ) then return false end
 		
 		local wire_graphics_tablet = ents.Create( "gmod_wire_graphics_tablet" )
@@ -77,7 +81,6 @@ if (SERVER) then
 		wire_graphics_tablet:SetPos( Pos )
 		wire_graphics_tablet:Setup(gmode)
 		wire_graphics_tablet:Spawn()
-		
 		wire_graphics_tablet:SetPlayer(pl)
 			
 		local ttable = {
@@ -85,51 +88,40 @@ if (SERVER) then
 			Smodel = Smodel,
 			gmode = gmode
 		}
-		
 		table.Merge(wire_graphics_tablet:GetTable(), ttable )
-		
 		pl:AddCount( "wire_graphics_tablets", wire_graphics_tablet )
-		
 		return wire_graphics_tablet
-		
 	end
-
 	duplicator.RegisterEntityClass("gmod_wire_graphics_tablet", MakeWireGraphicsTablet, "Ang", "Pos", "Smodel", "gmode")
-
 end
 
 function TOOL:UpdateGhostWireGraphicsTablet( ent, player )
-
 	if ( !ent ) then return end
 	if ( !ent:IsValid() ) then return end
 
 	local tr 	= utilx.GetPlayerTrace( player, player:GetCursorAimVector() )
 	local trace 	= util.TraceLine( tr )
 	if (!trace.Hit) then return end
-
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_graphics_tablet" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()
-	Ang.pitch = Ang.pitch + 90
+	if (self:GetClientNumber("createflat") == 0) then
+		Ang.pitch = Ang.pitch + 90
+	end
 
 	local min = ent:OBBMins()
 	ent:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	ent:SetAngles( Ang )
-
 	ent:SetNoDraw( false )
-
 end
 
 function TOOL:Think()
 	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" ) || (not self.GhostEntity:GetModel()) ) then
 		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), Angle(0,0,0) )
 	end
-
 	self:UpdateGhostWireGraphicsTablet( self.GhostEntity, self:GetOwner() )
 end
 
@@ -148,11 +140,13 @@ function TOOL.BuildCPanel(panel)
 			["#Monitor Small"]	= { wire_graphics_tablet_model = "models/kobilica/wiremonitorsmall.mdl" },
 		}
 	})
-	
 	panel:AddControl("CheckBox", {
 		Label = "#Tool_wire_graphics_tablet_mode",
 		Command = "wire_graphics_tablet_outmode"
 	})
-	
+	panel:AddControl("Checkbox", {
+		Label = "#Tool_wire_graphics_tablet_createflat",
+		Command = "wire_graphics_tablet_createflat"
+	})
 end
 	
