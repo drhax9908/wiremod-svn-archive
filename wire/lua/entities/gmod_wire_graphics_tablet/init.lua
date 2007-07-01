@@ -1,32 +1,29 @@
 --Wire graphics tablet  by greenarrow
---http://gmodreviews.googlepages.com/
 --http://forums.facepunchstudios.com/greenarrow
---There may be a few bits of code from the wire panel here and there as i used it as a starting point.
---Credit to whoever created the first wire screen, from which all others seem to use the lagacy clientside drawing code (this one included)
 
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
 include('shared.lua')
 
 ENT.WireDebugName = "Graphics Tablet"
-ENT.outputMode = 0
-
-function ENT:OnRemove()
-end
+ENT.outputMode = false
 
 function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
+	self.Outputs = Wire_CreateOutputs(self.Entity, { "X", "Y", "Use", "OnScreen" })
 
-	self.Outputs = Wire_CreateOutputs(self.Entity, { "X", "Y", "Switch", "OnScreen" })
-	self.active = false
-	self.onScreen = false
-	self.osVal = 0
+	Wire_TriggerOutput(self.Entity, "X", 0)
+	Wire_TriggerOutput(self.Entity, "Y", 0)
+	Wire_TriggerOutput(self.Entity, "Use", 0)
+	Wire_TriggerOutput(self.Entity, "OnScreen", 0)
+	
+	self.lastOnscreen = 0
 	self.lastX = 0
 	self.lastY = 0
-	self.switch = 0
-	self.lastActivate = CurTime()
+	self.lastClick = 0
+	self:SetupParams()
 end
 
 function ENT:Setup(gmode)
@@ -34,127 +31,55 @@ function ENT:Setup(gmode)
 end
 
 function ENT:Use()
-	if (CurTime() < self.lastActivate + 0.2) then return true end
-	self.active = !self.active
-	if (self.active) then
-		self.switch = 1
-	else
-		self.switch = 0
-	end
-	Wire_TriggerOutput(self.Entity, "Switch", self.switch)
-	self:ShowOutput(self.lastX, self.lastY, self.switch, self.osVal)
-	self.lastActivate = CurTime()
 end
 
 function ENT:Think()
 	self.BaseClass.Think(self)
-	local newOnScreen = false
+	local onScreen = 0
+	local clickActive = 0
 	
-	local OF = 0
-	local OU = 0
-	local OR = 0
-	local Res = 0.1
-	local RatioX = 1
-	
-	if self.Entity:GetModel() == "models/props_lab/monitor01b.mdl" then
-		OF = 6.53
-		OU = 0
-		OR = 0
-		Res = 0.05
-	elseif self.Entity:GetModel() == "models/kobilica/wiremonitorsmall.mdl" then
-		OF = 0.2
-		OU = 4.5
-		OR = -0.85
-		Res = 0.045
-	elseif self.Entity:GetModel() == "models/kobilica/wiremonitorbig.mdl" then
-		OF = 0.3
-		OU = 11.8
-		OR = -2.35
-		Res = 0.12
-	elseif self.Entity:GetModel() == "models/props/cs_office/computer_monitor.mdl" then
-		OF = 3.25
-		OU = 15.85
-		OR = -2.2
-		Res = 0.085
-		RatioX = 0.75
-	elseif self.Entity:GetModel() == "models/props/cs_office/TV_plasma.mdl" then
-		OF = 6.1
-		OU = 17.05
-		OR = -5.99
-		Res = 0.175
-		RatioX = 0.57
-	end
-	
-	local x1 = -5.535
-	local x2 = 3.5
-	local y1 = 5.091
-	local y2 = -4.1
-	
-	local ox = 5
-	local oy = 5
-		
-	local pos
-	local cx
-	local cy
-	local posfix_x
-	local posfix_y
-	
-	
-	
-	for i,player in pairs(player.GetAll()) do
-		
+	for i, player in pairs(player.GetAll()) do
+		if (player:KeyDown (IN_ATTACK) or player:KeyDown (IN_USE)) then
+			clickActive = 1
+		end
 		local trace = {}
-		trace.start = player:GetShootPos()
-		trace.endpos = player:GetAimVector() * 64 + trace.start
-		trace.filter = player
+			trace.start = player:GetShootPos()
+			trace.endpos = (player:GetAimVector() * self.workingDistance) + trace.start
+			trace.filter = player
 		local trace = util.TraceLine(trace)
 		
-		
 		if (trace.Entity == self.Entity) then
-			newOnScreen = true
-			pos = self.Entity:WorldToLocal(trace.HitPos)
+			local pos = self.Entity:WorldToLocal(trace.HitPos)
+			local xval = (self.x1 - pos.y) / (self.x1 - self.x2)
+			local yval = (self.y1 - pos.z) / (self.y1 - self.y2)
 			
-			posfix_x = math.abs(OR)
-			posfix_y = math.abs(OU)
-	
-			local xval = (((pos.y + OR)/math.abs(posfix_x)) - x1) / (math.abs(x1) + math.abs(x2))
-			local yval = 1 - (((pos.z - OU) + y1)) / (math.abs(y1) + math.abs(y2))
-			xval = math.min(math.max(xval, 0), 1)
-			yval = math.min(math.max(yval, 0), 1)
-			
-			if (xval ~= self.lastX || yval ~= self.lastY) then
-				local activeval = 0
-				if (self.active) then activeval = 1 end
-				if (self.outputMode) then
-					xval = (xval * 2) - 1
-					yval = (-yval * 2) + 1
+			if (xval >= 0 and yval >= 0 and xval <= 1 and yval <= 1) then
+				onScreen = 1
+				if (xval ~= self.lastX or yval ~= self.lastY) then
+					if (self.outputMode) then
+						xval = (xval * 2) - 1
+						yval = (-yval * 2) + 1
+					end
+					Wire_TriggerOutput(self.Entity, "X", xval)
+					Wire_TriggerOutput(self.Entity, "Y", yval)
+					self:ShowOutput(xval, yval, self.lastClick, self.lastOnScreen)
+					self.lastX = xval
+					self.lastY = yval
 				end
-				Wire_TriggerOutput(self.Entity, "X", xval)
-				Wire_TriggerOutput(self.Entity, "Y", yval)
-				self:ShowOutput(self.lastX, self.lastY, self.switch, self.osVal)
-				self.lastX = xval
-				self.lastY = yval
 			end
 		end
-		
-		
-		--trace.start = LocalPlayer():GetShootPos()
-		--trace.endpos = LocalPlayer():GetAimVector() * 64 + trace.start
-		--trace.filter = LocalPlayer()
-		--local trace = util.TraceLine(trace)
-		
-		
 	end
 
-	if (newOnScreen ~= self.onScreen) then
-		if (newOnScreen) then
-			self.osVal = 1
-		else
-			self.osVal = 0
-		end
-		Wire_TriggerOutput(self.Entity, "OnScreen", self.osVal)
-		self:ShowOutput(self.lastX, self.lastY, self.switch, self.osVal)
-		self.onScreen = newOnScreen
+	if (onScreen ~= self.lastOnScreen) then
+		Wire_TriggerOutput(self.Entity, "OnScreen", onScreen)
+		self:ShowOutput(self.lastX, self.lastY, self.lastClick, onScreen)
+		self.lastOnScreen = onScreen
+	end
+	
+	if (clickActive ~= self.lastClick) then
+		Wire_TriggerOutput(self.Entity, "Use", clickActive)
+		self:ShowOutput(self.lastX, self.lastY, clickActive, self.lastOnScreen)
+		self.lastClick = clickActive
 	end
 			
 	self.Entity:NextThink(CurTime()+0.08)
@@ -162,10 +87,10 @@ function ENT:Think()
 end
 
 function ENT:ShowOutput(xval, yval, activeval, osval)
-	self:SetOverlayText(string.format("X = %f, Y = %f, Switch = %d, OnScreen = %d\n", xval, yval, activeval, osval))
+	self:SetOverlayText(string.format("X = %f, Y = %f, Use = %d, On Screen = %d\n", xval, yval, activeval, osval))
 end
 
 function ENT:OnRestore()
     self.BaseClass.OnRestore(self)
-	Wire_AdjustOutputs(self.Entity, { "X", "Y", "Switch", "OnScreen" })
+	Wire_AdjustOutputs(self.Entity, { "X", "Y", "Use", "OnScreen" })
 end
