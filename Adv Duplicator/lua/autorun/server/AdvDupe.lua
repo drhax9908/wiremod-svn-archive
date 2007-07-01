@@ -1268,6 +1268,7 @@ local PasteConstsPerTick = 10
 local DoPasteFX = false
 local UseTaskSwitchingPaste = false
 local DebugWeldsByDrawingThem = false
+local DontAllowPlayersAdminOnlyEnts = true
 
 local TimedPasteDataNum = 0
 local TimedPasteDataCurrent = 1
@@ -1479,6 +1480,20 @@ local function SetDebugWeldsByDrawingThem(pl, cmd, args)
 end
 concommand.Add( "AdvDupe_DebugWeldsByDrawingThem", SetDebugWeldsByDrawingThem )
 
+local function SetDontAllowPlayersAdminOnlyEnts(pl, cmd, args)
+	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
+		if args[1] == "1" or args[1] == 1 then 
+			DontAllowPlayersAdminOnlyEnts = true
+		elseif args[1] == "0" or args[1] == 0 then
+			DontAllowPlayersAdminOnlyEnts = false
+		else
+			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
+		end
+	end
+	pl:PrintMessage(HUD_PRINTCONSOLE, "\n  AdvDupe_DontAllowPlayersAdminOnlyEnts = "..tostring(DontAllowPlayersAdminOnlyEnts).."  ( norm: True(1) )\n")
+end
+concommand.Add( "AdvDupe_DontAllowPlayersAdminOnlyEnts", SetDontAllowPlayersAdminOnlyEnts )
+
 local function ReAddAdvDupeThink( ply, cmd, args )
 	hook.Add("Think", "AdvDupe_Think", AdvDupeThink)
 	pl:PrintMessage(HUD_PRINTCONSOLE, "ReAdded AdvDupe_Think Hook\n")
@@ -1624,7 +1639,7 @@ function AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offse
 		CreatedEntities[ EntID ] = AdvDupe.CreateEntityFromTable( Player, Ent, EntID, Offset, HoldAngle )
 		
 		if ( CreatedEntities[ EntID ] and CreatedEntities[ EntID ]:IsValid() )
-			and not ( CreatedEntities[ EntID ].AdminSpawnable and !SinglePlayer() and (!Player:IsAdmin( ) or !Player:IsSuperAdmin() ) ) then
+		and not ( CreatedEntities[ EntID ].AdminSpawnable and !SinglePlayer() and (!Player:IsAdmin( ) or !Player:IsSuperAdmin() ) and DontAllowPlayersAdminOnlyEnts ) then
 			
 			Player:AddCleanup( "duplicates", CreatedEntities[ EntID ] )
 			
@@ -1757,8 +1772,8 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 				CreatedEntities[ EntID ] = AdvDupe.CreateEntityFromTable( Player, EntTable, EntID, Offset, HoldAngle )
 				
 				if ( CreatedEntities[ EntID ] and CreatedEntities[ EntID ]:IsValid() )
-					and not (!CreatedEntities[ EntID ].Spawnable and CreatedEntities[ EntID ].AdminSpawnable) then
-					
+				and not ( CreatedEntities[ EntID ].AdminSpawnable and !SinglePlayer() and (!Player:IsAdmin( ) or !Player:IsSuperAdmin() ) and DontAllowPlayersAdminOnlyEnts ) then
+				
 					//safe guard
 					Player:AddCleanup( "duplicates", CreatedEntities[ EntID ] )
 					
