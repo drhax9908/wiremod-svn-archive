@@ -23,12 +23,18 @@ function ENT:IsOn( name )
 	return self.Entity:GetNetworkedBool( "On" )
 end
 
-function ENT:StartSound( filename, volume )
+function ENT:StartSounds( filename, volume )
 	util.PrecacheSound( filename )
-	self.Entity:EmitSound( filename, volume or 100, 100)
+	-- This new method fixes bugs with soundloops!
+	self.SND = CreateSound(self.Entity,Sound(filename)); -- Sorry, volume must suffer - Anyway, volume NEVER worked for me
+	self.SND:Play();
+	--self.Entity:EmitSound( filename, volume or 100, 100)
 end
 
-function ENT:StopSound( filename )
-	self.Entity:StopSound( filename )
+function ENT:StopSounds( filename )
+	if(self.SND) then
+		self.SND:Stop()
+	end
+	--self.Entity:StopSound( filename )
 end
 

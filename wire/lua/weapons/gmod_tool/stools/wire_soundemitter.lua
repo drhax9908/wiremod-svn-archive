@@ -160,10 +160,11 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_soundemitter_name", Description = "#Tool_wire_soundemitter_desc" })
-
+	
 	panel:AddControl("ComboBox", {
 		Label = "#WireEmitterTool_sound",
-		MenuButton = "0",
+		MenuButton = "1",
+		Folder = "wire_soundemitter",
 
 		Options = {
 			["Warning"] = { wire_soundemitter_sound = "common/warning.wav" },
