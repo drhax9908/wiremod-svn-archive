@@ -593,7 +593,7 @@ if CLIENT then
 			
 			panel:AddControl("ListBox", {
 				Label = "Expressions",
-				Height = 18 * 15 + 26,
+				Height = 14 * 15 + 26,
 				Options = wire_gate_expression_filelist
 			})
 			
@@ -710,6 +710,10 @@ if CLIENT then
 			end
 		end
 		
+		panel:AddControl("Label", {
+			Text = "                  Internal clock pulser now available!"
+		})
+
 		panel:AddControl("Label", {
 			Text = "              Documentation available at wiremod.com"
 		})
