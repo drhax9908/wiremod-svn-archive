@@ -1773,7 +1773,7 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 						CreatedEntities[ EntID ]:GetPhysicsObject():Sleep()
 						CreatedEntities[ EntID ]:GetPhysicsObject():EnableMotion(false)
 					end
-					CreatedEntities[ EntID ].Freeze_o_Matic_NoPickUp = true
+					CreatedEntities[ EntID ]:SetNotSolid(true)
 					
 					//do the effect
 					if (DoPasteFX) and (math.random(5) > 3) then
@@ -1871,9 +1871,7 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 						end
 					end
 					
-					if ( Ent.EntityMods ) and !( ( FreezeoMaticInstalled ) and ( Ent.EntityMods.Freeze_o_Matic_SuperFreeze ) and ( Ent.EntityMods.Freeze_o_Matic_SuperFreeze.NoPickUp ) ) then
-						Ent.Freeze_o_Matic_NoPickUp = nil
-					end
+					Ent:SetNotSolid(false)
 					
 					if ( Ent.RDbeamlibDrawer ) then
 						Ent.RDbeamlibDrawer:SetParent( Ent )
