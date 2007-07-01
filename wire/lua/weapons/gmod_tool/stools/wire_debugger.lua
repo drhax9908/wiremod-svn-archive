@@ -99,6 +99,7 @@ if (SERVER) then
 		            dbginfo = dbginfo .. "No info"
 		        end
 
+		local i = ply
                 dbg_line_cache[i] = dbg_line_cache[i] or {}
                 dbg_line_time[i] = dbg_line_time[i] or {}
 		        if (dbg_line_cache[i][l] ~= dbginfo) then
