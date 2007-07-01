@@ -73,16 +73,23 @@ function ENT:Update()
 		Wire_TriggerOutput(self.Entity, key, self.variables[key]) --major overhead, add lazy updates?
 	end
 
-	if self.schedule and self.schedule > 0 then
-		if !self.clocked or !self.curtime then self.curtime = CurTime() end
+	if self.schedule then
+		if !self.clocked and self.schedule > 0 or !self.curtime then self.curtime = CurTime() end
+		if self.schedule < 0 then self.schedule = -self.schedule end
 		if self.schedule < 20 then self.schedule = 20 end
 		self.Entity:NextThink(self.curtime + self.schedule / 1000)
 	end
+
+	self.initialized = true
 end
 
 function ENT:Reset()
 	for _,key in ipairs(self.Xlocals)  do self.variables[key] = 0 self.deltavars[key] = 0 end
 	for _,key in ipairs(self.Xoutputs) do self.variables[key] = 0 self.deltavars[key] = 0 end
+
+	self.schedule = nil
+	self.curtime = nil
+	self.initialized = nil
 
 	self:Update()
 end
@@ -263,8 +270,11 @@ ENT._tanh_1 =    function (self, d)    return math.tanh(math.rad(d)) end
 ENT._angnorm_1 =  function (self, d)   return (d + 180) % 360 - 180 end
 ENT._angnormr_1 = function (self, d)   return (d + math.pi) % (math.pi * 2) - math.pi end
 
+ENT._first_0 =    function (self, n)   if self.initialized then return 0 else return 1 end end
+
 ENT._clk_0 =      function (self, n)   if self.clocked then return 1 else return 0 end end
-ENT._schedule_1 = function (self, n)   self.schedule = n return n end
+ENT._schedule_1 = function (self, n)   self.schedule = n return 0 end
+ENT._interval_1 = function (self, n)   self.schedule = -n return 0 end
 
 ENT._send_x =    function (self, ...)   WireModPacketIndex = WireModPacketIndex % 90 + 1 WireModPacket[WireModPacketIndex] = {...} return WireModPacketIndex + 9 end
 ENT._recv_2 =    function (self, id, p) id = id - 9 if WireModPacket[id] and WireModPacket[id][p] then return WireModPacket[id][p] else return -1 end end
