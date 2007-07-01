@@ -23,7 +23,7 @@ function ENT:Initialize()
 	self.Xinputs =  {}
 	self.Xoutputs = {}
 	self.Xlocals =  {}
-	
+
 	self.deltavars = {}
 	self.inputvars = {}
 	self.triggvars = {}
@@ -38,12 +38,28 @@ function ENT:TriggerInput(key, value)
 		self.deltavars[key] = self.inputvars[key]
 		self.inputvars[key] = value
 		self.triggvars[key] = true
-		self:Update()
+		self:Update(false)
 		--self.Entity:NextThink(CurTime()+0.001)
 	end
 end
 
-function ENT:Update()
+function ENT:Think()
+	if !self.schedule or self.schedule == 0 then return end
+
+	self.curtime = self.curtime + self.schedule / 1000
+	if math.abs(self.curtime - CurTime()) > 0.1 then self.curtime = CurTime() end
+
+	self.schedule = 0
+	self:Update(true)
+
+	if self.schedule == 0 then self.curtime = nil end
+
+	return true
+end
+
+function ENT:Update(scheduled)
+	if scheduled then self.clocked = true end
+
 	for _,key in pairs(self.Xinputs) do
 		self.variables[key] = self.inputvars[key]
 	end
@@ -55,12 +71,21 @@ function ENT:Update()
 	for _,key in ipairs(self.Xoutputs) do
 		Wire_TriggerOutput(self.Entity, key, self.variables[key]) --major overhead, add lazy updates?
 	end
+
+	if self.schedule and self.schedule > 0 then
+		if !self.curtime then self.curtime = CurTime() end
+		if self.schedule < 20 then self.schedule = 20 end
+		self.Entity:NextThink(self.curtime + self.schedule / 1000)
+	end
+
+	if scheduled then self.clocked = nil end
 end
 
 function ENT:Reset()
 	for _,key in ipairs(self.Xlocals)  do self.variables[key] = 0 self.deltavars[key] = 0 end
-	for _,key in ipairs(self.Xoutputs) do self.variables[key] = 0 self.deltavars[key] = 0  end
-	self:Update()
+	for _,key in ipairs(self.Xoutputs) do self.variables[key] = 0 self.deltavars[key] = 0 end
+
+	self:Update(true)
 end
 
 function ENT:Setup(name, parser)
@@ -120,7 +145,7 @@ function ENT:Setup(name, parser)
 	if name == "" then name = "generic" end
 	self:SetOverlayText("Expression (" .. name .. ")")
 	
-	self:Update()
+	self:Update(true)
 	return true
 end
 
@@ -238,6 +263,9 @@ ENT._tanh_1 =    function (self, d)    return math.tanh(math.rad(d)) end
 
 ENT._angnorm_1 =  function (self, d)   return (d + 180) % 360 - 180 end
 ENT._angnormr_1 = function (self, d)   return (d + math.pi) % (math.pi * 2) - math.pi end
+
+ENT._clk_0 =      function (self, n)   if self.clocked then return 1 else return 0 end end
+ENT._schedule_1 = function (self, n)   self.schedule = n return n end
 
 ENT._send_x =    function (self, ...)   WireModPacketIndex = WireModPacketIndex % 90 + 1 WireModPacket[WireModPacketIndex] = {...} return WireModPacketIndex + 9 end
 ENT._recv_2 =    function (self, id, p) id = id - 9 if WireModPacket[id] and WireModPacket[id][p] then return WireModPacket[id][p] else return -1 end end
