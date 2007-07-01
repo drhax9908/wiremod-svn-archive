@@ -259,29 +259,30 @@ function AdvDupe.LoadDupeTableFromFile( pl, filepath )
 			Serialiser.DeserialiseWithHeaders( temp, Load2NewFile, pl, filepath, tool )
 			
 			return //or it will try to load as an old file
+			
+		end
+		
 		//
 		//	old file formats
 		//
-		else
-			temp = util.KeyValuesToTable(temp)
-			if ( temp["VersionInfo"] or temp["versioninfo"] ) then //pre-0.6x file, it ueses a different meathod os stroing FullCase
-				Msg("AdvDipe: Loading old legacy file type\n")
-				temp = dupeshare.RebuildTableFromLoad_Old(temp)
-			elseif ( temp["strtbl"] ) then // v0.7x
-				Msg("AdvDipe: Loading v0.7x file type\n")
-				local StrTbl = temp["strtbl"]
-				temp["strtbl"] = nil
-				temp = dupeshare.RebuildTableFromLoad(temp, {}, StrTbl)
-			else //0.6x
-				Msg("AdvDipe: Loading v0.6x file type\n")
-				temp = dupeshare.RebuildTableFromLoad(temp)
-			end
+		temp = util.KeyValuesToTable(temp)
+		
+		if ( temp["VersionInfo"] or temp["versioninfo"] ) then //pre-0.6x file, it ueses a different meathod os stroing FullCase
+			Msg("AdvDipe: Loading old legacy file type\n")
+			temp = dupeshare.RebuildTableFromLoad_Old(temp)
+		elseif ( temp["strtbl"] ) then // v0.7x
+			Msg("AdvDipe: Loading v0.7x file type\n")
+			local StrTbl = temp["strtbl"]
+			temp["strtbl"] = nil
+			temp = dupeshare.RebuildTableFromLoad(temp, {}, StrTbl)
+		else //0.6x
+			Msg("AdvDipe: Loading v0.6x file type\n")
+			temp = dupeshare.RebuildTableFromLoad(temp)
 		end
 		
 		if (temp) and (temp["VersionInfo"]) and (temp["VersionInfo"]["FileVersion"] > AdvDupe.FileVersion) then
 			Msg("AdvDupeINFO:File is newer than installed version, failure may occure, you should update.")
 		end
-		
 		
 		local function Load3(pl, filepath, tool, temp)
 			//check the file was loaded and we understand it's version then load the data in to the tables
@@ -360,7 +361,9 @@ function AdvDupe.LoadDupeTableFromFile( pl, filepath )
 			else
 				Msg("AdvDupeERROR:FILE FAILED TO LOAD! something is wrong with this file:  "..filepath.."\n")
 			end
+			
 			AdvDupe.SetPercent(pl, 50)
+			
 		end
 		
 		AdvDupe.SetPercent(pl, 30)
@@ -1280,6 +1283,11 @@ local function AdvDupeThink()
 			if ( !TimedPasteData[TimedPasteDataCurrent].Shooting_Ent )
 			or ( !TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity )
 			or ( !TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity:IsValid() ) then
+				for k, ent in pairs( TimedPasteData[TimedPasteDataCurrent].CreatedEntities ) do
+					if ( ent:IsValid() ) then
+						ent:Remove()
+					end
+				end
 				AdvDupe.FinishPasting( TimedPasteData,TimedPasteDataCurrent )
 				//table.remove(TimedPasteData,TimedPasteDataCurrent)
 				NextPasteTime = CurTime() +  .08
@@ -1831,7 +1839,7 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 				
 				local Constraint	= ConstraintList[ LastID ]
 				
-				local Entity = AdvDupe.CreateConstraintFromTable( Player, Constraint, CreatedEntities )
+				local Entity = AdvDupe.CreateConstraintFromTable( Player, Constraint, CreatedEntities, Offset, HoldAngle )
 				
 				if ( Entity ) and ( Entity:IsValid() ) then
 					table.insert( CreatedConstraints, Entity )
