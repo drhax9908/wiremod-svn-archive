@@ -1,121 +1,59 @@
 --Wire graphics tablet  by greenarrow
---http://gmodreviews.googlepages.com/
---http://forums.facepunchstudios.com/greenarrow
---There may be a few bits of code from the wire panel here and there as i used it as a starting point.
---Credit to whoever created the first wire screen, from which all others seem to use the lagacy clientside drawing code (this one included)
 
 include('shared.lua')
---CreateClientConVar( "wire_graphics_tablet_xval", 1, true, true )
---CreateClientConVar( "wire_graphics_tablet_yval", 1, true, true ) 
 
-ENT.Spawnable			= false
-ENT.AdminSpawnable		= false
 ENT.RenderGroup 		= RENDERGROUP_BOTH
+ENT.paramSetup = false
 
 function ENT:Initialize()
-	self.lastX = 0
-	self.lastY = 0
+	self:SetupParams()
+	self.allowDraw = true
 end
 
 function ENT:Draw()
-	self.Entity:DrawModel()
-	--night-eagle screen drawing code:
-	local OF = 0
-	local OU = 0
-	local OR = 0
-	local Res = 0.1
-	local RatioX = 1
-	
-	if self.Entity:GetModel() == "models/props_lab/monitor01b.mdl" then
-		OF = 6.53
-		OU = 0
-		OR = 0
-		Res = 0.05
-	elseif self.Entity:GetModel() == "models/kobilica/wiremonitorsmall.mdl" then
-		OF = 0.2
-		OU = 4.5
-		OR = -0.85
-		Res = 0.045
-	elseif self.Entity:GetModel() == "models/kobilica/wiremonitorbig.mdl" then
-		OF = 0.3
-		OU = 11.8
-		OR = -2.35
-		Res = 0.12
-	elseif self.Entity:GetModel() == "models/props/cs_office/computer_monitor.mdl" then
-		OF = 3.25
-		OU = 15.85
-		OR = -2.2
-		Res = 0.085
-		RatioX = 0.75
-	elseif self.Entity:GetModel() == "models/props/cs_office/TV_plasma.mdl" then
-		OF = 6.1
-		OU = 17.05
-		OR = -5.99
-		Res = 0.175
-		RatioX = 0.57
+	if !self.allowDraw then return true end
+
+	if !self.paramsSetup then
+		self:SetupParams()
 	end
-		
+	
+	self.Entity:DrawModel()
+	--begin adapted nighteagle code (amazing work with vectors!!!):  --Nighteagles has put a lot of work into refining the use of cam3d2d and traces to create cursor screen systems.
 	local ang = self.Entity:GetAngles()
 	local rot = Vector(-90,90,0)
-	ang:RotateAroundAxis(ang:Right(), 	rot.x)
-	ang:RotateAroundAxis(ang:Up(), 		rot.y)
+	ang:RotateAroundAxis(ang:Right(), rot.x)
+	ang:RotateAroundAxis(ang:Up(), rot.y)
 	ang:RotateAroundAxis(ang:Forward(), rot.z)
+	local pos = self.Entity:GetPos() + (self.Entity:GetForward() * self.z)
 	
-	local pos = self.Entity:GetPos() + (self.Entity:GetForward() * OF) + (self.Entity:GetUp() * OU) + (self.Entity:GetRight() * OR)
-	
-	cam.Start3D2D(pos,ang,Res)
-		local x = -112
-		local y = -104
-		local w = 296
-		local h = 292
-	
-		local x1 = -5.535
-		local x2 = 3.5
-		local y1 = 5.091
-		local y2 = -4.1
-		
-		local ox = 5
-		local oy = 5
-		
-		local pos
-		local cx
-		local cy
-		local posfix_x
-		local posfix_y
-		
+	cam.Start3D2D(pos, ang, self.res)
 		local trace = {}
-		trace.start = LocalPlayer():GetShootPos()
-		trace.endpos = LocalPlayer():GetAimVector() * 64 + trace.start
-		trace.filter = LocalPlayer()
+			trace.start = LocalPlayer():GetShootPos()
+			trace.endpos = (LocalPlayer():GetAimVector() * self.workingDistance) + trace.start
+			trace.filter = LocalPlayer()
 		local trace = util.TraceLine(trace)
-		pos = self.Entity:WorldToLocal(trace.HitPos)
+		
+		if (trace.Entity == self.Entity) then
+			local pos = self.Entity:WorldToLocal(trace.HitPos)
+			local cx = (self.x1 - pos.y) / (self.x1 - self.x2)
+			local cy = (self.y1 - pos.z) / (self.y1 - self.y2)
 			
-		posfix_x = math.abs(OR)
-		posfix_y = math.abs(OU)
-	
-		cx = (((pos.y + OR)/math.abs(posfix_x)) - x1) / (math.abs(x1) + math.abs(x2))
-		cy = 1 - (((pos.z - OU) + y1)) / (math.abs(y1) + math.abs(y2))
-		if trace.Entity == self.Entity and cx >= 0 and cy >= 0 and cx <= 1 and cy <= 1 then
-			if (math.abs(pos.x - OF) < 1.0) then
-				surface.SetDrawColor(255,255,255,255)
-				surface.SetTexture(surface.GetTextureID("gui/arrow"))
-				surface.DrawTexturedRectRotated((x+(w*cx*.621)+ox)/RatioX,y+(h*cy*.621)+oy,16,16,45)
+			--surface.SetDrawColor(0,0,255,255)
+			--surface.DrawRect(self.x ,self.y, self.w, self.h)
+			
+			if (cx >= 0 and cy >= 0 and cx <= 1 and cy <= 1) then
+				surface.SetDrawColor (255, 255, 255, 255)
+				--surface.SetTexture (surface.GetTextureID ("gui/arrow"))
+				--surface.DrawTexturedRectRotated (self.x + (self.w * cx) + self.ox, self.y + (self.h * cy) + self.oy, 16, 16, 45)
+				local curSize = 16
+				local curWidth = 2
+				local midX = self.x + (self.w * cx)
+				local midY = self.y + (self.h * cy)
+				surface.DrawRect (midX - curSize, midY - curWidth, curSize * 2, curWidth * 2)
+				surface.DrawRect (midX - curWidth, midY - curSize, curWidth * 2, curSize * 2)
 			end
-			--[[
-			if (self.lastX ~= cx) then
-				LocalPlayer():ConCommand("wire_graphics_tablet_xval "..tostring(cx).."\n")
-				self.lastX = cx
-			end
-			if (self.lastY ~= cy) then
-				LocalPlayer():ConCommand("wire_graphics_tablet_yval "..tostring(cy).."\n")
-				self.lastY = cy
-			end
-			]]--
 		end
 	cam.End3D2D()
+	--end adapted nighteagle code
 	Wire_Render(self.Entity)
-end
-
-function ENT:IsTranslucent()
-	return true
 end
