@@ -59,6 +59,8 @@ function TOOL:LeftClick( trace )
 	local min = wire_graphics_tablet:OBBMins()
 	wire_graphics_tablet:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
+	local const = WireLib.Weld(wire_graphics_tablet, trace.Entity, trace.PhysicsBone, true)
+	
 	undo.Create("WireGraphicsTablet")
 		undo.AddEntity( wire_graphics_tablet )
 		undo.SetPlayer( ply )
