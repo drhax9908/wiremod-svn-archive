@@ -578,7 +578,10 @@ function AdvDupe.GetSaveableEntity( Ent, Offset )
 	//Saveablity
 	local SaveableEntity = {}
 	SaveableEntity.Class		 = Ent:GetClass()
-	SaveableEntity.Model 		 = Ent:GetModel()
+	
+	// escape the model string properly cause something out there rapes it sometimes
+	SaveableEntity.Model = table.concat( dupeshare.split( Ent:GetModel(), '\\+' ), "/" )
+	
 	SaveableEntity.LocalPos		 = Tab.LocalPos
 	SaveableEntity.LocalAngle	 = Tab.LocalAngle
 	SaveableEntity.BoneMods		 = table.Copy( Tab.BoneMods )
@@ -663,6 +666,7 @@ function AdvDupe.GetSaveableConst( ConstraintEntity, Offset )
 	end
 	
 	SaveableConst.Entity = {}
+	local ents = {}
 	
 	if ( ConstTable[ "Ent" ] && ( ConstTable[ "Ent" ]:IsWorld() || ConstTable[ "Ent" ]:IsValid() ) ) then
 		
@@ -689,11 +693,12 @@ function AdvDupe.GetSaveableConst( ConstraintEntity, Offset )
 				else
 					SaveableConst.Entity[ i ].LPos = ConstTable[ "LPos"..i ]
 				end
+				table.insert( ents, ConstTable[ "Ent"..i ] )
 			end
 		end
 	end
 	
-	return SaveableConst
+	return SaveableConst, ents
 end
 
 
@@ -714,10 +719,9 @@ function AdvDupe.Copy( Ent, EntTable, ConstraintTable, Offset )
 	
 	for key, ConstraintEntity in pairs( Ent.Constraints ) do
 		if ( !ConstraintTable[ ConstraintEntity ] ) then
-			ConstraintTable[ ConstraintEntity ] = AdvDupe.GetSaveableConst( ConstraintEntity, Offset )
-			local ConstTable = ConstraintEntity:GetTable()
-			for i=1, 6 do
-				local e = ConstTable[ "Ent"..i ]
+			local ConstTable, ents = AdvDupe.GetSaveableConst( ConstraintEntity, Offset )
+			ConstraintTable[ ConstraintEntity ] = ConstTable
+			for k,e in pairs(ents) do
 				if ( e and ( e:IsWorld() or e:IsValid() ) ) and ( !EntTable[ e:EntIndex() ] ) then
 					AdvDupe.Copy( e, EntTable, ConstraintTable, Offset )
 				end
@@ -753,6 +757,27 @@ function AdvDupe.GetEntitysConstrainedEntitiesAndConstraints( ent )
 		end
 	end
 	return Ents, Consts
+end
+
+function AdvDupe.GetAllEnts( Ent, OrderedEntList, EntsTab, ConstsTab )
+	if ( Ent and Ent:IsValid() ) and ( !EntsTab[ Ent:EntIndex() ] ) then
+		EntsTab[ Ent:EntIndex() ] = Ent
+		table.insert(OrderedEntList, Ent)
+		if ( !constraint.HasConstraints( Ent ) ) then return OrderedEntList end
+		for key, ConstraintEntity in pairs( Ent.Constraints ) do
+			if ( !ConstsTab[ ConstraintEntity ] ) then
+				ConstsTab[ ConstraintEntity ] = true
+				local ConstTable = ConstraintEntity:GetTable()
+				for i=1, 6 do
+					local e = ConstTable[ "Ent"..i ]
+					if ( e and e:IsValid() ) and ( !EntsTab[ e:EntIndex() ] ) then
+						AdvDupe.GetAllEnts( e, OrderedEntList, EntsTab, ConstsTab )
+					end
+				end
+			end
+		end
+	end
+	return OrderedEntList
 end
 
 
@@ -1294,6 +1319,7 @@ local function AdvDupeThink()
 				NextPasteTime = CurTime() +  .08
 			else
 				if ( TimedPasteData[TimedPasteDataCurrent].NormPaste ) and ( TimedPasteData[TimedPasteDataCurrent].Delay < CurTime() ) then
+					
 					local NoFail, Result = pcall( AdvDupe.NormPaste,
 						TimedPasteData[TimedPasteDataCurrent].Player, 
 						TimedPasteData[TimedPasteDataCurrent].EntityList, 
@@ -1308,10 +1334,13 @@ local function AdvDupeThink()
 					if ( !NoFail ) then
 						Msg("AdvDupeERROR: NormPaste Failed, Error: "..tostring(Result).."\n")
 					end
+					
 					AdvDupe.FinishPasting( TimedPasteData,TimedPasteDataCurrent )
-					//table.remove(TimedPasteData,TimedPasteDataCurrent)
+					
 					NextPasteTime = CurTime() + 2
+					
 				elseif ( TimedPasteData[TimedPasteDataCurrent].Delay < CurTime() ) then
+					
 					local NoFail, Result = pcall( AdvDupe.OverTimePasteProcess,
 						TimedPasteData[TimedPasteDataCurrent].Player, 
 						TimedPasteData[TimedPasteDataCurrent].EntityList, 
@@ -1333,13 +1362,14 @@ local function AdvDupeThink()
 						Msg("AdvDupeERROR: OverTimePaste Failed in stage "..(TimedPasteData[TimedPasteDataCurrent].Stage or "BadStage")..", Error: "..tostring(Result).."\n")
 						TimedPasteData[TimedPasteDataCurrent].Stage = 5
 					end
+					
 					TimedPasteData[TimedPasteDataCurrent].CallsInRun = TimedPasteData[TimedPasteDataCurrent].CallsInRun + 1
+					
 					if ( TimedPasteData[TimedPasteDataCurrent].Stage ) and ( TimedPasteData[TimedPasteDataCurrent].Stage == 5 ) then
 						
-						Msg("==TotalTicks= "..TimedPasteData[TimedPasteDataCurrent].TotalTicks.."\n")
-						
-						Msg("==CallsInRun = "..TimedPasteData[TimedPasteDataCurrent].CallsInRun.."\n")
-						Msg("==LastDelay = "..LastDelay.."\n")
+						--Msg("==TotalTicks= "..TimedPasteData[TimedPasteDataCurrent].TotalTicks.."\n")
+						--Msg("==CallsInRun = "..TimedPasteData[TimedPasteDataCurrent].CallsInRun.."\n")
+						--Msg("==LastDelay = "..LastDelay.."\n")
 						
 						AdvDupe.FinishPasting( TimedPasteData,TimedPasteDataCurrent )
 						
@@ -1355,6 +1385,7 @@ local function AdvDupeThink()
 						NextPasteTime = CurTime() + LastDelay
 						
 					end
+					
 				end
 				
 				//task switching mode
@@ -1603,27 +1634,38 @@ function AdvDupe.NormPaste( Player, EntityList, ConstraintList, HeadEntityIdx, O
 	--Msg("===doing delayed paste===\n")
 	Ents, Constraints = AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offset, HoldAngle, Shooting_Ent, PastewoConst )
 	
-	AdvDupe.ResetPositions( EntityList, ConstraintList )
-	
 	undo.Create( "Duplicator" )
 		
-		for k, ent in pairs( Ents ) do
-			undo.AddEntity( ent )
+		for EntID, Ent in pairs( Ents ) do
+			undo.AddEntity( Ent )
 			
-			if ( PasteFrozen ) and (ent:GetPhysicsObject():IsValid()) then
-				local Phys = ent:GetPhysicsObject()
+			if ( PasteFrozen or PastewoConst ) and (Ent:GetPhysicsObject():IsValid()) then
+				local Phys = Ent:GetPhysicsObject()
 				Phys:Sleep()
-				Phys:EnableMotion(true)
-				Player:AddFrozenPhysicsObject( ent, Phys )
+				Phys:EnableMotion(false)
+				Player:AddFrozenPhysicsObject( Ent, Phys )
 			end
 			
-			AdvDupe.ApplyParenting( ent, k, EntityList, Ents )
+			AdvDupe.ApplyParenting( Ent, EntID, EntityList, Ents )
+			
+			// Resets the positions of all the entities in the table
+			EntTable = EntityList[ EntID ]
+			EntTable.Pos = EntTable.LocalPos * 1
+			EntTable.Angle = EntTable.LocalAngle * 1
+			if ( EntTable.PhysicsObjects ) then
+				for Num, Object in pairs( EntTable.PhysicsObjects ) do
+					Object.Pos = Object.LocalPos * 1
+					Object.Angle = Object.LocalAngle * 1
+				end
+			end
 			
 		end
 		
 		undo.SetPlayer( Player )
 		
 	undo.Finish()
+	
+	//AdvDupe.ResetPositions( EntityList, ConstraintList )
 	
 end
 
@@ -1634,9 +1676,11 @@ function AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offse
 	//
 	// Create the Entities
 	//
-	for EntID, Ent in pairs( EntityList ) do
+	for EntID, EntTable in pairs( EntityList ) do
 		
-		CreatedEntities[ EntID ] = AdvDupe.CreateEntityFromTable( Player, Ent, EntID, Offset, HoldAngle )
+		CreatedEntities[ EntID ] = AdvDupe.PasteEntity( Player, EntTable, EntID, Offset, HoldAngle )
+		
+		/*CreatedEntities[ EntID ] = AdvDupe.CreateEntityFromTable( Player, Ent, EntID, Offset, HoldAngle )
 		
 		if ( CreatedEntities[ EntID ] and CreatedEntities[ EntID ]:IsValid() )
 		and not ( CreatedEntities[ EntID ].AdminSpawnable and !SinglePlayer() and (!Player:IsAdmin( ) or !Player:IsSuperAdmin() ) and DontAllowPlayersAdminOnlyEnts ) then
@@ -1666,7 +1710,7 @@ function AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offse
 			Msg("AdvDupeERROR:Created Entity Bad! Class: "..(Ent.Class or "NIL").." Ent: "..EntID.."\n")
 			if (CreatedEntities[ EntID ] and CreatedEntities[ EntID ]:IsValid()) then CreatedEntities[ EntID ]:Remove() end
 			CreatedEntities[ EntID ] = nil
-		end
+		end*/
 		
 	end
 	
@@ -1769,12 +1813,11 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 				local EntID		= EntIDList[ LastID ]
 				local EntTable	= EntityList[ EntID ]
 				
-				CreatedEntities[ EntID ] = AdvDupe.CreateEntityFromTable( Player, EntTable, EntID, Offset, HoldAngle )
+				/*CreatedEntities[ EntID ] = AdvDupe.CreateEntityFromTable( Player, EntTable, EntID, Offset, HoldAngle )
 				
 				if ( CreatedEntities[ EntID ] and CreatedEntities[ EntID ]:IsValid() )
 				and not ( CreatedEntities[ EntID ].AdminSpawnable and !SinglePlayer() and (!Player:IsAdmin( ) or !Player:IsSuperAdmin() ) and DontAllowPlayersAdminOnlyEnts ) then
-				
-					//safe guard
+					
 					Player:AddCleanup( "duplicates", CreatedEntities[ EntID ] )
 					
 					CreatedEntities[ EntID ].BoneMods = table.Copy( EntTable.BoneMods )
@@ -1806,7 +1849,25 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 				else
 					Msg("AdvDupeERROR:Created Entity Bad! Class: "..(EntTable.Class or "NIL").." Ent: "..EntID.."\n")
 					CreatedEntities[ EntID ] = nil
+				end*/
+				
+				
+				CreatedEntities[ EntID ] = AdvDupe.PasteEntity( Player, EntTable, EntID, Offset, HoldAngle )
+				
+				if ( CreatedEntities[ EntID ] ) then
+					//freeze it and make it not solid so it can't be altered while the rest is made
+					if (CreatedEntities[ EntID ]:GetPhysicsObject():IsValid()) then
+						CreatedEntities[ EntID ]:GetPhysicsObject():Sleep()
+						CreatedEntities[ EntID ]:GetPhysicsObject():EnableMotion(false)
+					end
+					CreatedEntities[ EntID ]:SetNotSolid(true)
+					
+					//do the effect
+					if (DoPasteFX) and (math.random(5) > 3) then
+						TingerFX( Shooting_Ent, CreatedEntities[ EntID ]:GetPos() )
+					end
 				end
+				
 				
 				LastID = LastID + 1
 				
@@ -1879,27 +1940,40 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 		
 	elseif Stage == 4 then
 		
-		AdvDupe.ResetPositions( EntityList, ConstraintList )
-		
 		undo.Create( "Duplicator" )
 			for EntID, Ent in pairs( CreatedEntities ) do
 				if (Ent:IsValid()) then
 					
+					undo.AddEntity( Ent )
+					
+					Ent:SetNotSolid(false)
+					
+					EntTable = EntityList[ EntID ]
+					
 					if ( Ent:GetPhysicsObject():IsValid() ) then
 						local Phys = Ent:GetPhysicsObject()
-						if ( PasteFrozen ) or ( PastewoConst ) or ( EntityList[ EntID ].PhysicsObjects[0].Frozen ) then
+						if ( PasteFrozen or PastewoConst ) or ( EntTable.PhysicsObjects[0].Frozen ) then
 							Player:AddFrozenPhysicsObject( Ent, Phys )
 						else
 							Phys:EnableMotion(true)
 						end
 					end
 					
-					Ent:SetNotSolid(false)
-					
-					if ( Ent.RDbeamlibDrawer ) then
+					/*if ( Ent.RDbeamlibDrawer ) then
 						Ent.RDbeamlibDrawer:SetParent( Ent )
+					end*/
+					
+					AdvDupe.ApplyParenting( Ent, EntID, EntityList, CreatedEntities )
+					
+					// Resets the positions of all the entities in the table
+					EntTable.Pos = EntTable.LocalPos * 1
+					EntTable.Angle = EntTable.LocalAngle * 1
+					if ( EntTable.PhysicsObjects ) then
+						for Num, Object in pairs( EntTable.PhysicsObjects ) do
+							Object.Pos = Object.LocalPos * 1
+							Object.Angle = Object.LocalAngle * 1
+						end
 					end
-					undo.AddEntity( Ent )
 					
 				else
 					Ent = nil
@@ -1908,9 +1982,11 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 			undo.SetPlayer( Player )
 		undo.Finish()
 		
-		for EntID, Ent in pairs( CreatedEntities ) do
-			AdvDupe.ApplyParenting( Ent, EntID, EntityList, CreatedEntities ) --will crash
-		end
+		/*for EntID, Ent in pairs( CreatedEntities ) do
+			AdvDupe.ApplyParenting( Ent, EntID, EntityList, CreatedEntities )
+		end*/
+		
+		//AdvDupe.ResetPositions( EntityList, ConstraintList )
 		
 		Stage = 5 //done!
 		
@@ -1925,7 +2001,9 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 end
 
 
-
+//
+//	Clean Up
+//
 function AdvDupe.FinishPasting( TimedPasteData,TimedPasteDataCurrent )
 	if ( TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity ) then
 		TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity:Remove()
@@ -1939,6 +2017,48 @@ function AdvDupe.FinishPasting( TimedPasteData,TimedPasteDataCurrent )
 	table.remove(TimedPasteData,TimedPasteDataCurrent)
 end
 
+
+
+//
+//	Makes single entity
+//
+function AdvDupe.PasteEntity( Player, EntTable, EntID, Offset, HoldAngle )
+	
+	if ( not AdvDupe.CheckOkEnt( Player, EntTable ) ) then
+		return
+	end
+	
+	local Ent = AdvDupe.CreateEntityFromTable( Player, EntTable, EntID, Offset, HoldAngle )
+	
+	if ( Ent and Ent:IsValid() ) then
+		
+		Player:AddCleanup( "duplicates", Ent )
+		
+		Ent.BoneMods = table.Copy( EntTable.BoneMods )
+		Ent.EntityMods = table.Copy( EntTable.EntityMods )
+		Ent.PhysicsObjects = table.Copy( EntTable.PhysicsObjects )
+		
+		local Success, Result = pcall( duplicator.ApplyEntityModifiers, Player, Ent )
+		if ( !Success ) then
+			Msg("AdvDupeERROR: ApplyEntityModifiers, Error: "..tostring(Result).."\n")
+		end
+		
+		local Success, Result = pcall( duplicator.ApplyBoneModifiers, Player, Ent )
+		if ( !Success ) then
+			Msg("AdvDupeERROR: ApplyBoneModifiers Error: "..tostring(Result).."\n")
+		end
+		
+		return Ent
+		
+	else
+		
+		Msg("AdvDupeERROR:Created Entity Bad! Class: "..(EntTable.Class or "NIL").." Ent: "..EntID.."\n")
+		if (Ent and Ent:IsValid()) then Ent:Remove() end
+		return
+		
+	end
+	
+end
 
 
 //
@@ -2198,6 +2318,54 @@ function AdvDupe.ApplyParenting( Ent, EntID, EntityList, CreatedEntities )
 	end
 	
 end
+
+
+
+local CheckFunctions = {}
+function AdvDupe.CheckOkEnt( Player, EntTable )
+	
+	for HookName, TheHook in pairs (CheckFunctions) do
+		
+		local Success, Result = pcall( TheHook.Func, Player, EntTable.Class, EntTable )
+		if ( !Success ) then
+			Error("AdvDupeERROR: Entity check hook \""..HookName.."\" failed, removing.\nHook Error: \""..tostring(Result).."\"\n")
+			
+			if ( TheHook.OnFailCallBack ) then
+				TheHook.OnFailCallBack( HookName )
+			end
+			
+			CheckFunctions[ HookName ] = nil
+			
+		elseif ( !Result ) then
+			
+			return false
+			
+		end
+		
+	end
+	
+	local test = scripted_ents.GetStored( EntTable.Class )
+	if ( test and test.t and test.t.AdminSpawnable and test.t.Spawnable and !SinglePlayer()
+	and (!Player:IsAdmin( ) or !Player:IsSuperAdmin() ) and DontAllowPlayersAdminOnlyEnts ) then
+		AdvDupe.SendClientError(Player, "Sorry, you can't cheat like that")
+		Msg("AdvDupeERROR: "..tostring(Player).." tried to paste admin only prop "..(EntTable.Class or "NIL").." Ent: "..EntID.."\n")
+		return false
+	end
+	
+	return true
+	
+end
+
+// Func = HookFunction( Player, Class, EntTable )
+//OnFailCallBack = function to call if your hook function generates an error and is removed
+function AdvDupe.AddEntCheckHook( HookName, Func, OnFailCallBack )
+	CheckFunctions[ HookName ] = {}
+	CheckFunctions[ HookName ].Func = Func
+	CheckFunctions[ HookName ].OnFailCallBack = OnFailCallBack
+end
+
+AdvDupe.AddEntCheckHook( "TestHook", function(Player, Ent, EntTable) return true end )
+
 
 
 
@@ -2800,22 +2968,6 @@ local function CamRegister(Player, Pos, Ang, Key, Locked, Toggle, Vel, aVel, Fro
 end
 duplicator.RegisterEntityClass("gmod_cameraprop", CamRegister, "Pos", "Ang", "key", "locked", "toggle", "Vel", "aVel", "frozen", "nocollide")
 
-
-
-//
-//	Super Freeze no touch hook
-//
-function PhysgunPickup( pl, ent )
-	if ( ent.Freeze_o_Matic_NoPickUp ) then
-		return false
-	end
-end
-hook.Remove( "GravGunPickupAllowed", "Freeze_o_MaticGravGunPunt")
-hook.Remove( "PhysgunPickup", "Freeze_o_MaticGravGunPickupAllowed")
-hook.Remove( "PhysgunPickup", "Freeze_o_MaticPhysgunPickup")
-hook.Add( "GravGunPickupAllowed", "Freeze_o_MaticGravGunPickupAllowed", PhysgunPickup)
-hook.Add( "PhysgunPickup", "Freeze_o_MaticPhysgunPickup", PhysgunPickup)
-hook.Add( "PhysgunDrop", "Freeze_o_MaticPhysgunDrop", PhysgunPickup)
 
 
 

@@ -16,6 +16,8 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	
+	self.Entity:DrawShadow(false)
+	
 	//self.Entity:SetModel( "models/dav0r/hoverball.mdl" )
 	//self.Entity:PhysicsInitSphere( 8, "metal_bouncy" )
 	
@@ -392,11 +394,16 @@ function ENT:Think()
 			
 			for _,v in pairs(self.ents.Attached) do
 				if (v and v.Entity and v.Entity:IsValid()) then
+					
+					v.Entity:DrawShadow(false)
+					
 					DoPropSpawnedEffect( v.Entity );
+					
 					local ed = EffectData()
 						ed:SetEntity( v.Entity )
 						ed:SetOrigin( self.Entity:GetPos() + (Ofs:Normalize() * math.Clamp( v.Entity:BoundingRadius() * 5, 180, 4092 ) ) )
 					util.Effect( "jump_out", ed, true, true );
+					
 				end
 			end
 			
@@ -425,13 +432,18 @@ function ENT:Think()
 		for _,v in pairs(self.ents.Attached) do
 			self:Teleport(v,self.Entity);
 			
-			DoPropSpawnedEffect( v.Entity );
-			
-			local ed = EffectData()
-				ed:SetEntity( v.Entity )
-				ed:SetOrigin( self.Entity:GetPos() + (Ofs:Normalize() * math.Clamp( v.Entity:BoundingRadius() * 5, 180, 4092 ) ) )
-			util.Effect( "jump_in", ed, true, true );
-			
+			if (v and v.Entity and v.Entity:IsValid()) then
+				
+				v.Entity:DrawShadow(true)
+				
+				DoPropSpawnedEffect( v.Entity );
+				
+				local ed = EffectData()
+					ed:SetEntity( v.Entity )
+					ed:SetOrigin( self.Entity:GetPos() + (Ofs:Normalize() * math.Clamp( v.Entity:BoundingRadius() * 5, 180, 4092 ) ) )
+				util.Effect( "jump_in", ed, true, true );
+				
+			end
 		end
 		
 		self.Entity:EmitSound("stargate/teleport.mp3");
@@ -613,18 +625,8 @@ function ENT:GetEntitiesForTeleport(e)
 		local constraints = {}; -- We dont need constraints
 		--################# Attached Props and constraints
 		local attached = {};
-		/*if(not duplicator.GetAllConstrainedEntitiesAndConstraints) then -- Fallback to servers, which either have wire installed or an older version as 0020 of gmod
-			if(duplicator.GetEnts) then
-				attached = {duplicator.GetEnts(e)};
-			else
-				return false; -- Hurray, user has a gmod version, which is totally fucked up - dont teleport!
-			end
-		else
-			attached = {{},{}};
-			duplicator.GetAllConstrainedEntitiesAndConstraints(e,attached[1],attached[2]);
-		end*/
-		attached = {{},{}};
-		DebugDuplicator.GetAllConstrainedEntities(e,attached[1],attached[2]);
+		//DebugDuplicator.GetAllConstrainedEntities(e,attached[1],attached[2]);
+		AdvDupe.GetAllEnts( e, attached, {}, {} )
 		--################# Check, if the prop is attached to the gate (like hoverballs) and disallow it's teleportataion then
 		local allow = true;
 		/*for _,v in pairs(attached[1]) do
@@ -644,7 +646,7 @@ function ENT:GetEntitiesForTeleport(e)
 				end
 			end*/
 			//if(allow) then
-				for _,v in pairs(attached[1]) do
+				for _,v in pairs(attached) do
 					//if(v:GetClass() ~= "gmod_spawner" and 
 					if (v ~= e and self:Allowed(v)) then
 						table.insert(entities,v);
