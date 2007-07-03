@@ -4,7 +4,7 @@ WireLib = {}
 
 -- Compatibility Global
 WireAddon = 1
-WireVersion = 0.98
+WireVersion = 1.0
 WireLib.Version = WireVersion
 
 -- extra table functions
@@ -930,63 +930,99 @@ WireLib.AfterPasteMods			= Wire_AfterPasteMods
 //backwards logic: set enable to false to show show values on gates instead
 Wire_EnableGateInputValues = true
 local function WireEnableInputValues(pl, cmd, args)
-	if not args[1] then return end
-	if args[1] == "1" or args[1] == 1 then 
-		Wire_EnableGateInputValues = false
-	else
-		Wire_EnableGateInputValues = true
+	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
+		if args[1] == "1" or args[1] == 1 then 
+			Wire_EnableGateInputValues = true
+		elseif args[1] == "0" or args[1] == 0 then
+			Wire_EnableGateInputValues = false
+		else
+			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
+		end
 	end
+	pl:PrintMessage(HUD_PRINTCONSOLE, "\nWire_EnableGateInputValues = "..tostring(Wire_EnableGateInputValues).."\n")
 end
-concommand.Add( "sv_Wire_EnableGateInputValues", WireEnableInputValues )
+concommand.Add( "Wire_EnableGateInputValues", WireEnableInputValues )
 
 Wire_FastOverlayTextUpdate = false
 local function WireFastOverlayTextUpdate(pl, cmd, args)
-	if not args[1] then return end
-	if args[1] == "1" or args[1] == 1 then 
-		Wire_FastOverlayTextUpdate = true
-	else
-		Wire_FastOverlayTextUpdate = false
+	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
+		if args[1] == "1" or args[1] == 1 then 
+			Wire_FastOverlayTextUpdate = true
+		elseif args[1] == "0" or args[1] == 0 then
+			Wire_FastOverlayTextUpdate = false
+		else
+			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
+		end
 	end
+	pl:PrintMessage(HUD_PRINTCONSOLE, "\nWire_FastOverlayTextUpdate = "..tostring(Wire_FastOverlayTextUpdate).."\n")
 end
-concommand.Add( "sv_Wire_FastOverlayTextUpdate", WireFastOverlayTextUpdate )
+concommand.Add( "Wire_FastOverlayTextUpdate", WireFastOverlayTextUpdate )
 
 Wire_SlowerOverlayTextUpdate = false
 local function WireSlowerOverlayTextUpdate(pl, cmd, args)
-	if not args[1] then return end
-	if args[1] == "1" or args[1] == 1 then 
-		Wire_SlowerOverlayTextUpdate = true
-	else
-		Wire_SlowerOverlayTextUpdate = false
+	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
+		if args[1] == "1" or args[1] == 1 then 
+			Wire_SlowerOverlayTextUpdate = true
+		elseif args[1] == "0" or args[1] == 0 then
+			Wire_SlowerOverlayTextUpdate = false
+		else
+			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
+		end
 	end
+	pl:PrintMessage(HUD_PRINTCONSOLE, "\nWire_SlowerOverlayTextUpdate = "..tostring(Wire_SlowerOverlayTextUpdate).."\n")
 end
-concommand.Add( "sv_Wire_SlowerOverlayTextUpdate", WireSlowerOverlayTextUpdate )
+concommand.Add( "Wire_SlowerOverlayTextUpdate", WireSlowerOverlayTextUpdate )
 
 Wire_DisableOverlayTextUpdate = false
 local function WireDisableOverlayTextUpdate(pl, cmd, args)
-	if not args[1] then return end
-	if args[1] == "1" or args[1] == 1 then 
-		Wire_DisableOverlayTextUpdate = true
-	else
-		Wire_DisableOverlayTextUpdate = false
+	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
+		if args[1] == "1" or args[1] == 1 then 
+			Wire_DisableOverlayTextUpdate = true
+		elseif args[1] == "0" or args[1] == 0 then
+			Wire_DisableOverlayTextUpdate = false
+		else
+			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
+		end
 	end
+	pl:PrintMessage(HUD_PRINTCONSOLE, "\nWire_DisableOverlayTextUpdate = "..tostring(Wire_DisableOverlayTextUpdate).."\n")
 end
-concommand.Add( "sv_Wire_DisableOverlayTextUpdate", WireDisableOverlayTextUpdate )
+concommand.Add( "Wire_DisableOverlayTextUpdate", WireDisableOverlayTextUpdate )
 
 Wire_ForceDelayOverlayTextUpdate = false
 local function WireForceDelayOverlayTextUpdate(pl, cmd, args)
-	if not args[1] then return end
-	if args[1] == "1" or args[1] == 1 then 
-		Wire_ForceDelayOverlayTextUpdate = true
-	else
-		Wire_ForceDelayOverlayTextUpdate = false
+	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
+		if args[1] == "1" or args[1] == 1 then 
+			Wire_ForceDelayOverlayTextUpdate = true
+		elseif args[1] == "0" or args[1] == 0 then
+			Wire_ForceDelayOverlayTextUpdate = false
+		else
+			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
+		end
 	end
+	pl:PrintMessage(HUD_PRINTCONSOLE, "\nWire_ForceDelayOverlayTextUpdate = "..tostring(Wire_ForceDelayOverlayTextUpdate).."\n")
 end
-concommand.Add( "sv_Wire_ForceDelayOverlayTextUpdate", WireForceDelayOverlayTextUpdate )
+concommand.Add( "Wire_ForceDelayOverlayTextUpdate", WireForceDelayOverlayTextUpdate )
+
+
+/*Wire_UseOldGateOutputLables = false
+local function WireUseOldGateOutputLables(pl, cmd, args)
+	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
+		if args[1] == "1" or args[1] == 1 then 
+			Wire_UseOldGateOutputLables = true
+		elseif args[1] == "0" or args[1] == 0 then
+			Wire_UseOldGateOutputLables = false
+		else
+			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
+		end
+	end
+	pl:PrintMessage(HUD_PRINTCONSOLE, "\nWire_UseOldGateOutputLables = "..tostring(Wire_UseOldGateOutputLables).."\n")
+end
+concommand.Add( "Wire_UseOldGateOutputLables", WireUseOldGateOutputLables )*/
+
 
 local function PrintWireVersion(pl,cmd,args)
 	pl:SendLua("Msg(\"===============================\n===  Wire  "..WireVersion.."   Installed  ===\n===============================\n\")")
 end
 concommand.Add( "Wire_PrintVersion", PrintWireVersion )
 
-Msg("===============================\n===  Wire  "..WireVersion.."   Installed  ===\n===============================\n")
 MsgAll("===============================\n===  Wire  "..WireVersion.."   Installed  ===\n===============================\n")
