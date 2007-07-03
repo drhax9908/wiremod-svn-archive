@@ -19,7 +19,7 @@ function TOOL:LeftClick(trace)
 	local dbgname = trace.Entity.WireDebugName
 	if (not dbgname) then return end
 
-	ply_idx = self:GetOwner()//:UniqueID()
+	ply_idx = self:GetOwner()
     Components[ply_idx] = Components[ply_idx] or {}
 
 	for k,cmp in ipairs(Components[ply_idx]) do
@@ -39,7 +39,7 @@ function TOOL:RightClick(trace)
 	local dbgname = trace.Entity.WireDebugName
 	if (not dbgname) then return end
 
-	ply_idx = self:GetOwner()//:UniqueID()
+	ply_idx = self:GetOwner()
     Components[ply_idx] = Components[ply_idx] or {}
 
 	for k,cmp in ipairs(Components[ply_idx]) do
@@ -58,23 +58,22 @@ end
 
 
 if (SERVER) then
-
+	
 	local dbg_line_cache = {}
 	local dbg_line_time = {}
-
+	
 	function DebuggerThink()
 	    for ply,cmps in pairs(Components) do
-	        //local ply = player.GetByUniqueID(i)
-
+			
 	    	table.Compact(cmps, function(cmp) return cmp:IsValid() end)
-
+			
 	        umsg.Start("WireDbgLineCount", ply)
 				umsg.Short(table.getn(cmps))
 			umsg.End()
-
+			
 		    for l,cmp in ipairs(cmps) do
 			    local dbginfo = cmp.WireDebugName .. " - "
-
+				
 		        if (cmp.Inputs) then
 			        dbginfo = dbginfo .. "IN "
 		            for _,k in ipairs(table.MakeSortedKeys(cmp.Inputs)) do
@@ -84,7 +83,7 @@ if (SERVER) then
 						end
 		            end
 		        end
-
+				
 		        if (cmp.Outputs) then
 			        dbginfo = dbginfo .. "OUT "
 		            for _,k in ipairs(table.MakeSortedKeys(cmp.Outputs)) do
@@ -94,29 +93,28 @@ if (SERVER) then
 						end
 		            end
 		        end
-
+				
 		        if (not cmp.Inputs) and (not cmp.Outputs) then
 		            dbginfo = dbginfo .. "No info"
 		        end
-
-		local i = ply
-                dbg_line_cache[i] = dbg_line_cache[i] or {}
-                dbg_line_time[i] = dbg_line_time[i] or {}
-		        if (dbg_line_cache[i][l] ~= dbginfo) then
-		            if (not dbg_line_time[i][l]) or (CurTime() > dbg_line_time[i][l]) then
+				
+                dbg_line_cache[ply] = dbg_line_cache[ply] or {}
+                dbg_line_time[ply] = dbg_line_time[ply] or {}
+		        if (dbg_line_cache[ply][l] ~= dbginfo) then
+		            if (not dbg_line_time[ply][l]) or (CurTime() > dbg_line_time[ply][l]) then
 				        umsg.Start("WireDbgLine", ply)
 							umsg.Short(l)
 							umsg.String(dbginfo)
 						umsg.End()
-						dbg_line_cache[i][l] = dbginfo
-						dbg_line_time[i][l] = CurTime() + 0.2
+						dbg_line_cache[ply][l] = dbginfo
+						dbg_line_time[ply][l] = CurTime() + 0.2
 					end
 				end
 		    end
 		end
 	end
 	hook.Add("Think", "DebuggerThink", DebuggerThink)
-
+	
 end
 
 
