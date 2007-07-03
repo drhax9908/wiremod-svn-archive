@@ -19,16 +19,23 @@ function ENT:Initialize()
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Out" })
 end
 
-function ENT:Setup(maxrange, players, npcs, beacons, hoverballs, thrusters, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner)
+function ENT:Setup(maxrange, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel, vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity)
  	self.MaxRange			= maxrange
 	self.MinRange			= minrange or 1
 	self.TargetPlayer		= players
 	self.NoTargetOwner		= notargetowner
 	self.TargetNPC			= npcs
+	self.NPCName			= npcname
 	self.TargetBeacon		= beacons
-	self.TargetHoverballs	= hoverballs
-	self.TargetThrusters	= thrusters
+	self.TargetHoverballs		= hoverballs
+	self.TargetThrusters		= thrusters
+	self.TargetProps		= props
+	self.PropModel			= propmodel
+	self.TargetVehicles		= vehicles
+	self.PlayerName			= playername
+	self.CaseSen			= casesen
 	self.TargetRPGs			= rpgs
+	self.EntFil			= entity
 	self.PaintTarget		= painttarget
 	self.MaxTargets			= math.floor(math.Clamp((maxtargets or 1), 1, server_settings.Int("wire_target_finders_maxtargets", 10)))
 	self.MaxBogeys			= math.floor(math.Clamp((maxbogeys or 1), self.MaxTargets , server_settings.Int("wire_target_finders_maxbogeys", 30)))
@@ -66,13 +73,15 @@ function ENT:Setup(maxrange, players, npcs, beacons, hoverballs, thrusters, rpgs
 end
 
 function ENT:TriggerInput(iname, value)
-	if (value > 0) then
-		if self.Selector.Next[iname] then
-			self:SelectorNext(self.Selector.Next[iname])
-		/*elseif self.Selector.Prev[iname] then
-			self:SelectorPrev(self.Selector.Prev[iname])*/
-		/*elseif self.Selector.Hold[iname] then
-			self:SelectorHold(self.Selector.Hold[iname])*/
+	if iname == "Hold" then
+		if (value > 0) then
+			if self.Selector.Next[iname] then
+				self:SelectorNext(self.Selector.Next[iname])
+			/*elseif self.Selector.Prev[iname] then
+				self:SelectorPrev(self.Selector.Prev[iname])*/
+			/*elseif self.Selector.Hold[iname] then
+				self:SelectorHold(self.Selector.Hold[iname])*/
+			end
 		end
 	end
 end
@@ -127,6 +136,58 @@ end
 //function ENT:SelectorPrev(ch) end
 //function ENT:SelectorHold(ch) end
 
+function ENT:FindName(name)
+	local found = false
+	if string.len(self.PlayerName) > 0 then 
+		if self.CaseSen then
+			if string.find(name, self.PlayerName) then 
+				found = true
+			end
+		else
+			if string.find(string.lower(name), string.lower(self.PlayerName)) then 
+				found = true
+			end
+		end
+	else
+		found = true
+	end
+	return found
+end
+
+function ENT:FindModel(name)
+	local found = false
+	if string.len(self.PropModel) > 0 then 
+		if string.find(string.lower(name), string.lower(self.PropModel)) then 
+			found = true
+		end
+	else
+		found = true
+	end
+	return found
+end
+
+function ENT:FindNPCName(name)
+	local found = false
+	if string.len(self.NPCName) > 0 then 
+		if string.find(string.lower(name), string.lower(self.NPCName)) then 
+			found = true
+		end
+	else
+		found = true
+	end
+	return found
+end
+
+function ENT:FindEntity(name)
+	local found = false
+	if string.len(self.EntFil) > 0 then 
+		if string.find(string.lower(name), string.lower(self.EntFil)) then 
+			found = true
+		end
+	end
+	return found
+end
+
 
 function ENT:Think()
 	self.BaseClass.Think(self)
@@ -142,16 +203,16 @@ function ENT:Think()
 		local mypos = self.Entity:GetPos()
 		local bogeys,dists = {},{}
 		for _,contact in pairs(contacts) do
-			// Multiple if statements replaced with one long one
-			// NOTE: If this is changed again, note "contact" under the
-			// target player part to not target owner (TheApathetic)
-			local contactClass = contact:GetClass()
-			if ((self.TargetNPC)			and (string.find(contactClass, "^npc_.*")) and (contactClass ~= "npc_heli_avoidsphere")) or
-				((self.TargetPlayer)		and (contactClass == "player") and ((!self.NoTargetOwner) or (self.pl != contact))) or
+			// Multiple if statements replaced with one long one self.TargetVehicles
+			local contactClass = contact:GetClass()			if 	((self.TargetNPC)			and (string.find(contactClass, "^npc_.*")) and (contactClass ~= "npc_heli_avoidsphere") and (self:FindNPCName(contactClass))) or
+				((self.TargetPlayer)		and (contactClass == "player") and ((!self.NoTargetOwner) or (self.pl != target)) and (self:FindName(contact:GetName()))) or
 				((self.TargetBeacon)		and (contactClass == "gmod_wire_locator")) or
 				((self.TargetRPGs)			and (contactClass == "rpg_missile")) or
 				((self.TargetHoverballs)	and (contactClass == "gmod_hoverball" or contactClass == "gmod_wire_hoverball")) or
-				((self.TargetThrusters)		and (contactClass == "gmod_thruster" or contactClass == "gmod_wire_thruster"))
+				((self.TargetThrusters)		and (contactClass == "gmod_thruster" or contactClass == "gmod_wire_thruster")) or
+				((self.TargetProps)		and (contactClass == "prop_physics") and (self:FindModel(contact:GetModel()))) or
+				((self.TargetVehicles)		and (string.find(contactClass, "prop_vehicle"))) or
+				(self:FindEntity(contactClass))
 			then
 				local dist = (contact:GetPos() - mypos):Length()
 				if (dist >= self.MinRange) then
