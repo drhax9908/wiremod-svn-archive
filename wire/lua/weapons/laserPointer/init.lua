@@ -32,9 +32,11 @@ function SWEP:PrimaryAttack()
 	Msg("self.Pointing = " .. tostring(self.Pointing) .. "\n")
 	self.Weapon:SetNWBool("Active", self.Pointing)
 	//self:Message("Pointing on = "..tostring(self.Pointing))
-	if(self.Receiver && self.Receiver:IsValid())then
-	   Wire_TriggerOutput(self.Reciever,"Active",self.Pointing)
-	end
+	if(self.Pointing && self.Receiver && self.Receiver:IsValid())then
+       Wire_TriggerOutput(self.Receiver,"Active",1)
+    else
+       Wire_TriggerOutput(self.Receiver,"Active",0)        
+end
 end
 
 function SWEP:SecondaryAttack()
