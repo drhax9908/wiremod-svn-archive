@@ -96,9 +96,6 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	end
 	if (info.Constraint) and (self.Ent1) and (self.Ent2) and (self.Inputs.Activate.Value == 1) then
 		self.Constraint = constraint.Weld( self.Ent1, self.Ent2, self.Bone1, self.Bone2, 0 )
-		//this was the best way I found to set self.Constraint again because consts are not applied till after wires are applied
-		//has an issue if Latch was active before copy but should be deactive after paste (like when wired to a button)
-		//self:TriggerInput("Activate", self.Inputs.Activate.Value)
 	else
 		self:SetOverlayText( "Weld Latch - Deactivated" )
 	end
