@@ -5,6 +5,7 @@ include( "shared.lua" );
 // wire debug and overlay crap.
 ENT.WireDebugName	= "Holographic Emitter"
 ENT.OverlayDelay 	= 0;
+ENT.LastClear           = 0;
 
 // init.
 function ENT:Initialize( )
@@ -29,7 +30,7 @@ function ENT:Initialize( )
 	self.Entity:SetNetworkedEntity( "grid", self.Entity );
 
 	// create inputs.
-	self.Inputs = Wire_CreateInputs( self.Entity, { "X", "Y", "Z", "Active", "FadeRate" } );
+	self.Inputs = Wire_CreateInputs( self.Entity, { "X", "Y", "Z", "Active", "FadeRate", "Clear" } );
 end
 
 // link to grid
@@ -40,6 +41,11 @@ end
 // trigger input
 function ENT:TriggerInput( inputname, value, iter )
 	// store values.
+	if (inputname == "Clear" and value != 0)  then
+		self.LastClear = self.LastClear + 1
+		self.Entity:SetNetworkedInt( "Clear", self.LastClear );
+	end
+
 	if( inputname == "Active" ) then
 		self.Entity:SetNetworkedBool( "Active", value > 0 );
 		
