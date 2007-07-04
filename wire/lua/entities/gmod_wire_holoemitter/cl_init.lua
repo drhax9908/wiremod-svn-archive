@@ -8,6 +8,7 @@ local matpoint = Material( "sprites/gmdm_pickups/light" );
 function ENT:Initialize( )
 	// point list
 	self.PointList = {};
+	self.LastClear = self.Entity:GetNetworkedBool("Clear");
 	
 	// active point
 	self.ActivePoint = Vector( 0, 0, 0 );
@@ -30,6 +31,12 @@ function ENT:Think( )
 		self.Entity:GetNetworkedFloat( "Y" ),
 		self.Entity:GetNetworkedFloat( "Z" )
 	);
+
+	lastclear = self.Entity:GetNetworkedInt("Clear")
+	if(lastclear != self.LastClear) then
+		self.PointList = {}
+		self.LastClear = lastclear
+	end
 	
 	// did the point differ from active point?
 	if( point != self.ActivePoint && self.Entity:GetNetworkedBool( "Active" ) ) then
