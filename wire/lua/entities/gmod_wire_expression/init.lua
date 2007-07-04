@@ -1,5 +1,7 @@
 // Written by Syranide, me@syranide.com
 
+// Found some extremely rare bug at line 170 (delta), probably got set to nil for some reason.
+
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
 include('shared.lua')
@@ -44,18 +46,17 @@ function ENT:TriggerInput(key, value)
 end
 
 function ENT:Think()
-	if !self.schedule then return true end
-	if self.schedule == 0 then return true end
+	if !self.scheduled then return true end
 
-	self.curtime = self.curtime + self.schedule / 1000
+	self.curtime = self.curtime + self.scheduled / 1000
 	if math.abs(self.curtime - CurTime()) > 0.1 then self.curtime = CurTime() end
 
-	self.schedule = 0
+	self.scheduled = nil
 	self.clocked = true
 	self:Update()
 	self.clocked = nil
 
-	if self.schedule == 0 then self.curtime = nil end
+	if !self.scheduled then self.curtime = nil end
 
 	return true
 end
@@ -64,34 +65,40 @@ function ENT:Update()
 	for _,key in pairs(self.Xinputs) do
 		self.variables[key] = self.inputvars[key]
 	end
+
+	self.schedule = nil	
 	
 	local tbl = self.instructions
 	self["_"..tbl[1]](self,tbl)
 	self.triggvars = {}
+
+	if self.schedule and math.abs(self.schedule) >= self.Delta then
+		if !self.clocked and self.schedule > 0 or !self.curtime then self.curtime = CurTime() end
+		if self.schedule < 0  then self.schedule = -self.schedule end
+		if self.schedule < 20 then self.schedule = 20 end
+		self.scheduled = self.schedule
+		self.Entity:NextThink(self.curtime + self.schedule / 1000)
+	elseif self.scheduled and self.schedule and math.abs(self.schedule) < self.Delta then
+		self.scheduled = nil
+	end
 	
 	for _,key in ipairs(self.Xoutputs) do
 		Wire_TriggerOutput(self.Entity, key, self.variables[key]) --major overhead, add lazy updates?
 	end
-
-	if self.schedule then
-		if !self.clocked and self.schedule > 0 or !self.curtime then self.curtime = CurTime() end
-		if self.schedule < 0 then self.schedule = -self.schedule end
-		if self.schedule < 20 then self.schedule = 20 end
-		self.Entity:NextThink(self.curtime + self.schedule / 1000)
-	end
-
-	self.initialized = true
 end
 
 function ENT:Reset()
 	for _,key in ipairs(self.Xlocals)  do self.variables[key] = 0 self.deltavars[key] = 0 end
 	for _,key in ipairs(self.Xoutputs) do self.variables[key] = 0 self.deltavars[key] = 0 end
 
+	self.scheduled = nil
 	self.schedule = nil
 	self.curtime = nil
-	self.initialized = nil
+	self.initialized = false
 
 	self:Update()
+
+	self.initialized = true
 end
 
 function ENT:Setup(name, parser)
@@ -150,8 +157,15 @@ function ENT:Setup(name, parser)
 
 	if name == "" then name = "generic" end
 	self:SetOverlayText("Expression (" .. name .. ")")
+
+	self.scheduled = nil
+	self.schedule = nil
+	self.curtime = nil
+	self.initialized = false
 	
 	self:Update()
+
+	self.initialized = true
 	return true
 end
 
