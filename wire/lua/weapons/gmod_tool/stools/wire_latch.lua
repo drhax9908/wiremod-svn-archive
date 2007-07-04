@@ -133,3 +133,7 @@ if SERVER then
 	end
 	
 end
+
+function TOOL.BuildCPanel( panel )
+	panel:AddControl( "Header", { Text = "#Tool_wire_latch_name", Description = "#Tool_wire_latch_desc" } )
+end

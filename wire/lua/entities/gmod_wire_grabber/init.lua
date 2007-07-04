@@ -44,13 +44,13 @@ end
 function ENT:Setup(Range,Gravity)
     self:SetBeamRange(Range)
     self.Gravity = Gravity
-    Msg("Setup:\n\tRange:"..tostring(Range).."\n\tGravity:"..tostring(Gravity).."\n")
+    --Msg("Setup:\n\tRange:"..tostring(Range).."\n\tGravity:"..tostring(Gravity).."\n")
 end
 
 function ENT:ResetGrab()
     if(self.Weld && self.Weld:IsValid())then
         self.Weld:Remove()
-        Msg("-Weld1\n")
+        --Msg("-Weld1\n")
         if(self.WeldEntity)then
             if(self.WeldEntity:IsValid())then
                 self.WeldEntity:GetPhysicsObject():EnableGravity(true)
@@ -58,16 +58,16 @@ function ENT:ResetGrab()
         end
     end
     if(self.ExtraPropWeld && self.ExtraPropWeld:IsValid())then
-        self.ExtraPropWeld:Remove()
-        Msg("-Weld2\n")
+		self.ExtraPropWeld:Remove()
+		--Msg("-Weld2\n")
     end                
-                
-    self.Weld = nil
-    self.WeldEntity = nil
-    self.ExtraPropWeld = nil
-                
-    self.Entity:SetColor(255,255,255,255)
-    Wire_TriggerOutput(self.Entity,"Holding",0)
+	
+	self.Weld = nil
+	self.WeldEntity = nil
+	self.ExtraPropWeld = nil
+	
+	self.Entity:SetColor(255,255,255,255)
+	Wire_TriggerOutput(self.Entity,"Holding",0)
 end
 
 function ENT:TriggerInput(iname, value)
@@ -92,16 +92,22 @@ function ENT:TriggerInput(iname, value)
 			end
 			// Weld them!
 			local const = constraint.Weld(self.Entity, trace.Entity, 0, 0, self.WeldStrength)
+			if ( const ) then
+				const.Type = "" //prevents the duplicator from making this weld
+			end
 			local const2
-			Msg("+Weld1\n")
+			--Msg("+Weld1\n")
 			if(self.ExtraProp)then
-			     if(self.ExtraProp:IsValid())then
-			         const2 = constraint.Weld(self.ExtraProp, trace.Entity, 0, 0, self.WeldStrength)
-			         Msg("+Weld2\n")
-			     end
+				if(self.ExtraProp:IsValid())then
+					const2 = constraint.Weld(self.ExtraProp, trace.Entity, 0, 0, self.WeldStrength)
+					if ( const2 ) then
+						const2.Type = "" //prevents the duplicator from making this weld
+					end
+					--Msg("+Weld2\n")
+				end
 			end
 			if(self.Gravity)then
-			     trace.Entity:GetPhysicsObject():EnableGravity(false)
+				trace.Entity:GetPhysicsObject():EnableGravity(false)
 			end
 			
 			self.WeldEntity = trace.Entity
@@ -110,7 +116,7 @@ function ENT:TriggerInput(iname, value)
 			
 			self.Entity:SetColor(255, 0, 0, 255)
 			Wire_TriggerOutput(self.Entity, "Holding", 1)
-		else
+		elseif (value == 0) then
 			if(self.Weld != nil || self.ExtraPropWeld != nil)then
 				self:ResetGrab()
 	        end
@@ -128,20 +134,56 @@ function ENT:OnRestore()
     Wire_Restored(self.Entity)
 end
 
+//duplicator support (TAD2020)
 function ENT:BuildDupeInfo()
-    local info = self.BaseClass.BuildDupeInfo(self) or {}
-    if (self.ExtraProp) and (self.ExtraProp:IsValid()) then
-            info.ExtraProp = self.ExtraProp:EntIndex()
-    end
-    return info
+	local info = self.BaseClass.BuildDupeInfo(self) or {}
+	
+	if (self.WeldEntity) and (self.WeldEntity:IsValid()) then
+		info.WeldEntity = self.WeldEntity:EntIndex()
+	end
+	
+	if (self.ExtraProp) and (self.ExtraProp:IsValid()) then
+		info.ExtraProp = self.ExtraProp:EntIndex()
+	end
+	
+	return info
 end 
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
-    self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
-    if (info.ExtraProp) then
-        self.ExtraProp = GetEntByID(info.ExtraProp)
-        if (!self.ExtraProp) then
-            self.ExtraProp = ents.GetByIndex(info.ExtraProp)                                        
-        end    
-    end
+	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
+	
+	if (info.WeldEntity) then
+		self.WeldEntity = GetEntByID(info.WeldEntity)
+		if (!self.WeldEntity) then
+			self.WeldEntity = ents.GetByIndex(info.WeldEntity)
+		end
+	end
+	
+	if (info.ExtraProp) then
+		self.ExtraProp = GetEntByID(info.ExtraProp)
+		if (!self.ExtraProp) then
+			self.ExtraProp = ents.GetByIndex(info.ExtraProp)
+		end
+	end
+	
+	if (self.WeldEntity) and (self.Inputs.Grab.Value != 0) then
+		
+		if (!self.Weld) then
+			self.Weld = constraint.Weld(self.Entity, trace.Entity, 0, 0, self.WeldStrength)
+			self.Weld.Type = "" //prevents the duplicator from making this weld
+		end
+		
+		if (self.ExtraProp) then
+			self.ExtraPropWeld = constraint.Weld(self.ExtraProp, self.WeldEntity, 0, 0, self.WeldStrength)
+			self.ExtraPropWeld.Type = "" //prevents the duplicator from making this weld
+		end
+		
+		if(self.Gravity)then
+			self.WeldEntity:GetPhysicsObject():EnableGravity(false)
+		end
+		
+		self.Entity:SetColor(255, 0, 0, 255)
+		Wire_TriggerOutput(self.Entity, "Holding", 1)
+		
+	end
 end

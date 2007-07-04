@@ -31,7 +31,7 @@ function ENT:SendVars( Ent1, Ent2, Bone1, Bone2, const )
 
 end
 
-function ENT:TriggerInput(iname, value) 
+function ENT:TriggerInput(iname, value)
 
 	if (iname == "Activate") then
 	
@@ -94,10 +94,6 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 			self.Ent2 = ents.GetByIndex(info.Ent2)
 		end
 	end
-	if (info.Constraint) and (self.Ent1) and (self.Ent2) and (self.Inputs.Activate.Value == 1) then
-		self.Constraint = constraint.Weld( self.Ent1, self.Ent2, self.Bone1, self.Bone2, 0 )
-	else
-		self:SetOverlayText( "Weld Latch - Deactivated" )
-	end
+	self:TriggerInput("Activate", self.Inputs.Activate.Value)
 end
  
