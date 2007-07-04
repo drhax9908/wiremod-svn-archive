@@ -27,6 +27,7 @@ function ENT:Initialize( )
 	self.Entity:SetNetworkedBool( "ShowBeam", true );
 	self.Entity:SetNetworkedBool( "Active", false );
 	self.Entity:SetNetworkedBool( "UseGPS", false );
+	self.Entity:SetNetworkedInt( "LastClear", 0 );
 	self.Entity:SetNetworkedEntity( "grid", self.Entity );
 
 	// create inputs.
