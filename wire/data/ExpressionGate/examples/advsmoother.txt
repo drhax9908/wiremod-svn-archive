@@ -13,15 +13,14 @@ first() | clk() ->
 # Precomputation of variables
     Distance = Target - Value
     Direction = Distance >= 0 ? 1 : -1
-# Calculate ideal change speed
+# Calculate ideal speed modifier
     IdealRate = Speed * Direction
     abs(Distance) <= AccLength ->
         IdealRate *= sqrt(abs(Distance - Rate / 50) / AccLength);
 # Calculate final speed for iteration
     Rate += clamp(IdealRate - Rate, -Acceleration / 50, Acceleration / 50)
-    Rate = clamp(Rate, -Speed, Speed)
     Value += Rate / 50
-# Check if the value has reached target
+# Check if value has reached target
     Active = abs(Rate) > AccRate
                 | abs(Distance) > AccRate / 50
     !Active -> Rate = 0, Value = Target;;
