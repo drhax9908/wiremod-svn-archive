@@ -3,7 +3,7 @@ dupeshare = {}
 dupeshare.Version = 1.72
 
 dupeshare.BaseDir		= "adv_duplicator"
-dupeshare.PublicDirs	= { "=Public Folder=", "=Team Share Folder=" }
+dupeshare.PublicDirs	= { "=Public Folder=" }
 
 //TODO
 dupeshare.UsePWSys = false //server admins, set this to ture to use the folder password system

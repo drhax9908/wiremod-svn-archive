@@ -75,8 +75,8 @@ function TOOL:LeftClick( trace )
 		self:HideGhost(true)
 		self:SetPercentText("Pasting")
 		
-		PasteFrozen = ( self:GetClientNumber( "pastefrozen" ) == 1 )
-		PastewoConst = ( self:GetClientNumber( "pastewoconst" ) == 1 )
+		local PasteFrozen = ( self:GetClientNumber( "pastefrozen" ) == 1 )
+		local PastewoConst = ( self:GetClientNumber( "pastewoconst" ) == 1 )
 		
 		if ( self:GetClientNumber( "worldOrigin" ) == 0 ) then
 			local HoldAngle = self.HoldAngle
@@ -206,8 +206,6 @@ function TOOL:Reload( trace )
 	local paster = ents.Create( "gmod_adv_dupe_paster" )
 	if (!paster:IsValid()) then return false end
 	
-	//paster:SetPos( pl:GetShootPos() + pl:GetAimVector() * 32 )
-	//paster:SetAngles( pl:GetAimVector() )
 	paster:SetPos( trace.HitPos )
 	
 	local Ang = trace.HitNormal:Angle()
@@ -222,7 +220,6 @@ function TOOL:Reload( trace )
 	
 	local phys = paster:GetPhysicsObject()
 	if (phys:IsValid()) then phys:EnableMotion(false) end
-	//paster:SetNotSolid(true)
 	
 	undo.Create("Paster")
 		undo.AddEntity( paster )
@@ -235,11 +232,14 @@ function TOOL:Reload( trace )
 	local show_beam		= self:GetClientNumber( "show_beam" ) == 1
 	local key			= self:GetClientNumber( "pasterkey" )
 	local undo_key 		= self:GetClientNumber( "pasterundo_key" )
+	local PasteFrozen = ( self:GetClientNumber( "pastefrozen" ) == 1 )
+	local PastewoConst = ( self:GetClientNumber( "pastewoconst" ) == 1 )
 	
 	paster:Setup(
 		table.Copy(self.Entities),
 		table.Copy(self.Constraints),
-		self.HoldAngle, delay, undo_delay, range, show_beam, self.HeadEntityIdx
+		self.HoldAngle, delay, undo_delay, range, show_beam, self.HeadEntityIdx,
+		self.NumOfEnts, self.NumOfConst, PasteFrozen, PastewoConst
 	)
 	
 	if key > -1 then numpad.OnDown( self:GetOwner(), key, "PasterCreate", paster, true ) end
@@ -472,6 +472,10 @@ function TOOL:AddToGhost()
 			self.GhostEntities = nil
 			self.UnfinishedGhost = false
 			return
+		end
+		
+		if ( AdvDupe[self:GetOwner()].PercentText != "Ghosting" ) then
+			self:SetPercentText("Ghosting")
 		end
 		
 		self.GhostEntities[self.HeadEntityIdx]:SetPos(		self.Entities[self.HeadEntityIdx].LocalPos + self.HoldPos )
@@ -717,7 +721,7 @@ function TOOL:UpdateList()
 	self:GetOwner():SendLua( "AdvDupeClient.SScdir=\""..cdir.."\"" )
 	
 	//if ( cdir == dupeshare.BaseDir.."/=Public Folder=" ) then
-	if ( dupeshare.NamedLikeAPublicDir(dupeshare.GetFileFromFilename(cdir)) ) or ( cdir == "Contraption Saver Tool" ) then
+	if ( cdir == dupeshare.BaseDir.."/=Public Folder=" ) or ( dupeshare.NamedLikeAPublicDir(dupeshare.GetFileFromFilename(cdir)) ) or ( cdir == "Contraption Saver Tool" ) then
 		self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs[\"/..\"] = \""..AdvDupe.GetPlayersFolder(self:GetOwner()).."\"" )
 	elseif ( cdir != AdvDupe.GetPlayersFolder(self:GetOwner()) ) then
 		self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs[\"/..\"] = \""..dupeshare.UpDir(cdir).."\"" )

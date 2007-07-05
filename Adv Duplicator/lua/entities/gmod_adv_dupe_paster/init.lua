@@ -11,22 +11,19 @@ local MODEL = Model( "models/props_lab/powerbox02d.mdl" )
 
 function ENT:Initialize()
 	self.Entity:SetModel( MODEL )
-	/*self.Entity:PhysicsInit( SOLID_VPHYSICS )
-	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )*/
-	//self.Entity:SetSolid( SOLID_VPHYSICS )
 	
 	self.Entity:SetMoveType( MOVETYPE_NONE )
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetCollisionGroup( COLLISION_GROUP_WEAPON )
 	self.Entity:DrawShadow( false )
-
+	
 	local phys = self.Entity:GetPhysicsObject()
 	if (phys:IsValid()) then phys:Wake() end
 	
 	self.UndoListEnts	= {}
 	self.UndoListConsts	= {}
 	self.PropCount	= 0
-
+	
 	// Spawner is "edge-triggered"
 	self.SpawnLastValue	= 0
 	self.UndoLastValue	= 0
@@ -45,19 +42,20 @@ function ENT:Initialize()
 	
 end
 
-function ENT:Setup(ents, const, holdangle, delay, undo_delay, max_range, show_beam, HeadEntityIdx)
+function ENT:Setup(ents, const, holdangle, delay, undo_delay, max_range, show_beam, HeadEntityIdx, NumOfEnts, NumOfConst, PasteFrozen, PastewoConst)
 	
 	self.MyEnts 			= ents
 	self.MyConstraints 		= const
 	self.MyHoldAngle		= holdangle
-	//self.MyDupeInfo 		= dupeinfo
-	//self.MyDORInfo 			= dorinfo
-	//self.HeadEntID			= headentid
 	self.delay				= delay
 	self.undo_delay			= undo_delay
 	self.MaxRange			= max_range
 	self.ShowBeam			= show_beam
 	self.MyHeadEntityIdx	= HeadEntityIdx
+	self.NumOfEnts			= NumOfEnts
+	self.NumOfConst			= NumOfConst
+	self.PasteFrozen		= PasteFrozen
+	self.PastewoConst		= PastewoConst
 	
 	self:ShowOutput()
 	
@@ -67,31 +65,22 @@ function ENT:Setup(ents, const, holdangle, delay, undo_delay, max_range, show_be
 		self:SetBeamLength(0)
 	end
 	
-	//self:Paste()
 end
 
 function ENT:OnTakeDamage( dmginfo )	self.Entity:TakePhysicsDamage( dmginfo ) end
 
-/*function ENT:Use( activator, caller, type, value )
+local function OnPasteFin( paster, Ents, Consts )
+	paster.PropCount = paster.PropCount + 1
+	paster.UndoListEnts[paster.PropCount] = {}
 	
-	local Owner = self:GetPlayer()
-	
-	if ((Owner == nil or Owner == activator) and self.stage == 0) then
-		self:Paste()
-		return true
-	else
-		return false
+	for k, ent in pairs( Ents ) do
+		table.insert(paster.UndoListEnts[paster.PropCount], ent)
 	end
-end*/
+	
+	paster:ShowOutput()
+end
 
 function ENT:Paste()
-	//if (self.stage != 0) then return end
-	--Msg("====start====\n")
-	//self:HideGhost(true)
-	//self.Ents 			= table.Copy(self.MyEnts)
-	//self.Constraints 	= table.Copy(self.MyConstraints)
-	//self.DupeInfo 		= table.Copy(self.MyDupeInfo)
-	//self.DORInfo 		= table.Copy(self.MyDORInfo)
 	
 	if (self.MaxRange > 0) then
 		local skew		= Vector(self:GetSkewX(), self:GetSkewY(), 1)
@@ -112,37 +101,10 @@ function ENT:Paste()
 	angle.pitch = 0
 	angle.roll = 0
 	
-	/*AdvDupe.ConvertEntityPositionsToWorld( self.MyEnts, self.offset, angle - self.MyHoldAngle )
-	AdvDupe.ConvertConstraintPositionsToWorld( self.MyConstraints, self.offset, angle - self.MyHoldAngle )
 	
-	Msg("===doing paster paste===\n")
-	//local Ents, Constraints = duplicator.Paste( self:GetPlayer(), self.MyEnts, self.MyConstraints )
-	local Ents, Constraints = DebugDuplicator.Paste( self:GetPlayer(), self.MyEnts, self.MyConstraints )
+	//AdvDupe.AddDelayedPaste( self:GetPlayer(), self.MyEnts, self.MyConstraints, self.MyHeadEntityIdx, self.offset, angle - self.MyHoldAngle, true )
+	AdvDupe.StartPaste( self:GetPlayer(), self.MyEnts, self.MyConstraints, self.MyHeadEntityIdx, self.offset, angle - self.MyHoldAngle, self.NumOfEnts, self.NumOfConst, self.PasteFrozen, self.PastewoConst, OnPasteFin, true, self.Entity )
 	
-	AdvDupe.ResetPositions( self.MyEnts, self.MyConstraints )*/
-	
-	AdvDupe.AddDelayedPaste( self:GetPlayer(), self.MyEnts, self.MyConstraints, self.MyHeadEntityIdx, self.offset, angle - self.MyHoldAngle, true )
-	
-	// Add all of the created entities
-	//  to the undo system under one undo.
-	self.PropCount = self.PropCount + 1
-	self.UndoListEnts[self.PropCount] = {}
-	undo.Create( "Duplicator" )
-		
-		for k, ent in pairs( Ents ) do
-			undo.AddEntity( ent )
-			self:GetPlayer():AddCleanup( "duplicates", ent )
-			table.insert(self.UndoListEnts[self.PropCount], ent)//:EntIndex()
-		end
-		
-		undo.SetPlayer( self:GetPlayer() )
-		
-	undo.Finish()
-	
-	self:ShowOutput()
-	
-	--Msg("going to stage 1\n")
-	//self.stage = 1
 end
 
 
@@ -191,16 +153,6 @@ function ENT:ShowOutput()
 	Wire_TriggerOutput(self.Entity, "Out", self.PropCount)
 end
 
-function ENT:HideGhost(hide)
-	local tool = self:GetPlayer():GetActiveWeapon()
-	if ( tool:GetClass() == "gmod_tool" )
-	and (tool:GetTable():GetToolObject().Name == "Advanced Duplicator") then
-		tool:GetTable():GetToolObject():HideGhost(hide)
-	end
-end
-
-
-
 
 function ENT:DoUndo( pl )
 
@@ -214,8 +166,7 @@ function ENT:DoUndo( pl )
 		Ents = table.remove(self.UndoListEnts, 1)
 		
 		if Ents then
-			for _, ent in pairs( Ents ) do //entindex
-				//local ent = ents.GetByIndex( entindex )
+			for _, ent in pairs( Ents ) do
 				if (ent && ent:IsValid()) then
 					ent:Remove()
 					FoundOne = true
@@ -248,203 +199,6 @@ end
 function ENT:OnRestore()
     Wire_Restored(self.Entity)
 end
-
-
-/*function ENT:Think()
-	
-	if (self.stage == 1) then
-	
-		//Msg("starting ent\n")
-		for entID, EntTable in pairs(self.Ents) do
-			//Msg("doing ent   "..entID.."\n")
-			local EntClass = EntTable.Class
-			
-			// Check the antities class is registered with the duplicator
-			if EntClass and duplicator.GetEntType(EntClass) then
-				
-				local Args = duplicator.PasteGetEntArgs( self:GetPlayer(), EntTable, self.offset )
-				
-				// make the Entity
-				Ent = duplicator.GetEntType(EntClass).Func(self:GetPlayer(), unpack(Args))
-				
-				if (Ent && Ent:IsValid()) then
-					if (Ent:GetPhysicsObject():IsValid()) then
-						Ent:GetPhysicsObject():EnableMotion(false)
-					end
-					//self.TempMoveTypes[Ent:EntIndex()] = Ent:GetMoveType()
-					//Ent:SetMoveType( MOVETYPE_NONE )
-					Ent:SetNotSolid(true)
-					Ent:SetParent(self.Entity)
-					self.entIDtable[entID] = Ent
-					table.insert(self.CreatedEnts,Ent)
-					
-					duplicator.PasteApplyEntMods( self:GetPlayer(), Ent, EntTable )
-				end
-				
-			elseif (EntClass) then
-				Msg("Duplicator Paste: Unknown class " .. EntClass .. "\n")
-			end
-			
-			if ( entID == self.HeadEntID ) then
-				self.HeadEntity = Ent
-			end
-			
-			
-			if (table.Count(self.Ents) >= 1) then 
-				self.Ents[entID] = nil
-				self.Entity:NextThink(CurTime() + self.thinkdelay)
-				return true
-			end
-		end
-		
-		--Msg("going to stage 2\n")
-		self.stage = 2
-		self.Entity:NextThink(CurTime() + self.thinkdelay)
-		return true
-		
-	elseif (self.stage == 2) then
-		
-		for k=1,4 do //make 4 each time
-			local Constraint = table.remove(self.Constraints)
-			
-			if (Constraint) then
-				
-				// Check If the constraint type has been registered with the duplicator
-				if Constraint.Type and duplicator.KnownConstraintType(Constraint.Type) then
-					
-					local Args, DoConstraint = duplicator.PasteGetConstraintArgs( self:GetPlayer(), Constraint, self.entIDtable, self.offset )
-					
-					// make the constraint
-					if DoConstraint then
-						
-						local const = duplicator.ConstraintTypeFunc( Constraint.Type, Args )
-						table.insert(self.CreatedConstraints,const)
-						
-						if (Constraint.ConstID) then
-							self.constIDtable[Constraint.ConstID] = const
-						end
-					end
-				end
-				
-				if (k ==3) then
-					self.Entity:NextThink(CurTime() + self.thinkdelay)
-					return true
-				end
-			else
-				--Msg("going to stage 3\n")
-				self.stage = 4
-				self.Entity:NextThink(CurTime() + self.thinkdelay)
-				return true
-			end
-		end
-		
-	elseif (self.stage == 3) then
-		
-		/*for id, infoTable in pairs(self.DupeInfo) do
-			local ent = self.entIDtable[id]
-			local isdupeinfo = false
-			if (ent) and (ent:IsValid()) and (infoTable) and (ent.ApplyDupeInfo) then
-				ent:ApplyDupeInfo(
-					self:GetPlayer(), ent, infoTable,
-					function(id) return self.entIDtable[id] end,
-					function(id) return self.constIDtable[id] end
-					)
-				isdupeinfo = true
-			end
-			
-			if (table.Count(self.DupeInfo) >= 1) then 
-				self.DupeInfo[id] = nil
-				if (isdupeinfo) then
-					self.Entity:NextThink(CurTime() + self.thinkdelay)
-					return true
-				end
-			end
-		end*
-		
-		for id, infoTable in pairs(self.DupeInfo) do
-			local ent = self.entIDtable[id]
-			if (ent) and (ent:IsValid()) and (infoTable) and (ent.ApplyDupeInfo) then
-			    ent:ApplyDupeInfo(
-					self:GetPlayer(), ent, infoTable,
-					function(id) return self.entIDtable[id] end,
-					function(id) return self.constIDtable[id] end
-					)
-			end
-		end
-		
-		--Msg("going to stage 4\n")
-		self.stage = 4
-		self.Entity:NextThink(CurTime() + self.thinkdelay)
-		return true
-		
-	elseif (self.stage == 4) then
-		//this just looks wrong, so no
-		--Msg("starting rotate\n")
-		duplicator.PasteRotate( self:GetPlayer(), self.HeadEntity, self.CreatedEnts )
-		
-		duplicator.PasteApplyDORInfo( self.DORInfo, function(id) return self.entIDtable[id] end )
-		
-		--Msg("going to stage 5\n")
-		self.stage = 5
-		self.Entity:NextThink(CurTime() + self.thinkdelay)
-		return true
-		
-	elseif (self.stage == 5) then
-		
-		//Msg("starting cleanup\n")
-		self.PropCount = self.PropCount + 1
-		
-		undo.Create("Duplicator")
-		
-		self.UndoListEnts[self.PropCount] = {}
-		for _, ent in pairs( self.CreatedEnts ) do
-			self:GetPlayer():AddCleanup( "duplicates", ent )
-			//ent:SetMoveType(self.TempMoveTypes[ent:EntIndex()])
-			if (ent:GetPhysicsObject():IsValid()) then
-				ent:GetPhysicsObject():EnableMotion(true)
-			end
-			ent:SetNotSolid(false)
-			ent:SetParent()
-			undo.AddEntity( ent )
-			table.insert(self.UndoListEnts[self.PropCount], ent:EntIndex())
-		end
-		
-		for _, ent in pairs( self.CreatedConstraints ) do
-			self:GetPlayer():AddCleanup( "duplicates", ent )
-			undo.AddEntity( ent )
-		end
-		
-		undo.SetPlayer( self:GetPlayer() )
-		undo.Finish()
-		
-		self.constIDtable, self.entIDtable, self.CreatedConstraints, self.CreatedEnts = {}, {}, {}, {}
-		self.stage = 0
-		
-		
-		//todo
-		/*if (self.undo_delay > 0) then
-			
-			timer.Simple( delay, updopaste )
-			// Update prop count output when prop is deleted (TheApathetic)
-			timer.Simple(delay + 0.25, self:ShowOutput)
-			
-		end*
-		
-		
-		
-		
-		--Msg("====done====\n")
-		
-		//self:HideGhost(false)
-		
-		self:ShowOutput()
-		
-		self.Entity:NextThink(CurTime() + self.thinkdelay)
-		return true
-	end
-	
-end*/
-
 
 
 local function Paste( pl, ent )

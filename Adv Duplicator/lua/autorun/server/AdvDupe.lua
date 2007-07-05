@@ -15,8 +15,8 @@ AdvDupe = {}
 
 if (CLIENT) then return end
 
-AdvDupe.Version = 1.834
-AdvDupe.ToolVersion = 1.811
+AdvDupe.Version = 1.835
+AdvDupe.ToolVersion = 1.812
 AdvDupe.FileVersion = 0.83
 local MAXDOWNLOADLENGTH = 200
 
@@ -250,6 +250,7 @@ function AdvDupe.LoadDupeTableFromFile( pl, filepath )
 				else
 					AdvDupe.SendClientError(pl, "Unknown File Type or Bad File")
 					Msg("AdvDupeERROR: Unknown File Type or Bad File\n")
+					AdvDupe.SetPercent( pl, -1 )
 					return
 				end
 			end
@@ -360,6 +361,8 @@ function AdvDupe.LoadDupeTableFromFile( pl, filepath )
 				
 			else
 				Msg("AdvDupeERROR:FILE FAILED TO LOAD! something is wrong with this file:  "..filepath.."\n")
+				AdvDupe.SendClientError( pl, "Failed loading file" )
+				AdvDupe.SetPercent( pl, -1 )
 			end
 			
 			AdvDupe.SetPercent(pl, 50)
@@ -1286,10 +1289,15 @@ end
 //	Special Timer Control
 //
 local UseTimedPasteThreshold = 100
-if ( SinglePlayer() ) then UseTimedPasteThreshold = 500 end
 local PasteEntsPerTick = 2
 local PostEntityPastePerTick = 20
 local PasteConstsPerTick = 10
+if ( SinglePlayer() ) then
+	UseTimedPasteThreshold = 500
+	PasteEntsPerTick = 4
+	PostEntityPastePerTick = 40
+	PasteConstsPerTick = 20
+end
 local DoPasteFX = false
 local UseTaskSwitchingPaste = false
 local DebugWeldsByDrawingThem = false
@@ -1305,6 +1313,7 @@ local Timers = {}
 local function AdvDupeThink()
 	
 	if (CurTime() >= NextPasteTime) then
+		NextPasteTime = CurTime() +  .08
 		if TimedPasteData[TimedPasteDataCurrent] then
 			if ( !TimedPasteData[TimedPasteDataCurrent].Shooting_Ent )
 			or ( !TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity )
@@ -1329,13 +1338,15 @@ local function AdvDupeThink()
 						TimedPasteData[TimedPasteDataCurrent].HoldAngle, 
 						TimedPasteData[TimedPasteDataCurrent].Shooting_Ent,
 						TimedPasteData[TimedPasteDataCurrent].PasteFrozen,
-						TimedPasteData[TimedPasteDataCurrent].PastewoConst
+						TimedPasteData[TimedPasteDataCurrent].PastewoConst, 
+						TimedPasteData[TimedPasteDataCurrent].CreatedEntities, 
+						TimedPasteData[TimedPasteDataCurrent].CreatedConstraints
 					)
 					if ( !NoFail ) then
 						Msg("AdvDupeERROR: NormPaste Failed, Error: "..tostring(Result).."\n")
 					end
 					
-					AdvDupe.FinishPasting( TimedPasteData,TimedPasteDataCurrent )
+					AdvDupe.FinishPasting( TimedPasteData, TimedPasteDataCurrent )
 					
 					NextPasteTime = CurTime() + 2
 					
@@ -1377,10 +1388,12 @@ local function AdvDupeThink()
 						
 					else
 						
-						AdvDupe.SetPercent(TimedPasteData[TimedPasteDataCurrent].Player, 
-							(TimedPasteData[TimedPasteDataCurrent].CallsInRun / TimedPasteData[TimedPasteDataCurrent].TotalTicks) * 100)
+						if ( !TimedPasteData[TimedPasteDataCurrent].DontRemoveThinger ) then
+							AdvDupe.SetPercent(TimedPasteData[TimedPasteDataCurrent].Player, 
+								(TimedPasteData[TimedPasteDataCurrent].CallsInRun / TimedPasteData[TimedPasteDataCurrent].TotalTicks) * 100)
+						end
 						
-						LastDelay = .1 + .25 * TimedPasteData[TimedPasteDataCurrent].CallsInRun / 4
+						LastDelay = .08 + .01 * TimedPasteData[TimedPasteDataCurrent].CallsInRun / 20
 						
 						NextPasteTime = CurTime() + LastDelay
 						
@@ -1399,7 +1412,6 @@ local function AdvDupeThink()
 		elseif TimedPasteDataCurrent != 1 then
 			TimedPasteDataCurrent = 1
 		end
-		NextPasteTime = CurTime() +  .08
 	end
 	
 	// Run Special Timers
@@ -1580,6 +1592,7 @@ local function MakeThinger(Player, Hide)
 end
 
 local function TingerFX( Shooting_Ent, HitPos )
+	if (!Shooting_Ent) or (!Shooting_Ent.Entity) or (!Shooting_Ent.Entity:IsValid()) then return end
 	local effectdata = EffectData()
 		effectdata:SetOrigin( HitPos )
 		effectdata:SetStart( Shooting_Ent.Entity:GetPos() )
@@ -1587,20 +1600,20 @@ local function TingerFX( Shooting_Ent, HitPos )
 end
 
 
-function AdvDupe.StartPaste( Player, inEntityList, inConstraintList, HeadEntityIdx, HitPos, HoldAngle, NumOfEnts, NumOfConst, PasteFrozen, PastewoConst )
+function AdvDupe.StartPaste( Player, inEntityList, inConstraintList, HeadEntityIdx, HitPos, HoldAngle, NumOfEnts, NumOfConst, PasteFrozen, PastewoConst, CallOnPasteFin, DontRemoveThinger, Thinger )
 	hook.Add("Think", "AdvDupe_Think", AdvDupeThink)
 	
 	if ( NumOfEnts + NumOfConst > UseTimedPasteThreshold) then
 		Msg("===adding new timed paste===\n")
-		AdvDupe.OverTimePasteStart( Player, inEntityList, inConstraintList, HeadEntityIdx, HitPos, HoldAngle, NumOfEnts, NumOfConst, PasteFrozen, PastewoConst )
+		AdvDupe.OverTimePasteStart( Player, inEntityList, inConstraintList, HeadEntityIdx, HitPos, HoldAngle, NumOfEnts, NumOfConst, PasteFrozen, PastewoConst, CallOnPasteFin, DontRemoveThinger, Thinger )
 	else
 		Msg("===adding new delayed paste===\n")
-		AdvDupe.AddDelayedPaste( Player, inEntityList, inConstraintList, HeadEntityIdx, HitPos, HoldAngle, false, PasteFrozen, PastewoConst )
+		AdvDupe.AddDelayedPaste( Player, inEntityList, inConstraintList, HeadEntityIdx, HitPos, HoldAngle, false, PasteFrozen, PastewoConst, CallOnPasteFin, DontRemoveThinger, Thinger )
 	end
 end
 
 
-function AdvDupe.AddDelayedPaste( Player, EntityList, ConstraintList, HeadEntityIdx, HitPos, HoldAngle, HideThinger, PasteFrozen, PastewoConst )
+function AdvDupe.AddDelayedPaste( Player, EntityList, ConstraintList, HeadEntityIdx, HitPos, HoldAngle, HideThinger, PasteFrozen, PastewoConst, CallOnPasteFin, DontRemoveThinger, Thinger )
 	
 	T					= {}
 	T.Player			= Player
@@ -1609,11 +1622,19 @@ function AdvDupe.AddDelayedPaste( Player, EntityList, ConstraintList, HeadEntity
 	T.HeadEntityIdx		= HeadEntityIdx
 	T.HitPos			= HitPos
 	T.HoldAngle			= HoldAngle
-	T.Shooting_Ent		= MakeThinger(Player, HideThinger)
+	if ( Thinger ) and ( Thinger:IsValid() ) then
+		T.Shooting_Ent		= Thinger
+		T.DontRemoveThinger = DontRemoveThinger
+	else
+		T.Shooting_Ent		= MakeThinger(Player, HideThinger)
+	end
 	T.NormPaste			= true
 	T.Delay				= CurTime() + .2
 	T.PasteFrozen		= PasteFrozen
 	T.PastewoConst		= PastewoConst
+	T.CallOnPasteFin	= CallOnPasteFin
+	T.CreatedEntities	= {}
+	T.CreatedConstraints = {}
 	
 	table.insert(TimedPasteData, T)
 	
@@ -1623,20 +1644,20 @@ end
 //
 //	Paste
 //
-function AdvDupe.NormPaste( Player, EntityList, ConstraintList, HeadEntityIdx, Offset, HoldAngle, Shooting_Ent, PasteFrozen, PastewoConst )
+function AdvDupe.NormPaste( Player, EntityList, ConstraintList, HeadEntityIdx, Offset, HoldAngle, Shooting_Ent, PasteFrozen, PastewoConst, CreatedEntities, CreatedConstraints )
 	
 	//do the effect
-	if (DoPasteFX) then
+	/*if (DoPasteFX) then
 		Shooting_Ent:EmitSound( "Airboat.FireGunRevDown" )
 		TingerFX( Shooting_Ent, HitPos )
-	end
+	end*/
 	
 	--Msg("===doing delayed paste===\n")
-	Ents, Constraints = AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offset, HoldAngle, Shooting_Ent, PastewoConst )
+	AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offset, HoldAngle, Shooting_Ent, PastewoConst, CreatedEntities, CreatedConstraints )
 	
 	undo.Create( "Duplicator" )
 		
-		for EntID, Ent in pairs( Ents ) do
+		for EntID, Ent in pairs( CreatedEntities ) do
 			undo.AddEntity( Ent )
 			
 			if ( PasteFrozen or PastewoConst ) and (Ent:GetPhysicsObject():IsValid()) then
@@ -1646,7 +1667,9 @@ function AdvDupe.NormPaste( Player, EntityList, ConstraintList, HeadEntityIdx, O
 				Player:AddFrozenPhysicsObject( Ent, Phys )
 			end
 			
-			AdvDupe.ApplyParenting( Ent, EntID, EntityList, Ents )
+			if ( !PastewoConst ) then
+				AdvDupe.ApplyParenting( Ent, EntID, EntityList, CreatedEntities )
+			end
 			
 			// Resets the positions of all the entities in the table
 			EntTable = EntityList[ EntID ]
@@ -1665,13 +1688,15 @@ function AdvDupe.NormPaste( Player, EntityList, ConstraintList, HeadEntityIdx, O
 		
 	undo.Finish()
 	
+	
+	
 	//AdvDupe.ResetPositions( EntityList, ConstraintList )
 	
 end
 
-function AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offset, HoldAngle, Shooting_Ent, PastewoConst )
+function AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offset, HoldAngle, Shooting_Ent, PastewoConst, CreatedEntities, CreatedConstraints )
 	
-	local CreatedEntities = {}
+	//local CreatedEntities = {}
 	
 	//
 	// Create the Entities
@@ -1679,38 +1704,6 @@ function AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offse
 	for EntID, EntTable in pairs( EntityList ) do
 		
 		CreatedEntities[ EntID ] = AdvDupe.PasteEntity( Player, EntTable, EntID, Offset, HoldAngle )
-		
-		/*CreatedEntities[ EntID ] = AdvDupe.CreateEntityFromTable( Player, Ent, EntID, Offset, HoldAngle )
-		
-		if ( CreatedEntities[ EntID ] and CreatedEntities[ EntID ]:IsValid() )
-		and not ( CreatedEntities[ EntID ].AdminSpawnable and !SinglePlayer() and (!Player:IsAdmin( ) or !Player:IsSuperAdmin() ) and DontAllowPlayersAdminOnlyEnts ) then
-			
-			Player:AddCleanup( "duplicates", CreatedEntities[ EntID ] )
-			
-			CreatedEntities[ EntID ].BoneMods = table.Copy( Ent.BoneMods )
-			CreatedEntities[ EntID ].EntityMods = table.Copy( Ent.EntityMods )
-			CreatedEntities[ EntID ].PhysicsObjects = table.Copy( Ent.PhysicsObjects )
-			
-			local NoFail, Result = pcall( duplicator.ApplyEntityModifiers, Player, CreatedEntities[ EntID ] )
-			if ( !NoFail ) then
-				Msg("AdvDupeERROR: ApplyEntityModifiers, Error: "..tostring(Result).."\n")
-			end
-			
-			local NoFail, Result = pcall( duplicator.ApplyBoneModifiers, Player, CreatedEntities[ EntID ] )
-			if ( !NoFail ) then
-				Msg("AdvDupeERROR: ApplyBoneModifiers Error: "..tostring(Result).."\n")
-			end
-		
-		elseif (CreatedEntities[ EntID ] and CreatedEntities[ EntID ].AdminSpawnable) then
-			AdvDupe.SendClientError(Player, "Sorry, you can't cheat like that")
-			Msg("AdvDupeERROR: "..tostring(Player).." tried to paste admin only prop "..(Ent.Class or "NIL").." Ent: "..EntID.."\n")
-			if (CreatedEntities[ EntID ]:IsValid()) then CreatedEntities[ EntID ]:Remove() end
-			CreatedEntities[ EntID ] = nil
-		else
-			Msg("AdvDupeERROR:Created Entity Bad! Class: "..(Ent.Class or "NIL").." Ent: "..EntID.."\n")
-			if (CreatedEntities[ EntID ] and CreatedEntities[ EntID ]:IsValid()) then CreatedEntities[ EntID ]:Remove() end
-			CreatedEntities[ EntID ] = nil
-		end*/
 		
 	end
 	
@@ -1728,7 +1721,7 @@ function AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offse
 	end
 	
 	
-	local CreatedConstraints = {}
+	//local CreatedConstraints = {}
 	
 	//
 	// Create constraints
@@ -1736,18 +1729,20 @@ function AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offse
 	if ( !PastewoConst ) and ( ConstraintList ) then
 		for k, Constraint in pairs( ConstraintList ) do
 			
-			local Entity = AdvDupe.CreateConstraintFromTable( Player, Constraint, CreatedEntities, Offset, HoldAngle )
-			
-			if ( Entity && Entity:IsValid() ) then
-				table.insert( CreatedConstraints, Entity )
-			else
-				Msg("AdvDupeERROR:Could not make constraint type: "..(Constraint.Type or "NIL").."\n")
+			if ( Constraint.Type and Constraint.Type != "" ) then
+				local Entity = AdvDupe.CreateConstraintFromTable( Player, Constraint, CreatedEntities, Offset, HoldAngle )
+				
+				if ( Entity && Entity:IsValid() ) then
+					table.insert( CreatedConstraints, Entity )
+				else
+					Msg("AdvDupeERROR:Could not make constraint type: "..(Constraint.Type or "NIL").."\n")
+				end
 			end
 			
 		end
 	end
 	
-	return CreatedEntities, CreatedConstraints
+	//return CreatedEntities, CreatedConstraints
 	
 end
 
@@ -1755,7 +1750,7 @@ end
 //
 //	Paste of time
 //
-function AdvDupe.OverTimePasteStart( Player, inEntityList, inConstraintList, HeadEntityIdx, HitPos, HoldAngle, NumOfEnts, NumOfConst, PasteFrozen, PastewoConst )
+function AdvDupe.OverTimePasteStart( Player, inEntityList, inConstraintList, HeadEntityIdx, HitPos, HoldAngle, NumOfEnts, NumOfConst, PasteFrozen, PastewoConst, CallOnPasteFin, DontRemoveThinger, Thinger )
 	
 	local EntityList = {}
 	local EntIDList = {}
@@ -1772,8 +1767,6 @@ function AdvDupe.OverTimePasteStart( Player, inEntityList, inConstraintList, Hea
 		table.insert(ConstraintList, ConstTable)
 	end
 	
-	local Shooting_Ent = MakeThinger(Player)
-	
 	T						= {}
 	T.Player				= Player
 	T.EntityList			= EntityList
@@ -1787,7 +1780,13 @@ function AdvDupe.OverTimePasteStart( Player, inEntityList, inConstraintList, Hea
 	T.CreatedConstraints	= {}
 	T.HitPos				= HitPos
 	T.HoldAngle				= HoldAngle
-	T.Shooting_Ent			= Shooting_Ent
+	if ( Thinger ) and ( Thinger:IsValid() ) then
+		T.Shooting_Ent		= Thinger
+		T.DontRemoveThinger = DontRemoveThinger
+	else
+		T.Shooting_Ent		= MakeThinger(Player)
+	end
+	T.CallOnPasteFin	= CallOnPasteFin
 	T.Delay					= CurTime() + 0.2
 	if ( PastewoConst ) then //guess how many ticks it will require so the progress bar looks right
 		T.TotalTicks = math.ceil(NumOfEnts / PasteEntsPerTick) + math.ceil(NumOfEnts / PostEntityPastePerTick) + 5
@@ -1911,22 +1910,24 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 		if (DoPasteFX) then Shooting_Ent:EmitSound( "Airboat.FireGunRevDown" ) end
 		
 		for i = 1,PasteConstsPerTick do
-			if ConstraintList and ConstraintList[ LastID ] then
+			if ( ConstraintList and ConstraintList[ LastID ] ) then
 				
-				local Constraint	= ConstraintList[ LastID ]
-				
-				local Entity = AdvDupe.CreateConstraintFromTable( Player, Constraint, CreatedEntities, Offset, HoldAngle )
-				
-				if ( Entity ) and ( Entity:IsValid() ) then
-					table.insert( CreatedConstraints, Entity )
+				local Constraint = ConstraintList[ LastID ]
+				if ( Constraint.Type and Constraint.Type != "" ) then
 					
-					if (DoPasteFX) and (math.random(5) > 3) then
-						TingerFX( Shooting_Ent, CreatedEntities[ Constraint.Entity[1].Index ]:GetPos() )
+					local Entity = AdvDupe.CreateConstraintFromTable( Player, Constraint, CreatedEntities, Offset, HoldAngle )
+					
+					if ( Entity ) and ( Entity:IsValid() ) then
+						table.insert( CreatedConstraints, Entity )
+						
+						if (DoPasteFX) and (math.random(5) > 3) then
+							TingerFX( Shooting_Ent, CreatedEntities[ Constraint.Entity[1].Index ]:GetPos() )
+						end
+						
+					else
+						Msg("AdvDupeERROR:Created Constraint Bad! Type= "..(Constraint.Type or "NIL").."\n")
+						Entity = nil
 					end
-					
-				else
-					Msg("AdvDupeERROR:Created Constraint Bad! Type= "..(Constraint.Type or "NIL").."\n")
-					Entity = nil
 				end
 				
 				LastID = LastID + 1
@@ -1963,7 +1964,9 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 						Ent.RDbeamlibDrawer:SetParent( Ent )
 					end*/
 					
-					AdvDupe.ApplyParenting( Ent, EntID, EntityList, CreatedEntities )
+					if ( !PastewoConst ) then
+						AdvDupe.ApplyParenting( Ent, EntID, EntityList, CreatedEntities )
+					end
 					
 					// Resets the positions of all the entities in the table
 					EntTable.Pos = EntTable.LocalPos * 1
@@ -2005,14 +2008,24 @@ end
 //	Clean Up
 //
 function AdvDupe.FinishPasting( TimedPasteData,TimedPasteDataCurrent )
-	if ( TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity ) then
-		TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity:Remove()
+	if ( !TimedPasteData[TimedPasteDataCurrent].DontRemoveThinger ) then
+		if ( TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity ) then
+			TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity:Remove()
+		end
+		AdvDupe.HideGhost( TimedPasteData[TimedPasteDataCurrent].Player, false ) //unhide ghost now
+		AdvDupe.SetPasting( TimedPasteData[TimedPasteDataCurrent].Player, false ) //allow the player to paste again
+		
+		AdvDupe.SetPercent(TimedPasteData[TimedPasteDataCurrent].Player, 100)
+		timer.Simple(.1, AdvDupe.SetPercent, TimedPasteData[TimedPasteDataCurrent].Player, -1)
 	end
-	AdvDupe.HideGhost( TimedPasteData[TimedPasteDataCurrent].Player, false ) //unhide ghost now
-	AdvDupe.SetPasting( TimedPasteData[TimedPasteDataCurrent].Player, false ) //allow the player to paste again
 	
-	AdvDupe.SetPercent(TimedPasteData[TimedPasteDataCurrent].Player, 100)
-	timer.Simple(.1, AdvDupe.SetPercent, TimedPasteData[TimedPasteDataCurrent].Player, -1)
+	if ( TimedPasteData[TimedPasteDataCurrent].CallOnPasteFin ) then
+		TimedPasteData[TimedPasteDataCurrent].CallOnPasteFin(
+			TimedPasteData[TimedPasteDataCurrent].Shooting_Ent,
+			TimedPasteData[TimedPasteDataCurrent].CreatedEntities, 
+			TimedPasteData[TimedPasteDataCurrent].CreatedConstraints
+		)
+	end
 	
 	table.remove(TimedPasteData,TimedPasteDataCurrent)
 end
