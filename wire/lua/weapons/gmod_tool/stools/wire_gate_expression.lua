@@ -562,16 +562,41 @@ if CLIENT then
 				Name = "Parent Directory",
 				Command = "wire_gate_expression_parent_cl"
 			})
+
+			local configs = {
+				{ 1200, 7, 19 },
+				{ 1080, 5, 17 },
+				{ 1050, 5, 16 },
+				{ 1024, 5, 15 },
+				{  768, 3,  7 },
+				{  720, 3,  5 },
+				{  600, 3,  8 },
+				{  480, 3,  5 },
+			}
+
+			local config = { 0, 2, 4 }
+			for _,v in ipairs(configs) do
+				if ScrH() >= v[1] then config = v break end
+			end
+
+			-- 1200: 7 / 19
+			-- 1080: 5 / 17
+			-- 1050: 5 / 16
+			-- 1024: 5 / 15
+			-- 768 : 3 / 7
+			-- 720 : 3 / 5
+			-- 600 : 3 / 8
+			-- 480 : 3 / 5
 			
 			panel:AddControl("ListBox", {
 				Label = "Folders",
-				Height = 4 * 15 + 26,
+				Height = config[2] * 15 + 26,
 				Options = wire_gate_expression_foldlist
 			})
 			
 			panel:AddControl("ListBox", {
 				Label = "Expressions",
-				Height = 14 * 15 + 26,
+				Height = config[3] * 15 + 26,
 				Options = wire_gate_expression_filelist
 			})
 			
@@ -612,6 +637,14 @@ if CLIENT then
 				Text = "Edit Expression...",
 				Name = "Edit Expression...",
 				Command = "wire_gate_expression_edit_cl"
+			})
+
+			panel:AddControl("Label", {
+				Text = "              Documentation available at wiremod.com"
+			})
+		
+			panel:AddControl("Label", {
+				Text = "               Written by Syranide, me@syranide.com"
 			})
 		elseif wire_gate_expression_state == 1 then
 			panel:AddControl("Button", {
@@ -686,19 +719,15 @@ if CLIENT then
 					MaxLength = 100
 				})
 			end
-		end
-		
-		panel:AddControl("Label", {
-			Text = "                  Internal clock pulser now available!"
-		})
 
-		panel:AddControl("Label", {
-			Text = "              Documentation available at wiremod.com"
-		})
+			panel:AddControl("Label", {
+				Text = "              Documentation available at wiremod.com"
+			})
 		
-		panel:AddControl("Label", {
-			Text = "               Written by Syranide, me@syranide.com"
-		})
+			panel:AddControl("Label", {
+				Text = "               Written by Syranide, me@syranide.com"
+			})
+		end
 	end
 
 
