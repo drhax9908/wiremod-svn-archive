@@ -61,11 +61,10 @@ end
 function MakeWireGateExpressionParser(lines, inputs, outputs)
 	local code = ""
 	for _,line in ipairs(lines) do
-		if string.sub(line, 1, 1) ~= "#" then
-			code = code .. line .. "\n"
-		else
-			code = code .. "\n"
-		end
+		local pos = string.find(line, '#')
+		if pos then line = string.sub(line, 0, pos - 1) end
+
+		code = code .. line .. "\n"
 	end
 	return WireGateExpressionParser:New(code, inputs, outputs)
 end
@@ -93,7 +92,6 @@ for i = 1,60 do
 end
 
 cleanup.Register("wire_gate_expressions")
-
 
 function TOOL:LeftClick(trace)
 	if trace.Entity:IsPlayer() then return false end
@@ -290,8 +288,6 @@ if CLIENT then
 	end
 
 	function WireGateExpressionPanelParent(player, command, args)
-		if (!player:IsValid() or !player:IsPlayer()) then return end
-
 		local lasthit
 		local pos = 1
 		while pos <= string.len(wire_gate_expression_folder) do
@@ -312,9 +308,9 @@ if CLIENT then
 	concommand.Add("wire_gate_expression_parent_cl", WireGateExpressionPanelParent)
 
 	function WireGateExpressionPanelFolder(player, command, args)
-		if (!player:IsValid() or !player:IsPlayer()) then return end
-
 		wire_gate_expression_folder = wire_gate_expression_foldmap[tonumber(args[1])]
+		if !wire_gate_expression_folder then wire_gate_expression_folder = "" end
+
 		WireGateExpressionUpdateFilelist()
 		WireGateExpressionRebuildCPanel()
 	end
@@ -322,14 +318,13 @@ if CLIENT then
 	concommand.Add("wire_gate_expression_folder_cl", WireGateExpressionPanelFolder)
 
 	function WireGateExpressionPanelValidate(player, command, args)
-		if (!player:IsValid() or !player:IsPlayer()) then return end
-		
 		local inputs = player:GetInfo("wire_gate_expression_inputs")
 		local outputs = player:GetInfo("wire_gate_expression_outputs")
 		local lines = WireExpressionGetLines(player)
 		
 		local parser = MakeWireGateExpressionParser(lines, inputs, outputs)
 		local status = parser:GetError()
+
 		if !status then status = "Successfully validated" end
 		wire_gate_expression_status = status
 		
@@ -340,7 +335,7 @@ if CLIENT then
 
 	function WireGateExpressionLoad(filename)
 		local player = LocalPlayer()
-		
+
 		local code
 		if file.Exists(wire_gate_expression_basefolder .. "/" .. filename .. ".txt") then
 			code = file.Read(wire_gate_expression_basefolder .. "/" .. filename .. ".txt")
@@ -408,8 +403,6 @@ if CLIENT then
 	concommand.Add("wire_gate_expression_load_cl", WireGateExpressionPanelLoad)
 
 	function WireGateExpressionPanelSave(player, command, args)
-		if (!player:IsValid() or !player:IsPlayer()) then return end
-		
 		local str = ""
 		local name = player:GetInfo('wire_gate_expression_label')
 		local inputs = player:GetInfo('wire_gate_expression_inputs')
@@ -441,8 +434,6 @@ if CLIENT then
 	concommand.Add("wire_gate_expression_save_cl", WireGateExpressionPanelSave)
 
 	function WireGateExpressionPanelDelete(player, command, args)
-		if (!player:IsValid() or !player:IsPlayer()) then return end
-		
 		local filename = player:GetInfo('wire_gate_expression_filename')
 		if file.Exists(wire_gate_expression_basefolder .. "/" .. filename .. ".txt") then
 			file.Delete(wire_gate_expression_basefolder .. "/" .. filename .. ".txt")
@@ -461,16 +452,12 @@ if CLIENT then
 	concommand.Add("wire_gate_expression_delete_cl", WireGateExpressionPanelDelete)
 
 	function WireGateExpressionPanelSelect(player, command, args)
-		if (!player:IsValid() or !player:IsPlayer()) then return end
-
 		WireGateExpressionLoad(wire_gate_expression_filemap[tonumber(args[1])])
 	end
 
 	concommand.Add("wire_gate_expression_select_cl", WireGateExpressionPanelSelect)
 
 	function WireGateExpressionPanelRefresh(player, command, args)
-		if (!player:IsValid() or !player:IsPlayer()) then return end
-
 		WireGateExpressionUpdateFilelist()
 		WireGateExpressionRebuildCPanel()
 	end
@@ -478,8 +465,6 @@ if CLIENT then
 	concommand.Add("wire_gate_expression_refresh_cl", WireGateExpressionPanelRefresh)
 
 	function WireGateExpressionPanelProcess(player, command, args)
-		if (!player:IsValid() or !player:IsPlayer()) then return end
-		
 		local lines = {}
 		for i = 1,60 do
 			local line = player:GetInfo('wire_gate_expression_line' .. i)
@@ -505,8 +490,6 @@ if CLIENT then
 	concommand.Add("wire_gate_expression_process_cl", WireGateExpressionPanelProcess)
 
 	function WireGateExpressionPanelEdit(player, command, args)
-		if (!player:IsValid() or !player:IsPlayer()) then return end
-
 		wire_gate_expression_state = 1
 		WireGateExpressionRebuildCPanel()
 	end
@@ -514,8 +497,6 @@ if CLIENT then
 	concommand.Add("wire_gate_expression_edit_cl", WireGateExpressionPanelEdit)
 
 	function WireGateExpressionPanelBrowse(player, command, args)
-		if (!player:IsValid() or !player:IsPlayer()) then return end
-		
 		wire_gate_expression_state =   0
 		wire_gate_expression_label =   player:GetInfo('wire_gate_expression_label')
 		wire_gate_expression_inputs =  player:GetInfo('wire_gate_expression_inputs')
@@ -527,8 +508,6 @@ if CLIENT then
 	concommand.Add("wire_gate_expression_browse_cl", WireGateExpressionPanelBrowse)
 
 	function WireGateExpressionPanelNew(player, command, args)
-		if (!player:IsValid() or !player:IsPlayer()) then return end
-		
 		wire_gate_expression_state =    1
 		wire_gate_expression_filename = ""
 		wire_gate_expression_label =    ""
@@ -549,9 +528,8 @@ if CLIENT then
 	end
 
 	concommand.Add("wire_gate_expression_new_cl", WireGateExpressionPanelNew)
-end
 
-if CLIENT then
+
 	function WireGateExpressionRebuildCPanel(panel)
 		if !panel then
 			panel = GetControlPanel("wire_gate_expression")
@@ -722,9 +700,8 @@ if CLIENT then
 			Text = "               Written by Syranide, me@syranide.com"
 		})
 	end
-end
 
-if CLIENT then
+
 	local player = LocalPlayer()
 	
 	wire_gate_expression_state =      0
