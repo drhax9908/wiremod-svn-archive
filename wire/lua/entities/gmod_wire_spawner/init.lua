@@ -58,7 +58,12 @@ function ENT:DoSpawn( pl, down )
 
 	local prop = MakeProp( pl, Pos, Ang, Model, {}, {} )
 	if (!prop || !prop:IsValid()) then return end
-
+	
+	//apply material and color (TAD2020)
+	prop:SetMaterial( ent:GetMaterial() )
+	local r,b,g,a = ent:GetColor() //junk alpha
+	prop:SetColor( r,g,b,255 )
+	
 	local nocollide = constraint.NoCollide( prop, ent, 0, 0 )
 	if (nocollide:IsValid()) then prop:DeleteOnRemove( nocollide ) end
 
@@ -76,13 +81,7 @@ function ENT:DoSpawn( pl, down )
 	if (delay == 0) then return end
 
 	timer.Simple( delay, function( ent ) if ent:IsValid() then ent:Remove() end end, prop )
-	// Update prop count output when prop is deleted (TheApathetic)
-	// No longer needed because Think() now updates more often (TheApathetic)
-	//timer.Simple(delay + 0.25, function (spawner) Wire_TriggerOutput(spawner, "Out", spawner:GetPropCount()) end, self.Entity)
-
-	// Handled by Think() now
-	//Wire_TriggerOutput(self.Entity, "Out", self:GetPropCount())
-	//self:ShowOutput()
+	
 end
 
 function ENT:DoUndo( pl )
@@ -99,9 +98,6 @@ function ENT:DoUndo( pl )
 	ent:Remove()
 	umsg.Start( "UndoWireSpawnerProp", pl ) umsg.End()
 	
-	// Handled by Think() now (TheApathetic)
-	//Wire_TriggerOutput(self.Entity, "Out", self:GetPropCount())
-	//self:ShowOutput()
 end
 
 function ENT:Think()
@@ -125,17 +121,6 @@ function ENT:Think()
 	self.Entity:NextThink(CurTime() + 0.1)
 	return true
 end
-
-/* No longer needed
-function ENT:GetPropCount()
-	local count = 0
-	for _,ent in pairs(self.UndoList) do
-		if (ent && ent:IsValid()) then count = count + 1 end
-	end
-
-	return count
-end
-*/
 
 function ENT:TriggerInput(iname, value)
 	local pl = self:GetPlayer()

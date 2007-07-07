@@ -64,8 +64,11 @@ function TOOL:LeftClick( trace, attach )
 
 	local Pos = ent:GetPos()
 	local Ang = ent:GetAngles()
+	//get material and color (TAD2020)
+	local mat = ent:GetMaterial()
+	local r,b,g,a = ent:GetColor() //going to junk alpha, I don't a need for invisable-prop spawners
 
-	local wire_spawner = MakeWireSpawner( pl, Pos, Ang, delay, undo_delay, model, vel, avel, frozen )
+	local wire_spawner = MakeWireSpawner( pl, Pos, Ang, delay, undo_delay, model, mat, r, g, b, vel, avel, frozen )
 	if !wire_spawner:IsValid() then return end
 
 	//!!TODO!! copy existing constraints to the spawner
@@ -82,7 +85,7 @@ function TOOL:LeftClick( trace, attach )
 
 end
 
-function MakeWireSpawner( pl, Pos, Ang, delay, undo_delay, model, vel, avel, frozen )
+function MakeWireSpawner( pl, Pos, Ang, delay, undo_delay, model, mat, r, g, b, vel, avel, frozen )
 
 	if ( !pl:CheckLimit( "wire_spawners" ) ) then return nil end
 
@@ -92,7 +95,9 @@ function MakeWireSpawner( pl, Pos, Ang, delay, undo_delay, model, vel, avel, fro
 		spawner:SetAngles( Ang )
 		spawner:SetModel( model )
 		spawner:SetRenderMode( 3 )
-		spawner:SetColor( 255,255,255,100 )
+		//set material and color (TAD2020)
+		spawner:SetMaterial( mat or "" )
+		spawner:SetColor( (r or 255), (g or 255), (b or 255),100 )
 	spawner:Spawn()
 
 	if (spawner:GetPhysicsObject():IsValid()) then
@@ -108,8 +113,12 @@ function MakeWireSpawner( pl, Pos, Ang, delay, undo_delay, model, vel, avel, fro
 	local tbl = {
 		Player 		= pl,
 		delay		= delay,
-		undo_delay	= undo_delay
-		}
+		undo_delay	= undo_delay;
+		mat			= mat,
+		r			= r,
+		g			= g,
+		b			= b
+	}
 
 	table.Merge(spawner:GetTable(), tbl )
 
@@ -119,7 +128,7 @@ function MakeWireSpawner( pl, Pos, Ang, delay, undo_delay, model, vel, avel, fro
 
 end
 
-duplicator.RegisterEntityClass( "gmod_wire_spawner", MakeWireSpawner, "Pos", "Ang", "delay", "undo_delay", "model", "Vel", "aVel", "frozen" )
+duplicator.RegisterEntityClass( "gmod_wire_spawner", MakeWireSpawner, "Pos", "Ang", "delay", "undo_delay", "model", "mat", "r", "g", "b", "Vel", "aVel", "frozen" )
 
 
 function TOOL.BuildCPanel( CPanel )
