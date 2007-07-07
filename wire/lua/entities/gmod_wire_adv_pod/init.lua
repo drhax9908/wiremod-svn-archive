@@ -66,6 +66,12 @@ function ENT:Initialize()
 	n = n + 1
 	outputs[n] = "Armor"
 	
+	n = n + 1
+	outputs[n] = "Bearing"
+	
+	--n = n + 1
+	--outputs[n] = "Elevation"
+	
 	self.VPos = Vector(0, 0, 0)
 	
 	-- Create outputs
@@ -235,6 +241,17 @@ local brng = Angle(0, 0, 0)
 			local trace = util.GetPlayerTrace(self.Ply)
 			trace.Filter = self.Pod
 			self.VPos = util.TraceLine(trace).HitPos
+			--and now bearing stuff. If it's commented out, it's elevation code.
+			local DeltaPos = self.Entity:WorldToLocal(self.VPos)
+		    brng = DeltaPos:Angle()
+			--local pitch = -brng.p
+			local yaw = brng.y
+			--if (pitch > 180) then pitch = pitch - 360 end
+			if (yaw > 180) then yaw = yaw - 360 end
+			--if (pitch < -180) then pitch = pitch + 360 end
+			if (yaw < -180) then yaw = yaw + 360 end
+			Wire_TriggerOutput(self.Entity, "Bearing", yaw + 90)
+			--Wire_TriggerOutput(self.Entity, "Elevation", pitch)
 		end
 		if (self.disablevar == 1) then
 			for k, v in pairs( self.keys )  do
