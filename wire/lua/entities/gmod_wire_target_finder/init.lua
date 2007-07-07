@@ -27,15 +27,15 @@ function ENT:Setup(maxrange, players, npcs, npcname, beacons, hoverballs, thrust
 	self.TargetNPC			= npcs
 	self.NPCName			= npcname
 	self.TargetBeacon		= beacons
-	self.TargetHoverballs		= hoverballs
-	self.TargetThrusters		= thrusters
+	self.TargetHoverballs	= hoverballs
+	self.TargetThrusters	= thrusters
 	self.TargetProps		= props
 	self.PropModel			= propmodel
 	self.TargetVehicles		= vehicles
 	self.PlayerName			= playername
 	self.CaseSen			= casesen
 	self.TargetRPGs			= rpgs
-	self.EntFil			= entity
+	self.EntFil				= entity
 	self.PaintTarget		= painttarget
 	self.MaxTargets			= math.floor(math.Clamp((maxtargets or 1), 1, server_settings.Int("wire_target_finders_maxtargets", 10)))
 	self.MaxBogeys			= math.floor(math.Clamp((maxbogeys or 1), self.MaxTargets , server_settings.Int("wire_target_finders_maxbogeys", 30)))
@@ -205,12 +205,12 @@ function ENT:Think()
 		for _,contact in pairs(contacts) do
 			// Multiple if statements replaced with one long one self.TargetVehicles
 			local contactClass = contact:GetClass()			if 	((self.TargetNPC)			and (string.find(contactClass, "^npc_.*")) and (contactClass ~= "npc_heli_avoidsphere") and (self:FindNPCName(contactClass))) or
-				((self.TargetPlayer)		and (contactClass == "player") and ((!self.NoTargetOwner) or (self.pl != target)) and (self:FindName(contact:GetName()))) or
+				((self.TargetPlayer)		and (contactClass == "player") and ((!self.NoTargetOwner) or (self:GetPlayer() != contact)) and (self:FindName(contact:GetName()))) or
 				((self.TargetBeacon)		and (contactClass == "gmod_wire_locator")) or
 				((self.TargetRPGs)			and (contactClass == "rpg_missile")) or
 				((self.TargetHoverballs)	and (contactClass == "gmod_hoverball" or contactClass == "gmod_wire_hoverball")) or
 				((self.TargetThrusters)		and (contactClass == "gmod_thruster" or contactClass == "gmod_wire_thruster")) or
-				((self.TargetProps)		and (contactClass == "prop_physics") and (self:FindModel(contact:GetModel()))) or
+				((self.TargetProps)			and (contactClass == "prop_physics") and (self:FindModel(contact:GetModel()))) or
 				((self.TargetVehicles)		and (string.find(contactClass, "prop_vehicle"))) or
 				(self:FindEntity(contactClass))
 			then
