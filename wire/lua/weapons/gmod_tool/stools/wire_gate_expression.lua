@@ -546,23 +546,6 @@ if CLIENT then
 		ModelPlug_AddToCPanel(panel, "gate", "wire_gate_expression", "Model:", nil, "Model:")
 		
 		if wire_gate_expression_state == 0 then
-			panel:AddControl("Button", {
-				Text = "New Expression...",
-				Name = "New Expression...",
-				Command = "wire_gate_expression_new_cl"
-			})
-			
-			panel:AddControl("Label", {
-				Label = "Location:",
-				Text = "                 " .. wire_gate_expression_folder .. "/",
-			})
-			
-			panel:AddControl("Button", {
-				Text = "Parent Directory",
-				Name = "Parent Directory",
-				Command = "wire_gate_expression_parent_cl"
-			})
-
 			local configs = {
 				{ 1200, 7, 19 },
 				{ 1080, 5, 17 },
@@ -579,14 +562,23 @@ if CLIENT then
 				if ScrH() >= v[1] then config = v break end
 			end
 
-			-- 1200: 7 / 19
-			-- 1080: 5 / 17
-			-- 1050: 5 / 16
-			-- 1024: 5 / 15
-			-- 768 : 3 / 7
-			-- 720 : 3 / 5
-			-- 600 : 3 / 8
-			-- 480 : 3 / 5
+
+			panel:AddControl("Button", {
+				Text = "New Expression...",
+				Name = "New Expression...",
+				Command = "wire_gate_expression_new_cl"
+			})
+			
+			panel:AddControl("Label", {
+				Label = "Location:",
+				Text = "                 " .. wire_gate_expression_folder .. "/",
+			})
+			
+			panel:AddControl("Button", {
+				Text = "Parent Directory",
+				Name = "Parent Directory",
+				Command = "wire_gate_expression_parent_cl"
+			})
 			
 			panel:AddControl("ListBox", {
 				Label = "Folders",
