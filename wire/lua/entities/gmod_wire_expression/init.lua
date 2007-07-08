@@ -20,7 +20,6 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit(SOLID_VPHYSICS)
 	self.Entity:SetMoveType(MOVETYPE_VPHYSICS)
 	self.Entity:SetSolid(SOLID_VPHYSICS)
-	self.Entity:SetCollisionGroup(COLLISION_GROUP_WORLD)
 	
 	self.Xinputs =  {}
 	self.Xoutputs = {}
