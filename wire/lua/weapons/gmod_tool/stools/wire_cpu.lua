@@ -46,7 +46,7 @@ function TOOL:LeftClick( trace )
 			trace.Entity.WIP = 0
 			trace.Entity.Labels = {}
 			trace.Entity.Compiling = true
-			if (self:GetClientInfo("userom") == 1) then
+			if (self:GetClientInfo("userom") == "enable") then
 				trace.Entity.UseROM = true
 			else
 				trace.Entity.UseROM = false

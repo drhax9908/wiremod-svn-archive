@@ -554,7 +554,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 					if (prefix) then
 						postprefix = string.sub(paramtable[1],prefix+1)
 					else
-						postprefix = string.sub(paramtable[1],segmentprefix2)
+						postprefix = string.sub(paramtable[1],segmentprefix2+1)
 					end
 				end
 				if (prefix == nil) && (not self:ValidNumber(paramtable[1])) then
@@ -660,7 +660,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 						if (prefix) then
 							postprefix = string.sub(paramtable[2],prefix+1)
 						else
-							postprefix = string.sub(paramtable[2],segmentprefix2)
+							postprefix = string.sub(paramtable[2],segmentprefix2+1)
 						end
 					end
 					if (prefix == nil) && (not self:ValidNumber(paramtable[2])) then

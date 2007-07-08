@@ -743,7 +743,7 @@ function ENT:Execute( )
 		else
 			result = 0
 		end
-	elseif (opcode == 33) then	//INT
+	elseif (opcode == 33) then	//FINT
 		result = math.floor(params[1])
 	elseif (opcode == 34) then	//RND
 		result = math.round(params[1])
