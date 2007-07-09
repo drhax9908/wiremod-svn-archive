@@ -42,6 +42,9 @@ function TOOL:LeftClick( trace )
 	
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_numpad" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup( _toggle, _value_off, _value_on )
+		trace.Entity.toggle = _toggle
+		trace.Entity.value_off = _value_off
+		trace.Entity.value_on = _value_on
 		return true
 	end
 	
@@ -55,15 +58,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_numpad:OBBMins()
 	wire_numpad:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
-	/*local const, nocollide
-	
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_numpad, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_numpad:GetPhysicsObject():EnableCollisions( false )
-		wire_numpad.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_numpad, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireNumpad")

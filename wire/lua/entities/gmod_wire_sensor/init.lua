@@ -58,7 +58,7 @@ function ENT:Think()
 	self.BaseClass.Think(self)
 	
 	//if (!self.Inputs.Target.Src or !self.Inputs.Target.Src:IsValid() ) then return end
-	if (!self.ToSense or !self.ToSense:IsValid() ) then	return end
+	if ( !self.ToSense or !self.ToSense:IsValid() or !self.ToSense.GetBeaconPos ) then return end
 	if (self.Active) then
 	    local dist = 0
 	    local distc = Vector(0, 0, 0)
