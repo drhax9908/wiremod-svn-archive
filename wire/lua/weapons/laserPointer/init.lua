@@ -69,7 +69,7 @@ function SWEP:Think()
         Wire_TriggerOutput(self.Receiver, "X", point.x)
         Wire_TriggerOutput(self.Receiver, "Y", point.y)
         Wire_TriggerOutput(self.Receiver, "Z", point.z)
-        Wire_TriggerOutput(self.Receiver, "Dist", self.Receiver:GetPos():Distance(point))
+        self.Receiver.VPos = point
         //Msg("Send!\n")
     end
 end

@@ -13,7 +13,8 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-	self.Outputs = Wire_CreateOutputs(self.Entity,{"X","Y","Z","Dist","Active"})
+	self.Outputs = Wire_CreateOutputs(self.Entity,{"X","Y","Z","Active"})
+	self.VPos = Vector(0,0,0)
 end
 
 function ENT:OnRemove()
@@ -21,6 +22,10 @@ function ENT:OnRemove()
 end
 
 function ENT:Setup()
+end
+
+function ENT:GetBeaconPos(sensor)
+	return self.VPos
 end
 
 function ENT:ShowOutput(value)
