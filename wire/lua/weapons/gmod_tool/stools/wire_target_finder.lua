@@ -82,19 +82,19 @@ function TOOL:LeftClick(trace)
 	
 	// Get client's CVars
 	local minrange		= self:GetClientNumber("minrange")
-	local range			= self:GetClientNumber("maxrange")
+	local range		= self:GetClientNumber("maxrange")
 	local players		= (self:GetClientNumber("players") ~= 0)
-	local npcs			= (self:GetClientNumber("npcs") ~= 0)
+	local npcs		= (self:GetClientNumber("npcs") ~= 0)
 	local npcname		= self:GetClientInfo("npcname")
 	local beacons		= (self:GetClientNumber("beacons") ~= 0)
 	local hoverballs	= (self:GetClientNumber("hoverballs") ~= 0)
 	local thrusters		= (self:GetClientNumber("thrusters") ~= 0)
-	local props			= (self:GetClientNumber("props") ~= 0)
+	local props		= (self:GetClientNumber("props") ~= 0)
 	local propmodel		= self:GetClientInfo("propmodel")
 	local vehicles		= (self:GetClientNumber("vehicles") ~= 0)
 	local playername	= self:GetClientInfo("playername")
 	local casesen		= (self:GetClientNumber("casesen") ~= 0)
-	local rpgs 			= (self:GetClientNumber("rpgs") ~= 0)
+	local rpgs 		= (self:GetClientNumber("rpgs") ~= 0)
 	local painttarget 	= (self:GetClientNumber("painttarget") ~= 0)
 	local maxtargets	= self:GetClientNumber("maxtargets")
 	local maxbogeys		= self:GetClientNumber("maxbogeys")
@@ -102,8 +102,9 @@ function TOOL:LeftClick(trace)
 	local entity		= self:GetClientInfo("entityfil")
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_target_finder" && trace.Entity.pl == ply ) then
+		//trace.Entity:Setup(range, players, npcs, npcname, beacons, hoverballs, thrusters, rpgs, painttarget)
 		trace.Entity:Setup(range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity)
-		
+
 		trace.Entity:GetTable().range		= range
 		trace.Entity:GetTable().players		= players
 		trace.Entity:GetTable().npcs		= npcs
@@ -131,12 +132,16 @@ function TOOL:LeftClick(trace)
 	
 	local Ang = trace.HitNormal:Angle()
 	
+	//local wire_target_finder = MakeWireTargetFinder( ply, trace.HitPos, Ang, range, players, npcs, npcname, beacons, hoverballs, thrusters, rpgs, painttarget )
 	local wire_target_finder = MakeWireTargetFinder( ply, trace.HitPos, Ang, range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity )
 	
 	local min = wire_target_finder:OBBMins()
 	wire_target_finder:SetPos( trace.HitPos - trace.HitNormal*min.z )
 	
 	// Don't weld to world
+	/*if ( trace.Entity:IsValid() ) then
+		const, nocollide = constraint.Weld( wire_target_finder, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0, true )
+	end*/
 	local const = WireLib.Weld(wire_target_finder, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireTargetFinder")
@@ -150,6 +155,14 @@ function TOOL:LeftClick(trace)
 	
 end
 
+function TOOL:Reload(trace)
+	if trace.Entity:IsValid() then
+		self:GetOwner():ConCommand("wire_target_finder_entityfil "..trace.Entity:GetClass().."\n")
+	else
+		self:GetOwner():ConCommand("wire_target_finder_entityfil \n")
+	end
+	return true
+end
 
 function TOOL:RightClick(trace)
 	return self:LeftClick(trace)
@@ -168,11 +181,11 @@ if SERVER then
 		wire_target_finder:Spawn()
 		wire_target_finder:Activate()
 		
+		//wire_target_finder:Setup(range, players, npcs, npcname, beacons, hoverballs, thrusters, rpgs, painttarget)
 		wire_target_finder:Setup(range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity)
 		wire_target_finder:SetPlayer(pl)
 		
 		local ttable = {
-			pl			= pl,
 			range		= range,
 			players		= players,
 			npcs		= npcs,
@@ -186,14 +199,15 @@ if SERVER then
 			playername	= playername,
 			casesen		= casesen,
 			rpgs		= rpgs,
-			painttarget = painttarget,
+			painttarget 	= painttarget,
+			pl		= pl,
 			nocollide	= nocollide,
 			description	= description,
 			minrange	= minrange,
 			maxtargets	= maxtargets,
 			maxbogeys	= maxbogeys,
-			entity 		= entity,
-			notargetowner 	= notargetowner
+			notargetowner 	= notargetowner,
+			entity 		= entity
 		}
 		
 		table.Merge( wire_target_finder:GetTable(), ttable )
