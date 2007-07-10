@@ -3,16 +3,27 @@ I@A B C D E F G H Link
 O@A B C D E F G H Link
 # Merge multiple values into one wire
 !~Link ->
-    Temp = send(A, B, C, D, E, F, G, H);
+    TmpLink = send(A, B, C, D, E, F, G, H);
 
 # Split a wire coming from a merger
-A = recv(Link, 1)
-B = recv(Link, 2)
-C = recv(Link, 3)
-D = recv(Link, 4)
-E = recv(Link, 5)
-F = recv(Link, 6)
-G = recv(Link, 7)
-H = recv(Link, 8)
+~Link ->
+    TmpA = recv(Link, 1)
+    TmpB = recv(Link, 2)
+    TmpC = recv(Link, 3)
+    TmpD = recv(Link, 4)
+    TmpE = recv(Link, 5)
+    TmpF = recv(Link, 6)
+    TmpG = recv(Link, 7)
+    TmpH = recv(Link, 8);
 
-Link = Temp
+# Refresh the output variables
+A = TmpA
+B = TmpB
+C = TmpC
+D = TmpD
+E = TmpE
+F = TmpF
+G = TmpG
+H = TmpH
+
+Link = TmpLink
