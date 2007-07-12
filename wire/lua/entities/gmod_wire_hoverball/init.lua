@@ -36,7 +36,7 @@ function ENT:Initialize()
 	self:SetSpeed( 1 )
 	self:EnableHover()
 
-	self.Inputs = Wire_CreateInputs(self.Entity, { "A: ZVelocity", "B: HoverMode" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "A: ZVelocity", "B: HoverMode", "C: SetZTarget" })
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "A: Zpos", "B: Xpos", "C: Ypos" })
 	
 end
@@ -51,6 +51,8 @@ function ENT:TriggerInput(iname, value)
 		elseif (self:GetHoverMode()) then
 			self:DisableHover()
 		end
+	elseif (iname == "C: SetZTarget") then
+		self:SetTargetZ(value)
 	end
 end
 
