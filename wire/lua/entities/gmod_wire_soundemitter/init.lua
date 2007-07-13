@@ -51,7 +51,7 @@ end
 function ENT:SetSound(sound)
 	if (sound) then
 		self:StopSounds(self.sound);
-		self.sound = sound;
+		self.sound = (sound or ""):gsub("[/\\]+","/");
 	end
 end
 
