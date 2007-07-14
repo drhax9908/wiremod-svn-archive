@@ -16,8 +16,13 @@ function ENT:Initialize()
 		self.Memory1[i] = 0
 	end
 
+	self.Memory1[2031] = 0
+	self.Memory1[2032] = 17
+	self.Memory1[2033] = 0
+	self.Memory1[2034] = 17
+
 	for i = 0, 2047 do
-		self.Memory2[i] = 0
+		self.Memory2[i] = self.Memory1[i]
 	end
 
 	self.LastClk = 0
@@ -47,8 +52,10 @@ function ConsoleScreen_DataMessage( um )
 
 		if (address == 2037) then
 			local delta = value
+			local low = self.Memory1[2031]
+			local high = self.Memory1[2032]
 			if (delta > 0) then
-				for j = 0, 17 do
+				for j = low,high do
 					for i = 29,delta do
 						if (clk == 1) then
 							ent.Memory1[j*60+i*2] = ent.Memory1[j*60+i*2-delta*2]
@@ -58,7 +65,7 @@ function ConsoleScreen_DataMessage( um )
 						ent.Memory2[j*60+i*2+1] = ent.Memory2[j*60+i*2+1-delta*2]
 					end
 				end
-				for j = 0,17 do
+				for j = low,high do
 					for i = 0, delta-1 do
 						if (clk == 1) then
 							ent.Memory1[j*60+i*2] = 0
@@ -70,7 +77,7 @@ function ConsoleScreen_DataMessage( um )
 				end
 			else
 				delta = -delta
-				for j = 0,17 do
+				for j = low,high do
 					for i = 0,29-delta do
 						if (clk == 1) then
 							ent.Memory1[j*60+i*2] = ent.Memory1[j*60+i*2+delta*2]
@@ -80,7 +87,7 @@ function ConsoleScreen_DataMessage( um )
 						ent.Memory2[j*60+i*2+1] = ent.Memory2[j*60+i*2+1+delta*2]
 					end
 				end
-				for j = 0,17 do
+				for j = low,high do
 					for i = 29-delta+1,29 do
 						if (clk == 1) then
 							ent.Memory1[j*60+i*2] = 0
@@ -94,8 +101,10 @@ function ConsoleScreen_DataMessage( um )
 		end
 		if (address == 2038) then
 			local delta = value
+			local low = self.Memory1[2033]
+			local high = self.Memory1[2034]
 			if (delta > 0) then
-				for j = 0, 17-delta do
+				for j = low, high-delta do
 					for i = 0, 59 do
 						if (clk == 1) then
 							ent.Memory1[j*60+i] = ent.Memory1[(j+delta)*60+i]
@@ -103,7 +112,7 @@ function ConsoleScreen_DataMessage( um )
 						ent.Memory2[j*60+i] = ent.Memory2[(j+delta)*60+i]
 					end
 				end
-				for j = 17-delta+1,17 do
+				for j = high-delta+1,high do
 					for i = 0, 59 do
 						if (clk == 1) then
 							ent.Memory1[j*60+i] = 0
@@ -113,7 +122,7 @@ function ConsoleScreen_DataMessage( um )
 				end
 			else
 				delta = -delta
-				for j = 17,delta do
+				for j = high,delta do
 					for i = 0, 59 do
 						if (clk == 1) then
 							ent.Memory1[j*60+i] = ent.Memory1[(j-delta)*60+i]
@@ -121,7 +130,7 @@ function ConsoleScreen_DataMessage( um )
 						ent.Memory2[j*60+i] = ent.Memory2[(j-delta)*60+i]
 					end
 				end
-				for j = delta+1,0 do
+				for j = delta+1,low do
 					for i = 0, 59 do
 						if (clk == 1) then
 							ent.Memory1[j*60+i] = 0
@@ -273,6 +282,10 @@ function ENT:Draw()
 			end
 		end
 
+		//2031 - Low shift column
+		//2032 - High shift column
+		//2033 - Low shift row
+		//2034 - High shift row
 		//2035 - Charset, always 0
 		//2036 - Brightness (Add to color)
 		//2037 - Shift cells -OBSOLETE-
