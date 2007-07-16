@@ -52,8 +52,8 @@ function ConsoleScreen_DataMessage( um )
 
 		if (address == 2037) then
 			local delta = value
-			local low = self.Memory1[2031]
-			local high = self.Memory1[2032]
+			local low = ent.Memory1[2031]
+			local high = ent.Memory1[2032]
 			if (delta > 0) then
 				for j = low,high do
 					for i = 29,delta do
@@ -101,8 +101,8 @@ function ConsoleScreen_DataMessage( um )
 		end
 		if (address == 2038) then
 			local delta = value
-			local low = self.Memory1[2033]
-			local high = self.Memory1[2034]
+			local low = ent.Memory1[2033]
+			local high = ent.Memory1[2034]
 			if (delta > 0) then
 				for j = low, high-delta do
 					for i = 0, 59 do
