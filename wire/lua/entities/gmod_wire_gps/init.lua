@@ -43,7 +43,7 @@ function ENT:Think()
 	Wire_TriggerOutput(self.Entity, "Z", pos.z)
 	Wire_TriggerOutput(self.Entity, "Current Memory", self.arrayindex)
 	if self.arrayindex > 0 then
-		Wire_TriggerOutput(self.Entity, "Recall X", self.storedpositions[self.arrayindex].z)
+		Wire_TriggerOutput(self.Entity, "Recall X", self.storedpositions[self.arrayindex].x)
 		Wire_TriggerOutput(self.Entity, "Recall Y", self.storedpositions[self.arrayindex].y)
 		Wire_TriggerOutput(self.Entity, "Recall Z", self.storedpositions[self.arrayindex].z)
 	else
