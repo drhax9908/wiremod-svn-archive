@@ -328,8 +328,8 @@ ENT._vecx_1 =         function (self, v) if self:IsVector(v) then return self:To
 ENT._vecy_1 =         function (self, v) if self:IsVector(v) then return self:ToVector(v).y else return -1 end end
 ENT._vecz_1 =         function (self, v) if self:IsVector(v) then return self:ToVector(v).z else return -1 end end
 
-ENT._vecpitch_1 =     function (self, v) if self:IsVector(v) then return self:ToVector(v):Angle().p else return -1 end end
-ENT._vecyaw_1 =       function (self, v) if self:IsVector(v) then return self:ToVector(v):Angle().y else return -1 end end
+ENT._vecpitch_1 =     function (self, v) if self:IsVector(v) then return (self:ToVector(v):Angle().p + 180) % 360 - 180 else return -1 end end
+ENT._vecyaw_1 =       function (self, v) if self:IsVector(v) then return (self:ToVector(v):Angle().y + 180) % 360 - 180 else return -1 end end
 
 ENT._veclength_1 =    function (self, v) if self:IsVector(v) then return self:ToVector(v):Length() else return -1 end end
 ENT._vecnormalize_1 = function (self, v) if self:IsVector(v) then return self:FromVector(self:ToVector(v):GetNormalized()) else return -1 end end
