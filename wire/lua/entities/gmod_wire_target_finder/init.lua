@@ -73,15 +73,13 @@ function ENT:Setup(maxrange, players, npcs, npcname, beacons, hoverballs, thrust
 end
 
 function ENT:TriggerInput(iname, value)
-	if iname == "Hold" then
-		if (value > 0) then
-			if self.Selector.Next[iname] then
-				self:SelectorNext(self.Selector.Next[iname])
-			/*elseif self.Selector.Prev[iname] then
-				self:SelectorPrev(self.Selector.Prev[iname])*/
-			/*elseif self.Selector.Hold[iname] then
-				self:SelectorHold(self.Selector.Hold[iname])*/
-			end
+	if (value > 0) then
+		if self.Selector.Next[iname] then
+			self:SelectorNext(self.Selector.Next[iname])
+		/*elseif self.Selector.Prev[iname] then
+			self:SelectorPrev(self.Selector.Prev[iname])*/
+		/*elseif self.Selector.Hold[iname] then
+			self:SelectorHold(self.Selector.Hold[iname])*/
 		end
 	end
 end
