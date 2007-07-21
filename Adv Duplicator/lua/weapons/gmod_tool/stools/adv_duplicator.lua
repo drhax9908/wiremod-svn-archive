@@ -261,7 +261,7 @@ function TOOL:Think()
 	
 	if ( !self:GetPasting() ) and ( self.UnfinishedGhost ) and ( CurTime() >= NextAddGhostTime ) then
 		self:AddToGhost()
-		NextAddGhostTime = CurTime() + .1
+		NextAddGhostTime = CurTime() + AdvDupe.GhostAddDelay(self:GetOwner())
 	end
 	
 	self:UpdateGhostEntities()
@@ -465,8 +465,9 @@ end
 //	Add more ghost ents
 //
 function TOOL:AddToGhost()
-	local LimitedGhost = ( self:GetClientNumber( "LimitedGhost" ) == 1 )
-	if ( !LimitedGhost and self.GhostEntitiesCount < 500 ) or ( LimitedGhost and self.GhostEntitiesCount < 50 )then
+	local LimitedGhost = ( self:GetClientNumber( "LimitedGhost" ) == 1 ) or AdvDupe.LimitedGhost(self:GetOwner())
+	if ( !LimitedGhost and self.GhostEntitiesCount < AdvDupe.GhostLimitNorm(self:GetOwner()) )
+	or ( LimitedGhost and self.GhostEntitiesCount < AdvDupe.GhostLimitLimited(self:GetOwner()) ) then
 		
 		if ( !self.GhostEntities[self.HeadEntityIdx] || !self.GhostEntities[self.HeadEntityIdx]:IsValid() ) then
 			self.GhostEntities = nil
@@ -501,7 +502,7 @@ function TOOL:AddToGhost()
 				ghostcount = ghostcount + 1
 				self.GhostEntitiesCount = self.GhostEntitiesCount + 1
 			end
-			if ( ghostcount > 3 ) then
+			if ( ghostcount == AdvDupe.GhostsPerTick(self:GetOwner()) ) then
 				self.UnfinishedGhost = true
 				self:SetPercent( 100 * self.GhostEntitiesCount / math.min(500, self.NumOfEnts) )
 				return
@@ -1091,7 +1092,6 @@ else	// CLIENT
 		if (menu == "main") or (!menu) or (menu == "") then
 			
 			
-			
 			if (!SinglePlayer()) then
 				CPanel:AddControl( "Label", { Text = "Server Menu (save and load)" })
 			else
@@ -1124,13 +1124,16 @@ else	// CLIENT
 					Text = "Save to Server Then Download",
 					Command = "adv_duplicator_save_cl" })*/
 				
+				
 				CPanel:AddControl( "Button", {
 					Text = "Open Upload/Download Menu",
 					Command = "adv_duplicator_cl_menu clientupload" })
 				
+				
 				CPanel:AddControl( "Button", {
 					Text = "Open Server Folder Manager Menu",
 					Command = "adv_duplicator_cl_menu serverdir" })
+				
 			end
 			
 			CPanel:AddControl( "Button", {
@@ -1315,18 +1318,22 @@ else	// CLIENT
 				
 				if AdvDupeClient.downloading then
 					CPanel:AddControl( "Label", { Text = "==Download in Progress==" })
-				else
+				elseif ( AdvDupeClient.CanDownload() ) then
 					CPanel:AddControl( "Button", {
 						Text = "Download Selected File",
 						Command = "adv_duplicator_send_cl" })
+				else
+					CPanel:AddControl( "Label", { Text = "Server Disabled Downloads" })
 				end
 				
 				if AdvDupeClient.sending then
 					CPanel:AddControl( "Label", { Text = "==Upload in Progress==" })
-				else
+				elseif ( AdvDupeClient.CanUpload() ) then
 					CPanel:AddControl( "Button", {
 						Text = "Upload File to server",
 						Command = "adv_duplicator_upload_cl"})
+				else
+					CPanel:AddControl( "Label", { Text = "Server Disabled Uploads" })
 				end
 				
 				CPanel:AddControl( "Label", { Text = "Local Files" })

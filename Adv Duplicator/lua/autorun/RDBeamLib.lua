@@ -235,6 +235,7 @@ end
 //	sends a packet of BeamData to player(s)
 //
 local function SendBeamData( info, beam_data, ply )
+	if ( ply ) and ( !ply:IsValid() ) then return end //ply is was set but no longer exists
 	
 	if (info.type == "simple") then
 		if (!SourceAndDestEntValid( info.source_ent, info.dest_ent )) then return end
