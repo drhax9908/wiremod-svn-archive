@@ -26,7 +26,8 @@ Serialiser.Version = ThisVersion
 // String pooling (TAD2020)
 local function MakeStringCommon( str, StrTbl, dontpoolstrings )
 	if (dontpoolstrings) or (string.len(str) < 4) then
-		return string.format('S:%q', str )   // todo escape/encode delimiter characters
+		//return string.format('S:%q', str )   // todo escape/encode delimiter characters
+		return string.format('S:%q', str:gsub(";","»") )   // todo escape/encode delimiter characters
 	end
 	
 	local Idx
@@ -76,7 +77,8 @@ local function DeSerialiseChunk( chunk, tables, StrTbl )
 	
 	//see what data type this chunk represents and return the proper value
 	if		type == "N" then return tonumber(val)
-	elseif	type == "S" then return val:sub(2, -2)  // todo de-escape/de-encode delimiter characters
+	//elseif	type == "S" then return string.gsub(str,";","™")val:sub(2, -2)  // todo de-escape/de-encode delimiter characters
+	elseif	type == "S" then return string.gsub(val:sub(2, -2),"»",";")  // todo de-escape/de-encode delimiter characters
 	elseif	type == "Z" then return StrTbl[ val:sub(2, -2) ]
 	elseif	type == "Y" then return StrTbl[ val ]
 	elseif	type == "B" then return val == "t"

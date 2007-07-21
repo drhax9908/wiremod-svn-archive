@@ -12,13 +12,12 @@ if (!dupeshare) then Msg("===AdvDupe: Error! dupeshare module not loaded\n") end
 
 AdvDupe = {}
 
-
 if (CLIENT) then return end
 
 AdvDupe.Version = 1.835
 AdvDupe.ToolVersion = 1.812
 AdvDupe.FileVersion = 0.83
-local MAXDOWNLOADLENGTH = 200
+
 
 /*---------------------------------------------------------
   Process and save given dupe tables to file
@@ -796,9 +795,9 @@ end
 concommand.Add( "AdvDupe_NewSave", NewSaveSet )*/
 
 
-
-
-
+//
+//	some modifer functions
+//
 local function CollisionGroupModifier(ply, Ent, group )
 	
 	if ( group == COLLISION_GROUP_WORLD ) then
@@ -812,8 +811,7 @@ local function CollisionGroupModifier(ply, Ent, group )
 end
 duplicator.RegisterEntityModifier( "CollisionGroupMod", CollisionGroupModifier )
 
-
-local function SetMass( Player, Entity, Data )
+local function SetMassMod( Player, Entity, Data )
 
 	if ( Data and Data.Mass ) then
 		if (Data.Mass > 0) then
@@ -828,7 +826,7 @@ local function SetMass( Player, Entity, Data )
 	end
 	
 end
-duplicator.RegisterEntityModifier( "MassMod", SetMass )
+duplicator.RegisterEntityModifier( "MassMod", SetMassMod )
 
 
 
@@ -1017,7 +1015,7 @@ end
 //makes the player see an error
 //todo: make enum error codes
 function AdvDupe.SendClientError(pl, errormsg, NoSound)
-	if !pl:IsValid() or !pl:IsPlayer() or !errormsg then return end
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() or !errormsg ) then return end
 	//pl:SendLua( "dvdupeclient.Error( \""..errormsg.."\" )" )
 	Msg("AdvDupe: Sending this ErrorMsg to "..tostring(pl).."\nAdvDupe-ERROR: \""..tostring(errormsg).."\"\n")
 	umsg.Start("AdvDupeCLError", pl)
@@ -1026,7 +1024,7 @@ function AdvDupe.SendClientError(pl, errormsg, NoSound)
 	umsg.End()
 end
 function AdvDupe.SendClientInfoMsg(pl, msg, NoSound)
-	if !pl:IsValid() or !pl:IsPlayer() or !msg then return end
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() or !msg ) then return end
 	//pl:SendLua( "dvdupeclient.Error( \""..errormsg.."\" )" )
 	Msg("AdvDupe, Sending This InfoMsg to "..tostring(pl).."\nAdvDupe: \""..tostring(msg).."\"\n")
 	umsg.Start("AdvDupeCLInfo", pl)
@@ -1036,6 +1034,7 @@ function AdvDupe.SendClientInfoMsg(pl, msg, NoSound)
 end
 
 function AdvDupe.UpdateList(pl)
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
 	local tool = AdvDupe.GetAdvDupeToolObj(pl)
 	if (tool) then
 		tool:UpdateList()
@@ -1043,12 +1042,14 @@ function AdvDupe.UpdateList(pl)
 end
 
 function AdvDupe.HideGhost(pl, Hide)
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
 	local tool = AdvDupe.GetAdvDupeToolObj(pl)
 	if (tool) then
 		tool:HideGhost(Hide)
 	end
 end
 local function AdvDupe_HideGhost( pl, command, args )
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
 	if ( args[1] ) and  ( args[1] == "0" ) then
 		AdvDupe.HideGhost(pl, false)
 	elseif ( args[1] ) and  ( args[1] == "1" ) then
@@ -1058,6 +1059,7 @@ end
 concommand.Add( "adv_duplicator_hideghost", AdvDupe_HideGhost )
 
 function AdvDupe.SetPasting(pl, Pasting)
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
 	AdvDupe[pl] = AdvDupe[pl] or {}
 	AdvDupe[pl].Pasting = Pasting
 	
@@ -1067,6 +1069,7 @@ function AdvDupe.SetPasting(pl, Pasting)
 end
 
 function AdvDupe.SetPercentText( pl, Txt )
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
 	AdvDupe[pl].PercentText = Txt
 	umsg.Start("AdvDupe_Start_Percent", pl)
 		umsg.String(Txt)
@@ -1074,15 +1077,14 @@ function AdvDupe.SetPercentText( pl, Txt )
 end
 
 function AdvDupe.SetPercent(pl, Percent)
-	/*local tool = AdvDupe.GetAdvDupeToolObj(pl)
-	if (tool) then*/
-		umsg.Start("AdvDupe_Update_Percent", pl)
-			umsg.Short(Percent)
-		umsg.End()
-	//end
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
+	umsg.Start("AdvDupe_Update_Percent", pl)
+		umsg.Short(Percent)
+	umsg.End()
 end
 
 function AdvDupe.GetAdvDupeToolObj(pl)
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
 	//local tool = pl:GetActiveWeapon()
 	if ( !pl:GetActiveWeapon():GetTable().Tool ) then return end
 	local tool = pl:GetActiveWeapon():GetTable().Tool.adv_duplicator.Weapon
@@ -1095,32 +1097,273 @@ end
 
 
 //
-//Recieves file from client
+//	admin stuff: functions and vars
+//	TODO: setting saving to file and maybe concommands
+AdvDupe.AdminSettings = {}
+//
+//	==Defaults==
+//	You can chage this values from lua now, but keep in mind that they're set this way for a reason
+//	Sure, you can make upload go fast by making it send more, more often, but it will fucking fail most of the time
+//	same for download, if you don't mind your server crashing
+//	Only change this vars so it will go slower or to disable, otherwise you're going to break something or crash
+//	I'll add limits if people break shit by fucking with this stuff too much.
+//
+//client upload settings
+local MaxUploadLength = 150			--common to all players. it's the size of string in each piece, over 200 and it _WILL_ fail
+local UploadPiecesPerSend = 2		--per player. number of pieces the player send per interval. over 5 and it _WILL_ fail
+local UploadSendDelay = 0.25		--per player. seconds between each inverval. under 0.01 and there is no real difference. Don't set less than .1 and 2 above, it will fail a lot.
+local MaxUploadSize = 0				--per player. -1 disable, 0 no limit, >0 K characers allowed (K = 1024).  allows up to (MaxUploadLength - 1) charcters over this limit.,
+//download settings
+local MaxDownloadLength = 200		--common to all players. same as above, but limit is _MAX_ 255, but it doesn't work well above 200
+local DownloadPiecesPerSend = 3		--per player. same as above. set it to high and the server _WILL_ most likely crash
+local DownloadSendInterval = 0.1	--per player. same as above. this should be the lowest you should use
+local CanDownloadDefault = true		--per player. if you can't figure this out, i have a stick i can hit you with :V
+//ghost settings	-- all per player
+local LimitedGhost = false			--same as the panel option, just overrides that option with true
+local GhostLimitNorm = 500			--max size of ghost. DON'T make it higher than this!!!!
+local GhostLimitLimited = 50		--size of ghost when limiting is on. minimum is 1
+local GhostAddDelay = .2			--delay between adding to the ghost when ghosting
+local GhostsPerTick = 3				--ghost ents added per tick
+//per player settings
+local PlayerSettings = {}
+//
+//	admin setting function
+//
+//	uploads
+local function SendUploadSettings( pl, pieces, delay )
+	if ( pl ) and ( !pl:IsValid() or !pl:IsPlayer() ) then return end
+	umsg.Start( "AdvDupeUploadSettings", pl )
+		umsg.Short( MaxUploadLength )
+		umsg.Short( pieces )
+		umsg.Short( delay * 100 )
+	umsg.End()
+end
+local function SendMaxUploadSize( pl, Kchars )
+	if ( pl ) and ( !pl:IsValid() or !pl:IsPlayer() ) then return end
+	umsg.Start( "AdvDupeMaxUploadSize", pl )
+		umsg.Short( Kchars )
+	umsg.End()
+end
+local function CanUpload( pl )
+	if ( PlayerSettings[pl].MaxUploadSize >= 0 ) then return true end
+end
+local function GetMaxUpload( pl )
+	return PlayerSettings[pl].MaxUploadSize * 1024
+end
+function AdvDupe.AdminSettings.DefaultUploadSettings( len, pieces, delay, Kchars, DontUpdatePl  )
+	if ( type(len) != "number" ) or ( type(pieces) != "number" ) or ( type(delay) != "number" ) or ( type(Kchars) != "number" ) then return end
+	len = math.floor(len)
+	pieces = math.floor(pieces)
+	Kchars = math.floor(Kchars)
+	if ( len >= 50 ) then MaxUploadLength = len end
+	if ( pieces >= 1 ) then UploadPiecesPerSend = pieces end
+	if ( delay >= 0.01 ) and ( delay <= 2 ) then UploadSendDelay = delay end
+	if ( Kchars >= -1 ) then MaxUploadSize = Kchars end
+	if ( !DontUpdatePl ) then
+		for pl,v in pairs( PlayerSettings ) do
+			PlayerSettings[pl].UploadPiecesPerSend = UploadPiecesPerSend
+			PlayerSettings[pl].UploadSendDelay = UploadSendDelay
+			PlayerSettings[pl].MaxUploadSize = MaxUploadSize
+		end
+		SendUploadSettings( nil, pieces, delay )
+		SendMaxUploadSize( nil, Kchars )
+	end
+end
+function AdvDupe.AdminSettings.UploadSettings( pl, pieces, delay, Kchars )
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
+	if ( type(pieces) != "number" ) or ( type(delay) != "number" ) or ( type(Kchars) != "number" ) then return end
+	pieces = math.floor(pieces)
+	if ( pieces >= 1 ) then PlayerSettings[pl].UploadPiecesPerSend = pieces end
+	if ( delay >= 0.01 ) and ( delay <= 2 ) then PlayerSettings[pl].UploadSendDelay = delay end
+	SendUploadSettings( pl, pieces, delay )
+	if ( Kchars ) then AdvDupe.AdminSettings.MaxUploadSize( pl, Kchars ) end
+end
+function AdvDupe.AdminSettings.MaxUploadSize( pl, Kchars )
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
+	if ( type(Kchars) != "number" ) then return end
+	Kchars = math.floor(Kchars)
+	if ( Kchars >= -1 ) then
+		PlayerSettings[pl].MaxUploadSize = Kchars
+		SendMaxUploadSize( pl, Kchars )
+	end
+end
+function AdvDupe.AdminSettings.HaltUpload( pl )
+	umsg.Start( "AdvDupeHaltUpload", pl )
+	umsg.End()
+end
+function AdvDupe.RecieveFileContentStart( pl, cmd, args )
+	 AdvDupe.AdminSettings.UploadSettings( pl, tonumber(args[1]), tonumber(args[2]), tonumber(args[3] or 0) )
+end
+concommand.Add("AdvDupe_UploadSettings", AdvDupe.RecieveFileContentStart)
+//
+//	downlaods
+local function SendCanDownload( pl, candownload )
+	if ( pl ) and ( !pl:IsValid() or !pl:IsPlayer() ) then return end
+	umsg.Start( "AdvDupeCanDownload", pl )
+		umsg.Bool( candownload )
+	umsg.End()
+end
+function AdvDupe.AdminSettings.DefaultDownloadSettings( len, pieces, delay, candownload, DontUpdatePl )
+	if ( type(len) != "number" ) or ( type(pieces) != "number" ) or ( type(delay) != "number" ) then return end
+	len = math.floor(len)
+	pieces = math.floor(pieces)
+	if ( len >= 50 ) then MaxDownloadLength = len end
+	if ( pieces >= 1 ) then DownloadPiecesPerSend = pieces end
+	if ( delay >= 0.01 ) and ( delay <= 2 ) then DownloadSendInterval = delay end
+	if ( candownload ) then CanDownload = true else CanDownload = false end
+	if ( !DontUpdatePl ) then
+		for pl,v in pairs( PlayerSettings ) do
+			PlayerSettings[pl].DownloadPiecesPerSend = DownloadPiecesPerSend
+			PlayerSettings[pl].DownloadSendInterval = DownloadSendInterval
+			PlayerSettings[pl].CanDownload = CanDownload
+		end
+	end
+end
+function AdvDupe.AdminSettings.DownloadSettings( pl, pieces, delay, candownload )
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
+	if ( type(pieces) != "number" ) or ( type(delay) != "number" ) then return end
+	pieces = math.floor(pieces)
+	if ( pieces >= 1 ) then PlayerSettings[pl].DownloadPiecesPerSend = pieces end
+	if ( delay >= 0.01 ) and ( delay <= 2 ) then PlayerSettings[pl].DownloadSendInterval = delay end
+	if ( candownload != nil ) then AdvDupe.AdminSettings.SetCanDownload( pl, candownload ) end
+end
+function AdvDupe.AdminSettings.SetCanDownload( pl, candownload )
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
+	if ( candownload ) then PlayerSettings[pl].CanDownload = true
+	else PlayerSettings[pl].CanDownload = false end
+	SendCanDownload( pl, PlayerSettings[pl].CanDownload )
+end
+local function CanDownload( pl )
+	return PlayerSettings[pl].CanDownload
+end
+//
+//	ghost
+function AdvDupe.LimitedGhost( pl )
+	return PlayerSettings[pl].LimitedGhost
+end
+function AdvDupe.GhostLimitNorm( pl )
+	return PlayerSettings[pl].GhostLimitNorm
+end
+function AdvDupe.GhostLimitLimited( pl )
+	return PlayerSettings[pl].GhostLimitLimited
+end
+function AdvDupe.GhostAddDelay( pl )
+	return PlayerSettings[pl].GhostAddDelay
+end
+function AdvDupe.GhostsPerTick( pl )
+	return PlayerSettings[pl].GhostsPerTick
+end
+function AdvDupe.AdminSettings.DefaultGhostSettings( normsize, limitsize, delay, num, limited, DontUpdatePl )
+	if ( type(normsize) != "number" ) or ( type(limitsize) != "number" ) or ( type(delay) != "number" ) or ( type(num) != "number" ) then return end
+	normsize = math.floor(normsize)
+	limitsize = math.floor(limitsize)
+	num = math.floor(num)
+	if ( normsize > 0 ) then GhostLimitNorm = normsize end
+	if ( limitsize > 0 ) then GhostLimitLimited = limitsize end
+	if ( delay >= 0.01 ) and ( delay <= 1 ) then GhostAddDelay = delay end
+	if ( num > 0 ) then GhostsPerTick = num end
+	if ( limited ) then LimitedGhost = true else LimitedGhost = false end
+	if ( !DontUpdatePl ) then
+		for pl,v in pairs( PlayerSettings ) do
+			PlayerSettings[pl].GhostLimitNorm = GhostLimitNorm
+			PlayerSettings[pl].GhostLimitLimited = GhostLimitLimited
+			PlayerSettings[pl].GhostAddDelay = GhostAddDelay
+			PlayerSettings[pl].LimitedGhost = LimitedGhost
+			PlayerSettings[pl].GhostsPerTick = GhostsPerTick
+		end
+	end
+end
+function AdvDupe.AdminSettings.GhostSettings( pl, normsize, limitsize, delay, num, limited )
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
+	if ( type(normsize) != "number" ) or ( type(limitsize) != "number" ) or ( type(delay) != "number" ) or ( type(num) != "number" ) then return end
+	normsize = math.floor(normsize)
+	limitsize = math.floor(limitsize)
+	num = math.floor(num)
+	if ( normsize > 0 ) then PlayerSettings[pl].GhostLimitNorm = normsize end
+	if ( limitsize > 0 ) then PlayerSettings[pl].GhostLimitLimited = limitsize end
+	if ( delay >= 0.01 ) and ( delay <= 1 ) then PlayerSettings[pl].GhostAddDelay = delay end
+	if ( num > 0 ) then PlayerSettings[pl].GhostsPerTick = num end
+	if ( limited != nil ) then AdvDupe.AdminSettings.SetLimitedGhost( pl, limited ) end
+end
+function AdvDupe.AdminSettings.SetLimitedGhost( pl, limited )
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
+	if ( limited ) then PlayerSettings[pl].LimitedGhost = true
+	else PlayerSettings[pl].LimitedGhost = false end
+end
+
+
+//	set defaults for player on join
+function AdvDupe.AdminSettings.SetPlayerToDefault( pl )
+	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
+	PlayerSettings[pl] = {}
+	
+	//upload
+	/*PlayerSettings[pl].UploadPiecesPerSend = UploadPiecesPerSend
+	PlayerSettings[pl].UploadSendDelay = UploadSendDelay
+	PlayerSettings[pl].MaxUploadSize = MaxUploadSize*/
+	AdvDupe.AdminSettings.UploadSettings( pl, UploadPiecesPerSend, UploadSendDelay, MaxUploadSize )
+	
+	//download
+	/*PlayerSettings[pl].DownloadPiecesPerSend = DownloadPiecesPerSend
+	PlayerSettings[pl].DownloadSendInterval = DownloadSendInterval
+	PlayerSettings[pl].CanDownload = CanDownload*/
+	AdvDupe.AdminSettings.DownloadSettings( pl, DownloadPiecesPerSend, DownloadSendInterval, CanDownload )
+	
+	//ghost
+	/*PlayerSettings[pl].LimitedGhost = LimitedGhost
+	PlayerSettings[pl].GhostLimitNorm = GhostLimitNorm
+	PlayerSettings[pl].GhostLimitLimited = GhostLimitLimited*/
+	AdvDupe.AdminSettings.GhostSettings( pl, GhostLimitNorm, GhostLimitLimited, GhostAddDelay, GhostsPerTick, LimitedGhost )
+	
+	PrintTable(PlayerSettings[pl])
+	
+	//update client side vars too
+	/*SendUploadSettings( pl, UploadPiecesPerSend, UploadSendDelay )
+	SendMaxUploadSize( pl, MaxUploadSize )
+	SendCanDownload( pl, CanDownload )*/
+end
+hook.Add( "PlayerInitialSpawn", "AdvDupePlayerJoinSettings", AdvDupe.AdminSettings.SetPlayerToDefault )
+
+
+
+
+//
+//	Upload: Recieves file from client
 //
 function AdvDupe.RecieveFileContentStart( pl, cmd, args )
-	if !pl:IsValid() or !pl:IsPlayer() then return end
+	if ( !pl:IsValid() or !pl:IsPlayer() ) then return end
 	
-	Msg("AdvDupe: Ready to recieve file: \""..args[1].."\" from player: "..(pl:GetName() or "unknown").."\n")
+	Msg("AdvDupe: Ready to recieve file: \""..args[2].."\" from player: "..(pl:GetName() or "unknown").."\n")
+	
+	if ( !CanUpload( pl ) ) then
+		Msg("player \""..tostring(pl).."\" not allowed to upload\n")
+		return
+	end
 	
 	if (!AdvDupe[pl]) then AdvDupe[pl] = {} end
 	
 	AdvDupe[pl].templast		= tonumber(args[1])
+	AdvDupe[pl].tempfile		= nil
+	if ( GetMaxUpload(pl) > 0 and (AdvDupe[pl].templast - 1) * MaxUploadLength > GetMaxUpload(pl) ) then
+		Msg("player \""..tostring(pl).."\" is trying to upload over "..(AdvDupe[pl].templast - 1) * MaxUploadLength.." then limit is "..MaxUploadSize.."\n")
+		SendMaxUploadSize( pl ) --tell the player what the max is
+		AdvDupe.AdminSettings.HaltUpload( pl )
+		return
+	end
 	AdvDupe[pl].tempdir			= AdvDupe[pl].cdir //upload into curent open dir
 	AdvDupe[pl].tempfilename	= args[2]
-	AdvDupe[pl].tempnum		= 0
+	AdvDupe[pl].tempnum			= 0
 	AdvDupe[pl].tempfile		= {}
 	
 end
 concommand.Add("DupeRecieveFileContentStart", AdvDupe.RecieveFileContentStart)
 
 function AdvDupe.RecieveFileContent( pl, cmd, args )
-	if !pl:IsValid() or !pl:IsPlayer() then return end
+	if ( !pl:IsValid() or !pl:IsPlayer() ) or ( !AdvDupe[pl].tempfile ) or (!args[1]) or (args[1] == "") then return end
 	
-	Msg("AdvDupe: Recieving piece ")
-	if (!args[1]) or (args[1] == "") then return end
+	--Msg("AdvDupe: Recieving piece ")
 	AdvDupe[pl].tempnum = AdvDupe[pl].tempnum + 1
-	
-	Msg(args[1].." / "..AdvDupe[pl].templast.." received: "..AdvDupe[pl].tempnum.."\n")
+	--Msg(args[1].." / "..AdvDupe[pl].templast.." received: "..AdvDupe[pl].tempnum.."\n")
 	
 	AdvDupe[pl].tempfile[tonumber(args[1])] = args[2]
 	
@@ -1132,18 +1375,17 @@ end
 concommand.Add("_DFC", AdvDupe.RecieveFileContent)
 
 function AdvDupe.RecieveFileContentFinish( pl, cmd, args )
-	if (!pl:IsValid() or !pl:IsPlayer()) then return end
+	if (!pl:IsValid() or !pl:IsPlayer()) or (!AdvDupe[pl].tempfile) then return end
 	
 	//local filepath = dupeshare.FileNoOverWriteCheck( AdvDupe.GetPlayersFolder(pl), AdvDupe[pl].tempfilename )
 	local filepath = dupeshare.FileNoOverWriteCheck( AdvDupe[pl].tempdir, AdvDupe[pl].tempfilename )
 	Msg("AdvDupe: Saving "..(pl:GetName() or "unknown").."'s recieved file to "..filepath.."\n")
-	AdvDupe.RecieveFileContentSave( pl, filepath )
+	timer.Simple( .5, AdvDupe.RecieveFileContentSave, pl, filepath )
 end
 concommand.Add("DupeRecieveFileContentFinish", AdvDupe.RecieveFileContentFinish)
 
 function AdvDupe.RecieveFileContentSave( pl, filepath )
-	if (!pl:IsValid() or !pl:IsPlayer()) then return end
-	if (!AdvDupe[pl].tempfile) then return end
+	if (!pl:IsValid() or !pl:IsPlayer()) or (!AdvDupe[pl].tempfile) then return end
 	
 	local expected = AdvDupe[pl].templast
 	local got = AdvDupe[pl].tempnum
@@ -1159,8 +1401,6 @@ function AdvDupe.RecieveFileContentSave( pl, filepath )
 		end
 		Msg(txt.."\n")
 		
-		//pl:PrintMessage(HUD_PRINTTALK, "ERROR: Your file, \""..filepath.."\", was not recieved properly: server expected "..expected.." pieces but got "..got)
-		//pl:PrintMessage(HUD_PRINTTALK, "Try resending it.")
 		AdvDupe.SendClientError(pl, "ERROR: \""..FileName.."\", failed uploading", true)
 		AdvDupe.SendClientError(pl, "Server expected "..expected.." pieces but got "..got)
 		AdvDupe.SendClientInfoMsg(pl, "Try resending it.", true)
@@ -1175,7 +1415,6 @@ function AdvDupe.RecieveFileContentSave( pl, filepath )
 	end
 	
 	//reassemble the pieces
-	//local temp = string.Implode("", AdvDupe[pl].tempfile)
 	local temp = table.concat(AdvDupe[pl].tempfile)
 	temp = dupeshare.DeCompress(temp, true)
 	file.Write(filepath, temp)
@@ -1197,16 +1436,18 @@ end
 
 
 //
-//Sends a file to the client
+//	Download: Sends a file to the client
 //
 /*function AdvDupe.SaveAndSendSaveToClient( pl, filename, desc )
 	local filepath = AdvDupe.SaveToFile( pl, filename, desc )
 	AdvDupe.SendSaveToClient( pl, filepath )
 end*/
 
+AdvDupe.SendBuffer = {}
 function AdvDupe.SendSaveToClient( pl, filename )
+	if ( !CanDownload( pl ) ) then return end
 	if (!AdvDupe[pl]) then AdvDupe[pl] = {} end
-	if (AdvDupe[pl].temp) then return end //then were sending already and give up
+	if (AdvDupe.SendBuffer[pl]) then return end //then were sending already and give up
 	
 	local filepath = filename
 	local dir = "adv_duplicator"
@@ -1214,20 +1455,21 @@ function AdvDupe.SendSaveToClient( pl, filename )
 	
 	if !file.Exists(filepath) then //if filepath was just a file name then try to find the file, for sending from list
 		if !file.Exists(dir.."/"..filename) && !file.Exists(ndir.."/"..filename) then
-			Msg("AdvDupe: File not found: \""..filepath.."\"\n") return end
-		
+			Msg("AdvDupe: File not found: \""..filepath.."\"\n")
+			return
+		end
 		if ( file.Exists(ndir.."/"..filename) ) then filepath = ndir.."/"..filename end
 		if ( file.Exists(dir.."/"..filename) ) then filepath = dir.."/"..filename end
 	end
 	
 	filename = dupeshare.GetFileFromFilename(filepath)
 	
-	AdvDupe[pl].temp = file.Read(filepath)
+	AdvDupe.SendBuffer[pl] = file.Read(filepath)
 	
-	AdvDupe[pl].temp = dupeshare.Compress(AdvDupe[pl].temp, false)
+	AdvDupe.SendBuffer[pl] = dupeshare.Compress(AdvDupe.SendBuffer[pl], false)
 	
-	local len = string.len(AdvDupe[pl].temp)
-	local last = math.ceil(len / MAXDOWNLOADLENGTH) + 1 //+1 because the client counts the first piece recieved as 1 not 0
+	local len = string.len(AdvDupe.SendBuffer[pl])
+	local last = math.ceil(len / MaxDownloadLength)
 	
 	umsg.Start("AdvDupeRecieveSaveStart", pl)
 		umsg.Short(last)
@@ -1237,40 +1479,41 @@ function AdvDupe.SendSaveToClient( pl, filename )
 	Msg("AdvDupe: sending file \""..filename..".txt\" in "..tostring(last).." pieces. len: "..tostring(len).."\n")
 	//AdvDupe.SetPercentText( pl, "Downloading" )
 	
-	AdvDupe.SendSaveToClientData(pl, len, 0, last)
-	
+	//AdvDupe.SendSaveToClientData(pl, 1, last)
+	Msg("send rate: "..PlayerSettings[pl].DownloadSendInterval.."\n")
+	timer.Simple( PlayerSettings[pl].DownloadSendInterval, AdvDupe.SendSaveToClientData, pl, 1, last )
 end
 
-function AdvDupe.SendSaveToClientData(pl, len, offset, last)
+function AdvDupe.SendSaveToClientData(pl, offset, last)
+	if (!pl or !pl:IsValid() or !pl:IsPlayer()) or (!AdvDupe.SendBuffer[pl]) then return end
 	
-	for k=0,2 do //sends three pieces
+	for k=1, PlayerSettings[pl].DownloadPiecesPerSend do //sends three pieces
+		--Msg("AdvDupe: sending piece: "..offset.." / "..last.."\n")
 		
-		if ((offset + k + 1) <= last) then
-			//Msg("AdvDupe: sending string: "..tostring((offset + k) * MAXDOWNLOADLENGTH).." / "..len.." k: "..k.." piece: "..(offset + k + 1).." / "..last.."\n")
-			
-			umsg.Start("AdvDupeRecieveSaveData", pl)
-				umsg.Short(offset + k + 1) //cause sometimes these are reccieved out of order
-				
-				if ((offset + k + 1) == last) then
-					umsg.String(string.Right(AdvDupe[pl].temp, (len - ((last - 2) * MAXDOWNLOADLENGTH))))
-					//umsg.String(string.sub(AdvDupe[pln].temp, ((offset + k) * 220)))
-					Msg("AdvDupe: send last piece\n")
-				else
-					umsg.String(string.Right(string.Left(AdvDupe[pl].temp, ((offset + k) * MAXDOWNLOADLENGTH)),MAXDOWNLOADLENGTH))
-					//local pos = ((offset + k) * 220)
-					//umsg.String(string.sub(AdvDupe[pln].temp, pos, (pos +220) ))
-				end
-				
-			umsg.End()
+		local SubStrStart = (offset - 1) * MaxDownloadLength
+		local str = ""
+		if ( offset == last ) then
+			//umsg.String(string.Right(AdvDupe[pl].temp, (len - ((last - 2) * MaxDownloadLength))))
+			str = AdvDupe.SendBuffer[pl]:sub( SubStrStart )
+			Msg("AdvDupe: send last piece\n")
 		else
-			break
+			//umsg.String(string.Right(string.Left(AdvDupe[pl].temp, ((offset + k) * MaxDownloadLength)),MaxDownloadLength))
+			str = AdvDupe.SendBuffer[pl]:sub( SubStrStart, SubStrStart + MaxDownloadLength - 1 )
 		end
+		
+		umsg.Start("AdvDupeRecieveSaveData", pl)
+			umsg.Short(offset) //cause sometimes these are reccieved out of order
+			umsg.String( str )
+		umsg.End()
+		
+		offset = offset + 1
+		if ( offset > last ) then break end
 	end
 	
-	if (offset + 4) <= last then
-		timer.Simple( 0.02, AdvDupe.SendSaveToClientData, pl, len, (offset + 3), last )
+	if ( offset <= last ) then
+		timer.Simple( PlayerSettings[pl].DownloadSendInterval, AdvDupe.SendSaveToClientData, pl, offset, last )
 	else
-		AdvDupe[pl].temp = nil //clear this to send again
+		AdvDupe.SendBuffer[pl] = nil //clear this to send again
 		//inform the client they finished downloading in case they didn't notice
 		umsg.Start("AdvDupeClientDownloadFinished", pl)
 		umsg.End()
@@ -1281,18 +1524,16 @@ end
 
 
 
-//	=============
-//	AdvDupeThink
-//	=============
+//	======================
+//	AdvDupePaste Functions
+//	======================
 //
-//	Paste Duplication Managment
-//	Special Timer Control
-//
+//	Settings and vars
 local UseTimedPasteThreshold = 100
 local PasteEntsPerTick = 2
 local PostEntityPastePerTick = 20
-local PasteConstsPerTick = 10
-if ( SinglePlayer() ) then
+local PasteConstsPerTick = 5
+if ( SinglePlayer() ) then --go faster in single players
 	UseTimedPasteThreshold = 500
 	PasteEntsPerTick = 4
 	PostEntityPastePerTick = 40
@@ -1303,6 +1544,141 @@ local UseTaskSwitchingPaste = false
 local DebugWeldsByDrawingThem = false
 local DontAllowPlayersAdminOnlyEnts = true
 
+
+//
+//	Admin functions
+//
+
+//	only one of thise you need to worry about too much is SetUseTimedPasteThreshold, sets the number of ents+consts to triger using the paste over time instead
+//	leave SetPostEntityPastePerTick at the default, it doesn't do much outside of wire and life support
+local function SetTimedPasteVars(pl, cmd, args)
+	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
+		if args[1] then 
+			UseTimedPasteThreshold = tonumber( args[1] )
+		end
+		if args[2] then
+			PasteEntsPerTick = tonumber( args[2] )
+		end
+		if args[3] then
+			PostEntityPastePerTick = tonumber( args[3] )
+		end
+		if args[4] then
+			PasteConstsPerTick = tonumber( args[4] )
+		end
+		pl:PrintMessage(HUD_PRINTCONSOLE, "\nAdvDupe_SetTimedPasteVars:\n\tUseTimedPasteThreshold = "..UseTimedPasteThreshold.."\n\tPasteEntsPerTick = "..PasteEntsPerTick.."\n\tPostEntityPastePerTick = "..PostEntityPastePerTick.."\n\tPasteConstsPerTick = "..PasteConstsPerTick.."\nDefault: 100, 2, 20, 10\n")
+	else
+		pl:PrintMessage(HUD_PRINTCONSOLE, "Usage: \n  AdvDupe_SetTimedPasteVars <UseTimedPasteThreshold> [PasteEntsPerTick] [PostEntityPastePerTick] [PasteConstsPerTick]\nDefault: 100, 2, 20, 10\n")
+	end
+end
+concommand.Add( "AdvDupe_SetTimedPasteVars", SetTimedPasteVars )
+function AdvDupe.AdminSettings.SetTimedPasteVars( a, b, c, d )
+	if ( a and type( a ) == "number" ) then UseTimedPasteThreshold = a end
+	if ( b and type( b ) == "number" ) then PasteEntsPerTick = b end
+	if ( c and type( c ) == "number" ) then PostEntityPastePerTick = c end
+	if ( d and type( d ) == "number" ) then PasteConstsPerTick = d end
+end
+function AdvDupe.AdminSettings.SetUseTimedPasteThreshold( a ) if ( a and type( a ) == "number" ) then UseTimedPasteThreshold = a end end
+function AdvDupe.AdminSettings.SetPasteEntsPerTick( a ) if ( a and type( a ) == "number" ) then PasteEntsPerTick = a end end
+function AdvDupe.AdminSettings.SetPostEntityPastePerTick( a ) if ( a and type( a ) == "number" ) then PostEntityPastePerTick = a end end
+function AdvDupe.AdminSettings.SetPasteConstsPerTick( a ) if ( a and type( a ) == "number" ) then PasteConstsPerTick = a end end
+
+//	TaskSwitchingPaste makes the paste system built on each thinger by switching to the next one each tick instead of finishing the first placed one first
+local function SetUseTaskSwitchingPaste(pl, cmd, args)
+	if ( !pl:IsAdmin() and !pl:IsSuperAdmin( )() ) then return end
+	if ( args[1] ) then
+		if args[1] == "1" or args[1] == 1 then 
+			UseTaskSwitchingPaste = true
+		elseif args[1] == "0" or args[1] == 0 then
+			UseTaskSwitchingPaste = false
+		else
+			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
+		end
+	end
+	pl:PrintMessage(HUD_PRINTCONSOLE, "\n  AdvDupe_UseTaskSwitchingPaste = "..tostring(UseTaskSwitchingPaste).."  ( norm: False(0) )\n")
+end
+concommand.Add( "AdvDupe_UseTaskSwitchingPaste", SetUseTaskSwitchingPaste )
+function AdvDupe.AdminSettings.SetUseTaskSwitchingPaste( a )
+	if ( a ) then
+		UseTaskSwitchingPaste = true
+	else
+		UseTaskSwitchingPaste = false
+	end
+end
+
+//	DoPasteFX turns back on the cool pasting effects. works best when paste over time is slowed down a bit
+local function SetDoPasteFX(pl, cmd, args)
+	if ( !pl:IsAdmin() and !pl:IsSuperAdmin( )() ) then return end
+	if ( args[1] ) then
+		if args[1] == "1" or args[1] == 1 then 
+			DoPasteFX = true
+		elseif args[1] == "0" or args[1] == 0 then
+			DoPasteFX = false
+		else
+			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
+		end
+	end
+	pl:PrintMessage(HUD_PRINTCONSOLE, "\n  AdvDupe_DoPasteFX = "..tostring(DoPasteFX).."  ( norm: False(0) )\n")
+end
+concommand.Add( "AdvDupe_DoPasteFX", SetDoPasteFX )
+function AdvDupe.AdminSettings.SetDoPasteFX( a )
+	if ( a ) then
+		DoPasteFX = true
+	else
+		DoPasteFX = false
+	end
+end
+
+//	DebugWeldsByDrawingThem makes a beam where ever there a weld is made
+local function SetDebugWeldsByDrawingThem(pl, cmd, args)
+	if ( !pl:IsAdmin() and !pl:IsSuperAdmin( )() ) then return end
+	if ( args[1] ) then
+		if args[1] == "1" or args[1] == 1 then 
+			DebugWeldsByDrawingThem = true
+		elseif args[1] == "0" or args[1] == 0 then
+			DebugWeldsByDrawingThem = false
+		else
+			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
+		end
+	end
+	pl:PrintMessage(HUD_PRINTCONSOLE, "\n  AdvDupe_DebugWeldsByDrawingThem = "..tostring(DebugWeldsByDrawingThem).."  ( norm: False(0) )\n")
+end
+concommand.Add( "AdvDupe_DebugWeldsByDrawingThem", SetDebugWeldsByDrawingThem )
+function AdvDupe.AdminSettings.SetDebugWeldsByDrawingThem( a )
+	if ( a ) then
+		DebugWeldsByDrawingThem = true
+	else
+		DebugWeldsByDrawingThem = false
+	end
+end
+
+//	DontAllowPlayersAdminOnlyEnts, allows you to turn off the admin only ents protection
+local function SetDontAllowPlayersAdminOnlyEnts(pl, cmd, args)
+	if ( !pl:IsAdmin() and !pl:IsSuperAdmin( )() ) then return end
+	if ( args[1] ) then
+		if args[1] == "1" or args[1] == 1 then 
+			DontAllowPlayersAdminOnlyEnts = true
+		elseif args[1] == "0" or args[1] == 0 then
+			DontAllowPlayersAdminOnlyEnts = false
+		else
+			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
+		end
+	end
+	pl:PrintMessage(HUD_PRINTCONSOLE, "\n  AdvDupe_DontAllowPlayersAdminOnlyEnts = "..tostring(DontAllowPlayersAdminOnlyEnts).."  ( norm: True(1) )\n")
+end
+concommand.Add( "AdvDupe_DontAllowPlayersAdminOnlyEnts", SetDontAllowPlayersAdminOnlyEnts )
+function AdvDupe.AdminSettings.SetDontAllowPlayersAdminOnlyEnts( a )
+	if ( a ) then
+		DontAllowPlayersAdminOnlyEnts = true
+	else
+		DontAllowPlayersAdminOnlyEnts = false
+	end
+end
+
+//	=============
+//	AdvDupeThink
+//	=============
+//	Paste Duplication Managment
+//	Special Timer Control
 local TimedPasteDataNum = 0
 local TimedPasteDataCurrent = 1
 local TimedPasteData = {}
@@ -1434,6 +1810,36 @@ local function AdvDupeThink()
 end
 hook.Add("Think", "AdvDupe_Think", AdvDupeThink)
 
+//	ReAddAdvDupeThink readds the hook when it dies, this is done automaticly when a new paste is started
+local function ReAddAdvDupeThink( ply, cmd, args )
+	hook.Add("Think", "AdvDupe_Think", AdvDupeThink)
+	pl:PrintMessage(HUD_PRINTCONSOLE, "ReAdded AdvDupe_Think Hook\n")
+end 
+concommand.Add( "AdvDupe_ReAdd_Think", ReAddAdvDupeThink ) 
+//	RestartAdvDupeThink clears all current pasting and restarts the hook, good to clear a paste that keeps bailing the hook each time it tries to run
+local function RestartAdvDupeThink( ply, cmd, args )
+	if ( !pl:IsAdmin() and !pl:IsSuperAdmin( )() ) then return end
+	hook.Remove("Think", "AdvDupe_Think", AdvDupeThink)
+	TimedPasteDataNum = 0
+	TimedPasteDataCurrent = 1
+	NextPasteTime = 0
+	
+	for n,d in pairs(TimedPasteData) do
+		if ( d.Shooting_Ent ) and ( d.Shooting_Ent.Entity ) and ( d.Shooting_Ent.Entity:IsValid() ) then
+			d.Shooting_Ent.Entity:Remove()
+		end
+		d = nil
+	end
+	TimedPasteData = {}
+	
+	hook.Add("Think", "AdvDupe_Think", AdvDupeThink)
+	
+	pl:PrintMessage(HUD_PRINTCONSOLE, "Restarted AdvDupe_Think Hook\n")
+end 
+concommand.Add( "AdvDupe_Restart_Think", RestartAdvDupeThink ) 
+
+
+
 function AdvDupe.MakeTimer( Delay, Func, FuncArgs, OnFailFunc, OnFailArgs )
 	if ( !Delay or !Func ) then Msg("AdvDupe.MakeTimer: Missings arg\n"); return end
 	
@@ -1455,114 +1861,6 @@ function AdvDupe.MakeTimer( Delay, Func, FuncArgs, OnFailFunc, OnFailArgs )
 	
 end
 
-
-
-//
-//	Admin functions
-//
-local function SetTimedPasteVars(pl, cmd, args)
-	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
-		if args[1] then 
-			UseTimedPasteThreshold = tonumber( args[1] )
-		end
-		if args[2] then
-			PasteEntsPerTick = tonumber( args[2] )
-		end
-		if args[3] then
-			PostEntityPastePerTick = tonumber( args[3] )
-		end
-		if args[4] then
-			PasteConstsPerTick = tonumber( args[4] )
-		end
-		pl:PrintMessage(HUD_PRINTCONSOLE, "\nAdvDupe_SetTimedPasteVars:\n\tUseTimedPasteThreshold = "..UseTimedPasteThreshold.."\n\tPasteEntsPerTick = "..PasteEntsPerTick.."\n\tPostEntityPastePerTick = "..PostEntityPastePerTick.."\n\tPasteConstsPerTick = "..PasteConstsPerTick.."\nDefault: 100, 2, 20, 10\n")
-	else
-		pl:PrintMessage(HUD_PRINTCONSOLE, "Usage: \n  AdvDupe_SetTimedPasteVars <UseTimedPasteThreshold> [PasteEntsPerTick] [PostEntityPastePerTick] [PasteConstsPerTick]\nDefault: 100, 2, 20, 10\n")
-	end
-end
-concommand.Add( "AdvDupe_SetTimedPasteVars", SetTimedPasteVars )
-
-local function SetUseTaskSwitchingPaste(pl, cmd, args)
-	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
-		if args[1] == "1" or args[1] == 1 then 
-			UseTaskSwitchingPaste = true
-		elseif args[1] == "0" or args[1] == 0 then
-			UseTaskSwitchingPaste = false
-		else
-			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
-		end
-	end
-	pl:PrintMessage(HUD_PRINTCONSOLE, "\n  AdvDupe_UseTaskSwitchingPaste = "..tostring(UseTaskSwitchingPaste).."  ( norm: False(0) )\n")
-end
-concommand.Add( "AdvDupe_UseTaskSwitchingPaste", SetUseTaskSwitchingPaste )
-
-local function SetDoPasteFX(pl, cmd, args)
-	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
-		if args[1] == "1" or args[1] == 1 then 
-			DoPasteFX = true
-		elseif args[1] == "0" or args[1] == 0 then
-			DoPasteFX = false
-		else
-			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
-		end
-	end
-	pl:PrintMessage(HUD_PRINTCONSOLE, "\n  AdvDupe_DoPasteFX = "..tostring(DoPasteFX).."  ( norm: False(0) )\n")
-end
-concommand.Add( "AdvDupe_DoPasteFX", SetDoPasteFX )
-
-local function SetDebugWeldsByDrawingThem(pl, cmd, args)
-	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
-		if args[1] == "1" or args[1] == 1 then 
-			DebugWeldsByDrawingThem = true
-		elseif args[1] == "0" or args[1] == 0 then
-			DebugWeldsByDrawingThem = false
-		else
-			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
-		end
-	end
-	pl:PrintMessage(HUD_PRINTCONSOLE, "\n  AdvDupe_DebugWeldsByDrawingThem = "..tostring(DebugWeldsByDrawingThem).."  ( norm: False(0) )\n")
-end
-concommand.Add( "AdvDupe_DebugWeldsByDrawingThem", SetDebugWeldsByDrawingThem )
-
-local function SetDontAllowPlayersAdminOnlyEnts(pl, cmd, args)
-	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
-		if args[1] == "1" or args[1] == 1 then 
-			DontAllowPlayersAdminOnlyEnts = true
-		elseif args[1] == "0" or args[1] == 0 then
-			DontAllowPlayersAdminOnlyEnts = false
-		else
-			pl:PrintMessage(HUD_PRINTCONSOLE, "Only takes 0 or 1")
-		end
-	end
-	pl:PrintMessage(HUD_PRINTCONSOLE, "\n  AdvDupe_DontAllowPlayersAdminOnlyEnts = "..tostring(DontAllowPlayersAdminOnlyEnts).."  ( norm: True(1) )\n")
-end
-concommand.Add( "AdvDupe_DontAllowPlayersAdminOnlyEnts", SetDontAllowPlayersAdminOnlyEnts )
-
-local function ReAddAdvDupeThink( ply, cmd, args )
-	hook.Add("Think", "AdvDupe_Think", AdvDupeThink)
-	pl:PrintMessage(HUD_PRINTCONSOLE, "ReAdded AdvDupe_Think Hook\n")
-end 
-concommand.Add( "AdvDupe_ReAdd_Think", ReAddAdvDupeThink ) 
-
-local function RestartAdvDupeThink( ply, cmd, args )
-	if ( !pl:IsAdmin() ) or ( !pl:IsSuperAdmin( )() ) then return end
-	hook.Remove("Think", "AdvDupe_Think", AdvDupeThink)
-	TimedPasteDataNum = 0
-	TimedPasteDataCurrent = 1
-	NextPasteTime = 0
-	
-	for n,d in pairs(TimedPasteData) do
-		if ( d.Shooting_Ent ) and ( d.Shooting_Ent.Entity ) and ( d.Shooting_Ent.Entity:IsValid() ) then
-			d.Shooting_Ent.Entity:Remove()
-		end
-		d = nil
-	end
-	TimedPasteData = {}
-	
-	hook.Add("Think", "AdvDupe_Think", AdvDupeThink)
-	
-	pl:PrintMessage(HUD_PRINTCONSOLE, "Restarted AdvDupe_Think Hook\n")
-end 
-concommand.Add( "AdvDupe_Restart_Think", RestartAdvDupeThink ) 
 
 
 
@@ -1660,11 +1958,12 @@ function AdvDupe.NormPaste( Player, EntityList, ConstraintList, HeadEntityIdx, O
 		for EntID, Ent in pairs( CreatedEntities ) do
 			undo.AddEntity( Ent )
 			
-			if ( PasteFrozen or PastewoConst ) and (Ent:GetPhysicsObject():IsValid()) then
-				local Phys = Ent:GetPhysicsObject()
+			if ( PasteFrozen or PastewoConst ) then //and (Ent:GetPhysicsObject():IsValid()) then
+				AdvDupe.FreezeEntity( Player, Ent, true )
+				/*local Phys = Ent:GetPhysicsObject()
 				Phys:Sleep()
 				Phys:EnableMotion(false)
-				Player:AddFrozenPhysicsObject( Ent, Phys )
+				Player:AddFrozenPhysicsObject( Ent, Phys )*/
 			end
 			
 			if ( !PastewoConst ) then
@@ -1855,11 +2154,15 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 				
 				if ( CreatedEntities[ EntID ] ) then
 					//freeze it and make it not solid so it can't be altered while the rest is made
+					//AdvDupe.FreezeEntity( Player, CreatedEntities[ EntID ], false )
 					if (CreatedEntities[ EntID ]:GetPhysicsObject():IsValid()) then
-						CreatedEntities[ EntID ]:GetPhysicsObject():Sleep()
+						//CreatedEntities[ EntID ]:GetPhysicsObject():Sleep()
 						CreatedEntities[ EntID ]:GetPhysicsObject():EnableMotion(false)
 					end
+					
 					CreatedEntities[ EntID ]:SetNotSolid(true)
+					
+					CreatedEntities[ EntID ]:SetParent( Shooting_Ent )
 					
 					//do the effect
 					if (DoPasteFX) and (math.random(5) > 3) then
@@ -1935,6 +2238,15 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 			else
 				LastID = 1
 				Stage = 4
+				
+				/*for EntID, Ent in pairs( CreatedEntities ) do
+					Ent:SetNotSolid(false)
+					/*if ( Ent:GetPhysicsObject():IsValid() ) then
+						local Phys = Ent:GetPhysicsObject()
+						Phys:Wake()
+					end*
+				end*/
+				
 				break
 			end
 		end
@@ -1947,22 +2259,49 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 					
 					undo.AddEntity( Ent )
 					
-					Ent:SetNotSolid(false)
-					
 					EntTable = EntityList[ EntID ]
 					
-					if ( Ent:GetPhysicsObject():IsValid() ) then
-						local Phys = Ent:GetPhysicsObject()
+					//if ( Ent:GetPhysicsObject():IsValid() ) then
+						/*local Phys = Ent:GetPhysicsObject()
 						if ( PasteFrozen or PastewoConst ) or ( EntTable.PhysicsObjects[0].Frozen ) then
-							Player:AddFrozenPhysicsObject( Ent, Phys )
+							/*Phys:Wake()
+							Phys:EnableMotion(false)
+							Player:AddFrozenPhysicsObject( Ent, Phys )*
+							//Phys:EnableMotion(true)
+							//Phys:Wake()
+							AdvDupe.FreezeEntity( Player, Ent, !(Ent.EntityMods and Ent.EntityMods.Freeze_o_Matic_SuperFreeze and Ent.EntityMods.Freeze_o_Matic_SuperFreeze.NoPickUp == true) )
 						else
 							Phys:EnableMotion(true)
+							Phys:Wake()
+						end*/
+							
+					//end
+					
+					Ent:SetNotSolid(false)
+					
+					Ent:SetParent()
+					
+					for Bone = 0, Ent:GetPhysicsObjectCount() do
+						local Phys = Ent:GetPhysicsObjectNum( Bone )
+						if ( Phys and Phys:IsValid() ) then
+							if ( PasteFrozen or PastewoConst ) or ( EntTable.PhysicsObjects[0].Frozen ) then
+								if ( !(Ent.EntityMods and Ent.EntityMods.Freeze_o_Matic_SuperFreeze and Ent.EntityMods.Freeze_o_Matic_SuperFreeze.NoPickUp == true) ) then
+									Player:AddFrozenPhysicsObject( Ent, Phys )
+								end
+							else
+								Phys:EnableMotion(true)
+							end
 						end
 					end
 					
-					/*if ( Ent.RDbeamlibDrawer ) then
-						Ent.RDbeamlibDrawer:SetParent( Ent )
+					/*local Phys = Ent:GetPhysicsObject()
+					if ( Phys and Phys:IsValid() ) then
+						Phys:Wake()
 					end*/
+					
+					if ( Ent.RDbeamlibDrawer ) then
+						Ent.RDbeamlibDrawer:SetParent( Ent )
+					end
 					
 					if ( !PastewoConst ) then
 						AdvDupe.ApplyParenting( Ent, EntID, EntityList, CreatedEntities )
@@ -2332,8 +2671,30 @@ function AdvDupe.ApplyParenting( Ent, EntID, EntityList, CreatedEntities )
 	
 end
 
+function AdvDupe.FreezeEntity( pl, Ent, AddToFrozenList )
+	for Bone = 0, Ent:GetPhysicsObjectCount() do
+		local Phys = Ent:GetPhysicsObjectNum( Bone )
+		if ( Phys and Phys:IsValid() ) then
+			Phys:EnableMotion( false )
+			if ( AddToFrozenList ) then
+				pl:AddFrozenPhysicsObject( Ent, Phys )
+			end
+		end
+	end
+end
 
 
+
+//
+//	==Even More Admin stuff==
+//	Ent make check hooks
+//
+//	Add a hook to check if player should be allowed to make the ent. return true to allow ent creation, false to deny
+// 	Example hook:	
+//	AdvDupe.AddEntCheckHook( "TestHook", 
+//		function(Player, Ent, EntTable) return true end, 
+//		function(HookName) Msg("my advdupe ent check hook \""..HookName.."\" died and was removed\n") end )
+//
 local CheckFunctions = {}
 function AdvDupe.CheckOkEnt( Player, EntTable )
 	
@@ -2344,7 +2705,10 @@ function AdvDupe.CheckOkEnt( Player, EntTable )
 			Error("AdvDupeERROR: Entity check hook \""..HookName.."\" failed, removing.\nHook Error: \""..tostring(Result).."\"\n")
 			
 			if ( TheHook.OnFailCallBack ) then
-				TheHook.OnFailCallBack( HookName )
+				local Success, Result = pcall( TheHook.OnFailCallBack, HookName )
+				if ( !Success ) then
+					Error("AdvDupeERROR: WTF! \""..HookName.."\" OnFailCallBack failed too! Tell who ever make that hook that they're doing it wrong. Error: \""..tostring(Result).."\"\n")
+				end
 			end
 			
 			CheckFunctions[ HookName ] = nil
@@ -2358,26 +2722,27 @@ function AdvDupe.CheckOkEnt( Player, EntTable )
 	end
 	
 	local test = scripted_ents.GetStored( EntTable.Class )
-	if ( test and test.t and test.t.AdminSpawnable and test.t.Spawnable and !SinglePlayer()
-	and (!Player:IsAdmin( ) or !Player:IsSuperAdmin() ) and DontAllowPlayersAdminOnlyEnts ) then
+	
+	if ( Player:IsAdmin( ) or Player:IsSuperAdmin() or SinglePlayer() or !DontAllowPlayersAdminOnlyEnts ) then
+		return true
+	elseif ( test and test.t and test.t.AdminSpawnable and test.t.Spawnable ) then
 		AdvDupe.SendClientError(Player, "Sorry, you can't cheat like that")
 		Msg("AdvDupeERROR: "..tostring(Player).." tried to paste admin only prop "..(EntTable.Class or "NIL").." Ent: "..EntID.."\n")
 		return false
+	else
+		return true
 	end
-	
-	return true
 	
 end
 
 // Func = HookFunction( Player, Class, EntTable )
 //OnFailCallBack = function to call if your hook function generates an error and is removed
-function AdvDupe.AddEntCheckHook( HookName, Func, OnFailCallBack )
+function AdvDupe.AdminSettings.AddEntCheckHook( HookName, Func, OnFailCallBack )
 	CheckFunctions[ HookName ] = {}
 	CheckFunctions[ HookName ].Func = Func
 	CheckFunctions[ HookName ].OnFailCallBack = OnFailCallBack
 end
 
-AdvDupe.AddEntCheckHook( "TestHook", function(Player, Ent, EntTable) return true end )
 
 
 
