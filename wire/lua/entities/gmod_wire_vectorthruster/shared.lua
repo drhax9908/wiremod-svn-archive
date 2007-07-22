@@ -16,20 +16,20 @@ ENT.AdminSpawnable		= false
 
 
 function ENT:SetEffect( name )
-	self.Entity:SetNetworkedBeamString( "Effect", name )
+	self.Entity:SetNetworkedString( "Effect", name )
 end
 
 function ENT:GetEffect( name )
-	return self.Entity:GetNetworkedBeamString( "Effect" )
+	return self.Entity:GetNetworkedString( "Effect" )
 end
 
 
 function ENT:SetOn( boolon )
-	self.Entity:SetNetworkedBeamBool( "On", boolon, true )
+	self.Entity:SetNetworkedBool( "On", boolon, true )
 end
 
 function ENT:IsOn( name )
-	return self.Entity:GetNetworkedBeamBool( "On" )
+	return self.Entity:GetNetworkedBool( "On" )
 end
 
 function ENT:SetOffset( v )
