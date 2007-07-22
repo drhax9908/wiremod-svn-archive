@@ -60,8 +60,63 @@ function ENT:SpawnFunction( ply, tr )
 	
 	ent:Setup(5000, 0, 10000, "fire", "same", true, true, true, true)
 	
+	local ttable = {
+		force		= 5000,
+		force_min	= 0,
+		force_max	= 10000,
+		bidir       = true,
+		sound       = true,
+		pl			= ply,
+		oweffect	= "fire",
+		uweffect	= "same",
+		owater		= true,
+		uwater		= true,
+		nocollide	= true
+		}
+	table.Merge(ent:GetTable(), ttable )
+	
 	return ent
 end
+
+function MakeWireVectorThruster( pl, Model, Ang, Pos, force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, nocollide, Vel, aVel, frozen )
+		if ( !pl:CheckLimit( "wire_thrusters" ) ) then return false end
+		
+		local wire_thruster = ents.Create( "gmod_wire_vectorthruster" )
+		if (!wire_thruster:IsValid()) then return false end
+		wire_thruster:SetModel( Model )
+		
+		wire_thruster:SetAngles( Ang )
+		wire_thruster:SetPos( Pos )
+		wire_thruster:Spawn()
+		
+		wire_thruster:Setup(force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound)
+		wire_thruster:SetPlayer( pl )
+		
+		local ttable = {
+			force		= force,
+			force_min	= force_min,
+			force_max	= force_max,
+			bidir       = bidir,
+			sound       = sound,
+			pl			= pl,
+			oweffect	= oweffect,
+			uweffect	= uweffect,
+			owater		= owater,
+			uwater		= uwater,
+			nocollide	= nocollide
+			}
+		
+		table.Merge(wire_thruster:GetTable(), ttable )
+		
+		pl:AddCount( "wire_thrusters", wire_thruster )
+		
+		DoPropSpawnedEffect( wire_thruster )
+		
+		return wire_thruster
+	end
+
+	duplicator.RegisterEntityClass("gmod_wire_vectorthruster", MakeWireVectorThruster, "Model", "Ang", "Pos", "force", "force_min", "force_max", "oweffect", "uweffect", "owater", "uwater", "bidir", "sound", "nocollide", "Vel", "aVel", "frozen")
+
 
 function ENT:OnRemove()
 	self.BaseClass.OnRemove(self)
@@ -72,8 +127,9 @@ function ENT:OnRemove()
 end
 
 function ENT:SetForce( force, mul )
-	if (force) then	self.force = force end
+	if (force) then self.force = force end
 	mul = mul or 1
+	self.mul = mul
 	
 	local phys = self.Entity:GetPhysicsObject()
 	if (!phys:IsValid()) then
@@ -118,7 +174,9 @@ end
 function ENT:TriggerInput(iname, value)
 	
 	if (iname == "Mul") then
-		if ( (self.BiDir) and (math.abs(value) > 0.01) and (math.abs(value) > self.ForceMin) ) or ( (value > 0.01) and (value > self.ForceMin) ) then
+		if (value == 0) then
+			self:Switch(false, 0)
+		elseif ( (self.BiDir) and (math.abs(value) > 0.01) and (math.abs(value) > self.ForceMin) ) or ( (value > 0.01) and (value > self.ForceMin) ) then
 			self:Switch(true, math.min(value, self.ForceMax))
 		else
 			self:Switch(false, 0)
@@ -151,6 +209,7 @@ function ENT:TriggerInput(iname, value)
 	
 	self:SetOffset( self.ThrustOffset )
 	self.ForceAngle = self.ThrustOffset:GetNormalized() * -1
+	self:SetForce( self.force, self.mul )
 	
 end
 
