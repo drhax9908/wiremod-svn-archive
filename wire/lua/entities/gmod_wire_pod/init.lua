@@ -30,8 +30,7 @@ function ENT:Initialize()
 		outputs[n] = k
 		n = n + 1
 	end
-
-	n = n + 1
+	
 	outputs[n] = "Active"
 	
 	self.VPos = Vector(0, 0, 0)
