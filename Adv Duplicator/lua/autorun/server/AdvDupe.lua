@@ -667,6 +667,10 @@ function AdvDupe.GetSaveableConst( ConstraintEntity, Offset )
 		table.Merge( SaveableConst, ConstraintEntity:GetTable() )
 	end
 	
+	if ( ConstTable.Type == "Elastic" ) or ( ConstTable.length ) then
+		SaveableConst.length = ConstTable.length
+	end
+	
 	SaveableConst.Entity = {}
 	local ents = {}
 	
@@ -2595,6 +2599,12 @@ function AdvDupe.CreateConstraintFromTable( Player, Constraint, EntityList, Offs
 		AdvDupe.SendClientError( Player, "Failed to make \""..(Constraint.Type or "NIL").."\"" )
 		return
 	else
+		
+		if ( Constraint.Type == "Elastic" ) or ( Constraint.length ) then
+			Result:Fire("SetSpringLength", Constraint.length, 0)
+			Result.length = Constraint.length
+		end
+		
 		return Result
 	end
 	
