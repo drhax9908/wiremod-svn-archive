@@ -65,52 +65,61 @@ if (SERVER) then
 	function DebuggerThink()
 	    for ply,cmps in pairs(Components) do
 			
-	    	table.Compact(cmps, function(cmp) return cmp:IsValid() end)
-			
-	        umsg.Start("WireDbgLineCount", ply)
-				umsg.Short(table.getn(cmps))
-			umsg.End()
-			
-		    for l,cmp in ipairs(cmps) do
-			    local dbginfo = cmp.WireDebugName .. " - "
+			if ( !ply ) or ( !ply:IsValid() ) or ( !ply:IsPlayer() ) then --player has left
 				
-		        if (cmp.Inputs) then
-			        dbginfo = dbginfo .. "IN "
-		            for _,k in ipairs(table.MakeSortedKeys(cmp.Inputs)) do
-		                local input = cmp.Inputs[k]
-						if (type(input.Value) == "number") then
-							dbginfo = dbginfo .. k .. ":" .. math.Round(input.Value*1000)/1000 .. " "
+				Components[ply] = nil
+				
+			else
+				
+		    	table.Compact(cmps, function(cmp) return cmp:IsValid() end)
+				
+		        umsg.Start("WireDbgLineCount", ply)
+					umsg.Short(table.getn(cmps))
+				umsg.End()
+				
+			    for l,cmp in ipairs(cmps) do
+				    local dbginfo = cmp.WireDebugName .. " - "
+					
+			        if (cmp.Inputs) then
+				        dbginfo = dbginfo .. "IN "
+			            for _,k in ipairs(table.MakeSortedKeys(cmp.Inputs)) do
+			                local input = cmp.Inputs[k]
+							if (type(input.Value) == "number") then
+								dbginfo = dbginfo .. k .. ":" .. math.Round(input.Value*1000)/1000 .. " "
+							end
+			            end
+			        end
+					
+			        if (cmp.Outputs) then
+				        dbginfo = dbginfo .. "OUT "
+			            for _,k in ipairs(table.MakeSortedKeys(cmp.Outputs)) do
+			                local output = cmp.Outputs[k]
+							if (type(output.Value) == "number") then
+								dbginfo = dbginfo .. k .. ":" .. math.Round(output.Value*1000)/1000 .. " "
+							end
+			            end
+			        end
+					
+			        if (not cmp.Inputs) and (not cmp.Outputs) then
+			            dbginfo = dbginfo .. "No info"
+			        end
+					
+	                dbg_line_cache[ply] = dbg_line_cache[ply] or {}
+	                dbg_line_time[ply] = dbg_line_time[ply] or {}
+			        if (dbg_line_cache[ply][l] ~= dbginfo) then
+			            if (not dbg_line_time[ply][l]) or (CurTime() > dbg_line_time[ply][l]) then
+					        umsg.Start("WireDbgLine", ply)
+								umsg.Short(l)
+								umsg.String(dbginfo)
+							umsg.End()
+							dbg_line_cache[ply][l] = dbginfo
+							dbg_line_time[ply][l] = CurTime() + 0.2
 						end
-		            end
-		        end
-				
-		        if (cmp.Outputs) then
-			        dbginfo = dbginfo .. "OUT "
-		            for _,k in ipairs(table.MakeSortedKeys(cmp.Outputs)) do
-		                local output = cmp.Outputs[k]
-						if (type(output.Value) == "number") then
-							dbginfo = dbginfo .. k .. ":" .. math.Round(output.Value*1000)/1000 .. " "
-						end
-		            end
-		        end
-				
-		        if (not cmp.Inputs) and (not cmp.Outputs) then
-		            dbginfo = dbginfo .. "No info"
-		        end
-				
-                dbg_line_cache[ply] = dbg_line_cache[ply] or {}
-                dbg_line_time[ply] = dbg_line_time[ply] or {}
-		        if (dbg_line_cache[ply][l] ~= dbginfo) then
-		            if (not dbg_line_time[ply][l]) or (CurTime() > dbg_line_time[ply][l]) then
-				        umsg.Start("WireDbgLine", ply)
-							umsg.Short(l)
-							umsg.String(dbginfo)
-						umsg.End()
-						dbg_line_cache[ply][l] = dbginfo
-						dbg_line_time[ply][l] = CurTime() + 0.2
 					end
-				end
-		    end
+			    end
+				
+			end
+			
 		end
 	end
 	hook.Add("Think", "DebuggerThink", DebuggerThink)
