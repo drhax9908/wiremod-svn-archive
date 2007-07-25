@@ -29,7 +29,7 @@ function ENT:Initialize()
 		phys:Wake() 
 	end
 	
-	self.Entity:StartMotionController()
+	//self.Entity:StartMotionController()
 	
 	self.Fraction = 0
 	
@@ -106,12 +106,21 @@ function ENT:TriggerInput(iname, value)
 		//Msg("value = "..value.."\n")
 		if (value > 0) then
 			self.JumpTargetSet = true
-		//else
-			//self.JumpTargetSet = false
+		elseif (value == 0) then
+			self.JumpTargetSet = false
 		end
 	end
+	self:ShowOutput()
 end
 
+
+function ENT:ShowOutput()
+	local txt = "-HoverDrive-\nJump Target = "..tostring(self.JumpTarget)
+	if (self.JumpTargetSet) then
+		txt = txt.."\n( Jump Target Set )"
+	end	
+	self:SetOverlayText( txt )
+end
 
 
 function ENT:OnRestore()
@@ -161,12 +170,12 @@ end
 /*---------------------------------------------------------
 	Think wasn't good enough
 ---------------------------------------------------------*/
-function ENT:PhysicsSimulate( phys, deltatime )
+/*function ENT:PhysicsSimulate( phys, deltatime )
 	
 	/*if ( self.YawVelocity != 0 ) then
 		self.TargetYaw = math.fmod( ( self.TargetYaw + ( self.YawVelocity * deltatime ) ), 360 )
 		//Msg("self.TargetYaw =  "..self.TargetYaw.."\n")
-	end*/
+	end*
 	if ( self.AngleVelocity.p != 0 ) then
 		self.TargetAngle.p = math.fmod( ( self.TargetAngle.p + ( self.AngleVelocity.p * deltatime ) ), 360 )
 	end
@@ -191,7 +200,7 @@ function ENT:PhysicsSimulate( phys, deltatime )
 	
 	Wire_TriggerOutput(self.Entity, "Data", data)
 	
-	local txt = "Hover Target = "..tostring(self.Target).."\nJump Target = "..tostring(self.JumpTarget)
+	local txt = "-HoverDrive-\nJump Target = "..tostring(self.JumpTarget)
 	if (self:GetHoverMode()) then
 		txt = txt.."\n(on)"
 		self:SetOverlayText( txt )
@@ -200,7 +209,7 @@ function ENT:PhysicsSimulate( phys, deltatime )
 		self:SetOverlayText( txt )
 	end	
 	
-	return SIM_GLOBAL_FORCE
+	return SIM_GLOBAL_FORCE*/
 	
 	/*local Pos = phys:GetPos()
 	//local txt = string.format( "Speed: %i\nResistance: %.2f", self:GetSpeed(), self:GetAirResistance() )
@@ -259,7 +268,7 @@ function ENT:PhysicsSimulate( phys, deltatime )
 		return SIM_GLOBAL_FORCE
 	end*/
 
-end
+//end
 
 
 
@@ -370,7 +379,11 @@ function ENT:Jump()
 	Msg("Jumping!\n")
 end
 
-util.PrecacheSound("stargate/teleport.mp3")
+//util.PrecacheSound("stargate/teleport.mp3")
+util.PrecacheSound("npc/turret_floor/die.wav")
+//util.PrecacheSound("npc/scanner/combat_scan_loop2.wav")
+util.PrecacheSound("ambient/levels/citadel/weapon_disintegrate2.wav")
+//util.PrecacheSound("ambient/levels/labs/electric_explosion2.wav")
 function ENT:Think()
 	if (self.JumpStage == 1) then
 		Msg("Start Jump 1\n")
@@ -407,7 +420,9 @@ function ENT:Think()
 				end
 			end
 			
-			self.Entity:EmitSound("stargate/teleport.mp3");
+			//self.Entity:EmitSound("stargate/teleport.mp3")
+			//self.Entity:EmitSound("npc/scanner/combat_scan_loop2.wav", 500)
+			self.Entity:EmitSound("ambient/levels/citadel/weapon_disintegrate2.wav", 500)
 			
 			self.JumpStage = 2
 		else
@@ -446,7 +461,9 @@ function ENT:Think()
 			end
 		end
 		
-		self.Entity:EmitSound("stargate/teleport.mp3");
+		//self.Entity:EmitSound("stargate/teleport.mp3")
+		self.Entity:EmitSound("npc/turret_floor/die.wav", 450, 70)
+		//self.Entity:EmitSound("ambient/levels/labs/electric_explosion2.wav", 500, 90)
 		
 		//self.JumpTarget = self.NextJumpTarget
 		self.Target = self.Entity:GetPos()
