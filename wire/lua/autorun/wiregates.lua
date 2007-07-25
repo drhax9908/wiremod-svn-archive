@@ -943,6 +943,37 @@ GateActions["udcounter"] = {
 	end
 }
 
+GateActions["togglewhile"] = {
+	group = "Memory",
+	name = "Toggle While(Edge triggered)",
+	inputs = { "Clk", "OnValue", "OffValue", "While" },
+	output = function(gate, Clk, OnValue, OffValue, While)
+		local clk = (Clk > 0)
+		
+		if (While <= 0) then
+			clk = false
+			gate.LatchStore = false
+		end
+		
+		if (gate.PrevValue ~= clk) then
+			gate.PrevValue = clk
+			if (clk) then
+				gate.LatchStore = (not gate.LatchStore)
+			end
+		end
+		
+		if (gate.LatchStore) then return OnValue end
+		return OffValue
+    end,
+	reset = function(gate)
+		gate.LatchStore = 0
+		gate.PrevValue = nil
+	end,
+	label = function(Out, Clk, OnValue, OffValue, While)
+		return "Off:"..OffValue.."  On:"..OnValue.."  Clock:"..Clk.."  While:"..While.." = "..Out
+	end
+}
+
 
 
 
