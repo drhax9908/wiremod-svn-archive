@@ -239,8 +239,10 @@ function Wire_UpdateRenderBounds(ent)
 end
 
 local function WireDisableRender(pl, cmd, args)
-	if not args[1] then return end
-	Wire_DisableWireRender = tonumber(args[1])
+	if args[1] then
+		Wire_DisableWireRender = tonumber(args[1])
+	end
+	Msg("\nWire DisableWireRender/WireRenderMode = "..tostring(Wire_DisableWireRender).."\n")
 end
 concommand.Add( "cl_Wire_DisableWireRender", WireDisableRender )
 concommand.Add( "cl_Wire_SetWireRenderMode", WireDisableRender )
