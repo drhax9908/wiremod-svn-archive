@@ -14,7 +14,7 @@ AdvDupe = {}
 
 if (CLIENT) then return end
 
-AdvDupe.Version = 1.835
+AdvDupe.Version = 1.836
 AdvDupe.ToolVersion = 1.812
 AdvDupe.FileVersion = 0.83
 
@@ -1543,6 +1543,13 @@ if ( SinglePlayer() ) then --go faster in single players
 	PostEntityPastePerTick = 40
 	PasteConstsPerTick = 20
 end
+
+local PasterInstantPasteThreshold = 50
+local PasterClearToPasteDelay = 3
+function AdvDupe.GetPasterClearToPasteDelay()
+	return PasterClearToPasteDelay
+end
+
 local DoPasteFX = false
 local UseTaskSwitchingPaste = false
 local DebugWeldsByDrawingThem = false
@@ -1585,6 +1592,27 @@ function AdvDupe.AdminSettings.SetUseTimedPasteThreshold( a ) if ( a and type( a
 function AdvDupe.AdminSettings.SetPasteEntsPerTick( a ) if ( a and type( a ) == "number" ) then PasteEntsPerTick = a end end
 function AdvDupe.AdminSettings.SetPostEntityPastePerTick( a ) if ( a and type( a ) == "number" ) then PostEntityPastePerTick = a end end
 function AdvDupe.AdminSettings.SetPasteConstsPerTick( a ) if ( a and type( a ) == "number" ) then PasteConstsPerTick = a end end
+
+//PasterInstantPasteThreshold
+local function SetPasterInstantPasteThreshold(pl, cmd, args)
+	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
+		PasterInstantPasteThreshold = tonumber( args[1] )
+	end
+	pl:PrintMessage(HUD_PRINTCONSOLE, "\nPasterInstantPasteThreshold = "..PasterInstantPasteThreshold.." (Default: 50)\n")
+end
+concommand.Add( "AdvDupe_SetPasterInstantPasteThreshold", SetPasterInstantPasteThreshold )
+function AdvDupe.AdminSettings.SetPasterInstantPasteThreshold( a ) if ( a and type( a ) == "number" ) then PasterInstantPasteThreshold = a end end
+
+//PasterClearToPasteDelay
+local function SetPasterClearToPasteDelay(pl, cmd, args)
+	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
+		PasterClearToPasteDelay = tonumber( args[1] )
+	end
+	pl:PrintMessage(HUD_PRINTCONSOLE, "\nPasterClearToPasteDelay = "..PasterClearToPasteDelay.." (Default: 3)\n")
+end
+concommand.Add( "AdvDupe_SetPasterClearToPasteDelay", SetPasterClearToPasteDelay )
+function AdvDupe.AdminSettings.SetPasterClearToPasteDelay( a ) if ( a and type( a ) == "number" ) then PasterClearToPasteDelay = a end end
+
 
 //	TaskSwitchingPaste makes the paste system built on each thinger by switching to the next one each tick instead of finishing the first placed one first
 local function SetUseTaskSwitchingPaste(pl, cmd, args)
@@ -1868,7 +1896,6 @@ end
 
 
 
-
 local function MakeThinger(Player, Hide)
 	
 	local Shooting_Ent = ents.Create( "base_gmodentity" )
@@ -1902,10 +1929,14 @@ local function TingerFX( Shooting_Ent, HitPos )
 end
 
 
-function AdvDupe.StartPaste( Player, inEntityList, inConstraintList, HeadEntityIdx, HitPos, HoldAngle, NumOfEnts, NumOfConst, PasteFrozen, PastewoConst, CallOnPasteFin, DontRemoveThinger, Thinger )
+function AdvDupe.StartPaste( Player, inEntityList, inConstraintList, HeadEntityIdx, HitPos, HoldAngle, NumOfEnts, NumOfConst, PasteFrozen, PastewoConst, CallOnPasteFin, DontRemoveThinger, Thinger, FromPaster )
 	hook.Add("Think", "AdvDupe_Think", AdvDupeThink)
 	
-	if ( NumOfEnts + NumOfConst > UseTimedPasteThreshold) then
+	if ( FromPaster ) and ( NumOfEnts + NumOfConst > PasterInstantPasteThreshold ) then
+		local CreatedEntities, CreatedConstraints = {},{}
+		AdvDupe.NormPaste( Player, inEntityList, inConstraintList, HeadEntityIdx, HitPos, HoldAngle, Thinger, PasteFrozen, PastewoConst, CreatedEntities, CreatedConstraints )
+		CallOnPasteFin( Thinger, CreatedEntities, CreatedConstraints )
+	elseif ( NumOfEnts + NumOfConst > UseTimedPasteThreshold) then
 		Msg("===adding new timed paste===\n")
 		AdvDupe.OverTimePasteStart( Player, inEntityList, inConstraintList, HeadEntityIdx, HitPos, HoldAngle, NumOfEnts, NumOfConst, PasteFrozen, PastewoConst, CallOnPasteFin, DontRemoveThinger, Thinger )
 	else

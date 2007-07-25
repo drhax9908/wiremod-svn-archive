@@ -31,8 +31,11 @@ function ENT:Initialize()
 	if WireAddon then
 		// Add inputs/outputs (TheApathetic)
 		self.Inputs = Wire_CreateInputs(self.Entity, {"Spawn", "Undo", "X", "Y", "Z" })
-		self.Outputs = Wire_CreateOutputs(self.Entity, {"Out"})
+		self.Outputs = Wire_CreateOutputs(self.Entity, {"PropCount", "ClearToPaste"})
+		Wire_TriggerOutput(self.Entity, "ClearToPaste", 1)
 	end
+	
+	self.ClearToPaste = true
 	
 	self.stage = 0
 	self.thinkdelay = 0.05
@@ -80,6 +83,15 @@ local function OnPasteFin( paster, Ents, Consts )
 	paster:ShowOutput()
 end
 
+
+local function ClearToPaste( ent )
+	ent:GetTable().ClearToPaste = true
+	if WireAddon then
+		Wire_TriggerOutput(ent, "ClearToPaste", 1)
+	end
+end
+
+
 function ENT:Paste()
 	
 	if (self.MaxRange > 0) then
@@ -103,10 +115,11 @@ function ENT:Paste()
 	
 	
 	//AdvDupe.AddDelayedPaste( self:GetPlayer(), self.MyEnts, self.MyConstraints, self.MyHeadEntityIdx, self.offset, angle - self.MyHoldAngle, true )
-	AdvDupe.StartPaste( self:GetPlayer(), self.MyEnts, self.MyConstraints, self.MyHeadEntityIdx, self.offset, angle - self.MyHoldAngle, self.NumOfEnts, self.NumOfConst, self.PasteFrozen, self.PastewoConst, OnPasteFin, true, self.Entity )
+	AdvDupe.StartPaste( self:GetPlayer(), self.MyEnts, self.MyConstraints, self.MyHeadEntityIdx, self.offset, angle - self.MyHoldAngle, self.NumOfEnts, self.NumOfConst, self.PasteFrozen, self.PastewoConst, OnPasteFin, true, self.Entity, true )
+	
+	timer.Simple( AdvDupe.GetPasterClearToPasteDelay(), ClearToPaste, self.Entity )
 	
 end
-
 
 
 function ENT:TriggerInput(iname, value)
@@ -114,10 +127,13 @@ function ENT:TriggerInput(iname, value)
 	
 	if (iname == "Spawn") then
 		// Spawner is "edge-triggered" (TheApathetic)
-		if ((value > 0) == self.SpawnLastValue) then return end
+		if ((value > 0) == self.SpawnLastValue) or (!self.ClearToPaste) then return end
 		self.SpawnLastValue = (value > 0)
 		
 		if (self.SpawnLastValue) then
+			Wire_TriggerOutput(self.Entity, "ClearToPaste", 0)
+			self.ClearToPaste = false
+			
 			// Simple copy/paste of old numpad Spawn with a few modifications
 			if (self.delay == 0) then self:Paste() return end
 			
@@ -150,7 +166,9 @@ end
 
 function ENT:ShowOutput()
 	self:SetOverlayText("Spawn Delay: "..self.delay.."\nUndo Delay: "..self.undo_delay.."\nCurrent Props: "..self.PropCount)
-	Wire_TriggerOutput(self.Entity, "Out", self.PropCount)
+	if WireAddon then
+		Wire_TriggerOutput(self.Entity, "PropCount", self.PropCount)
+	end
 end
 
 
@@ -202,7 +220,9 @@ end
 
 
 local function Paste( pl, ent )
-	if (!ent:IsValid()) then return end
+	if (!ent:IsValid()) or (!ent:GetTable().ClearToPaste) then return end
+	
+	ent:GetTable().ClearToPaste = false
 	
 	local delay = ent:GetTable().delay
 	if (delay == 0) then ent:GetTable():Paste() return end
