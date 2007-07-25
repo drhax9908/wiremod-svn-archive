@@ -106,8 +106,8 @@ function ENT:TriggerInput(iname, value)
 		//Msg("value = "..value.."\n")
 		if (value > 0) then
 			self.JumpTargetSet = true
-		elseif (value == 0) then
-			self.JumpTargetSet = false
+		/*elseif (value == 0) then
+			self.JumpTargetSet = false*/
 		end
 	end
 	self:ShowOutput()
