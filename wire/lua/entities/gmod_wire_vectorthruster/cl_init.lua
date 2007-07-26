@@ -61,10 +61,19 @@ function ENT:EffectThink_fire()
 end
 
 
+function ENT:vOffset()
+	if (self:IsToWorld()) then
+		return self.Entity:GetPos() + self:GetOffset()
+	else
+		return self.Entity:LocalToWorld( self:GetOffset() )
+	end
+end
+
+
 
 function ENT:EffectDraw_fire()
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local scroll = CurTime() * -10
@@ -100,7 +109,7 @@ end
 
 function ENT:EffectDraw_heatwave()
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local scroll = CurTime() * -10
@@ -137,7 +146,7 @@ end
 
 function ENT:EffectDraw_color()
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local scroll = CurTime() * -10
@@ -173,7 +182,7 @@ end
 
 function ENT:EffectDraw_color_random()
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local scroll = CurTime() * -10
@@ -209,7 +218,7 @@ end
 
 function ENT:EffectDraw_color_diy()
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 	local r,g,b,a = self.Entity:GetColor();
 
@@ -247,7 +256,7 @@ end
 
 function ENT:EffectDraw_plasma()
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local scroll = CurTime() * -20
@@ -282,7 +291,7 @@ end
 
 function ENT:EffectDraw_fire_smoke()
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local scroll = CurTime() * -10
@@ -319,7 +328,7 @@ function ENT:EffectDraw_fire_smoke()
 
 	self.SmokeTimer = CurTime() + 0.015
 
-	vOffset = self.Entity:LocalToWorld( self:GetOffset() ) + Vector( math.Rand( -3, 3 ), math.Rand( -3, 3 ), math.Rand( -3, 3 ) )
+	vOffset = self:vOffset() + Vector( math.Rand( -3, 3 ), math.Rand( -3, 3 ), math.Rand( -3, 3 ) )
 	vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local emitter = ParticleEmitter( vOffset )
@@ -343,7 +352,7 @@ function ENT:EffectDraw_fire_smoke_big()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -353,7 +362,7 @@ function ENT:EffectDraw_fire_smoke_big()
 		effectdata:SetScale( 6 )
 	util.Effect( "HelicopterMegaBomb", effectdata )
 
-	vOffset = self.Entity:LocalToWorld( self:GetOffset() ) + Vector( math.Rand( -3, 3 ), math.Rand( -3, 3 ), math.Rand( -3, 3 ) )
+	vOffset = self:vOffset() + Vector( math.Rand( -3, 3 ), math.Rand( -3, 3 ), math.Rand( -3, 3 ) )
 	vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local emitter = ParticleEmitter( vOffset )
@@ -383,8 +392,8 @@ function ENT:EffectThink_smoke()
 	if ( self.SmokeTimer > CurTime() ) then return end
 
 	self.SmokeTimer = CurTime() + 0.015
-
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() ) + Vector( math.Rand( -3, 3 ), math.Rand( -3, 3 ), math.Rand( -3, 3 ) )
+	
+	local vOffset = self:vOffset() + Vector( math.Rand( -3, 3 ), math.Rand( -3, 3 ), math.Rand( -3, 3 ) )
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local emitter = ParticleEmitter( vOffset )
@@ -408,8 +417,8 @@ function ENT:EffectThink_smoke_firecolors()
 	if ( self.SmokeTimer > CurTime() ) then return end
 
 	self.SmokeTimer = CurTime() + 0.015
-
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() ) + Vector( math.Rand( -3, 3 ), math.Rand( -3, 3 ), math.Rand( -3, 3 ) )
+	
+	local vOffset = self:vOffset() + Vector( math.Rand( -3, 3 ), math.Rand( -3, 3 ), math.Rand( -3, 3 ) )
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local emitter = ParticleEmitter( vOffset )
@@ -433,8 +442,8 @@ function ENT:EffectThink_smoke_random()
 	if ( self.SmokeTimer > CurTime() ) then return end
 
 	self.SmokeTimer = CurTime() + 0.015
-
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() ) + Vector( math.Rand( -3, 3 ), math.Rand( -3, 3 ), math.Rand( -3, 3 ) )
+	
+	local vOffset = self:vOffset() + Vector( math.Rand( -3, 3 ), math.Rand( -3, 3 ), math.Rand( -3, 3 ) )
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local emitter = ParticleEmitter( vOffset )
@@ -458,8 +467,8 @@ local r,g,b,a = self.Entity:GetColor();
 	if ( self.SmokeTimer > CurTime() ) then return end
 
 	self.SmokeTimer = CurTime() + 0.015
-
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() ) + Vector( math.Rand( -3, 3 ), math.Rand( -3, 3 ), math.Rand( -3, 3 ) )
+	
+	local vOffset = self:vOffset() + Vector( math.Rand( -3, 3 ), math.Rand( -3, 3 ), math.Rand( -3, 3 ) )
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local emitter = ParticleEmitter( vOffset )
@@ -479,7 +488,7 @@ end
 
 function ENT:EffectDraw_color_magic()
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local scroll = CurTime() * -10
@@ -543,7 +552,7 @@ function ENT:EffectThink_money()
 
 	self.SmokeTimer = CurTime() + math.random(0.005,0.00005)
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	vOffset = vOffset + VectorRand() * 20
@@ -570,7 +579,7 @@ function ENT:EffectThink_debug_10()
 
 	self.SmokeTimer = CurTime() + 0.05
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 
@@ -597,7 +606,7 @@ function ENT:EffectThink_debug_30()
 
 	self.SmokeTimer = CurTime() + 0.05
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 
@@ -624,7 +633,7 @@ function ENT:EffectThink_debug_60()
 
 	self.SmokeTimer = CurTime() + 0.05
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 
@@ -651,7 +660,7 @@ function ENT:EffectThink_souls()
 
 	self.SmokeTimer = CurTime() + 0.05
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	vOffset = vOffset + VectorRand() * 20
@@ -679,7 +688,7 @@ function ENT:EffectThink_sperm()
 
 	self.SmokeTimer = CurTime() + math.random(0.005,0.00005)
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	vOffset = vOffset + VectorRand() * 5
@@ -727,7 +736,7 @@ function ENT:EffectThink_feather()
 
 	self.SmokeTimer = CurTime() + math.random(0.005,0.00005)
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	vOffset = vOffset + VectorRand() * 30
@@ -754,7 +763,7 @@ function ENT:EffectThink_goldstar()
 
 	self.SmokeTimer = CurTime() + math.random(0.005,0.00005)
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	vOffset = vOffset + VectorRand() * 10
@@ -781,7 +790,7 @@ function ENT:EffectThink_candy_cane()
 
 	self.SmokeTimer = CurTime() + math.random(0.005,0.00005)
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	vOffset = vOffset + VectorRand() * 5
@@ -811,7 +820,7 @@ function ENT:EffectThink_jetflame_advanced()
 
 	self.SmokeTimer = CurTime() + 0.0000005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	//vOffset = vOffset + VectorRand() * 5
@@ -888,7 +897,7 @@ function ENT:EffectThink_jetflame()
 
 	self.SmokeTimer = CurTime() + 0.0000005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	//vOffset = vOffset + VectorRand() * 5
@@ -943,7 +952,7 @@ function ENT:EffectThink_jetflame_purple()
 
 	self.SmokeTimer = CurTime() + 0.0000005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	//vOffset = vOffset + VectorRand() * 5
@@ -998,7 +1007,7 @@ function ENT:EffectThink_jetflame_red()
 
 	self.SmokeTimer = CurTime() + 0.0000005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	//vOffset = vOffset + VectorRand() * 5
@@ -1052,7 +1061,7 @@ function ENT:EffectThink_jetflame_blue()
 
 	self.SmokeTimer = CurTime() + 0.0000005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	//vOffset = vOffset + VectorRand() * 5
@@ -1106,7 +1115,7 @@ function ENT:EffectThink_balls_firecolors()
 
 	self.SmokeTimer = CurTime() + 0.025
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 	vOffset = vOffset + VectorRand() * 2
 
@@ -1132,7 +1141,7 @@ function ENT:EffectThink_balls_random()
 
 	self.SmokeTimer = CurTime() + 0.025
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 	vOffset = vOffset + VectorRand() * 2
 
@@ -1159,7 +1168,7 @@ local r,g,b,a = self.Entity:GetColor();
 
 	self.SmokeTimer = CurTime() + 0.025
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 	vOffset = vOffset + VectorRand() * 2
 
@@ -1186,7 +1195,7 @@ function ENT:EffectThink_plasma_rings()
 
 	self.SmokeTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	vOffset = vOffset + VectorRand() * 5
@@ -1213,7 +1222,7 @@ function ENT:EffectThink_magic_firecolors()
 
 	self.SmokeTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	vOffset = vOffset + VectorRand() * 5
@@ -1241,7 +1250,7 @@ function ENT:EffectThink_magic()
 
 	self.SmokeTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	vOffset = vOffset + VectorRand() * 5
@@ -1268,7 +1277,7 @@ local r,g,b,a = self.Entity:GetColor();
 
 	self.SmokeTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	vOffset = vOffset + VectorRand() * 5
@@ -1296,7 +1305,7 @@ function ENT:EffectThink_magic_color()
 
 	self.SmokeTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	vOffset = vOffset + VectorRand() * 5
@@ -1324,7 +1333,7 @@ function ENT:EffectDraw_rings()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1340,7 +1349,7 @@ function ENT:EffectDraw_tesla()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1358,7 +1367,7 @@ function ENT:EffectDraw_blood()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1376,7 +1385,7 @@ function ENT:EffectDraw_some_sparks()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1394,7 +1403,7 @@ function ENT:EffectDraw_spark_fountain()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1412,7 +1421,7 @@ function ENT:EffectDraw_more_sparks()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1430,7 +1439,7 @@ function ENT:EffectDraw_water_small()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1448,7 +1457,7 @@ function ENT:EffectDraw_water_medium()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1467,7 +1476,7 @@ function ENT:EffectDraw_water_big()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1485,7 +1494,7 @@ function ENT:EffectDraw_water_huge()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1504,7 +1513,7 @@ function ENT:EffectDraw_striderblood_small()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1522,7 +1531,7 @@ function ENT:EffectDraw_striderblood_medium()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1541,7 +1550,7 @@ function ENT:EffectDraw_striderblood_big()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1559,7 +1568,7 @@ function ENT:EffectDraw_striderblood_huge()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1577,7 +1586,7 @@ function ENT:EffectDraw_rings_grow()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1593,7 +1602,7 @@ function ENT:EffectDraw_rings_grow_rings()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1614,7 +1623,7 @@ function ENT:EffectDraw_rings_shrink()
 	if ( self.RingTimer > CurTime() ) then return end
 	self.RingTimer = CurTime() + 0.00005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 
 	local effectdata = EffectData()
@@ -1631,7 +1640,7 @@ function ENT:EffectThink_bubble()
 
 	self.SmokeTimer = CurTime() + 0.005
 
-	local vOffset = self.Entity:LocalToWorld( self:GetOffset() )
+	local vOffset = self:vOffset()
 	local vNormal = (vOffset - self.Entity:GetPos()):GetNormalized()
 	vOffset = vOffset + VectorRand() * 5
 

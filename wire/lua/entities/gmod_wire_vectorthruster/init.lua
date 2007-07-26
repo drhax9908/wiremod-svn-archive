@@ -10,13 +10,12 @@ local Thruster_Sound 	= Sound( "PhysicsCannister.ThrusterLoop" )
 local MODEL = Model("models/jaanus/wiretool/wiretool_speed.mdl")
 
 function ENT:Initialize()
-	self.Entity:SetModel( MODEL )
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
+	self.Entity:SetModel( MODEL )
 	
 	local phys = self.Entity:GetPhysicsObject()
-	
 	if (phys:IsValid()) then
 		phys:Wake()
 	end
@@ -26,9 +25,10 @@ function ENT:Initialize()
 	
 	self.X = 0
 	self.Y = 0
-	self.Z = 1
+	self.Z = 0
+	self.ToWorld = false
 	
-	self.ThrustOffset 	= Vector( 0, 0, 1 )
+	self.ThrustOffset 	= Vector( 0, 0, 0 )
 	--self.ThrustOffset 	= Vector( 0, 0, max.z )
 	--self.ThrustOffsetR 	= Vector( 0, 0, min.z )
 	self.ForceAngle		= self.ThrustOffset:GetNormalized() * -1
@@ -43,7 +43,7 @@ function ENT:Initialize()
 	
 	self:Switch( false )
 	
-	self.Inputs = Wire_CreateInputs(self.Entity, { "Mul", "X", "Y", "Z", "Pitch", "Yaw", "Roll" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "Mul", "X", "Y", "Z", "ToWorld" }) //, "Pitch", "Yaw", "Roll"
 end
 
 function ENT:SpawnFunction( ply, tr )
@@ -114,8 +114,7 @@ function MakeWireVectorThruster( pl, Model, Ang, Pos, force, force_min, force_ma
 		
 		return wire_thruster
 	end
-
-	duplicator.RegisterEntityClass("gmod_wire_vectorthruster", MakeWireVectorThruster, "Model", "Ang", "Pos", "force", "force_min", "force_max", "oweffect", "uweffect", "owater", "uwater", "bidir", "sound", "nocollide", "Vel", "aVel", "frozen")
+duplicator.RegisterEntityClass("gmod_wire_vectorthruster", MakeWireVectorThruster, "Model", "Ang", "Pos", "force", "force_min", "force_max", "oweffect", "uweffect", "owater", "uwater", "bidir", "sound", "nocollide", "Vel", "aVel", "frozen")
 
 
 function ENT:OnRemove()
@@ -137,16 +136,40 @@ function ENT:SetForce( force, mul )
 		return
 	end
 	
-	// Get the data in worldspace
-	local ThrusterWorldPos = phys:LocalToWorld( self.ThrustOffset )
-	local ThrusterWorldForce = phys:LocalToWorldVector( self.ThrustOffset * -1 )
+	local ThrusterWorldPos
+	local ThrusterWorldForce
+	if (self.ToWorld) then
+		ThrusterWorldPos = self.Entity:GetPos() + self.ThrustOffset
+		ThrusterWorldForce = self.ThrustOffset * -1
+	else
+		// Get the data in worldspace
+		ThrusterWorldPos = phys:LocalToWorld( self.ThrustOffset )
+		ThrusterWorldForce = phys:LocalToWorldVector( self.ThrustOffset * -1 )
+	end
+	/*Msg("======\nself.Entity:GetPos() = "..tostring(self.Entity:GetPos()).."\n")
+	Msg("ThrusterWorldPos = "..tostring(ThrusterWorldPos).."\n")
+	Msg("ThrusterWorldForce = "..tostring(ThrusterWorldForce).."\n")*/
+	
+	
+	--Msg("===============\nThrusterWorldPos = "..tostring(ThrusterWorldPos).."\n")
+	--Msg("ThrusterWorldForce = "..tostring(ThrusterWorldForce).."\n")
 	
 	// Calculate the velocity
 	ThrusterWorldForce = ThrusterWorldForce * self.force * mul * 10
+	
+	--Msg("ThrusterWorldPos = "..tostring(ThrusterWorldPos).."\n")
+	--Msg(":GetNormalized() = "..tostring(ThrusterWorldPos:GetNormalized()).."\n")
+	
 	self.ForceLinear, self.ForceAngle = phys:CalculateVelocityOffset( ThrusterWorldForce, ThrusterWorldPos );
+	
+	--Msg("ForceLinear = "..tostring(self.ForceLinear).."\n")
+	--Msg("ForceAngle = "..tostring(self.ForceAngle).."\n")
+	
 	self.ForceLinear = phys:WorldToLocalVector( self.ForceLinear )
 	
-	self:SetOffset( self.ThrustOffset )
+	--Msg("ForceLinearL = "..tostring(self.ForceLinear).."\n")
+	
+	--self:SetOffset( self.ThrustOffset )
 	
 --	self.Entity:SetNetworkedVector( 1, self.ForceAngle )
 --	self.Entity:SetNetworkedVector( 2, self.ForceLinear )
@@ -184,6 +207,18 @@ function ENT:TriggerInput(iname, value)
 		return
 	end
 	
+	if (iname == "ToWorld") then
+		if (value > 0) then
+			self.ToWorld = true
+		else
+			self.ToWorld = false
+		end
+		self:SetToWorld( self.ToWorld )
+		--Msg("self.ToWorld= "..tostring(self.ToWorld).."\n")
+		self:Switch( self:IsOn(), self.mul )
+		return
+	end
+	
 	if (iname == "X") then
 		self.X = value
 	end
@@ -194,10 +229,10 @@ function ENT:TriggerInput(iname, value)
 		self.Z = value
 	end
 	if (iname == "X") or (iname == "Y") or (iname == "Z") then
-		self.ThrustOffset = Vector( self.X, self.Y, self.Z )
+		self.ThrustOffset = Vector( self.X, self.Y, self.Z ):GetNormalized()
 	end
 	
-	if (iname == "Offset_Pitch") then
+	/*if (iname == "Offset_Pitch") then
 		self.ThrustOffset = math.RotationMatrix( Vector(1,0,0), value, self.ThrustOffset )
 	end
 	if (iname == "Offset_Yaw") then
@@ -205,16 +240,22 @@ function ENT:TriggerInput(iname, value)
 	end
 	if (iname == "Offset_Roll") then
 		self.ThrustOffset = math.RotationMatrix( Vector(0,1,0), value, self.ThrustOffset )
+	end*/
+	
+	if (self.ThrustOffset == Vector(0,0,0)) then
+		self:SetOn( false )
 	end
 	
 	self:SetOffset( self.ThrustOffset )
-	self.ForceAngle = self.ThrustOffset:GetNormalized() * -1
-	self:SetForce( self.force, self.mul )
+	//self.ForceAngle = self.ThrustOffset * -1
+	--self:SetForce( self.force, self.mul )
+	self:Switch( self:IsOn(), self.mul )
 	
 end
 
 function ENT:PhysicsSimulate( phys, deltatime )
 	if (!self:IsOn()) then return SIM_NOTHING end
+	if (self.Entity:IsPlayerHolding()) then return SIM_NOTHING end
 	
 	if (self.Entity:WaterLevel() > 0) then
 	    if (not self.UWater) then
