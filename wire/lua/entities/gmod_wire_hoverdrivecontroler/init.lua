@@ -46,10 +46,10 @@ function ENT:Initialize()
 	self.AngleVelocity = Angle(0, 0, 0)
 	
 	self.JumpTarget = Vector(0,0,0)
-
-	self.Inputs = Wire_CreateInputs(self.Entity, { "X_Velocity", "Y_Velocity", "Z_Velocity", "Pitch_Velocity", "Yaw_Velocity", "Roll_Velocity", "HoverMode", "Jump", "X_JumpTarget", "Y_JumpTarget", "Z_JumpTarget", "SetJumpTarget" })
-	self.Outputs = WireLib.CreateSpecialOutputs(self.Entity, {"Data"}, {"HOVERDATAPORT"})
 	
+	self.Inputs = Wire_CreateInputs(self.Entity, { "X_JumpTarget", "Y_JumpTarget", "Z_JumpTarget", "SetJumpTarget", "Jump" }) //"X_Velocity", "Y_Velocity", "Z_Velocity", "Pitch_Velocity", "Yaw_Velocity", "Roll_Velocity", "HoverMode", 
+	//self.Outputs = WireLib.CreateSpecialOutputs(self.Entity, {"Data"}, {"HOVERDATAPORT"})
+	self:ShowOutput()
 end
 
 function ENT:SpawnFunction( ply, tr )
@@ -209,7 +209,7 @@ end
 		self:SetOverlayText( txt )
 	end	
 	
-	return SIM_GLOBAL_FORCE*/
+	return SIM_GLOBAL_FORCE*
 	
 	/*local Pos = phys:GetPos()
 	//local txt = string.format( "Speed: %i\nResistance: %.2f", self:GetSpeed(), self:GetAirResistance() )
@@ -269,7 +269,6 @@ end
 	end*/
 
 //end
-
 
 
 /*function ENT:DoOutput()
