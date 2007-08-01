@@ -103,6 +103,22 @@ function ENT:GetBeaconPos(sensor)
 	return sensor:GetPos()
 end
 
+function ENT:GetBeaconVelocity(sensor)
+	local ch = 1
+	if (sensor.Inputs) and (sensor.Inputs.Target.SrcId) then
+		ch = tonumber(sensor.Inputs.Target.SrcId)
+	end
+	if self.SelectedTargets[ch] then
+		if (not self.SelectedTargets[ch]:IsValid()) then
+	        self.SelectedTargets[ch] = nil
+			Wire_TriggerOutput(self.Entity, tostring(ch), 0)
+	        return sensor:GetVelocity()
+	    end
+		return self.SelectedTargets[ch]:GetVelocity()
+	end
+	return sensor:GetVelocity()
+end
+
 
 function ENT:SelectorNext(ch)
 	if (self.Bogeys) and (#self.Bogeys > 0) then

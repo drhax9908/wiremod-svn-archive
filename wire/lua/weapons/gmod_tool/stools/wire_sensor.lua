@@ -13,6 +13,10 @@ if ( CLIENT ) then
     language.Add( "WireSensorTool_outdist", "Ouput distance:" )
     language.Add( "WireSensorTool_outbrng", "Output bearing:" )
     language.Add( "WireSensorTool_gpscord", "Output world position (gps cords):" )
+	language.Add( "WireSensorTool_direction_vector", "Output direction Vector:" )
+	language.Add( "WireSensorTool_direction_normalized", "Normalize direction Vector:" )
+	language.Add( "WireSensorTool_target_velocity", "Output target's velocity:" )
+	language.Add( "WireSensorTool_velocity_normalized", "Normalize velocity:" )
     language.Add( "WireSensorTool_swapyz", "Swap Y and Z cords:" )
 	language.Add( "sboxlimit_wire_sensors", "You've hit sensors limit!" )
 	language.Add( "undone_wiresensor", "Undone Wire Sensor" )
@@ -27,6 +31,11 @@ TOOL.ClientConVar[ "outdist" ] = "1"
 TOOL.ClientConVar[ "outbrng" ] = "0"
 TOOL.ClientConVar[ "gpscord" ] = "0"
 TOOL.ClientConVar[ "SwapYZ" ] = "0"
+TOOL.ClientConVar[ "direction_vector" ] = "0"
+TOOL.ClientConVar[ "direction_normalized" ] = "0"
+TOOL.ClientConVar[ "target_velocity" ] = "0"
+TOOL.ClientConVar[ "velocity_normalized" ] = "0"
+
 
 TOOL.Model = "models/props_lab/huladoll.mdl"
 
@@ -47,6 +56,10 @@ function TOOL:LeftClick(trace)
 	local outbrng = (self:GetClientNumber("outbrng") ~= 0)
 	local gpscord = (self:GetClientNumber("gpscord") ~= 0)
 	local swapyz = (self:GetClientNumber("SwapYZ") ~= 0)
+	local direction_vector = (self:GetClientNumber("direction_vector") ~= 0)
+	local direction_normalized = (self:GetClientNumber("direction_normalized") ~= 0)
+	local target_velocity = (self:GetClientNumber("target_velocity") ~= 0)
+	local velocity_normalized = (self:GetClientNumber("velocity_normalized") ~= 0)
 	
 	if (self:GetStage() == 1) then
 		if ( trace.Entity:IsValid() && trace.Entity.GetBeaconPos ) then
@@ -58,12 +71,18 @@ function TOOL:LeftClick(trace)
 		return
 	end
 	
+	-- Update a beacon
+	if (trace.Entity:IsValid() and trace.Entity:GetClass() == "gmod_wire_sensor" and trace.Entity.pl == ply ) then
+		trace.Entity:Setup(xyz_mode, outdist, outbrng, gpscord, swapyz,direction_vector,direction_normalized,target_velocity,velocity_normalized);
+		return true;
+	end
+	
 	if ( !self:GetSWEP():CheckLimit( "wire_sensors" ) ) then return false end
 	
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 	
-	local wire_sensor = MakeWireSensor( ply, trace.HitPos, Ang, xyz_mode, outdist, outbrng, gpscord, swapyz )
+	local wire_sensor = MakeWireSensor( ply, trace.HitPos, Ang, xyz_mode, outdist, outbrng, gpscord, swapyz,direction_vector,direction_normalized,target_velocity,velocity_normalized )
 	
 	local min = wire_sensor:OBBMins()
 	wire_sensor:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -105,7 +124,7 @@ end
 
 if SERVER then
 	
-	function MakeWireSensor(pl, Pos, Ang, xyz_mode, outdist, outbrng, gpscord, swapyz, Vel, aVel, frozen )
+	function MakeWireSensor(pl, Pos, Ang, xyz_mode, outdist, outbrng, gpscord, swapyz,direction_vector,direction_normalized,target_velocity, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_sensors" ) ) then return nil end
 		
 		local wire_sensor = ents.Create( "gmod_wire_sensor" )
@@ -115,7 +134,7 @@ if SERVER then
 		wire_sensor:Spawn()
 		wire_sensor:Activate()
 		
-		wire_sensor:Setup( xyz_mode, outdist, outbrng, gpscord, swapyz )
+		wire_sensor:Setup( xyz_mode, outdist, outbrng, gpscord, swapyz,direction_vector,direction_normalized,target_velocity )
 		wire_sensor:SetPlayer( pl )
 		
 		local ttable = 
@@ -125,6 +144,9 @@ if SERVER then
 			outbrng		= outbrng,
 			gpscord		= gpscord,
 			swapyz		= swapyz,
+			direction_vector = direction_vector,
+			direction_normalized = direction_normalized,
+			target_velocity = target_velocity,
 			pl			= pl,
 		}
 		
@@ -135,7 +157,7 @@ if SERVER then
 		return wire_sensor
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_sensor", MakeWireSensor, "Pos", "Ang", "xyz_mode", "outdist", "outbrng", "gpscord", "swapyz", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_sensor", MakeWireSensor, "Pos", "Ang", "xyz_mode", "outdist", "outbrng", "gpscord", "swapyz","direction_vector","direction_normalized","target_velocity","Vel", "aVel", "frozen")
 	
 end
 
@@ -193,5 +215,25 @@ function TOOL.BuildCPanel( panel )
 	panel:AddControl("CheckBox", {
 		Label = "#WireSensorTool_gpscord",
 		Command = "wire_sensor_gpscord"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireSensorTool_direction_vector",
+		Command = "wire_sensor_direction_vector"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireSensorTool_direction_normalized",
+		Command = "wire_sensor_direction_normalized"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireSensorTool_target_velocity",
+		Command = "wire_sensor_target_velocity"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireSensorTool_velocity_normalized",
+		Command = "wire_sensor_velocity_normalized"
 	})
 end
