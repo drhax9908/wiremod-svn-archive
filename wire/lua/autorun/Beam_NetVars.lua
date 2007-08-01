@@ -109,8 +109,8 @@ local function GetNetworkTable( ent, name )
 end
 
 local function SendNetworkUpdate( VarType, Index, Key, Value, Player )
+	if(Player and not (Player:IsValid() and Player:IsPlayer())) then return end // Be sure, Player is not a NULL-Entity, or the server will crash!
 	
-	if(Player and not (Player:IsValid() and Player:IsPlayer())) then return end; // Be sure, Player is not a NIL-Entity, or the server will crash!
 	umsg.Start( "RcvEntityVarBeam_"..VarType, Player )
 		umsg.Short( Index )
 		umsg.String( Key )
