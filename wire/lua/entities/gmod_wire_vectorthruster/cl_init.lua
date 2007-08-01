@@ -62,11 +62,20 @@ end
 
 
 function ENT:vOffset()
-	if (self:IsToWorld()) then
+	local mode = self:GetMode()
+	if (mode == 1) then
 		return self.Entity:GetPos() + self:GetOffset()
+	elseif (mode == 2) then
+		local v =self:GetOffset()
+		local z = v.z
+		v.z = 0
+		v = self.Entity:LocalToWorld( v )
+		v.z = v.z + z
+		return v
 	else
 		return self.Entity:LocalToWorld( self:GetOffset() )
 	end
+	
 end
 
 

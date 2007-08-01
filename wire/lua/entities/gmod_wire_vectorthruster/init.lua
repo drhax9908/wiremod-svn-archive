@@ -7,13 +7,13 @@ include('shared.lua')
 ENT.WireDebugName = "Thruster"
 
 local Thruster_Sound 	= Sound( "PhysicsCannister.ThrusterLoop" )
-local MODEL = Model("models/jaanus/wiretool/wiretool_speed.mdl")
+--local MODEL = Model("models/jaanus/wiretool/wiretool_speed.mdl")
 
 function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-	self.Entity:SetModel( MODEL )
+	--self.Entity:SetModel( MODEL )
 	
 	local phys = self.Entity:GetPhysicsObject()
 	if (phys:IsValid()) then
@@ -26,11 +26,12 @@ function ENT:Initialize()
 	self.X = 0
 	self.Y = 0
 	self.Z = 0
-	self.ToWorld = false
+	self.Mode = 0
+	self.yaw = 0
+	self.pitch = 0
+	self.mul = 0
 	
 	self.ThrustOffset 	= Vector( 0, 0, 0 )
-	--self.ThrustOffset 	= Vector( 0, 0, max.z )
-	--self.ThrustOffsetR 	= Vector( 0, 0, min.z )
 	self.ForceAngle		= self.ThrustOffset:GetNormalized() * -1
 	
 	self:SetForce( 2000 )
@@ -43,7 +44,7 @@ function ENT:Initialize()
 	
 	self:Switch( false )
 	
-	self.Inputs = Wire_CreateInputs(self.Entity, { "Mul", "X", "Y", "Z", "ToWorld" }) //, "Pitch", "Yaw", "Roll"
+	self.Inputs = Wire_CreateInputs(self.Entity, { "Mul" })
 end
 
 function ENT:SpawnFunction( ply, tr )
@@ -53,6 +54,7 @@ function ENT:SpawnFunction( ply, tr )
 	local SpawnPos = tr.HitPos + tr.HitNormal * 16
 
 	local ent = ents.Create( "gmod_wire_vectorthruster" )
+	self.Entity:SetModel( "models/jaanus/wiretool/wiretool_speed.mdl" )
 	ent:SetPos( SpawnPos )
 	ent:SetPlayer( ply )
 	ent:Spawn()
@@ -78,44 +80,6 @@ function ENT:SpawnFunction( ply, tr )
 	return ent
 end
 
-function MakeWireVectorThruster( pl, Model, Ang, Pos, force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, nocollide, Vel, aVel, frozen )
-		if ( !pl:CheckLimit( "wire_thrusters" ) ) then return false end
-		
-		local wire_thruster = ents.Create( "gmod_wire_vectorthruster" )
-		if (!wire_thruster:IsValid()) then return false end
-		wire_thruster:SetModel( Model )
-		
-		wire_thruster:SetAngles( Ang )
-		wire_thruster:SetPos( Pos )
-		wire_thruster:Spawn()
-		
-		wire_thruster:Setup(force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound)
-		wire_thruster:SetPlayer( pl )
-		
-		local ttable = {
-			force		= force,
-			force_min	= force_min,
-			force_max	= force_max,
-			bidir       = bidir,
-			sound       = sound,
-			pl			= pl,
-			oweffect	= oweffect,
-			uweffect	= uweffect,
-			owater		= owater,
-			uwater		= uwater,
-			nocollide	= nocollide
-			}
-		
-		table.Merge(wire_thruster:GetTable(), ttable )
-		
-		pl:AddCount( "wire_thrusters", wire_thruster )
-		
-		DoPropSpawnedEffect( wire_thruster )
-		
-		return wire_thruster
-	end
-duplicator.RegisterEntityClass("gmod_wire_vectorthruster", MakeWireVectorThruster, "Model", "Ang", "Pos", "force", "force_min", "force_max", "oweffect", "uweffect", "owater", "uwater", "bidir", "sound", "nocollide", "Vel", "aVel", "frozen")
-
 
 function ENT:OnRemove()
 	self.BaseClass.OnRemove(self)
@@ -128,7 +92,6 @@ end
 function ENT:SetForce( force, mul )
 	if (force) then self.force = force end
 	mul = mul or 1
-	self.mul = mul
 	
 	local phys = self.Entity:GetPhysicsObject()
 	if (!phys:IsValid()) then
@@ -138,44 +101,56 @@ function ENT:SetForce( force, mul )
 	
 	local ThrusterWorldPos
 	local ThrusterWorldForce
-	if (self.ToWorld) then
+	if (self.Mode == 1) then
 		ThrusterWorldPos = self.Entity:GetPos() + self.ThrustOffset
 		ThrusterWorldForce = self.ThrustOffset * -1
 	else
-		// Get the data in worldspace
 		ThrusterWorldPos = phys:LocalToWorld( self.ThrustOffset )
 		ThrusterWorldForce = phys:LocalToWorldVector( self.ThrustOffset * -1 )
 	end
-	/*Msg("======\nself.Entity:GetPos() = "..tostring(self.Entity:GetPos()).."\n")
-	Msg("ThrusterWorldPos = "..tostring(ThrusterWorldPos).."\n")
-	Msg("ThrusterWorldForce = "..tostring(ThrusterWorldForce).."\n")*/
-	
-	
-	--Msg("===============\nThrusterWorldPos = "..tostring(ThrusterWorldPos).."\n")
-	--Msg("ThrusterWorldForce = "..tostring(ThrusterWorldForce).."\n")
+	if (self.Mode == 2) then
+		ThrusterWorldPos.z = ThrusterWorldPos.z + self.Z
+		ThrusterWorldForce.z = ThrusterWorldForce.z - self.Z
+	end
 	
 	// Calculate the velocity
 	ThrusterWorldForce = ThrusterWorldForce * self.force * mul * 10
-	
-	--Msg("ThrusterWorldPos = "..tostring(ThrusterWorldPos).."\n")
-	--Msg(":GetNormalized() = "..tostring(ThrusterWorldPos:GetNormalized()).."\n")
-	
 	self.ForceLinear, self.ForceAngle = phys:CalculateVelocityOffset( ThrusterWorldForce, ThrusterWorldPos );
 	
-	--Msg("ForceLinear = "..tostring(self.ForceLinear).."\n")
-	--Msg("ForceAngle = "..tostring(self.ForceAngle).."\n")
-	
 	self.ForceLinear = phys:WorldToLocalVector( self.ForceLinear )
-	
-	--Msg("ForceLinearL = "..tostring(self.ForceLinear).."\n")
-	
-	--self:SetOffset( self.ThrustOffset )
-	
---	self.Entity:SetNetworkedVector( 1, self.ForceAngle )
---	self.Entity:SetNetworkedVector( 2, self.ForceLinear )
 end
 
-function ENT:Setup(force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound)
+/*function ENT:Think()
+	self.BaseClass.Think(self)
+	
+	if (self.Mode > 0 and self:IsOn()) then
+		self:Switch( self:IsOn(), self.mul )
+		
+		local phys = self.Entity:GetPhysicsObject()
+		if (!phys:IsValid()) then return end
+		
+		local ThrusterWorldPos
+		local ThrusterWorldForce
+		if (self.Mode == 1) then
+			ThrusterWorldPos = self.Entity:GetPos() + self.ThrustOffset
+			ThrusterWorldForce = (self.ThrustOffset * -1)
+		elseif (self.Mode == 2) then
+			ThrusterWorldPos = phys:LocalToWorld( self.ThrustOffset )
+			ThrusterWorldForce = phys:LocalToWorldVector( self.ThrustOffset * -1 )
+			ThrusterWorldPos.z = ThrusterWorldPos.z + self.Z
+			ThrusterWorldForce.z = ThrusterWorldForce.z - self.Z
+		end
+		
+		ThrusterWorldForce = ThrusterWorldForce * self.force * mul * 10
+		self.ForceLinear, self.ForceAngle = phys:CalculateVelocityOffset( ThrusterWorldForce, ThrusterWorldPos );
+		self.ForceLinear = phys:WorldToLocalVector( self.ForceLinear )
+		
+		self.Entity:NextThink(CurTime()+0.04)
+		return true
+	end
+end*/
+
+function ENT:Setup(force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, mode, angle)
 	self:SetForce(force)
 	
 	self.OWEffect = oweffect
@@ -191,66 +166,56 @@ function ENT:Setup(force, force_min, force_max, oweffect, uweffect, owater, uwat
 		self.Entity:StopSound(Thruster_Sound)
 	end
 	
-	self:SetOverlayText( "Thrust = " .. 0 .. "\nMul: " .. math.Round(force*1000)/1000 )
+	Msg("mode = "..mode.."\n")
+	self.Mode = mode
+	self:SetMode( self.Mode )
+	
+	if (angle) then
+		WireLib.AdjustInputs(self.Entity, {"Mul", "Pitch", "Yaw"})
+	else
+		WireLib.AdjustSpecialInputs(self.Entity, {"Mul", "X", "Y", "Z", "Vector"}, { "NORMAL", "NORMAL", "NORMAL", "NORMAL", "VECTOR"})
+	end
+	
+	self:ShowOutput( self.mul )
 end
 
 function ENT:TriggerInput(iname, value)
-	
 	if (iname == "Mul") then
-		if (value == 0) then
-			self:Switch(false, 0)
+		if (value == 0) or (self.ThrustOffset == Vector(0,0,0)) then
+			self:Switch(false, math.min(value, self.ForceMax))
 		elseif ( (self.BiDir) and (math.abs(value) > 0.01) and (math.abs(value) > self.ForceMin) ) or ( (value > 0.01) and (value > self.ForceMin) ) then
-			self:Switch(true, math.min(value, self.ForceMax))
+			self:Switch(true, math.Clamp(value, -self.ForceMax, self.ForceMax))
 		else
 			self:Switch(false, 0)
 		end
 		return
-	end
-	
-	if (iname == "ToWorld") then
-		if (value > 0) then
-			self.ToWorld = true
-		else
-			self.ToWorld = false
-		end
-		self:SetToWorld( self.ToWorld )
-		--Msg("self.ToWorld= "..tostring(self.ToWorld).."\n")
-		self:Switch( self:IsOn(), self.mul )
-		return
-	end
-	
-	if (iname == "X") then
+	elseif (iname == "X") then
 		self.X = value
-	end
-	if (iname == "Y") then
+	elseif (iname == "Y") then
 		self.Y = value
-	end
-	if (iname == "Z") then
+	elseif (iname == "Z") then
 		self.Z = value
-	end
-	if (iname == "X") or (iname == "Y") or (iname == "Z") then
-		self.ThrustOffset = Vector( self.X, self.Y, self.Z ):GetNormalized()
-	end
-	
-	/*if (iname == "Offset_Pitch") then
-		self.ThrustOffset = math.RotationMatrix( Vector(1,0,0), value, self.ThrustOffset )
-	end
-	if (iname == "Offset_Yaw") then
-		self.ThrustOffset = math.RotationMatrix( Vector(0,0,1), value, self.ThrustOffset )
-	end
-	if (iname == "Offset_Roll") then
-		self.ThrustOffset = math.RotationMatrix( Vector(0,1,0), value, self.ThrustOffset )
-	end*/
-	
-	if (self.ThrustOffset == Vector(0,0,0)) then
-		self:SetOn( false )
+	elseif (iname == "Vector") then
+		if (type(value) != "vector") then Msg("non vector passed!\n") return end
+		self.X = value.x
+		self.Y = value.y
+		self.Z = value.z
+	elseif (iname == "Yaw") or (iname == "Pitch") then
+		value = math.rad( value )
+		if (iname == "Yaw") then self.yaw = value else self.pitch = value end
+		self.X = math.cos(self.pitch) * math.cos(self.yaw)
+		self.Y = math.sin(self.pitch)
+		self.Z = math.cos(self.pitch) * math.sin(self.yaw)
 	end
 	
+	self.ThrustOffset = Vector( self.X, self.Y, self.Z ):GetNormalized()
 	self:SetOffset( self.ThrustOffset )
-	//self.ForceAngle = self.ThrustOffset * -1
-	--self:SetForce( self.force, self.mul )
-	self:Switch( self:IsOn(), self.mul )
+	if (self.Mode == 2) then
+		self.ThrustOffset = Vector( self.X, self.Y, 0 ):GetNormalized()
+	end
 	
+	if (self.ThrustOffset == Vector(0,0,0)) then self:SetOn( false ) elseif (self.mul != 0) then self:SetOn( true ) end
+	self:Switch( self:IsOn(), self.mul )
 end
 
 function ENT:PhysicsSimulate( phys, deltatime )
@@ -277,6 +242,10 @@ function ENT:PhysicsSimulate( phys, deltatime )
 	    self:SetEffect(self.OWEffect)
 	end
 	
+	if (self.Mode > 0 and self:IsOn()) then
+		self:Switch( self:IsOn(), self.mul )
+	end
+	
 	local ForceAngle, ForceLinear = self.ForceAngle, self.ForceLinear
 	
 	return ForceAngle, ForceLinear, SIM_LOCAL_ACCELERATION
@@ -284,6 +253,7 @@ end
 
 function ENT:Switch( on, mul )
 	if (!self.Entity:IsValid()) then return false end
+	self.mul = mul
 	
 	local changed = (self:IsOn() ~= on)
 	self:SetOn( on )
@@ -295,7 +265,8 @@ function ENT:Switch( on, mul )
 		end
 		
 		if (mul ~= self.PrevOutput) then
-			self:SetOverlayText( "Thrust = " .. math.Round(self.force*mul*1000)/1000 .. "\nMul: " .. math.Round(self.force*1000)/1000 )
+			--self:SetOverlayText( "Thrust = " .. math.Round(self.force*mul*1000)/1000 .. "\nMul: " .. math.Round(self.force*1000)/1000 )
+			self:ShowOutput( true )
 			self.PrevOutput = mul
 		end
 		
@@ -306,7 +277,8 @@ function ENT:Switch( on, mul )
 		end
 		
 		if (self.PrevOutput) then
-			self:SetOverlayText( "Thrust = Off".."\nMul: "..math.Round(self.force*1000)/1000 )
+			--self:SetOverlayText( "Thrust = Off".."\nMul: "..math.Round(self.force*1000)/1000 )
+			self:ShowOutput( false )
 			self.PrevOutput = nil
 		end
 	end
@@ -317,6 +289,20 @@ function ENT:Switch( on, mul )
 	end
 	
 	return true
+end
+
+function ENT:ShowOutput( on )
+	local mode = "XYZ Local"
+	if (self.Mode == 1) then
+		mode = "XYZ World"
+	elseif (self.Mode == 2) then
+		mode = "XY Local, Z World"
+	end
+	if ( on ) then
+		self:SetOverlayText( "Thrust = " .. math.Round(self.force*self.mul*1000)/1000 .. "\nMul: " .. math.Round(self.force*1000)/1000 .. "\nMode: "..mode )
+	else
+		self:SetOverlayText( "Thrust = Off".."\nMul: "..math.Round(self.force*1000)/1000 .. "\nMode: "..mode )
+	end
 end
 
 function ENT:OnRestore()
@@ -330,8 +316,6 @@ function ENT:OnRestore()
 	local min = self.Entity:OBBMins()
 	
 	self.ThrustOffset 	= Vector( 0, 0, 1)
-	--self.ThrustOffset 	= Vector( 0, 0, max.z )
-	--self.ThrustOffsetR 	= Vector( 0, 0, min.z )
 	self.ForceAngle		= self.ThrustOffset:GetNormalized() * -1
 	
 	self:SetOffset( self.ThrustOffset )

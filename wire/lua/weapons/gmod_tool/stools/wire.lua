@@ -229,7 +229,7 @@ function TOOL:RightClick( trace )
 
 		    if (iNextOutput > table.getn(self.Outputs)) then iNextOutput = 1 end
 		    
-            self.CurrentOutput = self.Outputs[iNextOutput]
+            self.CurrentOutput = self.Outputs[iNextOutput] or "" --if that's nil then somethis is wrong with the ent
 			
 			local txt = "Output: "..self.CurrentOutput
 			if (self.OutputsDesc) and (self.OutputsDesc[self.CurrentOutput]) then
