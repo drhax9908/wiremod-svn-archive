@@ -16,14 +16,15 @@ function ENT:Initialize()
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 
 	self.Inputs = Wire_CreateInputs(self.Entity, { "Hold" })
-	self.Outputs = Wire_CreateOutputs(self.Entity, { "Out" })
+	self.Outputs = WireLib.CreateSpecialOutputs( self.Entity, { "Out" }, { "ENTITY" } )
 end
 
-function ENT:Setup(maxrange, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel, vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity)
+function ENT:Setup(maxrange, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel, vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity, notownersstuff, steamname, colorcheck, colortarget, pcolR, pcolG, pcolB, pcolA, checkbuddylist, onbuddylist )
  	self.MaxRange			= maxrange
 	self.MinRange			= minrange or 1
 	self.TargetPlayer		= players
 	self.NoTargetOwner		= notargetowner
+	self.NoTargetOwnersStuff = notownersstuff
 	self.TargetNPC			= npcs
 	self.NPCName			= npcname
 	self.TargetBeacon		= beacons
@@ -33,19 +34,39 @@ function ENT:Setup(maxrange, players, npcs, npcname, beacons, hoverballs, thrust
 	self.PropModel			= propmodel
 	self.TargetVehicles		= vehicles
 	self.PlayerName			= playername
+	self.SteamName			= steamname
+	self.ColorCheck			= colorcheck
+	self.ColorTarget		= colortarget
+	self.PcolR				= pcolR
+	self.PcolG				= pcolG
+	self.PcolB				= pcolB
+	self.PcolA				= pcolA
 	self.CaseSen			= casesen
 	self.TargetRPGs			= rpgs
 	self.EntFil				= entity
+	self.CheckBuddyList		= checkbuddylist
+	self.OnBuddyList		= onbuddylist
 	self.PaintTarget		= painttarget
 	self.MaxTargets			= math.floor(math.Clamp((maxtargets or 1), 1, server_settings.Int("wire_target_finders_maxtargets", 10)))
 	self.MaxBogeys			= math.floor(math.Clamp((maxbogeys or 1), self.MaxTargets , server_settings.Int("wire_target_finders_maxbogeys", 30)))
 	
+	if (self.SelectedTargets) then --unpaint before clearing
+		for _,ent in pairs(self.SelectedTargets) do
+			self:TargetPainter(ent, false)
+		end
+	end
 	self.SelectedTargets = {}
 	self.SelectedTargetsSel = {}
 	
 	local AdjOutputs = {}
-	for i = 1, self.MaxTargets do table.insert(AdjOutputs, tostring(i)) end
-	Wire_AdjustOutputs(self.Entity, AdjOutputs)
+	local AdjOutputsT = {}
+	for i = 1, self.MaxTargets do
+		table.insert(AdjOutputs, tostring(i))
+		table.insert(AdjOutputsT, "NORMAL")
+		table.insert(AdjOutputs, tostring(i).."_Ent")
+		table.insert(AdjOutputsT, "ENTITY")
+	end
+	WireLib.AdjustSpecialOutputs(self.Entity, AdjOutputs, AdjOutputsT)
 	
 	
 	self.Selector = {}
@@ -69,7 +90,6 @@ function ENT:Setup(maxrange, players, npcs, npcname, beacons, hoverballs, thrust
 	
 	
 	self:ShowOutput(false)
-	//Wire_TriggerOutput(self.Entity, "Out", 0)
 end
 
 function ENT:TriggerInput(iname, value)
@@ -147,8 +167,7 @@ function ENT:SelectorNext(ch)
 	end
 end
 
-//function ENT:SelectorPrev(ch) end
-//function ENT:SelectorHold(ch) end
+//function ENT:SelectorPrev(ch) end --TODO if needed
 
 function ENT:FindName(name)
 	local found = false
@@ -166,6 +185,29 @@ function ENT:FindName(name)
 		found = true
 	end
 	return found
+end
+
+function ENT:FindSteam(steamid)
+	local found = false
+	if string.len(self.SteamName) > 0 then 
+		if string.find(steamid, self.SteamName) then 
+			found = true
+		end
+	else
+		found = true
+	end
+	return found
+end
+
+function ENT:FindColor(contact)
+	if (!self.ColorCheck) then return true end
+	
+	local col = Color(contact:GetColor())
+	if (col.r == self.PcolR) and (col.g == self.PcolG) and (col.b == self.PcolB) and (col.a == self.PcolA) then
+		return self.ColorTarget
+	else
+		return !self.ColorTarget	
+	end
 end
 
 function ENT:FindModel(name)
@@ -194,13 +236,36 @@ end
 
 function ENT:FindEntity(name)
 	local found = false
-	if string.len(self.EntFil) > 0 then 
+	if string.len(self.EntFil) > 0 then
 		if string.find(string.lower(name), string.lower(self.EntFil)) then 
 			found = true
 		end
 	end
 	return found
 end
+
+
+//Prop Protection Buddy List Support (EXPERIMENTAL!!!)
+function ENT:CheckTheBuddyList(Ami)
+	if (!self.CheckBuddyList) then return true end
+	
+	local info = Ami:GetInfo( "propprotection_ami"..self:GetPlayer():EntIndex() ) --am I on their list
+	if ( info == "0" ) then
+		return !self.OnBuddyList
+	end
+	return self.OnBuddyList
+end
+
+/*function ENT:BelongsToBuddy(contact)
+	if (!self.CheckBuddyList) then return true end
+	
+	local info = self:GetOwner():GetInfo( "propprotection_ami"..contact:GetPlayer():EntIndex() )
+	if ( info == "0" ) then
+		return false
+	else
+		return true
+	end
+end*/
 
 
 function ENT:Think()
@@ -217,16 +282,17 @@ function ENT:Think()
 		local mypos = self.Entity:GetPos()
 		local bogeys,dists = {},{}
 		for _,contact in pairs(contacts) do
-			// Multiple if statements replaced with one long one self.TargetVehicles
-			local contactClass = contact:GetClass()			if 	((self.TargetNPC)			and (string.find(contactClass, "^npc_.*")) and (contactClass ~= "npc_heli_avoidsphere") and (self:FindNPCName(contactClass))) or
-				((self.TargetPlayer)		and (contactClass == "player") and ((!self.NoTargetOwner) or (self:GetPlayer() != contact)) and (self:FindName(contact:GetName()))) or
+			local contactClass = contact:GetClass()
+			if 	( !self.NoTargetOwnersStuff or (contactClass == "player") or ( contact:GetOwner() != self:GetPlayer() and !self:checkOwnership( contact ) ) ) and (
+				((self.TargetNPC)			and (string.find(contactClass, "^npc_.*")) and (contactClass ~= "npc_heli_avoidsphere") and (self:FindNPCName(contactClass))) or
+				((self.TargetPlayer)		and (contactClass == "player") and (!self.NoTargetOwner or self:GetPlayer() != contact) and self:FindName(contact:GetName()) and self:FindSteam(contact:SteamID()) and self:FindColor(contact) and self:CheckTheBuddyList(contact) ) or
 				((self.TargetBeacon)		and (contactClass == "gmod_wire_locator")) or
 				((self.TargetRPGs)			and (contactClass == "rpg_missile")) or
 				((self.TargetHoverballs)	and (contactClass == "gmod_hoverball" or contactClass == "gmod_wire_hoverball")) or
-				((self.TargetThrusters)		and (contactClass == "gmod_thruster" or contactClass == "gmod_wire_thruster")) or
+				((self.TargetThrusters)		and (contactClass == "gmod_thruster" or contactClass == "gmod_wire_thruster" or contactClass == "gmod_wire_vectorthruster")) or
 				((self.TargetProps)			and (contactClass == "prop_physics") and (self:FindModel(contact:GetModel()))) or
 				((self.TargetVehicles)		and (string.find(contactClass, "prop_vehicle"))) or
-				(self:FindEntity(contactClass))
+				(self:FindEntity(contactClass)) )
 			then
 				local dist = (contact:GetPos() - mypos):Length()
 				if (dist >= self.MinRange) then
@@ -263,9 +329,11 @@ function ENT:Think()
 					self.SelectedTargets[i] = table.remove(self.Bogeys, 1)
 					if (self.PaintTarget) then self:TargetPainter(self.SelectedTargets[i], true) end
 					Wire_TriggerOutput(self.Entity, tostring(i), 1)
+					Wire_TriggerOutput(self.Entity, tostring(i).."_Ent", self.SelectedTargets[i])
 				else
 					self.SelectedTargets[i] = nil
 					Wire_TriggerOutput(self.Entity, tostring(i), 0)
+					Wire_TriggerOutput(self.Entity, tostring(i).."_Ent", NULL)
 				end
 			end
 		end
@@ -354,4 +422,86 @@ function ENT:ShowOutput(value)
 	if (self.Inputs.Hold) and (self.Inputs.Hold.Value > 0) then txt = txt .. " - Locked" end
 
 	self:SetOverlayText(txt)
+end
+
+
+
+//
+//	PropProtection support 
+//
+//	Uses code from uclip for checking ownership	
+//
+-- Written by Team Ulysses, http://ulyssesmod.net/
+local hasPropProtection = false -- Chaussette's Prop Protection (preferred over PropSecure)
+local propProtectionFn -- Function to call to see if a prop belongs to a player. We have to fetch it from a local so we'll store it here.
+
+local hasPropSecure = false -- Prop Secure by Conna
+local hasProtector = false -- Protector by Conna
+
+local noProtection = false -- If there's no protection whatsoever, this is flagged. 
+-- We need this flag because with a protector, we default to _not_ being able to go through things.
+-- This flag saves us major memory/bandwidth when there's no protection
+
+-- We'll check status of protectors in this init
+local function init()
+	local t = hook.GetTable()
+	local fn
+	if t.CanTool[ 0 ] then -- ULib
+		fn = t.CanTool[ 0 ].PropProtection
+	else
+		fn = t.CanTool.PropProtection
+	end
+	
+	hasPropProtection = type( fn ) == "function"
+	
+	if hasPropProtection then
+		-- We're going to get the function we need now. It's local so this is a bit dirty			
+		local gi = debug.getinfo( fn )		
+		for i=1,gi.nups do
+			if debug.getupvalue( fn, i ) == "Appartient" then
+				local junk
+				junk, propProtectionFn = debug.getupvalue( fn, i )
+				break
+			end
+		end
+	end
+	
+	hasPropSecure = type( PropSecure ) == "table"
+	hasProtector = type( Protector ) == "table"
+	
+	if not hasPropProtection and not hasPropSecure and not hasProtector then
+		noProtection = true
+	end
+end
+hook.Add( "Initialize", "WireTargetFinderInitialize", init )
+
+-- This function checks the protector to see if ownership has changed from what we think it is. Notifies player too.	
+local function updateOwnership( ply, ent )
+	if noProtection then return end -- No point on going on	
+	if not ent.WireTargetFinder then ent.WireTargetFinder = {} end -- Initialize table
+	
+	local owns
+	if hasPropProtection then -- Chaussette's Prop Protection (preferred over PropSecure)
+		owns = propProtectionFn( ply, ent )
+	elseif hasPropSecure then -- PropSecure
+		owns = PropSecure.IsPlayers( ply, ent )
+	elseif hasProtector then -- Protector
+		owns = Protector.Owner( ent ) == ply:UniqueID()
+	end
+	
+	if owns == false then -- More convienent to store as nil, takes less memory!
+		owns = nil
+	end
+	
+	if ent.WireTargetFinder[ ply ] ~= owns then
+		ent.WireTargetFinder[ ply ] = owns
+	end
+end
+
+function ENT:checkOwnership( ent )
+	if noProtection then return true end -- No protection, they own everything.
+	if (!self.CheckBuddyList) then return true end
+	
+	updateOwnership( self:GetPlayer(), ent )	-- Make sure server and the client are current
+	return ent.WireTargetFinder[ self:GetPlayer() ]
 end

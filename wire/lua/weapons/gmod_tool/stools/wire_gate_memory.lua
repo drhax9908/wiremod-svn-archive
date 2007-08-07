@@ -36,7 +36,6 @@ function TOOL:LeftClick( trace )
 	
 	local ply = self:GetOwner()
 	
-
 	// Get client's CVars
 	local action			= self:GetClientInfo( "action" )
 	local noclip			= self:GetClientNumber( "noclip" ) == 1
@@ -60,16 +59,7 @@ function TOOL:LeftClick( trace )
 	
 	local min = wire_gate_memory:OBBMins()
 	wire_gate_memory:SetPos( trace.HitPos - trace.HitNormal * min.z )
-
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_gate_memory, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_gate_memory:GetPhysicsObject():EnableCollisions( false )
-		wire_gate_memory.nocollide = true
-	end*/
+	
 	local const = WireLib.Weld(wire_gate_memory, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireGateMemory")
@@ -78,7 +68,6 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 	
-
 	ply:AddCleanup( "wire_gate_memorys", wire_gate_memory )
 	
 	return true

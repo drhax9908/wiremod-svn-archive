@@ -9,7 +9,6 @@ if ( CLIENT ) then
 	language.Add( "Tool_wire_target_finder_desc", "Spawns a target finder beacon for use with the wire system." )
 	language.Add( "Tool_wire_target_finder_0", "Primary: Create/Update Target Finder Beacon" )
 	
-	//language.Add( "WireTargetFinderTool_range", "Range:" )
 	language.Add( "WireTargetFinderTool_players", "Target players:" )
 	language.Add( "WireTargetFinderTool_npcs", "Target NPCs:" )
 	language.Add( "WireTargetFinderTool_npcname", "NPC Filter:" )
@@ -24,6 +23,13 @@ if ( CLIENT ) then
 	language.Add( "WireTargetFinderTool_PaintTarget", "Paint Target:" )
 	language.Add( "WireTargetFinderTool_casesen", "Case Sensitive:" )
 	language.Add( "WireTargetFinderTool_playername", "Name Filter:" )
+	language.Add( "WireTargetFinderTool_steamname", "SteamID Filter:" )
+	language.Add( "WireTargetFinderTool_colorcheck", "Color Filter:")
+	language.Add( "WireTargetFinderTool_colortarget", "Color Target/Skip:")
+	language.Add( "WireTargetFinderTool_pcolR", "Red:")
+	language.Add( "WireTargetFinderTool_pcolG", "Green:")
+	language.Add( "WireTargetFinderTool_pcolB", "Blue:")
+	language.Add( "WireTargetFinderTool_pcolA", "Alpha:")
 	language.Add( "WireTargetFinderTool_entity", "Entity Name:" )
 	language.Add( "WireTargetFinderTool_minrange", "Minimum Range:" )
 	language.Add( "WireTargetFinderTool_maxrange", "Maximum Range:" )
@@ -31,6 +37,9 @@ if ( CLIENT ) then
 	language.Add( "WireTargetFinderTool_PaintTarget_desc", "Paints currently selected target(s)." )
 	language.Add( "WireTargetFinderTool_maxtargets", "Maximum number of targets to track:" )
 	language.Add( "WireTargetFinderTool_notowner", "Do not target owner:" )
+	language.Add( "WireTargetFinderTool_notownersstuff", "Do not target owner's stuff:" )
+	language.Add( "WireTargetFinderTool_checkbuddylist", "Check Propprotection Buddy List (EXPERIMENTAL!):" )
+	language.Add( "WireTargetFinderTool_onbuddylist", "Target Only Buddys (EXPERIMENTAL!):" )
 	language.Add( "WireTargetFinderTool_MaxBogeys", "Max number of bogeys (closest):" )
 	language.Add( "WireTargetFinderTool_MaxBogeys_desc", "Set to 0 for all within range, this needs to be atleast as many as Max Targets." )
 	
@@ -40,10 +49,6 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_target_finders',30)
-	// The Multi-Target finder uses the same sbox CVar for regular Target Finders
-
-	// Server CVar to control maximum targets that players
-	// can find per Multi-Target Finder (to control lag, etc.)
 	CreateConVar("wire_target_finders_maxtargets",10)
 	CreateConVar("wire_target_finders_maxbogeys",30)
 end
@@ -60,13 +65,23 @@ TOOL.ClientConVar[ "props" ] 		= "0"
 TOOL.ClientConVar[ "propmodel" ] 	= ""
 TOOL.ClientConVar[ "vehicles" ] 	= "0"
 TOOL.ClientConVar[ "playername" ] 	= ""
+TOOL.ClientConVar[ "steamname" ] 	= ""
+TOOL.ClientConVar[ "colorcheck" ]	= "0"
+TOOL.ClientConVar[ "colortarget" ]	= "0"
+TOOL.ClientConVar[ "pcolR" ]		= "255"
+TOOL.ClientConVar[ "pcolG" ]		= "255"
+TOOL.ClientConVar[ "pcolB" ]		= "255"
+TOOL.ClientConVar[ "pcolA" ]		= "255"
 TOOL.ClientConVar[ "casesen" ] 		= "0"
 TOOL.ClientConVar[ "rpgs" ] 		= "0"
 TOOL.ClientConVar[ "painttarget" ]	= "1"
 TOOL.ClientConVar[ "maxtargets" ]	= "1"
 TOOL.ClientConVar[ "maxbogeys" ]	= "1"
 TOOL.ClientConVar[ "notargetowner" ]	= "0"
+TOOL.ClientConVar[ "notownersstuff" ]	= "0"
 TOOL.ClientConVar[ "entityfil" ] 		= ""
+TOOL.ClientConVar[ "checkbuddylist" ]	= "0"
+TOOL.ClientConVar[ "onbuddylist" ]	= "0"
 
 TOOL.Model = "models/props_lab/powerbox02d.mdl"
 
@@ -82,48 +97,68 @@ function TOOL:LeftClick(trace)
 	
 	// Get client's CVars
 	local minrange		= self:GetClientNumber("minrange")
-	local range		= self:GetClientNumber("maxrange")
+	local range			= self:GetClientNumber("maxrange")
 	local players		= (self:GetClientNumber("players") ~= 0)
-	local npcs		= (self:GetClientNumber("npcs") ~= 0)
+	local npcs			= (self:GetClientNumber("npcs") ~= 0)
 	local npcname		= self:GetClientInfo("npcname")
 	local beacons		= (self:GetClientNumber("beacons") ~= 0)
 	local hoverballs	= (self:GetClientNumber("hoverballs") ~= 0)
 	local thrusters		= (self:GetClientNumber("thrusters") ~= 0)
-	local props		= (self:GetClientNumber("props") ~= 0)
+	local props			= (self:GetClientNumber("props") ~= 0)
 	local propmodel		= self:GetClientInfo("propmodel")
 	local vehicles		= (self:GetClientNumber("vehicles") ~= 0)
 	local playername	= self:GetClientInfo("playername")
+	local steamname		= self:GetClientInfo("steamname")
+	local colorcheck	= (self:GetClientNumber("colorcheck") ~= 0)
+	local colortarget	= (self:GetClientNumber("colortarget") ~= 0)
+	local pcolR			= self:GetClientNumber("pcolR")
+	local pcolG			= self:GetClientNumber("pcolG")
+	local pcolB			= self:GetClientNumber("pcolB")
+	local pcolA			= self:GetClientNumber("pcolA")
 	local casesen		= (self:GetClientNumber("casesen") ~= 0)
-	local rpgs 		= (self:GetClientNumber("rpgs") ~= 0)
+	local rpgs 			= (self:GetClientNumber("rpgs") ~= 0)
 	local painttarget 	= (self:GetClientNumber("painttarget") ~= 0)
 	local maxtargets	= self:GetClientNumber("maxtargets")
 	local maxbogeys		= self:GetClientNumber("maxbogeys")
 	local notargetowner	= (self:GetClientNumber("notargetowner") != 0)
+	local notownersstuff	= (self:GetClientNumber("notownersstuff") != 0)
 	local entity		= self:GetClientInfo("entityfil")
+	local checkbuddylist = (self:GetClientNumber("checkbuddylist") != 0)
+	local onbuddylist	= (self:GetClientNumber("onbuddylist") != 0)
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_target_finder" && trace.Entity.pl == ply ) then
 		//trace.Entity:Setup(range, players, npcs, npcname, beacons, hoverballs, thrusters, rpgs, painttarget)
-		trace.Entity:Setup(range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity)
-
-		trace.Entity:GetTable().range		= range
-		trace.Entity:GetTable().players		= players
-		trace.Entity:GetTable().npcs		= npcs
-		trace.Entity:GetTable().npcname		= npcname
-		trace.Entity:GetTable().beacons		= beacons
-		trace.Entity:GetTable().hoverballs	= hoverballs
-		trace.Entity:GetTable().thrusters	= thrusters
-		trace.Entity:GetTable().props		= props
-		trace.Entity:GetTable().propmodel	= propmodel
-		trace.Entity:GetTable().vehicles	= vehicles
-		trace.Entity:GetTable().playername	= playername
-		trace.Entity:GetTable().casesen		= casesen
-		trace.Entity:GetTable().rpgs		= rpgs
-		trace.Entity:GetTable().painttarget	= painttarget
-		trace.Entity:GetTable().minrange	= minrange
-		trace.Entity:GetTable().maxtargets	= maxtargets
-		trace.Entity:GetTable().maxbogeys	= maxbogeys
-		trace.Entity:GetTable().notargetowner	= notargetowner
-		trace.Entity:GetTable().entity		= entity
+		trace.Entity:Setup(range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity, notownersstuff, steamname, colorcheck, colortarget, pcolR, pcolG, pcolB, pcolA, checkbuddylist, onbuddylist)
+		
+		trace.Entity.range			= range
+		trace.Entity.players		= players
+		trace.Entity.npcs			= npcs
+		trace.Entity.npcname		= npcname
+		trace.Entity.beacons		= beacons
+		trace.Entity.hoverballs		= hoverballs
+		trace.Entity.thrusters		= thrusters
+		trace.Entity.props			= props
+		trace.Entity.propmodel		= propmodel
+		trace.Entity.vehicles		= vehicles
+		trace.Entity.playername		= playername
+		trace.Entity.steamname		= steamname
+		trace.Entity.colorcheck		= colorcheck
+		trace.Entity.colortarget	= colortarget
+		trace.Entity.pcolR			= pcolR
+		trace.Entity.pcolG			= pcolG
+		trace.Entity.pcolB			= pcolB
+		trace.Entity.pcolA			= pcolA
+		trace.Entity.casesen		= casesen
+		trace.Entity.rpgs			= rpgs
+		trace.Entity.painttarget	= painttarget
+		trace.Entity.minrange		= minrange
+		trace.Entity.maxtargets		= maxtargets
+		trace.Entity.maxbogeys		= maxbogeys
+		trace.Entity.notargetowner	= notargetowner
+		trace.Entity.notownersstuff	= notownersstuff
+		trace.Entity.checkbuddylist	= checkbuddylist
+		trace.Entity.onbuddylist	= onbuddylist
+		trace.Entity.entity			= entity
 		
 		return true
 	end	
@@ -132,16 +167,11 @@ function TOOL:LeftClick(trace)
 	
 	local Ang = trace.HitNormal:Angle()
 	
-	//local wire_target_finder = MakeWireTargetFinder( ply, trace.HitPos, Ang, range, players, npcs, npcname, beacons, hoverballs, thrusters, rpgs, painttarget )
-	local wire_target_finder = MakeWireTargetFinder( ply, trace.HitPos, Ang, range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity )
+	local wire_target_finder = MakeWireTargetFinder( ply, trace.HitPos, Ang, range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity, notownersstuff, steamname, colorcheck, colortarget, pcolR, pcolG, pcolB, pcolA, checkbuddylist, onbuddylist )
 	
 	local min = wire_target_finder:OBBMins()
 	wire_target_finder:SetPos( trace.HitPos - trace.HitNormal*min.z )
 	
-	// Don't weld to world
-	/*if ( trace.Entity:IsValid() ) then
-		const, nocollide = constraint.Weld( wire_target_finder, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0, true )
-	end*/
 	local const = WireLib.Weld(wire_target_finder, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireTargetFinder")
@@ -171,7 +201,7 @@ end
 
 if SERVER then
 	
-	function MakeWireTargetFinder(pl, Pos, Ang, range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity, Vel, aVel, frozen )
+	function MakeWireTargetFinder(pl, Pos, Ang, range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity, notownersstuff, steamname, colorcheck, colortarget, pcolR, pcolG, pcolB, pcolA, checkbuddylist, onbuddylist, Vel, aVel, frozen )
 		if (!pl:CheckLimit("wire_target_finders")) then return end
 		
 		local wire_target_finder = ents.Create("gmod_wire_target_finder")
@@ -181,8 +211,7 @@ if SERVER then
 		wire_target_finder:Spawn()
 		wire_target_finder:Activate()
 		
-		//wire_target_finder:Setup(range, players, npcs, npcname, beacons, hoverballs, thrusters, rpgs, painttarget)
-		wire_target_finder:Setup(range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity)
+		wire_target_finder:Setup(range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity, notownersstuff, steamname, colorcheck, colortarget, pcolR, pcolG, pcolB, pcolA, checkbuddylist, onbuddylist)
 		wire_target_finder:SetPlayer(pl)
 		
 		local ttable = {
@@ -197,17 +226,27 @@ if SERVER then
 			propmodel	= propmodel,
 			vehicles	= vehicles,
 			playername	= playername,
+			steamname	= steamname,
+			colorcheck	= colorcheck,
+			colortarget = colortarget,
+			pcolR		= pcolR,
+			pcolG		= pcolG,
+			pcolB		= pcolB,
+			pcolA		= pcolA,
 			casesen		= casesen,
 			rpgs		= rpgs,
-			painttarget 	= painttarget,
-			pl		= pl,
+			painttarget = painttarget,
+			pl			= pl,
 			nocollide	= nocollide,
 			description	= description,
 			minrange	= minrange,
 			maxtargets	= maxtargets,
 			maxbogeys	= maxbogeys,
 			notargetowner 	= notargetowner,
-			entity 		= entity
+			notownersstuff	= notownersstuff,
+			checkbuddylist 	= checkbuddylist,
+			onbuddylist		= onbuddylist,
+			entity 			= entity,
 		}
 		
 		table.Merge( wire_target_finder:GetTable(), ttable )
@@ -217,7 +256,7 @@ if SERVER then
 		return wire_target_finder
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_target_finder", MakeWireTargetFinder, "Pos", "Ang", "range", "players", "npcs", "npcname", "beacons", "hoverballs", "thrusters", "props", "propmodel", "vehicles", "playername", "casesen", "rpgs", "painttarget", "minrange", "maxtargets", "maxbogeys", "notargetowner", "entity","Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_target_finder", MakeWireTargetFinder, "Pos", "Ang", "range", "players", "npcs", "npcname", "beacons", "hoverballs", "thrusters", "props", "propmodel", "vehicles", "playername", "casesen", "rpgs", "painttarget", "minrange", "maxtargets", "maxbogeys", "notargetowner", "entity", "notownersstuff", "steamname", "colorcheck", "colortarget", "pcolR", "pcolG", "pcolB", "pcolA", "checkbuddylist", "onbuddylist","Vel", "aVel", "frozen")
 
 end
 
@@ -299,6 +338,11 @@ function TOOL.BuildCPanel(panel)
 	})
 	
 	panel:AddControl("CheckBox", {
+		Label = "#WireTargetFinderTool_notownersstuff",
+		Command = "wire_target_finder_notownersstuff"
+	})
+	
+	panel:AddControl("CheckBox", {
 		Label = "#WireTargetFinderTool_npcs",
 		Command = "wire_target_finder_npcs"
 	})
@@ -367,5 +411,64 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_target_finder_entityfil",
 		MaxLength = "50"
 	})
+	
+	panel:AddControl("TextBox", {
+		Label = "#WireTargetFinderTool_steamname",
+		Command = "wire_target_finder_steamname",
+		MaxLength = "50"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireTargetFinderTool_colorcheck",
+		Command = "wire_target_finder_colorcheck"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireTargetFinderTool_colortarget",
+		Command = "wire_target_finder_colortarget"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireTargetFinderTool_pcolR",
+		Type = "Integer",
+		Min = "0",
+		Max = "255",
+		Command = "wire_target_finder_pcolR"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireTargetFinderTool_pcolG",
+		Type = "Integer",
+		Min = "0",
+		Max = "255",
+		Command = "wire_target_finder_pcolG"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireTargetFinderTool_pcolB",
+		Type = "Integer",
+		Min = "0",
+		Max = "255",
+		Command = "wire_target_finder_pcolB"
+	})
+	
+	panel:AddControl("Slider", {
+		Label = "#WireTargetFinderTool_pcolA",
+		Type = "Integer",
+		Min = "0",
+		Max = "255",
+		Command = "wire_target_finder_pcolA"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireTargetFinderTool_checkbuddylist",
+		Command = "wire_target_finder_checkbuddylist"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireTargetFinderTool_onbuddylist",
+		Command = "wire_target_finder_onbuddylist"
+	})
+	
 end
 	

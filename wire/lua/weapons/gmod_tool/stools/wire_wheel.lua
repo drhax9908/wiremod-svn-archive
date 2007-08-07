@@ -2,7 +2,8 @@
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Wheel"
 TOOL.Command		= nil
-TOOL.ConfigName		= nil
+TOOL.ConfigName		= ""
+
 
 TOOL.ClientConVar[ "torque" ] 		= "3000"
 TOOL.ClientConVar[ "friction" ] 	= "1"
@@ -11,10 +12,6 @@ TOOL.ClientConVar[ "forcelimit" ] 	= "0"
 TOOL.ClientConVar[ "fwd" ] 			= "1"	// Forward
 TOOL.ClientConVar[ "bck" ] 			= "-1"	// Back
 TOOL.ClientConVar[ "stop" ] 		= "0"	// Stop
-TOOL.ClientConVar[ "model" ] 		= "models/props_vehicles/carparts_wheel01a.mdl"
-TOOL.ClientConVar[ "rx" ] 			= "90"
-TOOL.ClientConVar[ "ry" ] 			= "0"
-TOOL.ClientConVar[ "rz" ] 			= "90"
 
 
 // Add Default Language translation (saves adding it to the txt files)
@@ -64,7 +61,7 @@ function TOOL:LeftClick( trace )
 	local friction 		= self:GetClientNumber( "friction" )
 	local nocollide		= self:GetClientNumber( "nocollide" )
 	local limit			= self:GetClientNumber( "forcelimit" )
-	local model			= self:GetClientInfo( "model" )
+	local model			= ply:GetInfo( "wheel_model" )
 	
 	local fwd			= self:GetClientNumber( "fwd" )
 	local bck			= self:GetClientNumber( "bck" )
@@ -77,11 +74,11 @@ function TOOL:LeftClick( trace )
 	
 	
 	// Create the wheel
-	local wheelEnt = MakeWireWheel( ply, trace.HitPos, Angle(0,0,0), model, nil, nil, nil, fwd, bck, stop, toggle )
+	local wheelEnt = MakeWireWheel( ply, trace.HitPos, Angle(0,0,0), model, nil, nil, nil, fwd, bck, stop, torque )
 	
 	
 	// Make sure we have our wheel angle
-	self.wheelAngle = Angle( tonumber(self:GetClientInfo( "rx" )), tonumber(self:GetClientInfo( "ry" )), tonumber(self:GetClientInfo( "rz" )) )
+	self.wheelAngle = Angle( tonumber(ply:GetInfo( "wheel_rx" )), tonumber(ply:GetInfo( "wheel_ry" )), tonumber(ply:GetInfo( "wheel_rz" )) )
 	
 	local TargetAngle = trace.HitNormal:Angle() + self.wheelAngle	
 	wheelEnt:SetAngles( TargetAngle )
@@ -151,10 +148,10 @@ function TOOL:RightClick( trace )
 	local bck			= self:GetClientNumber( "bck" )
 	local stop			= self:GetClientNumber( "stop" )
 		
-	wheelEnt:GetTable():SetTorque( torque )
-	wheelEnt:GetTable():SetFwd( fwd )
-	wheelEnt:GetTable():SetBck( bck )
-	wheelEnt:GetTable():SetStop( stop )
+	wheelEnt:SetTorque( torque )
+	wheelEnt:SetFwd( fwd )
+	wheelEnt:SetBck( bck )
+	wheelEnt:SetStop( stop )
 
 	return true
 
@@ -165,7 +162,7 @@ if ( SERVER ) then
 	/*---------------------------------------------------------
 	   For duplicator, creates the wheel.
 	---------------------------------------------------------*/
-	function MakeWireWheel( pl, Pos, Ang, Model, Vel, aVel, frozen, fwd, bck, stop, toggle, direction, Axis, Data )
+	function MakeWireWheel( pl, Pos, Ang, Model, Vel, aVel, frozen, fwd, bck, stop, BaseTorque, direction, axis, Data )
 		
 		if ( !pl:CheckLimit( "wire_wheels" ) ) then return false end
 		
@@ -181,8 +178,6 @@ if ( SERVER ) then
 		
 		duplicator.DoGenericPhysics( wheel, pl, Data )
 		
-	
-		wheel.model = model
 		wheel.fwd = fwd
 		wheel.bck = bck
 		wheel.stop = stop
@@ -199,11 +194,8 @@ if ( SERVER ) then
 			wheel:SetDirection( direction )
 		end
 		
-		if ( toggle ) then
-			wheel:SetToggle( toggle )
-		end
-		
-		
+		wheel:SetBaseTorque( BaseTorque )
+		wheel:UpdateOverlayText()
 		
 		pl:AddCount( "wire_wheels", wheel )
 		
@@ -211,7 +203,7 @@ if ( SERVER ) then
 		
 	end
 
-	duplicator.RegisterEntityClass( "gmod_wire_wheel", MakeWireWheel, "Pos", "Ang", "model", "Vel", "aVel", "frozen", "fwd", "bck", "stop", "Axis", "Data" )
+	duplicator.RegisterEntityClass( "gmod_wire_wheel", MakeWireWheel, "Pos", "Ang", "model", "Vel", "aVel", "frozen", "fwd", "bck", "stop", "BaseTorque", "direction", "Axis", "Data" )
 	
 	
 end
@@ -250,11 +242,88 @@ end
 ---------------------------------------------------------*/
 function TOOL:Think()
 
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" )) then
-		self.wheelAngle = Angle( tonumber(self:GetClientInfo( "rx" )), tonumber(self:GetClientInfo( "ry" )), tonumber(self:GetClientInfo( "rz" )) )
-		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetOwner():GetInfo( "wheel_model" )) then
+		self.wheelAngle = Angle( tonumber(self:GetOwner():GetInfo( "wheel_rx" )), tonumber(self:GetOwner():GetInfo( "wheel_ry" )), tonumber(self:GetOwner():GetInfo( "wheel_rz" )) )
+		self:MakeGhostEntity( self:GetOwner():GetInfo( "wheel_model" ), Vector(0,0,0), Angle(0,0,0) )
 	end
 	
 	self:UpdateGhostWireWheel( self.GhostEntity, self:GetOwner() )
 	
+end
+
+
+
+function TOOL.BuildCPanel( CPanel )
+
+	// HEADER
+	CPanel:AddControl( "Header", { Text = "#Tool_wire_wheel_name", Description	= "#Tool_wire_wheel_desc" }  )
+	
+	local Options = { Default = {	wire_wheel_torque		= "3000",
+									wire_wheel_friction		= "0",
+									wire_wheel_nocollide	= "1",
+									wire_wheel_forcelimit	= "0",
+									wire_wheel_fwd			= "1",
+									wire_wheel_bck			= "-1",
+									wire_wheel_stop			= "0", } }
+									
+	local CVars = { "wire_wheel_torque", "wire_wheel_friction", "wire_wheel_nocollide", "wire_wheel_forcelimit", "wire_wheel_fwd", "wire_wheel_bck", "wire_wheel_stop" }
+	
+	CPanel:AddControl( "ComboBox", { Label = "#Presets",
+									 MenuButton = 1,
+									 Folder = "wire_wheel",
+									 Options = Options,
+									 CVars = CVars } )
+									 
+	CPanel:AddControl( "Slider", { Label = "#WireWheelTool_group",
+									 Description = "#WireWheelTool_group_desc",
+									 Type = "Float",
+									 Min = -10,
+									 Max = 10,
+									 Command = "wire_wheel_fwd" } )
+									 
+	CPanel:AddControl( "Slider", { Label = "#WireWheelTool_group_stop",
+									 Description = "#WireWheelTool_group_desc",
+									 Type = "Float",
+									 Min = -10,
+									 Max = 10,
+									 Command = "wire_wheel_stop" } )
+									 
+	CPanel:AddControl( "Slider", { Label = "#WireWheelTool_group_reverse",
+									 Description = "#WireWheelTool_group_desc",
+									 Type = "Float",
+									 Min = -10,
+									 Max = 10,
+									 Command = "wire_wheel_bck" } )
+									 
+	CPanel:AddControl( "PropSelect", { Label = "#WheelTool_model",
+									 ConVar = "wheel_model",
+									 Category = "Wheels",
+									 Models = list.Get( "WheelModels" ) } )
+									 
+	CPanel:AddControl( "Slider", { Label = "#WheelTool_torque",
+									 Description = "#WheelTool_torque_desc",
+									 Type = "Float",
+									 Min = 10,
+									 Max = 10000,
+									 Command = "wire_wheel_torque" } )
+									 
+									 
+	CPanel:AddControl( "Slider", { Label = "#WheelTool_forcelimit",
+									 Description = "#WheelTool_forcelimit_desc",
+									 Type = "Float",
+									 Min = 0,
+									 Max = 50000,
+									 Command = "wire_wheel_forcelimit" } )
+									 
+	CPanel:AddControl( "Slider", { Label = "#WheelTool_friction",
+									 Description = "#WheelTool_friction_desc",
+									 Type = "Float",
+									 Min = 0,
+									 Max = 100,
+									 Command = "wire_wheel_friction" } )
+									 
+	CPanel:AddControl( "CheckBox", { Label = "#WheelTool_nocollide",
+									 Description = "#WheelTool_nocollide_desc",
+									 Command = "wire_wheel_nocollide" } )
+									 
 end

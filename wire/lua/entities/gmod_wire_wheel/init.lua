@@ -21,7 +21,7 @@ function ENT:Initialize()
 	self:SetToggle( false )
 	
 	self.ToggleState = false
-	self.BaseTorque = 0
+	self.BaseTorque = 1
 	self.TorqueScale = 1
 	self.Breaking = 0
 	self.SpeedMod = 0
@@ -37,17 +37,25 @@ end
 function ENT:SetBaseTorque( base )
 
 	self.BaseTorque = base
+	if ( self.BaseTorque == 0 ) then self.BaseTorque = 1 end
+	self:UpdateOverlayText()
+
+end
+
+/*---------------------------------------------------------
+   Sets the base torque
+---------------------------------------------------------*/
+function ENT:UpdateOverlayText()
 	
-	txt = "Torque: " .. math.floor( self.TorqueScale * self.BaseTorque )
-	//self.BaseClass.BaseClass.SetOverlayText(self, txt)
-	self:SetOverlayText(txt)
+	self:SetOverlayText( "Torque: " .. math.floor( self.BaseTorque ) )
+
 end
 
 /*---------------------------------------------------------
    Sets the axis (world space)
 ---------------------------------------------------------*/
 function ENT:SetAxis( vec )
-
+	
 	self.Axis = self.Entity:GetPos() + vec * 512
 	self.Axis = self.Entity:NearestPoint( self.Axis )
 	self.Axis = self.Entity:WorldToLocal( self.Axis )
@@ -81,6 +89,14 @@ end
 
 
 /*---------------------------------------------------------
+   Name: Think
+   Desc: Entity's think function. 
+---------------------------------------------------------*/
+function ENT:Think()
+end
+
+
+/*---------------------------------------------------------
    Name: OnTakeDamage
    Desc: Entity takes damage
 ---------------------------------------------------------*/
@@ -96,11 +112,14 @@ function ENT:SetMotor( Motor )
 end
 
 function ENT:GetMotor()
-	
+
 	if (!self.Motor) then
 		self.Motor = constraint.FindConstraintEntity( self.Entity, "Motor" )
+		if (!self.Motor or !self.Motor:IsValid()) then
+			self.Motor = nil
+		end
 	end
-	
+
 	return self.Motor
 end
 
@@ -140,13 +159,14 @@ function ENT:Forward( mul )
 	// Is this key invalid now? If so return false to remove it
 	if ( !self.Entity:IsValid() ) then return false end
 	local Motor = self:GetMotor()
-	if ( !Motor:IsValid() ) then
+	if ( Motor and !Motor:IsValid() ) then
 		Msg("Wheel doesn't have a motor!\n"); 
 		return false
+	elseif ( !Motor ) then return false
 	end
 
 	mul = mul or 1
-	local mdir = Motor:GetTable().direction
+	local mdir = Motor.direction
 	local Speed = mdir * mul * self.TorqueScale * (1 + self.SpeedMod)
 	
 	txt = "Torque: " .. math.floor( self.TorqueScale * self.BaseTorque ) .. "\nSpeed: " .. (mdir * mul * (1 + self.SpeedMod)) .. "\nBreak: " .. self.Breaking .. "\nSpeedMod: " .. math.floor( self.SpeedMod * 100 ) .. "%"
@@ -183,7 +203,7 @@ function ENT:TriggerInput(iname, value)
 	elseif (iname == "C: SpeedMod") then
 		self.SpeedMod = (value / 100)
 	end
-	return self:Forward( self.Go )
+	self:Forward( self.Go )
 end
 
 
@@ -214,6 +234,8 @@ end
    Todo? Scale Motor:GetTable().direction?
 ---------------------------------------------------------*/
 function ENT:SetTorque( torque )
+
+	if ( self.BaseTorque == 0 ) then self.BaseTorque = 1 end
 	
 	self.TorqueScale = torque / self.BaseTorque
 	

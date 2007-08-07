@@ -43,7 +43,7 @@ function TOOL:LeftClick( trace )
 	local force_max		= self:GetClientNumber( "force_max" )
 	local model			= self:GetClientInfo( "model" )
 	local bidir			= (self:GetClientNumber( "bidir" ) ~= 0)
-	local collision		= (self:GetClientNumber( "collision" ) == 0)
+	local nocollide		= (self:GetClientNumber( "collision" ) == 0)
 	local sound			= (self:GetClientNumber( "sound" ) ~= 0)
 	local oweffect		= self:GetClientInfo( "oweffect" )
 	local uweffect		= self:GetClientInfo( "uweffect" )
@@ -77,8 +77,11 @@ function TOOL:LeftClick( trace )
 			trace.Entity.uweffect	= uweffect
 			trace.Entity.owater		= owater
 			trace.Entity.uwater		= uwater
+			trace.Entity.nocollide	= nocollide
 			trace.Entity.mode		= mode
 			trace.Entity.angle		= angle
+			
+			if ( nocollide == true ) then trace.Entity:GetPhysicsObject():EnableCollisions( false ) end
 			
 			return true
 		end
@@ -91,7 +94,7 @@ function TOOL:LeftClick( trace )
 		local ang = trace.HitNormal:Angle()
 		ang.pitch = ang.pitch + 90
 		
-		wire_thruster = MakeWireVectorThruster( ply, model, ang, trace.HitPos, force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, collision, mode )
+		wire_thruster = MakeWireVectorThruster( ply, model, ang, trace.HitPos, force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, nocollide, mode )
 		
 		local min = wire_thruster:OBBMins()
 		wire_thruster:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -120,7 +123,7 @@ function TOOL:LeftClick( trace )
 		local anchorbone = self:GetBone(1)
 		local normal = self:GetNormal(1)
 		
-		local const = WireLib.Weld(wire_thruster, anchor, trace.PhysicsBone, true, collision)
+		local const = WireLib.Weld(wire_thruster, anchor, trace.PhysicsBone, true, nocollide)
 		
 		local Phys = wire_thruster:GetPhysicsObject()
 		Phys:EnableMotion( true )
@@ -157,6 +160,8 @@ if (SERVER) then
 		wire_thruster:Setup(force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, mode, angle)
 		wire_thruster:SetPlayer( pl )
 		
+		if ( nocollide == true ) then wire_thruster:GetPhysicsObject():EnableCollisions( false ) end
+		
 		local ttable = {
 			force		= force,
 			force_min	= force_min,
@@ -177,7 +182,7 @@ if (SERVER) then
 		
 		pl:AddCount( "wire_thrusters", wire_thruster )
 		
-		DoPropSpawnedEffect( wire_thruster )
+		--DoPropSpawnedEffect( wire_thruster )
 		
 		return wire_thruster
 	end
@@ -285,6 +290,11 @@ function TOOL.BuildCPanel(panel)
 			["#Black_Canister"]			= { wire_vthruster_model = "models/props_c17/canister01a.mdl" },
 			["#Red_Canister"]			= { wire_vthruster_model = "models/props_c17/canister02a.mdl" }
 		}
+	})*/
+	/*panel:AddControl( "PropSelect", { Label = "#WireThrusterTool_Model",
+		ConVar = "wire_vthruster_model",
+		Category = "Thrusters",
+		Models = list.Get( "ThrusterModels" )
 	})*/
 	
 	panel:AddControl("ComboBox", {
@@ -466,3 +476,5 @@ function TOOL.BuildCPanel(panel)
 	})
 	
 end
+
+list.Set( "ThrusterModels", "models/jaanus/wiretool/wiretool_speed.mdl", {} )
