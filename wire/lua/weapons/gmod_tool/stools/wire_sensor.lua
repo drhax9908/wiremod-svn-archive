@@ -17,6 +17,7 @@ if ( CLIENT ) then
 	language.Add( "WireSensorTool_direction_normalized", "Normalize direction Vector:" )
 	language.Add( "WireSensorTool_target_velocity", "Output target's velocity:" )
 	language.Add( "WireSensorTool_velocity_normalized", "Normalize velocity:" )
+	language.Add( "WireSensorTool_vector_in", "Vector Input Instead:" )
     language.Add( "WireSensorTool_swapyz", "Swap Y and Z cords:" )
 	language.Add( "sboxlimit_wire_sensors", "You've hit sensors limit!" )
 	language.Add( "undone_wiresensor", "Undone Wire Sensor" )
@@ -35,6 +36,7 @@ TOOL.ClientConVar[ "direction_vector" ] = "0"
 TOOL.ClientConVar[ "direction_normalized" ] = "0"
 TOOL.ClientConVar[ "target_velocity" ] = "0"
 TOOL.ClientConVar[ "velocity_normalized" ] = "0"
+TOOL.ClientConVar[ "vector_in" ] = "0"
 
 
 TOOL.Model = "models/props_lab/huladoll.mdl"
@@ -60,6 +62,7 @@ function TOOL:LeftClick(trace)
 	local direction_normalized = (self:GetClientNumber("direction_normalized") ~= 0)
 	local target_velocity = (self:GetClientNumber("target_velocity") ~= 0)
 	local velocity_normalized = (self:GetClientNumber("velocity_normalized") ~= 0)
+	local vector_in = (self:GetClientNumber("vector_in") ~= 0)
 	
 	if (self:GetStage() == 1) then
 		if ( trace.Entity:IsValid() && trace.Entity.GetBeaconPos ) then
@@ -73,8 +76,18 @@ function TOOL:LeftClick(trace)
 	
 	-- Update a beacon
 	if (trace.Entity:IsValid() and trace.Entity:GetClass() == "gmod_wire_sensor" and trace.Entity.pl == ply ) then
-		trace.Entity:Setup(xyz_mode, outdist, outbrng, gpscord, swapyz,direction_vector,direction_normalized,target_velocity,velocity_normalized);
-		return true;
+		trace.Entity.xyz_mode				= xyz_mode
+        trace.Entity.outdist				= outdist
+		trace.Entity.outbrng				= outbrng
+		trace.Entity.gpscord				= gpscord
+		trace.Entity.swapyz					= swapyz
+		trace.Entity.direction_vector		= direction_vector
+		trace.Entity.direction_normalized	= direction_normalized
+		trace.Entity.target_velocity		= target_velocity
+		trace.Entity.velocity_normalized	= velocity_normalized
+		trace.Entity.vector_in				= vector_in
+		trace.Entity:Setup(xyz_mode, outdist, outbrng, gpscord, swapyz, direction_vector, direction_normalized, target_velocity, velocity_normalized, vector_in)
+		return true
 	end
 	
 	if ( !self:GetSWEP():CheckLimit( "wire_sensors" ) ) then return false end
@@ -82,20 +95,11 @@ function TOOL:LeftClick(trace)
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 	
-	local wire_sensor = MakeWireSensor( ply, trace.HitPos, Ang, xyz_mode, outdist, outbrng, gpscord, swapyz,direction_vector,direction_normalized,target_velocity,velocity_normalized )
+	local wire_sensor = MakeWireSensor( ply, trace.HitPos, Ang, xyz_mode, outdist, outbrng, gpscord, swapyz, direction_vector, direction_normalized, target_velocity,velocity_normalized, vector_in )
 	
 	local min = wire_sensor:OBBMins()
 	wire_sensor:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
-	/*local const, nocollide
-	
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const, nocollide = constraint.Weld( wire_sensor, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_sensor:GetPhysicsObject():EnableCollisions( false )
-		wire_sensor.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_sensor, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireSensor")
@@ -104,10 +108,8 @@ function TOOL:LeftClick(trace)
 		undo.SetPlayer( ply )
 	undo.Finish()
 	
-	
 	ply:AddCleanup( "wire_sensors", wire_sensor )
 	ply:AddCleanup( "wire_sensors", const )
-	ply:AddCleanup( "wire_sensors", nocollide )
 	
 	return true
 end
@@ -124,7 +126,7 @@ end
 
 if SERVER then
 	
-	function MakeWireSensor(pl, Pos, Ang, xyz_mode, outdist, outbrng, gpscord, swapyz,direction_vector,direction_normalized,target_velocity, Vel, aVel, frozen )
+	function MakeWireSensor(pl, Pos, Ang, xyz_mode, outdist, outbrng, gpscord, swapyz, direction_vector, direction_normalized, target_velocity, velocity_normalized, vector_in, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_sensors" ) ) then return nil end
 		
 		local wire_sensor = ents.Create( "gmod_wire_sensor" )
@@ -134,20 +136,22 @@ if SERVER then
 		wire_sensor:Spawn()
 		wire_sensor:Activate()
 		
-		wire_sensor:Setup( xyz_mode, outdist, outbrng, gpscord, swapyz,direction_vector,direction_normalized,target_velocity )
+		wire_sensor:Setup( xyz_mode, outdist, outbrng, gpscord, swapyz, direction_vector, direction_normalized, target_velocity, velocity_normalized, vector_in )
 		wire_sensor:SetPlayer( pl )
 		
 		local ttable = 
 		{
-            xyz_mode	= xyz_mode,
-            outdist		= outdist,
-			outbrng		= outbrng,
-			gpscord		= gpscord,
-			swapyz		= swapyz,
-			direction_vector = direction_vector,
-			direction_normalized = direction_normalized,
-			target_velocity = target_velocity,
-			pl			= pl,
+            xyz_mode				= xyz_mode,
+			outdist					= outdist,
+			outbrng					= outbrng,
+			gpscord					= gpscord,
+			swapyz					= swapyz,
+			direction_vector		= direction_vector,
+			direction_normalized	= direction_normalized,
+			target_velocity			= target_velocity,
+			velocity_normalized		= velocity_normalized,
+			vector_in				= vector_in,
+			pl						= pl,
 		}
 		
 		table.Merge( wire_sensor:GetTable(), ttable )
@@ -157,7 +161,7 @@ if SERVER then
 		return wire_sensor
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_sensor", MakeWireSensor, "Pos", "Ang", "xyz_mode", "outdist", "outbrng", "gpscord", "swapyz","direction_vector","direction_normalized","target_velocity","Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_sensor", MakeWireSensor, "Pos", "Ang", "xyz_mode", "outdist", "outbrng", "gpscord", "swapyz", "direction_vector", "direction_normalized", "target_velocity", "velocity_normalized", "vector_in", "Vel", "aVel", "frozen")
 	
 end
 
@@ -235,5 +239,10 @@ function TOOL.BuildCPanel( panel )
 	panel:AddControl("CheckBox", {
 		Label = "#WireSensorTool_velocity_normalized",
 		Command = "wire_sensor_velocity_normalized"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireSensorTool_vector_in",
+		Command = "wire_sensor_vector_in"
 	})
 end

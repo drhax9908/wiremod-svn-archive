@@ -20,6 +20,7 @@ end
 TOOL.ClientConVar[ "model" ] = "models/props_lab/monitor01b.mdl"
 // Option to weld screen flat to surface shot (TheApathetic)
 TOOL.ClientConVar[ "createflat" ] = "1"
+TOOL.ClientConVar[ "weld" ] = "1"
 
 cleanup.Register( "wire_panels" )
 
@@ -32,10 +33,11 @@ function TOOL:LeftClick( trace )
 	if (not util.IsValidModel(self:GetClientInfo( "model" ))) then return false end
 	if (not util.IsValidProp(self:GetClientInfo( "model" ))) then return false end
 	
-	local ply = self:GetOwner()
-	local Ang = trace.HitNormal:Angle()
-	local Smodel = self:GetClientInfo( "model" )
-	local CreateFlat = self:GetClientNumber( "createflat" )
+	local ply			= self:GetOwner()
+	local Ang			= trace.HitNormal:Angle()
+	local Smodel		= self:GetClientInfo( "model" )
+	local CreateFlat	= self:GetClientNumber( "createflat" )
+	local weld			= self:GetClientNumber( "createflat" ) == 1
 	
 	// Weld panel flat to surface shot instead of perpendicular to it? (TheApathetic)
 	if (CreateFlat == 0) then
@@ -46,8 +48,11 @@ function TOOL:LeftClick( trace )
 	local min = wire_panel:OBBMins()
 	wire_panel:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
-	// Welded to surface now (TheApathetic)
-	local const = WireLib.Weld(wire_panel, trace.Entity, trace.PhysicsBone, true)
+	local const
+	if ( weld ) then
+		// Welded to surface now (TheApathetic)
+		const = WireLib.Weld(wire_panel, trace.Entity, trace.PhysicsBone, true)
+	end
 
 	undo.Create("WirePanel")
 		undo.AddEntity( wire_panel )
@@ -146,7 +151,16 @@ function TOOL.BuildCPanel(panel)
 		}
 	})
 	
+	panel:AddControl( "PropSelect", {
+		Label = "#WireThrusterTool_Model",
+		ConVar = "wire_panel_model",
+		Category = "WirePanelModels",
+		Models = list.Get( "WirePanelModels" )
+	})
+	
 	// Weld flat option (TheApathetic)
 	panel:AddControl("Checkbox", {Label = "#Tool_wire_panel_createflat", Command = "wire_panel_createflat"})
-end
 	
+	panel:AddControl("Checkbox", {Label = "Weld:", Command = "wire_panel_weld"})
+end
+

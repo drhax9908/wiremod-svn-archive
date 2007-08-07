@@ -43,14 +43,10 @@ function ENT:Think()
 
 	self.ShouldDraw = GetConVarNumber( "cl_drawthrusterseffects" )
 	
-	local bDraw = true
-
-	if ( self.ShouldDraw == 0 ) then bDraw = false end
+	if ( self.ShouldDraw == 0 ) then return end
 	
-	if ( !self:IsOn() ) then bDraw = false end
-	if ( self:GetEffect() == "none" ) then bDraw = false end
-
-	if ( !bDraw ) then return end
+	if ( !self:IsOn() ) then return end
+	if ( self:GetEffect() == "none" ) then return end
 	
 	local EffectThink = self[ "EffectThink_"..self:GetEffect() ]
 	if ( EffectThink ) then EffectThink( self ) end

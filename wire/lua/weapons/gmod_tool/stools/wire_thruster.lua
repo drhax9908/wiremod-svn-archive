@@ -1,11 +1,7 @@
 
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Thruster"
-TOOL.Command		= nil
-
-if (not file.Exists("../addons/wire/settings/controls/wire_thruster.txt")) then
-	TOOL.ConfigName		= ""
-end
+TOOL.ConfigName		= ""
 
 if ( CLIENT ) then
     language.Add( "Tool_wire_thruster_name", "Thruster Tool (Wire)" )
@@ -59,20 +55,21 @@ function TOOL:LeftClick( trace )
 	local force_max		= self:GetClientNumber( "force_max" )
 	local model			= self:GetClientInfo( "model" )
 	local bidir			= (self:GetClientNumber( "bidir" ) ~= 0)
-	local collision		= (self:GetClientNumber( "collision" ) == 0)
+	local nocollide		= (self:GetClientNumber( "collision" ) == 0)
 	local sound			= (self:GetClientNumber( "sound" ) ~= 0)
 	local oweffect		= self:GetClientInfo( "oweffect" )
 	local uweffect		= self:GetClientInfo( "uweffect" )
 	local owater			= (self:GetClientNumber( "owater" ) ~= 0)
 	local uwater			= (self:GetClientNumber( "uwater" ) ~= 0)
-
+	
+	if ( !trace.Entity:IsValid() ) then nocollide = false end
+	
 	// If we shot a wire_thruster change its force
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_thruster" && trace.Entity.pl == ply ) then
-
 		trace.Entity:SetForce( force )
 		trace.Entity:SetEffect( effect )
 		trace.Entity:Setup(force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound)
-
+		
 		trace.Entity.force		= force
 		trace.Entity.force_min	= force_min
 		trace.Entity.force_max	= force_max
@@ -82,7 +79,10 @@ function TOOL:LeftClick( trace )
 		trace.Entity.uweffect	= uweffect
 		trace.Entity.owater		= owater
 		trace.Entity.uwater		= uwater
-
+		trace.Entity.nocollide	= nocollide
+		
+		if ( nocollide == true ) then trace.Entity:GetPhysicsObject():EnableCollisions( false ) end
+		
 		return true
 	end
 	
@@ -93,24 +93,14 @@ function TOOL:LeftClick( trace )
 
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
-
-	wire_thruster = MakeWireThruster( ply, model, Ang, trace.HitPos, force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, collision )
+	
+	wire_thruster = MakeWireThruster( ply, model, Ang, trace.HitPos, force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, nocollide )
 	
 	local min = wire_thruster:OBBMins()
 	wire_thruster:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
-	local const, nocollide
-	
 	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const, nocollide = constraint.Weld( wire_thruster, trace.Entity, 0, trace.PhysicsBone, 0, collision, true )
-		// Don't disable collision if it's not attached to anything
-		if ( collision ) then
-			wire_thruster:GetPhysicsObject():EnableCollisions( false )
-			wire_thruster.nocollide = true
-		end
-	end
-	local const = WireLib.Weld(wire_twoway_radio, trace.Entity, trace.PhysicsBone, true, collision)
+	local const = WireLib.Weld(wire_thruster, trace.Entity, trace.PhysicsBone, true, nocollide)
 
 	undo.Create("WireThruster")
 		undo.AddEntity( wire_thruster )
@@ -120,7 +110,6 @@ function TOOL:LeftClick( trace )
 		
 	ply:AddCleanup( "wire_thrusters", wire_thruster )
 	ply:AddCleanup( "wire_thrusters", const )
-	ply:AddCleanup( "wire_thrusters", nocollide )
 	
 	return true
 end
@@ -141,6 +130,8 @@ if (SERVER) then
 		wire_thruster:Setup(force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound)
 		wire_thruster:SetPlayer( pl )
 		
+		if ( nocollide == true ) then wire_thruster:GetPhysicsObject():EnableCollisions( false ) end
+		
 		local ttable = {
 			force		= force,
 			force_min	= force_min,
@@ -159,7 +150,7 @@ if (SERVER) then
 		
 		pl:AddCount( "wire_thrusters", wire_thruster )
 		
-		DoPropSpawnedEffect( wire_thruster )
+		--DoPropSpawnedEffect( wire_thruster )
 		
 		return wire_thruster
 	end
@@ -225,7 +216,7 @@ function TOOL.BuildCPanel(panel)
 		}
 	})
 
-	panel:AddControl("ComboBox", {
+	/*panel:AddControl("ComboBox", {
 		Label = "#WireThrusterTool_Model",
 		MenuButton = "0",
 
@@ -242,7 +233,15 @@ function TOOL.BuildCPanel(panel)
 			["#Black_Canister"]			= { wire_thruster_model = "models/props_c17/canister01a.mdl" },
 			["#Red_Canister"]			= { wire_thruster_model = "models/props_c17/canister02a.mdl" }
 		}
+	})*/
+	
+	panel:AddControl( "PropSelect", {
+		Label = "#WireThrusterTool_Model",
+		ConVar = "wire_thruster_model",
+		Category = "Thrusters",
+		Models = list.Get( "ThrusterModels" )
 	})
+	
 
 	panel:AddControl("ComboBox", {
 		Label = "#WireThrusterTool_OWEffects",
@@ -406,3 +405,6 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_thruster_uwater"
 	})
 end
+
+//from model pack 1 --TODO: update model pack system to use list system
+list.Set( "ThrusterModels", "models/jaanus/thruster_flat.mdl", {} )

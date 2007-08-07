@@ -14,6 +14,7 @@ ENT.AdminSpawnable	= false
 
 ENT.IsWire          = true
 
+
 function ENT:GetOverlayText()
 	local name = self.Entity:GetNetworkedString("WireName")
 	//local txt = self.BaseClass.BaseClass.GetOverlayText(self) or ""

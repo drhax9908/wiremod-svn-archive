@@ -187,7 +187,7 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("ComboBox", {
 		Label = "#WireThrusterTool_Model",
 		MenuButton = "0",
-
+		
 		Options = {
 			["#Small tv"]		= { wire_screen_model = "models/props_lab/monitor01b.mdl" },
 			["#Plasma tv"]		= { wire_screen_model = "models/props/cs_office/TV_plasma.mdl" },
@@ -196,7 +196,14 @@ function TOOL.BuildCPanel(panel)
 			["#Monitor Small"]	= { wire_screen_model = "models/kobilica/wiremonitorsmall.mdl" },
 		}
 	})
-
+	
+	panel:AddControl( "PropSelect", {
+		Label = "#WireThrusterTool_Model",
+		ConVar = "wire_screen_model",
+		Category = "WireScreenModels",
+		Models = list.Get( "WirePanelModels" )
+	})
+	
 	// Extra stuff for Wire Screen (TheApathetic)
 	panel:AddControl("Checkbox", {Label = "#Tool_wire_screen_singlevalue", Command = "wire_screen_singlevalue"})
 	panel:AddControl("Checkbox", {Label = "#Tool_wire_screen_singlebigfont", Command = "wire_screen_singlebigfont"})
@@ -212,3 +219,9 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("Checkbox", {Label = "#Tool_wire_screen_createflat", Command = "wire_screen_createflat"})
 end
 	
+
+list.Set( "WireScreenModels", "models/props_lab/monitor01b.mdl", {} )
+list.Set( "WireScreenModels", "models/props/cs_office/TV_plasma.mdl", {} )
+list.Set( "WireScreenModels", "models/props/cs_office/computer_monitor.mdl", {} )
+list.Set( "WireScreenModels", "models/kobilica/wiremonitorbig.mdl", {} )
+list.Set( "WireScreenModels", "models/kobilica/wiremonitorsmall.mdl", {} )

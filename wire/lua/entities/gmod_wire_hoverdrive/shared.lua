@@ -23,22 +23,22 @@ function ENT:GetSpeed()
 
 	// Sensible limits
 	if (!SinglePlayer()) then
-		return math.Clamp( self.Entity:GetNetworkedFloat( 0 ), 0.0, 10.0 )
+		return math.Clamp( self.Entity:GetNetworkedFloat( 2 ), 0.0, 10.0 )
 	end
 
-	return self.Entity:GetNetworkedFloat( 0 )
+	return self.Entity:GetNetworkedFloat( 2 )
 end
 
 function ENT:SetSpeed( s )
 	
-	self.Entity:SetNetworkedFloat( 0, s )
+	self.Entity:SetNetworkedFloat( 2, s )
 	
 end
 
 function ENT:GetHoverMode()
-	return self.Entity:GetNetworkedInt( 0 )
+	return self.Entity:GetNetworkedInt( 3 )
 end
 
 function ENT:SetHoverMode( h )
-	return self.Entity:SetNetworkedInt( 0, h )
+	return self.Entity:SetNetworkedInt( 3, h )
 end

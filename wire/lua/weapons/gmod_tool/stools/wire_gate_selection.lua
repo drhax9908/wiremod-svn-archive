@@ -36,7 +36,6 @@ function TOOL:LeftClick( trace )
 	
 	local ply = self:GetOwner()
 	
-
 	// Get client's CVars
 	local action			= self:GetClientInfo( "action" )
 	local noclip			= self:GetClientNumber( "noclip" ) == 1

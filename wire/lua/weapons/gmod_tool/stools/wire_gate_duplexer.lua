@@ -36,7 +36,6 @@ function TOOL:LeftClick( trace )
 	
 	local ply = self:GetOwner()
 	
-
 	// Get client's CVars
 	local action			= self:GetClientInfo( "action" )
 	local noclip			= self:GetClientNumber( "noclip" ) == 1
@@ -69,7 +68,6 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 	
-
 	ply:AddCleanup( "wire_gate_duplexer", wire_gate_duplexer )
 	
 	return true
