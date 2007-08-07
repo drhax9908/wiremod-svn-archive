@@ -3,11 +3,6 @@ local WIRE_BLINKS_PER_SECOND = 2
 local CurPathEnt = {}
 local Wire_DisableWireRender = 0
 
-local WIRE_SCROLL_SPEED = 0.5
-local WIRE_BLINKS_PER_SECOND = 2
-local CurPathEnt = {}
-local Wire_DisableWireRender = 0
-
 function Wire_Render(ent)
 	if (not ent:IsValid()) then return end
 	if (Wire_DisableWireRender == 1) then return end

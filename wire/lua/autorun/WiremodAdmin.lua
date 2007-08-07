@@ -21,7 +21,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Values"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_values"
@@ -29,7 +29,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Two-way Radios"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_twoway_radioes"
@@ -37,15 +37,23 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Turrets"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_turrets"
 	Panel:AddControl( "Slider",params)
 	
 	local params = {}
+	params.Label = "#Max Wiremod Thrusters"
+	params.Type = "Integer"
+	params.Min = "0"
+	params.Max = "999"
+	params.Command = "sbox_maxwire_thrusters"
+	Panel:AddControl( "Slider",params)	
+	
+	local params = {}
 	params.Label = "#Max Wiremod Target Finders"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_target_finders"
@@ -53,7 +61,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Speedometers"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_speedometers"
@@ -61,7 +69,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Spawners"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_spawners"
@@ -69,7 +77,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Emitters"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_emitters"
@@ -77,7 +85,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Simple Explosives"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_simple_explosive"
@@ -85,7 +93,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Sensors"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_sensors"
@@ -93,7 +101,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Screens"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_screens"
@@ -101,7 +109,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Relays"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_relays"
@@ -109,7 +117,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Rangers"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_rangers"
@@ -117,7 +125,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Radios"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_radioes"
@@ -125,7 +133,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Pods"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_pods"
@@ -133,7 +141,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Sockets"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_sockets"
@@ -141,7 +149,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Plugs"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_plugs"
@@ -149,7 +157,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Pixels"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_pixels"
@@ -157,7 +165,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Panels"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_panels"
@@ -165,7 +173,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Outputs"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_outputs"
@@ -173,7 +181,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Oscilloscopes"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_oscilloscopes"
@@ -181,7 +189,7 @@ local function BuildAdminControlPanel( Panel )
 
 	local params = {}
 	params.Label = "#Max Wiremod Numpads"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_numpads"
@@ -189,7 +197,7 @@ local function BuildAdminControlPanel( Panel )
 
 	local params = {}
 	params.Label = "#Max Wiremod Nailers"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_nailers"
@@ -197,7 +205,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Locators"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_locators"
@@ -205,7 +213,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Lights"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_lights"
@@ -213,7 +221,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Lamps"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_lamps"
@@ -221,7 +229,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Inputs"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_inputs"
@@ -229,7 +237,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Indicators"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_indicators"
@@ -237,7 +245,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Hoverballs"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_hoverballs"
@@ -245,7 +253,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Gyroscopes"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_gyroscopes"
@@ -253,7 +261,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod GPSes"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_gpss"
@@ -261,7 +269,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Gates - Trig"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_gate_trigs"
@@ -269,7 +277,7 @@ local function BuildAdminControlPanel( Panel )
 
 	local params = {}
 	params.Label = "#Max Wiremod Gates - Time"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_gate_times"
@@ -277,7 +285,7 @@ local function BuildAdminControlPanel( Panel )
 
 	local params = {}
 	params.Label = "#Max Wiremod Gates - Selection"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_gate_selections"
@@ -285,7 +293,7 @@ local function BuildAdminControlPanel( Panel )
 
 	local params = {}
 	params.Label = "#Max Wiremod Gates - Memory"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_gate_memorys"
@@ -293,7 +301,7 @@ local function BuildAdminControlPanel( Panel )
 
 	local params = {}
 	params.Label = "#Max Wiremod Gates - Logic"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_gate_logics"
@@ -301,7 +309,7 @@ local function BuildAdminControlPanel( Panel )
 
 	local params = {}
 	params.Label = "#Max Wiremod Gates - Comparison"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_gate_logics"
@@ -309,7 +317,7 @@ local function BuildAdminControlPanel( Panel )
 
 	local params = {}
 	params.Label = "#Max Wiremod Gates"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_gates"
@@ -317,7 +325,7 @@ local function BuildAdminControlPanel( Panel )
 
 	local params = {}
 	params.Label = "#Max Wiremod Forcers"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_forcers"
@@ -325,7 +333,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Explosives"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_explosive"
@@ -333,7 +341,7 @@ local function BuildAdminControlPanel( Panel )
 
 	local params = {}
 	params.Label = "#Max Wiremod Dual Inputs"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_dual_inputs"
@@ -341,7 +349,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Digital-Sceens"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_digitalscreens"
@@ -349,7 +357,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Detonators"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_detonators"
@@ -357,7 +365,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod CPUs"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_cpus"
@@ -365,7 +373,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Buttons"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_buttons"
@@ -373,7 +381,7 @@ local function BuildAdminControlPanel( Panel )
 	
 	local params = {}
 	params.Label = "#Max Wiremod Adv. Inputs"
-	params.Type = "Float"
+	params.Type = "Integer"
 	params.Min = "0"
 	params.Max = "999"
 	params.Command = "sbox_maxwire_adv_inputs"

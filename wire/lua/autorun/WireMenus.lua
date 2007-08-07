@@ -1,11 +1,10 @@
-if ( !table.SortByMember ) then return end
+if ( !table.SortByMember ) then return end --pre gmod 31
 
-AddCSLuaFile( "autorun/WireMenus.lua" )
-
---WiremodAdmin = {}
-
-if ( SERVER ) then return end
-
+if ( SERVER ) then 
+	AddCSLuaFile( "autorun/WireMenus.lua" )
+	return
+end
+//not really needed any more since gmod32, but do it anyway cause 31 required it
 local function WireToolCategories()
 	spawnmenu.AddToolCategory( "Main", 	"Wire - Advanced", 		"Wire - Advanced" )
 	spawnmenu.AddToolCategory( "Main", 	"Wire - Beacon", 		"Wire - Beacon" )
@@ -19,4 +18,3 @@ local function WireToolCategories()
 	spawnmenu.AddToolCategory( "Main", 	"Wire - Tools", 		"Wire - Tools" )
 end
 hook.Add( "AddToolMenuCategories", "WireToolCategories", WireToolCategories)
-
