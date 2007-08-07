@@ -1074,6 +1074,7 @@ end
 
 function AdvDupe.SetPercentText( pl, Txt )
 	if ( !pl or !pl:IsValid() or !pl:IsPlayer() ) then return end
+	AdvDupe[pl] = AdvDupe[pl] or {}
 	AdvDupe[pl].PercentText = Txt
 	umsg.Start("AdvDupe_Start_Percent", pl)
 		umsg.String(Txt)
@@ -1319,7 +1320,7 @@ function AdvDupe.AdminSettings.SetPlayerToDefault( pl )
 	PlayerSettings[pl].GhostLimitLimited = GhostLimitLimited*/
 	AdvDupe.AdminSettings.GhostSettings( pl, GhostLimitNorm, GhostLimitLimited, GhostAddDelay, GhostsPerTick, LimitedGhost )
 	
-	PrintTable(PlayerSettings[pl])
+	--PrintTable(PlayerSettings[pl])
 	
 	//update client side vars too
 	/*SendUploadSettings( pl, UploadPiecesPerSend, UploadSendDelay )
@@ -1537,11 +1538,13 @@ local UseTimedPasteThreshold = 100
 local PasteEntsPerTick = 2
 local PostEntityPastePerTick = 20
 local PasteConstsPerTick = 5
+local DelayAfterPaste = 2
 if ( SinglePlayer() ) then --go faster in single players
 	UseTimedPasteThreshold = 500
 	PasteEntsPerTick = 4
 	PostEntityPastePerTick = 40
 	PasteConstsPerTick = 20
+	DelayAfterPaste = .25
 end
 
 local PasterInstantPasteThreshold = 50
@@ -1706,6 +1709,16 @@ function AdvDupe.AdminSettings.SetDontAllowPlayersAdminOnlyEnts( a )
 	end
 end
 
+//	ChangeDisallowedClass, add/remove classes from the disallowed list
+local DisallowedClasses = {}
+function AdvDupe.AdminSettings.ChangeDisallowedClass( ClassName, DisallowPlayers, DisallowAdminsToo )
+	if (!DisallowPlayers) then DisallowedClasses[ClassName] = nil
+	elseif (DisallowAdminsToo) then DisallowedClasses[ClassName] = 2
+	else DisallowedClasses[ClassName] = 1 end
+end
+
+
+
 //	=============
 //	AdvDupeThink
 //	=============
@@ -1737,46 +1750,18 @@ local function AdvDupeThink()
 			else
 				if ( TimedPasteData[TimedPasteDataCurrent].NormPaste ) and ( TimedPasteData[TimedPasteDataCurrent].Delay < CurTime() ) then
 					
-					local NoFail, Result = pcall( AdvDupe.NormPaste,
-						TimedPasteData[TimedPasteDataCurrent].Player, 
-						TimedPasteData[TimedPasteDataCurrent].EntityList, 
-						TimedPasteData[TimedPasteDataCurrent].ConstraintList, 
-						TimedPasteData[TimedPasteDataCurrent].HeadEntityIdx, 
-						TimedPasteData[TimedPasteDataCurrent].HitPos, 
-						TimedPasteData[TimedPasteDataCurrent].HoldAngle, 
-						TimedPasteData[TimedPasteDataCurrent].Shooting_Ent,
-						TimedPasteData[TimedPasteDataCurrent].PasteFrozen,
-						TimedPasteData[TimedPasteDataCurrent].PastewoConst, 
-						TimedPasteData[TimedPasteDataCurrent].CreatedEntities, 
-						TimedPasteData[TimedPasteDataCurrent].CreatedConstraints
-					)
+					local NoFail, Result = pcall( AdvDupe.NormPasteFromTable, TimedPasteData[TimedPasteDataCurrent] )
 					if ( !NoFail ) then
 						Msg("AdvDupeERROR: NormPaste Failed, Error: "..tostring(Result).."\n")
 					end
 					
 					AdvDupe.FinishPasting( TimedPasteData, TimedPasteDataCurrent )
 					
-					NextPasteTime = CurTime() + 2
+					NextPasteTime = CurTime() + DelayAfterPaste
 					
 				elseif ( TimedPasteData[TimedPasteDataCurrent].Delay < CurTime() ) then
 					
-					local NoFail, Result = pcall( AdvDupe.OverTimePasteProcess,
-						TimedPasteData[TimedPasteDataCurrent].Player, 
-						TimedPasteData[TimedPasteDataCurrent].EntityList, 
-						TimedPasteData[TimedPasteDataCurrent].ConstraintList, 
-						TimedPasteData[TimedPasteDataCurrent].HeadEntityIdx, 
-						TimedPasteData[TimedPasteDataCurrent].Stage, 
-						TimedPasteData[TimedPasteDataCurrent].LastID, 
-						TimedPasteData[TimedPasteDataCurrent].EntIDList, 
-						TimedPasteData[TimedPasteDataCurrent].CreatedEntities, 
-						TimedPasteData[TimedPasteDataCurrent].CreatedConstraints, 
-						TimedPasteData[TimedPasteDataCurrent].Shooting_Ent,
-						TimedPasteDataCurrent,
-						TimedPasteData[TimedPasteDataCurrent].HitPos,
-						TimedPasteData[TimedPasteDataCurrent].HoldAngle,
-						TimedPasteData[TimedPasteDataCurrent].PasteFrozen,
-						TimedPasteData[TimedPasteDataCurrent].PastewoConst
-					)
+					local NoFail, Result = pcall( AdvDupe.OverTimePasteProcessFromTable )
 					if ( !NoFail ) then
 						Msg("AdvDupeERROR: OverTimePaste Failed in stage "..(TimedPasteData[TimedPasteDataCurrent].Stage or "BadStage")..", Error: "..tostring(Result).."\n")
 						TimedPasteData[TimedPasteDataCurrent].Stage = 5
@@ -1792,7 +1777,7 @@ local function AdvDupeThink()
 						
 						AdvDupe.FinishPasting( TimedPasteData,TimedPasteDataCurrent )
 						
-						NextPasteTime = CurTime() +  2
+						NextPasteTime = CurTime() +  DelayAfterPaste
 						
 					else
 						
@@ -1946,6 +1931,10 @@ function AdvDupe.StartPaste( Player, inEntityList, inConstraintList, HeadEntityI
 end
 
 
+
+//
+//	Normal instant paste
+//
 function AdvDupe.AddDelayedPaste( Player, EntityList, ConstraintList, HeadEntityIdx, HitPos, HoldAngle, HideThinger, PasteFrozen, PastewoConst, CallOnPasteFin, DontRemoveThinger, Thinger )
 	
 	T					= {}
@@ -1967,16 +1956,19 @@ function AdvDupe.AddDelayedPaste( Player, EntityList, ConstraintList, HeadEntity
 	T.PastewoConst		= PastewoConst
 	T.CallOnPasteFin	= CallOnPasteFin
 	T.CreatedEntities	= {}
+	T.CreatedEntities.EntityList = EntityList
 	T.CreatedConstraints = {}
 	
 	table.insert(TimedPasteData, T)
 	
 end
 
+function AdvDupe.NormPasteFromTable( PasteData )
+	AdvDupe.NormPaste( PasteData.Player, PasteData.EntityList, PasteData.ConstraintList, 
+		PasteData.HeadEntityIdx, PasteData.HitPos, PasteData.HoldAngle, PasteData.Shooting_Ent,
+		PasteData.PasteFrozen, PasteData.PastewoConst, PasteData.CreatedEntities, PasteData.CreatedConstraints)
+end
 
-//
-//	Paste
-//
 function AdvDupe.NormPaste( Player, EntityList, ConstraintList, HeadEntityIdx, Offset, HoldAngle, Shooting_Ent, PasteFrozen, PastewoConst, CreatedEntities, CreatedConstraints )
 	
 	//do the effect
@@ -1988,6 +1980,7 @@ function AdvDupe.NormPaste( Player, EntityList, ConstraintList, HeadEntityIdx, O
 	--Msg("===doing delayed paste===\n")
 	AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offset, HoldAngle, Shooting_Ent, PastewoConst, CreatedEntities, CreatedConstraints )
 	
+	CreatedEntities.EntityList = nil
 	undo.Create( "Duplicator" )
 		
 		for EntID, Ent in pairs( CreatedEntities ) do
@@ -2111,6 +2104,7 @@ function AdvDupe.OverTimePasteStart( Player, inEntityList, inConstraintList, Hea
 	T.LastID				= 1
 	T.EntIDList				= EntIDList
 	T.CreatedEntities		= {}
+	T.CreatedEntities.EntityList = EntityList
 	T.CreatedConstraints	= {}
 	T.HitPos				= HitPos
 	T.HoldAngle				= HoldAngle
@@ -2132,6 +2126,25 @@ function AdvDupe.OverTimePasteStart( Player, inEntityList, inConstraintList, Hea
 	
 	table.insert(TimedPasteData, T)
 	
+end
+
+function AdvDupe.OverTimePasteProcessFromTable()
+	AdvDupe.OverTimePasteProcess(
+		TimedPasteData[TimedPasteDataCurrent].Player, 
+		TimedPasteData[TimedPasteDataCurrent].EntityList, 
+		TimedPasteData[TimedPasteDataCurrent].ConstraintList, 
+		TimedPasteData[TimedPasteDataCurrent].HeadEntityIdx, 
+		TimedPasteData[TimedPasteDataCurrent].Stage, 
+		TimedPasteData[TimedPasteDataCurrent].LastID, 
+		TimedPasteData[TimedPasteDataCurrent].EntIDList, 
+		TimedPasteData[TimedPasteDataCurrent].CreatedEntities, 
+		TimedPasteData[TimedPasteDataCurrent].CreatedConstraints, 
+		TimedPasteData[TimedPasteDataCurrent].Shooting_Ent,
+		TimedPasteDataCurrent,
+		TimedPasteData[TimedPasteDataCurrent].HitPos,
+		TimedPasteData[TimedPasteDataCurrent].HoldAngle,
+		TimedPasteData[TimedPasteDataCurrent].PasteFrozen,
+		TimedPasteData[TimedPasteDataCurrent].PastewoConst )
 end
 
 function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadEntityIdx, Stage, LastID, EntIDList, CreatedEntities, CreatedConstraints, Shooting_Ent, DataNum, Offset, HoldAngle, PasteFrozen, PastewoConst )
@@ -2288,6 +2301,7 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 		
 	elseif Stage == 4 then
 		
+		CreatedEntities.EntityList = nil
 		undo.Create( "Duplicator" )
 			for EntID, Ent in pairs( CreatedEntities ) do
 				if (Ent:IsValid()) then
@@ -2738,6 +2752,7 @@ end
 //
 local CheckFunctions = {}
 function AdvDupe.CheckOkEnt( Player, EntTable )
+	EntTable.Class = EntTable.Class or ""
 	
 	for HookName, TheHook in pairs (CheckFunctions) do
 		
@@ -2745,16 +2760,19 @@ function AdvDupe.CheckOkEnt( Player, EntTable )
 		if ( !Success ) then
 			Error("AdvDupeERROR: Entity check hook \""..HookName.."\" failed, removing.\nHook Error: \""..tostring(Result).."\"\n")
 			
-			if ( TheHook.OnFailCallBack ) then
-				local Success, Result = pcall( TheHook.OnFailCallBack, HookName )
+			local OnFailCallBack = TheHook.OnFailCallBack
+			
+			CheckFunctions[ HookName ] = nil
+			
+			if ( OnFailCallBack ) then
+				Msg("OnFailCallBack\n")
+				local Success, Result = pcall( OnFailCallBack, HookName )
 				if ( !Success ) then
 					Error("AdvDupeERROR: WTF! \""..HookName.."\" OnFailCallBack failed too! Tell who ever make that hook that they're doing it wrong. Error: \""..tostring(Result).."\"\n")
 				end
 			end
 			
-			CheckFunctions[ HookName ] = nil
-			
-		elseif ( !Result ) then
+		elseif ( Result == false ) then
 			
 			return false
 			
@@ -2783,8 +2801,44 @@ function AdvDupe.AdminSettings.AddEntCheckHook( HookName, Func, OnFailCallBack )
 	CheckFunctions[ HookName ].Func = Func
 	CheckFunctions[ HookName ].OnFailCallBack = OnFailCallBack
 end
+function AdvDupe.AdminSettings.RemoveEntCheckHook( HookName )
+	if ( CheckFunctions[ HookName ] ) then
+		CheckFunctions[ HookName ] = nil
+		return true
+	end
+end
 
 
+
+if (!SinglePlayer()) then
+	local function NoItems(Player, Class, EntTable)
+		if ( Player:IsAdmin( ) or Player:IsSuperAdmin() ) then return true end
+		if string.find(Class, "^weapon_.*")
+		or string.find(Class, "^item_.*")
+		or string.find(Class, "^npc_.*") then
+			Msg("AdvDupe: disalowing "..tostring(Player).." pasting item "..Class.." (NoItems Rule)\n")
+			return false
+		else
+			return true
+		end
+	end
+	local function AddNoItems()
+		AdvDupe.AdminSettings.AddEntCheckHook("AdvDupe_NoItems", NoItems, AddNoItems)
+	end
+	AddNoItems()
+	
+	local function DisallowedClassesCheck(Player, ClassName, EntTable)
+		if DisallowedClasses[ClassName] then
+			if (DisallowedClasses[ClassName] == 2) then return false
+			elseif ( DisallowedClasses[ClassName] == 1 and !Player:IsAdmin( ) and !Player:IsSuperAdmin() ) then return false end
+		end
+		return true
+	end
+	local function AddDisallowedClassesCheck()
+		AdvDupe.AdminSettings.AddEntCheckHook("AdvDupe_NoItems", DisallowedClassesCheck, AddDisallowedClassesCheck)
+	end
+	AddDisallowedClassesCheck()
+end
 
 
 

@@ -79,7 +79,7 @@ local function OnPasteFin( paster, Ents, Consts )
 	for k, ent in pairs( Ents ) do
 		table.insert(paster.UndoListEnts[paster.PropCount], ent)
 	end
-	
+	--Msg("adding undos\n")
 	paster:ShowOutput()
 end
 
@@ -113,8 +113,6 @@ function ENT:Paste()
 	angle.pitch = 0
 	angle.roll = 0
 	
-	
-	//AdvDupe.AddDelayedPaste( self:GetPlayer(), self.MyEnts, self.MyConstraints, self.MyHeadEntityIdx, self.offset, angle - self.MyHoldAngle, true )
 	AdvDupe.StartPaste( self:GetPlayer(), self.MyEnts, self.MyConstraints, self.MyHeadEntityIdx, self.offset, angle - self.MyHoldAngle, self.NumOfEnts, self.NumOfConst, self.PasteFrozen, self.PastewoConst, OnPasteFin, true, self.Entity, true )
 	
 	timer.Simple( AdvDupe.GetPasterClearToPasteDelay(), ClearToPaste, self.Entity )
@@ -174,7 +172,7 @@ end
 
 function ENT:DoUndo( pl )
 
-	if (!self.UndoListEnts || #self.UndoListEnts == 0) then return end
+	if (!self.UndoListEnts or #self.UndoListEnts == 0) then return end
 
 	local Ents = {}
 	local FoundOne = false
@@ -183,17 +181,28 @@ function ENT:DoUndo( pl )
 		
 		Ents = table.remove(self.UndoListEnts, 1)
 		
+		self.PropCount = self.PropCount - 1
+		
 		if Ents then
 			for _, ent in pairs( Ents ) do
-				if (ent && ent:IsValid()) then
+				if (ent and ent:IsValid()) then
 					ent:Remove()
+					--Msg("undoing\n")
 					FoundOne = true
 				end
 			end
+		else
+			FoundOne = true
 		end
-		self.PropCount = self.PropCount - 1
 		
 	until FoundOne
+	
+	/*for _, ent in pairs( Ents ) do
+		if (ent && ent:IsValid()) then
+			ent:Remove()
+			FoundOne = true
+		end
+	end*/
 	
 	umsg.Start( "UndoWirePasterProp", pl ) umsg.End()
 	
