@@ -1940,6 +1940,17 @@ GateActions["table_valuebyidx"] = {
 }
 
 
+
+
+//***********************************************************
+//		Vector Gates
+//***********************************************************
+
+--TODO
+
+
+
+
 WireGatesSorted = {}
 for name,gate in pairs(GateActions) do
 	if !WireGatesSorted[gate.group] then WireGatesSorted[gate.group] = {} end
