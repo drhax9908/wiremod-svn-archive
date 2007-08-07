@@ -53,7 +53,7 @@ local function SerialiseChunk( chunk, tables, StrTbl, dontpoolstrings )
 	if		type == "number"  then return 'N:'..chunk
 	elseif	type == "string"  then return MakeStringCommon(chunk, StrTbl, dontpoolstrings) //string.format('S:%q', chunk )   // todo escape/encode delimiter characters
 	elseif	type == "boolean" then return 'B:'..tostring( chunk ):sub( 1,1 )
-	elseif	type == "Entity"  then if chunk == GetWorldEntity() then return 'E:W' elseif chunk == NULL then return 'E:N' else return 'E:'..chunk:EntIndex()  end
+	--elseif	type == "Entity"  then if chunk == GetWorldEntity() then return 'E:W' elseif chunk == NULL then return 'E:N' else return 'E:'..chunk:EntIndex()  end
 	elseif	type == "Vector"  then return string.format( "V:%g,%g,%g", chunk.x, chunk.y, chunk.z )
 	elseif	type == "Angle"   then return string.format( "A:%g,%g,%g", chunk.pitch, chunk.yaw, chunk.roll )
 	elseif	type == "Player"  then return 'P:'..chunk:UniqueID()
@@ -82,7 +82,7 @@ local function DeSerialiseChunk( chunk, tables, StrTbl )
 	elseif	type == "Z" then return StrTbl[ val:sub(2, -2) ]
 	elseif	type == "Y" then return StrTbl[ val ]
 	elseif	type == "B" then return val == "t"
-	elseif	type == "E" then if val == "W" then return GetWorldEntity() elseif val == "N" then return NULL else return Entity( val )  end
+	--elseif	type == "E" then if val == "W" then return GetWorldEntity() elseif val == "N" then return NULL else return Entity( val )  end
 	elseif	type == "V" then
 		local a,b,c = val:match("(.-),(.-),(.+)")
 		return Vector( tonumber(a), tonumber(b), tonumber(c) )
