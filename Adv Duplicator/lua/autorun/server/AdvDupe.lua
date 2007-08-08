@@ -2237,9 +2237,11 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 				local EntID		= EntIDList[ LastID ]
 				local Ent		= CreatedEntities[ EntID ]
 				
-				local NoFail, Result = pcall( AdvDupe.AfterPasteApply, Player, Ent, CreatedEntities )
-				if ( !NoFail ) then
-					Msg("AdvDupeERROR: AfterPasteApply, Error: "..tostring(Result).."\n")
+				if (Ent != nil) then
+					local NoFail, Result = pcall( AdvDupe.AfterPasteApply, Player, Ent, CreatedEntities )
+					if ( !NoFail ) then
+						Msg("AdvDupeERROR: AfterPasteApply, Error: "..tostring(Result).."\n")
+					end
 				end
 				
 				LastID = LastID + 1
