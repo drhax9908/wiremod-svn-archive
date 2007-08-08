@@ -1740,7 +1740,7 @@ local function AdvDupeThink()
 			or ( !TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity )
 			or ( !TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity:IsValid() ) then
 				for k, ent in pairs( TimedPasteData[TimedPasteDataCurrent].CreatedEntities ) do
-					if ( ent and ent != NULL and ent:IsValid() ) then
+					if ( ent != nil and ent != NULL and ent:IsValid() ) then
 						ent:Remove()
 					end
 				end
