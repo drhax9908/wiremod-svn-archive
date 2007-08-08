@@ -1,9 +1,18 @@
 if ( !table.SortByMember ) then return end --pre gmod 31
+Msg("=== Loading Wire Menus ===\n")
 
 if ( SERVER ) then 
 	AddCSLuaFile( "autorun/WireMenus.lua" )
 	return
 end
+
+
+local function WireTab()
+	spawnmenu.AddToolTab( "Wire", "Wire" )
+end
+hook.Add( "AddToolMenuTabs", "WireTab", WireTab)
+
+
 //not really needed any more since gmod32, but do it anyway cause 31 required it
 local function WireToolCategories()
 	spawnmenu.AddToolCategory( "Main", 	"Wire - Advanced", 		"Wire - Advanced" )
@@ -18,3 +27,31 @@ local function WireToolCategories()
 	spawnmenu.AddToolCategory( "Main", 	"Wire - Tools", 		"Wire - Tools" )
 end
 hook.Add( "AddToolMenuCategories", "WireToolCategories", WireToolCategories)
+
+
+// Add the wire tools to the wire tab
+local function AddWireSToolsToWireMenu()
+	//find the tool list
+	local TOOLS_LIST
+	for k,v in pairs(weapons.GetList()) do
+		if v.Tool then
+			TOOLS_LIST = v.Tool
+			break
+		end
+	end
+	//add to tab
+	for ToolName, TOOL in pairs( TOOLS_LIST ) do
+		if ( TOOL.AddToMenu != false ) then
+			if ( "wire" == string.lower( string.Left(ToolName, 4) ) ) then
+				spawnmenu.AddToolMenuOption( "Wire",
+											TOOL.Category or "New Category", 
+											ToolName, 
+											TOOL.Name or "#"..ToolName, 
+											TOOL.Command or "gmod_tool "..ToolName, 
+											TOOL.ConfigName or ToolName,
+											TOOL.BuildCPanel )
+			end
+		end
+	end
+end
+hook.Add( "PopulateToolMenu", "AddWireSToolsToWireMenu", AddWireSToolsToWireMenu )
