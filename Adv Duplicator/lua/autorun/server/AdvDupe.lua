@@ -1740,7 +1740,7 @@ local function AdvDupeThink()
 			or ( !TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity )
 			or ( !TimedPasteData[TimedPasteDataCurrent].Shooting_Ent.Entity:IsValid() ) then
 				for k, ent in pairs( TimedPasteData[TimedPasteDataCurrent].CreatedEntities ) do
-					if ( ent != nil and ent != NULL and ent:IsValid() ) then
+					if ( ent != nil and ent != NULL and ent.IsValid and ent:IsValid() ) then
 						ent:Remove()
 					end
 				end
@@ -2786,7 +2786,7 @@ function AdvDupe.CheckOkEnt( Player, EntTable )
 	
 	if ( Player:IsAdmin( ) or Player:IsSuperAdmin() or SinglePlayer() or !DontAllowPlayersAdminOnlyEnts ) then
 		return true
-	elseif ( test and test.t and test.t.AdminSpawnable and test.t.Spawnable ) then
+	elseif ( test and test.t and test.t.AdminSpawnable and !test.t.Spawnable ) then
 		AdvDupe.SendClientError(Player, "Sorry, you can't cheat like that")
 		Msg("AdvDupeERROR: "..tostring(Player).." tried to paste admin only prop "..(EntTable.Class or "NIL").." Ent: "..EntID.."\n")
 		return false
