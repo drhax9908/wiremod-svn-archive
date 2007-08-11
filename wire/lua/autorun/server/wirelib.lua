@@ -909,6 +909,7 @@ function WireLib.ApplyDupeInfo( ply, ent, info, GetEntByID )
 end
 
 
+
 WireLib.CreateInputs			= Wire_CreateInputs
 WireLib.CreateOutputs			= Wire_CreateOutputs
 WireLib.AdjustInputs			= Wire_AdjustInputs
@@ -924,7 +925,8 @@ WireLib.Link_Clear				= Wire_Link_Clear
 WireLib.SetPathNames			= Wire_SetPathNames
 WireLib.CreateOutputIterator	= Wire_CreateOutputIterator
 WireLib.AfterPasteMods			= Wire_AfterPasteMods
-
+Wire_BuildDupeInfo				= WireLib.BuildDupeInfo
+Wire_ApplyDupeInfo				= WireLib.ApplyDupeInfo
 
 //backwards logic: set enable to false to show show values on gates instead
 Wire_EnableGateInputValues = true
