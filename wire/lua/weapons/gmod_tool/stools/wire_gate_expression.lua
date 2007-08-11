@@ -531,11 +531,22 @@ if CLIENT then
 
 
 	function WireGateExpressionRebuildCPanel(panel)
-		if !panel then
+		if panel then
+			WireGateExpressionDoRebuildCPanel(panel)
+		else
 			panel = GetControlPanel("wire_gate_expression")
-			if !panel then return end
+			if panel then
+			    WireGateExpressionDoRebuildCPanel(panel)
+			end
+
+			panel = GetControlPanel("wiretab_wire_gate_expression")
+			if panel then
+			    WireGateExpressionDoRebuildCPanel(panel)
+			end
 		end
-		
+	end
+
+	function WireGateExpressionDoRebuildCPanel(panel)
 		panel:ClearControls()
 		
 		panel:AddControl("Header", {
