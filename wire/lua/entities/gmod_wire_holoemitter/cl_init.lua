@@ -1,5 +1,5 @@
 include( "shared.lua" );
-
+CreateClientConVar("cl_wire_holoemitter_minfaderate",10,true,false);
 // mats
 local matbeam = Material( "tripmine_laser" );
 local matpoint = Material( "sprites/gmdm_pickups/light" );
@@ -48,7 +48,9 @@ function ENT:Think( )
 		if (SinglePlayer()) then
 			tempfaderate = math.Clamp( self.Entity:GetNetworkedFloat( "FadeRate" ), 0.1, 255 )
 		else
-			tempfaderate = math.Clamp( self.Entity:GetNetworkedFloat( "FadeRate" ), 10, 255 )
+			-- Due to a request, in Multiplayer, the people can controle this with a CL side cvar (aVoN)
+			local minfaderate = tonumber(LocalPlayer():GetInfo("cl_wire_holoemitter_minfaderate")) or 10;
+			tempfaderate = math.Clamp( self.Entity:GetNetworkedFloat( "FadeRate" ),minfaderate, 255 )
 		end
 		table.insert( self.PointList, { pos = self.ActivePoint, alpha = a, faderate = tempfaderate } );
 		
