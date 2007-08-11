@@ -11,6 +11,7 @@ if( CLIENT ) then
 	language.Add( "Tool_wire_holoemitter_1", "Select the emitter point to link to." );
 	language.Add( "Tool_wire_holoemitter_showbeams", "Show beam" );
 	language.Add( "Tool_wire_holoemitter_size", "Point size" );
+	language.Add( "Tool_wire_holoemitter_minimum_fade_rate", "CLIENT: Minimum Fade Rate - Applyed to all holoemitters" );
 	language.Add( "undone_holoemitter", "Undone Wire Holoemitter" );
 	language.Add( "sboxlimit_wire_holoemitters", "You've hit the holoemitters limit!" );
 end
@@ -269,4 +270,17 @@ function TOOL.BuildCPanel( panel )
 			Multiplier	= "255",
 		}
 	);
+	if(not SinglePlayer( )) then
+		// Minimum Faderate
+		panel:AddControl(
+			"Slider",
+			{
+				Label = "#Tool_wire_holoemitter_minimum_fade_rate",
+				Type = "Float",
+				Min = "0.1",
+				Max = "100",
+				Command = "cl_wire_holoemitter_minfaderate",
+			}
+		);
+	end
 end
