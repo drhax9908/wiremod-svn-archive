@@ -39,9 +39,6 @@ function ENT:Think()
 	local clickActive = 0
 	
 	for i, player in pairs(player.GetAll()) do
-		if (player:KeyDown (IN_ATTACK) or player:KeyDown (IN_USE)) then
-			clickActive = 1
-		end
 		local trace = {}
 			trace.start = player:GetShootPos()
 			trace.endpos = (player:GetAimVector() * self.workingDistance) + trace.start
@@ -49,6 +46,9 @@ function ENT:Think()
 		local trace = util.TraceLine(trace)
 		
 		if (trace.Entity == self.Entity) then
+			if (player:KeyDown (IN_ATTACK) or player:KeyDown (IN_USE)) then
+				clickActive = 1
+			end
 			local pos = self.Entity:WorldToLocal(trace.HitPos)
 			local xval = (self.x1 - pos.y) / (self.x1 - self.x2)
 			local yval = (self.y1 - pos.z) / (self.y1 - self.y2)
