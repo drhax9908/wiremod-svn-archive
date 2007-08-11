@@ -45,7 +45,7 @@ local function AddWireSToolsToWireMenu()
 			if ( "wire" == string.lower( string.Left(ToolName, 4) ) ) then
 				spawnmenu.AddToolMenuOption( "Wire",
 											TOOL.Category or "New Category", 
-											ToolName, 
+											"wiretab_" .. ToolName, 
 											TOOL.Name or "#"..ToolName, 
 											TOOL.Command or "gmod_tool "..ToolName, 
 											TOOL.ConfigName or ToolName,
