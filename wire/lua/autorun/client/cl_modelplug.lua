@@ -148,3 +148,8 @@ list.Set( "ThrusterModels", "models/jaanus/thruster_muff.mdl", {} )
 list.Set( "ThrusterModels", "models/jaanus/thruster_rocket.mdl", {} )
 list.Set( "ThrusterModels", "models/jaanus/thruster_megaphn.mdl", {} )
 list.Set( "ThrusterModels", "models/jaanus/thruster_stun.mdl", {} )*/
+
+//more buttons
+list.Set( "ButtonModels", "models//props_citizen_tech/Firetrap_button01a.mdl", {} )
+list.Set( "ButtonModels", "models//props_lab/freightelevatorbutton.mdl", {} )
+list.Set( "ButtonModels", "models/props_combine/CombineButton.mdl", {} )
