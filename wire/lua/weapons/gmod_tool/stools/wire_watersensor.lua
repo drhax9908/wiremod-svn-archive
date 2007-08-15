@@ -43,16 +43,7 @@ function TOOL:LeftClick( trace )
 	local min = wire_watersensor:OBBMins()
 	wire_watersensor:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_nailer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_nailer:GetPhysicsObject():EnableCollisions( false )
-		wire_nailer:GetTable().nocollide = true
-	end*/
-	local const = WireLib.Weld(wire_watersensor, trace.Entity, trace.PhysicsBone, true)
+	local const = WireLib.Weld(wire_watersensor, trace.Entity, trace.PhysicsBone, true, true)
 
 	undo.Create("Wire Water Sensor")
 		undo.AddEntity( wire_watersensor )
