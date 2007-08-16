@@ -289,6 +289,21 @@ ENT._clk_0 =      function (self, n)   if self.clocked then return 1 else return
 ENT._schedule_1 = function (self, n)   self.schedule = n return 0 end
 ENT._interval_1 = function (self, n)   self.schedule = -n return 0 end
 
+function WireGateExpressionSendPacket(...)
+	WireModPacketIndex = WireModPacketIndex % 90 + 1
+	WireModPacket[WireModPacketIndex] = {...}
+	return WireModPacketIndex + 9
+end
+
+function WireGateExpressionRecvPacket(packet, index)
+	packet = packet - 9
+	if WireModPacket[packet] and WireModPacket[packet][index] then
+		return WireModPacket[packet][index]
+	else
+		return nil
+	end
+end
+
 ENT._send_x =    function (self, ...)   WireModPacketIndex = WireModPacketIndex % 90 + 1 WireModPacket[WireModPacketIndex] = {...} return WireModPacketIndex + 9 end
 ENT._recv_2 =    function (self, id, p) id = id - 9 if WireModPacket[id] and WireModPacket[id][p] then return WireModPacket[id][p] else return -1 end end
 
@@ -309,7 +324,6 @@ function ENT:IsVector(id1, id2)
 
 	return true
 end
-
 
 function ENT:ToVector(id)
 	id = id - 9
