@@ -1,10 +1,8 @@
-AddCSLuaFile( "cl_init.lua" )
-AddCSLuaFile( "shared.lua" )
-
-include('shared.lua')
+AddCSLuaFile("cl_init.lua")
+AddCSLuaFile("shared.lua")
+include("shared.lua")
 
 ENT.WireDebugName = "Advanced Pod Controller"
-
 local MODEL = Model("models/jaanus/wiretool/wiretool_siren.mdl")
 
 function ENT:Initialize()
@@ -16,8 +14,6 @@ function ENT:Initialize()
 	self.disablevar = 0
 	self.laservar = 0
 	self.crossvar = 0
-	
-	
 	-- Output keys. Format: self.keys["name"] = IN_*
 	self.keys = { }
 	self.keys["Mouse1"] = IN_ATTACK
@@ -33,12 +29,9 @@ function ENT:Initialize()
 	self.keys["Ctrl"] = IN_DUCK
 	self.keys["Shift"] = IN_SPEED
 	self.keys["Zoom"] = IN_ZOOM
-
-	
 	-- Invert the table to use it with Wire_CreateOutputs
 	local outputs = { }
 	local n = 1
-	
 	for k, v in pairs( self.keys ) do
 		outputs[n] = k
 		n = n + 1
@@ -174,14 +167,12 @@ function ENT:OnRestore()
 	self.keys["Ctrl"] = IN_DUCK
 	self.keys["Shift"] = IN_SPEED
 	self.keys["Zoom"] = IN_ZOOM
-
-	
     self.BaseClass.OnRestore(self)
 end
 
 -- Called every 0.01 seconds, check for key down
 function ENT:Think()
-local brng = Angle(0, 0, 0)
+	local brng = Angle(0, 0, 0)
 	-- Check that we have a pod
 	if self.Pod then
 		-- Check if we should look for player entering/exiting the vehicle TTLFP = TimeToLookForPod
@@ -273,17 +264,14 @@ end
 --Duplicator support to save pod link (TAD2020)
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
-
 	if (self.Pod) and (self.Pod:IsValid()) then
 	    info.pod = self.Pod:EntIndex()
 	end
-
 	return info
 end
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
-
 	if (info.pod) then
 		self.Pod = GetEntByID(info.pod)
 		if (!self.Pod) then
