@@ -1,38 +1,27 @@
-
-
 ENT.Type = "anim"
 ENT.Base = "base_gmodentity"
-
-ENT.PrintName		= "Wire Entity"
-ENT.Author			= "Erkle"
-ENT.Contact			= "ErkleMad@gmail.com"
-ENT.Purpose			= "Base for all wired SEnts"
-ENT.Instructions	= ""
-
-ENT.Spawnable		= false
-ENT.AdminSpawnable	= false
-
-ENT.IsWire          = true
-
+ENT.PrintName = "Wire Entity"
+ENT.Author = "Erkle"
+ENT.Contact = "ErkleMad@gmail.com"
+ENT.Purpose = "Base for all wired SEnts"
+ENT.Instructions = ""
+ENT.Spawnable = false
+ENT.AdminSpawnable = false
+ENT.IsWire = true
 
 function ENT:GetOverlayText()
 	local name = self.Entity:GetNetworkedString("WireName")
 	//local txt = self.BaseClass.BaseClass.GetOverlayText(self) or ""
-	
-	local txt = self.Entity:GetNetworkedBeamString( "GModOverlayText" ) or ""
-	
-	if ( !SinglePlayer() ) then
+	local txt = self.Entity:GetNetworkedBeamString("GModOverlayText") or ""
+	if (not SinglePlayer()) then
 		local PlayerName = self:GetPlayerName()
 		txt = txt .. "\n(" .. PlayerName .. ")"
 	end
-	
-	if (name) and (name ~= "") then
+	if(name and name ~= "") then
 	    if (txt == "") then
-	        return "- " .. name .. " -"
+	        return "- "..name.." -"
 	    end
-
-	    return "- " .. name .. " -\n" .. txt
+	    return "- "..name.." -\n"..txt
 	end
-	
 	return txt
 end

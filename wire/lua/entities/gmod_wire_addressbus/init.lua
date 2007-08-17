@@ -11,10 +11,8 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	self.Entity:SetUseType( SIMPLE_USE )
-
-	self.Outputs = Wire_CreateOutputs(self.Entity, { "Memory" })
-	self.Inputs = Wire_CreateInputs(self.Entity, { "Memory1", "Memory2", "Memory3", "Memory4" })
-
+	self.Outputs = Wire_CreateOutputs(self.Entity, {"Memory"})
+	self.Inputs = Wire_CreateInputs(self.Entity,{"Memory1","Memory2","Memory3","Memory4"})
 	self.Memory = {}
 	self.MemStart = {}
 	self.MemEnd = {}
@@ -23,7 +21,6 @@ function ENT:Initialize()
 		self.MemStart[i] = 0
 		self.MemEnd[i] = 0
 	end
-
 	self:SetOverlayText( "Address bus" )
 end
 
