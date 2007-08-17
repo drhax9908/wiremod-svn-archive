@@ -42,6 +42,7 @@ end
 // trigger input
 function ENT:TriggerInput( inputname, value, iter )
 	// store values.
+	if(not value) then return end;
 	if (inputname == "Clear" and value != 0)  then
 		self.LastClear = self.LastClear + 1
 		self.Entity:SetNetworkedInt( "Clear", self.LastClear );

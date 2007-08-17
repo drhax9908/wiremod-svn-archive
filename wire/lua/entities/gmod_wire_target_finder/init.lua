@@ -169,39 +169,26 @@ end
 
 //function ENT:SelectorPrev(ch) end --TODO if needed
 
-function ENT:FindName(name)
-	local found = false
-	if string.len(self.PlayerName) > 0 then 
-		if self.CaseSen then
-			if string.find(name, self.PlayerName) then 
-				found = true
-			end
-		else
-			if string.find(string.lower(name), string.lower(self.PlayerName)) then 
-				found = true
-			end
-		end
+function ENT:FindInValue(haystack,needle,case_sensitive)
+	if(type(haystack) ~= "string" or type(needle) ~= "string") then return false end;
+	if(needle == "") then return false end;
+	if(case_sensitive) then
+		if(haystack:find(needle)) then return true end;
 	else
-		found = true
+		if(haystack:lower():find(needle:lower())) then return true end;
 	end
-	return found
+end
+
+function ENT:FindName(name)
+	return self:FindInValue(name,self.PlayerName,self.CaseSen)
 end
 
 function ENT:FindSteam(steamid)
-	local found = false
-	if string.len(self.SteamName) > 0 then 
-		if string.find(steamid, self.SteamName) then 
-			found = true
-		end
-	else
-		found = true
-	end
-	return found
+	self:FindInValue(steamid,self.SteamName);
 end
 
 function ENT:FindColor(contact)
-	if (!self.ColorCheck) then return true end
-	
+	if (not self.ColorCheck) then return true end
 	local col = Color(contact:GetColor())
 	if (col.r == self.PcolR) and (col.g == self.PcolG) and (col.b == self.PcolB) and (col.a == self.PcolA) then
 		return self.ColorTarget
@@ -211,39 +198,16 @@ function ENT:FindColor(contact)
 end
 
 function ENT:FindModel(name)
-	local found = false
-	if string.len(self.PropModel) > 0 then 
-		if string.find(string.lower(name), string.lower(self.PropModel)) then 
-			found = true
-		end
-	else
-		found = true
-	end
-	return found
+	self:FindInValue(name,self.PropModel);
 end
 
 function ENT:FindNPCName(name)
-	local found = false
-	if string.len(self.NPCName) > 0 then 
-		if string.find(string.lower(name), string.lower(self.NPCName)) then 
-			found = true
-		end
-	else
-		found = true
-	end
-	return found
+	return self:FindInValue(name,self.NPCName);
 end
 
 function ENT:FindEntity(name)
-	local found = false
-	if string.len(self.EntFil) > 0 then
-		if string.find(string.lower(name), string.lower(self.EntFil)) then 
-			found = true
-		end
-	end
-	return found
+	return self:FindInValue(name,self.EntFil);
 end
-
 
 //Prop Protection Buddy List Support (EXPERIMENTAL!!!)
 function ENT:CheckTheBuddyList(Ami)
@@ -446,10 +410,12 @@ local noProtection = false -- If there's no protection whatsoever, this is flagg
 local function init()
 	local t = hook.GetTable()
 	local fn
-	if t.CanTool[ 0 ] then -- ULib
-		fn = t.CanTool[ 0 ].PropProtection
-	else
-		fn = t.CanTool.PropProtection
+	if(t.CanTool) then
+		if t.CanTool[0] then -- ULib
+			fn = t.CanTool[0].PropProtection
+		else
+			fn = t.CanTool.PropProtection
+		end
 	end
 	
 	hasPropProtection = type( fn ) == "function"

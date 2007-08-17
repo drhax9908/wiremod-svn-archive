@@ -23,6 +23,7 @@ end
 
 function ENT:Think()
 	local c = self.constraint
+	if(not (c and c:IsValid())) then return end;
 	local p1 = self:GetWPos(c:GetTable().Ent1, c:GetTable().Phys1, c:GetTable().LPos1)
 	local p2 = self:GetWPos(c:GetTable().Ent2, c:GetTable().Phys2, c:GetTable().LPos2)
 
