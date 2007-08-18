@@ -171,20 +171,13 @@ end
 
 function ENT:FindInValue(haystack,needle,case_sensitive)
 	if(type(haystack) ~= "string" or type(needle) ~= "string") then return false end;
-	if(needle == "") then return false end;
+	if(needle == "") then return true end;
 	if(case_sensitive) then
 		if(haystack:find(needle)) then return true end;
 	else
 		if(haystack:lower():find(needle:lower())) then return true end;
 	end
-end
-
-function ENT:FindName(name)
-	return self:FindInValue(name,self.PlayerName,self.CaseSen)
-end
-
-function ENT:FindSteam(steamid)
-	self:FindInValue(steamid,self.SteamName);
+	return false
 end
 
 function ENT:FindColor(contact)
@@ -195,18 +188,6 @@ function ENT:FindColor(contact)
 	else
 		return !self.ColorTarget	
 	end
-end
-
-function ENT:FindModel(name)
-	self:FindInValue(name,self.PropModel);
-end
-
-function ENT:FindNPCName(name)
-	return self:FindInValue(name,self.NPCName);
-end
-
-function ENT:FindEntity(name)
-	return self:FindInValue(name,self.EntFil);
 end
 
 //Prop Protection Buddy List Support (EXPERIMENTAL!!!)
@@ -242,21 +223,29 @@ function ENT:Think()
 		self.NextTargetTime = CurTime()+1
 		
 		// Find targets that meet requirements
-		local contacts = ents.FindInSphere(self.Entity:GetPos(), self.MaxRange or 10)
 		local mypos = self.Entity:GetPos()
 		local bogeys,dists = {},{}
-		for _,contact in pairs(contacts) do
-			local contactClass = contact:GetClass()
-			if 	( !self.NoTargetOwnersStuff or (contactClass == "player") or ( contact:GetOwner() != self:GetPlayer() and !self:checkOwnership( contact ) ) ) and (
-				((self.TargetNPC)			and (string.find(contactClass, "^npc_.*")) and (contactClass ~= "npc_heli_avoidsphere") and (self:FindNPCName(contactClass))) or
-				((self.TargetPlayer)		and (contactClass == "player") and (!self.NoTargetOwner or self:GetPlayer() != contact) and self:FindName(contact:GetName()) and self:FindSteam(contact:SteamID()) and self:FindColor(contact) and self:CheckTheBuddyList(contact) ) or
-				((self.TargetBeacon)		and (contactClass == "gmod_wire_locator")) or
-				((self.TargetRPGs)			and (contactClass == "rpg_missile")) or
-				((self.TargetHoverballs)	and (contactClass == "gmod_hoverball" or contactClass == "gmod_wire_hoverball")) or
-				((self.TargetThrusters)		and (contactClass == "gmod_thruster" or contactClass == "gmod_wire_thruster" or contactClass == "gmod_wire_vectorthruster")) or
-				((self.TargetProps)			and (contactClass == "prop_physics") and (self:FindModel(contact:GetModel()))) or
-				((self.TargetVehicles)		and (string.find(contactClass, "prop_vehicle"))) or
-				(self:FindEntity(contactClass)) )
+		for _,contact in pairs(ents.FindInSphere(self.Entity:GetPos(), self.MaxRange or 10)) do
+			local class = contact:GetClass()
+			if (not self.NoTargetOwnersStuff or (class == "player") or (contact:GetOwner() ~= self:GetPlayer() and not self:checkOwnership(contact))) and (
+				-- NPCs
+				((self.TargetNPC) and (string.find(class, "^npc_.*")) and (class ~= "npc_heli_avoidsphere") and (self:FindInValue(class,self.NPCName))) or
+				--Players
+				((self.TargetPlayer) and (class == "player") and (!self.NoTargetOwner or self:GetPlayer() != contact) and self:FindInValue(contact:GetName(),self.PlayerName,self.CaseSen) and self:FindInValue(contact:SteamID(),self.SteamName) and self:FindColor(contact) and self:CheckTheBuddyList(contact)) or
+				--Locators
+				((self.TargetBeacon) and (class == "gmod_wire_locator")) or
+				--RPGs
+				((self.TargetRPGs) and (class == "rpg_missile")) or
+				-- Hoverballs
+				((self.TargetHoverballs) and (class == "gmod_hoverball" or class == "gmod_wire_hoverball")) or
+				-- Thruster
+				((self.TargetThrusters)	and (class == "gmod_thruster" or class == "gmod_wire_thruster" or class == "gmod_wire_vectorthruster")) or
+				-- Props
+				((self.TargetProps) and (class == "prop_physics") and (self:FindInValue(contact:GetModel(),self.PropModel))) or
+				-- Vehicles
+				((self.TargetVehicles) and (string.find(class, "prop_vehicle"))) or
+				-- Entity classnames
+				(self.EntFil ~= "" and self:FindInValue(class,self.EntFil)))
 			then
 				local dist = (contact:GetPos() - mypos):Length()
 				if (dist >= self.MinRange) then
