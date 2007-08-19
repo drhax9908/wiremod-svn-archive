@@ -43,3 +43,6 @@ function ENT:Draw()
 	render.SetMaterial(Material("tripmine_laser"))
 	render.DrawBeam(vStart, endpos, 6, 0, 10, Color(self.Entity:GetColor()))
 end
+
+function ENT:Think()
+end
