@@ -197,7 +197,7 @@ function ENT:TriggerInput(iname, value)
 	if (iname == "A: Go") then
 		if ( value == self.Fwd ) then self.Go = 1
 		elseif ( value == self.Bck ) then self.Go = -1
-		elseif ( math.abs(value) == self.Stop ) then self.Go =0 end
+		elseif ( value == self.Stop ) then self.Go =0 end
 	elseif (iname == "B: Break") then
 		self.Breaking = value
 	elseif (iname == "C: SpeedMod") then
