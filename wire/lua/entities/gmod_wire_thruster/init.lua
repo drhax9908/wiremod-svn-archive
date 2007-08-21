@@ -13,8 +13,9 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	
-	local phys = self.Entity:GetPhysicsObject()
+	self.Entity:DrawShadow( false )
 	
+	local phys = self.Entity:GetPhysicsObject()
 	if (phys:IsValid()) then
 		phys:Wake()
 	end
@@ -48,7 +49,10 @@ function ENT:OnRemove()
 end
 
 function ENT:SetForce( force, mul )
-	if (force) then self.force = force end
+	if (force) then
+		self.force = force
+		self:NetSetForce( force )
+	end
 	mul = mul or 1
 	
 	local phys = self.Entity:GetPhysicsObject()
@@ -92,7 +96,7 @@ function ENT:Setup(force, force_min, force_max, oweffect, uweffect, owater, uwat
 		self.Entity:StopSound(Thruster_Sound)
 	end
 	
-	self:SetOverlayText( "Thrust = " .. 0 .. "\nMul: " .. math.Round(force*1000)/1000 )
+	--self:SetOverlayText( "Thrust = " .. 0 .. "\nMul: " .. math.Round(force*1000)/1000 )
 end
 
 function ENT:TriggerInput(iname, value)
@@ -139,16 +143,19 @@ function ENT:Switch( on, mul )
 	local changed = (self:IsOn() ~= on)
 	self:SetOn( on )
 	
+	
 	if (on) then 
 	    if (changed) and (self.EnableSound) then
 			self.Entity:StopSound( Thruster_Sound )
 			self.Entity:EmitSound( Thruster_Sound )
 		end
 		
-		if (mul ~= self.PrevOutput) then
+		self:NetSetMul( mul )
+		
+		/*if (mul ~= self.PrevOutput) then
 			self:SetOverlayText( "Thrust = " .. math.Round(self.force*mul*1000)/1000 .. "\nMul: " .. math.Round(self.force*1000)/1000 )
 			self.PrevOutput = mul
-		end
+		end*/
 		
 		self:SetForce( nil, mul )
 	else
@@ -156,10 +163,10 @@ function ENT:Switch( on, mul )
 			self.Entity:StopSound( Thruster_Sound )
 		end
 		
-		if (self.PrevOutput) then
+		/*if (self.PrevOutput) then
 			self:SetOverlayText( "Thrust = Off".."\nMul: "..math.Round(self.force*1000)/1000 )
 			self.PrevOutput = nil
-		end
+		end*/
 	end
 	
 	local phys = self.Entity:GetPhysicsObject()

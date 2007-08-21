@@ -61,3 +61,61 @@ function ENT:GetOffset()
 				self.Entity:GetNetworkedInt( "z" ) / 100
 			)
 end
+
+
+function ENT:NetSetForce( force )
+	self.Entity:SetNetworkedInt(4, math.floor(force*100))
+end
+function ENT:NetGetForce()
+	return self.Entity:GetNetworkedInt(4)/100
+end
+
+
+local Limit = .1
+local LastTime = 0
+function ENT:NetSetMul( mul )
+	--self.Entity:SetNetworkedBeamInt(5, math.floor(mul*100))
+	if (CurTime() > LastTime + Limit) then
+		self.Entity:SetNetworkedInt(5, math.floor(mul*100))
+		LastTime = CurTime()
+	end
+end
+function ENT:NetGetMul()
+	--return self.Entity:GetNetworkedBeamInt(5)/100
+	return self.Entity:GetNetworkedInt(5)/100
+end
+
+
+function ENT:GetOverlayText()
+	
+	local txt = "Thrust = " 
+	local force = self:NetGetForce()
+	if (self:IsOn()) then
+		txt = txt .. ( force * self:NetGetMul() )
+	else
+		txt = txt .. "off"
+	end
+	txt = txt .. "\nMul: " .. force .. "\nMode: "
+	
+	local mode = self:GetMode()
+	if (self.Mode == 0) then
+		txt = txt .. "XYZ Local"
+	elseif (self.Mode == 1) then
+		txt = txt .. "XYZ World"
+	elseif (self.Mode == 2) then
+		txt = txt .. "XY Local, Z World"
+	end
+	
+	
+	if (not SinglePlayer()) then
+		local PlayerName = self:GetPlayerName()
+		txt = txt .. "\n(" .. PlayerName .. ")"
+	end
+	if(name and name ~= "") then
+	    if (txt == "") then
+	        return "- "..name.." -"
+	    end
+	    return "- "..name.." -\n"..txt
+	end
+	return txt
+end

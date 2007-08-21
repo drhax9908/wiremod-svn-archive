@@ -10,20 +10,38 @@ ENT.Instructions	= ""
 ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
 
+local Limit = .05
+local LastTimeA = 0
+local LastTimeB = 0
+
 function ENT:SetDisplayA( float )
-	self.Entity:SetNetworkedFloat( "DisA", float )
+	if (CurTime() > LastTimeA + Limit) then
+		if (self.Floor) then
+			self.Entity:SetNetworkedBeamFloat( 1, math.floor(float), true )
+		else
+			self.Entity:SetNetworkedBeamFloat( 1, math.floor(float * 1000)/ 1000, true )
+		end
+		LastTimeA = CurTime()
+	end
 end
 
 function ENT:SetDisplayB( float )
-	self.Entity:SetNetworkedFloat( "DisB", float )
+	if (CurTime() > LastTimeB + Limit) then
+		if (self.Floor) then
+			self.Entity:SetNetworkedBeamFloat( 2, math.floor(float), true )
+		else
+			self.Entity:SetNetworkedBeamFloat( 2, math.floor(float * 1000)/ 1000, true )
+		end
+		LastTimeB = CurTime()
+	end
 end
 
 function ENT:GetDisplayA( )
-	return self.Entity:GetNetworkedFloat( "DisA" )
+	return self.Entity:GetNetworkedBeamFloat( 1 )
 end
 
 function ENT:GetDisplayB( )
-	return self.Entity:GetNetworkedFloat( "DisB" )
+	return self.Entity:GetNetworkedBeamFloat( 2 )
 end
 
 // Extra stuff for Wire Screen (TheApathetic)
