@@ -90,7 +90,10 @@ function ENT:OnRemove()
 end
 
 function ENT:SetForce( force, mul )
-	if (force) then self.force = force end
+	if (force) then
+		self.force = force
+		self:NetSetForce( force )
+	end
 	mul = mul or 1
 	
 	local phys = self.Entity:GetPhysicsObject()
@@ -176,7 +179,7 @@ function ENT:Setup(force, force_min, force_max, oweffect, uweffect, owater, uwat
 		WireLib.AdjustSpecialInputs(self.Entity, {"Mul", "X", "Y", "Z", "Vector"}, { "NORMAL", "NORMAL", "NORMAL", "NORMAL", "VECTOR"})
 	end
 	
-	self:ShowOutput( self.mul )
+	--self:ShowOutput( self.mul )
 end
 
 function ENT:TriggerInput(iname, value)
@@ -264,9 +267,11 @@ function ENT:Switch( on, mul )
 			self.Entity:EmitSound( Thruster_Sound )
 		end
 		
+		self:NetSetMul( mul )
+		
 		if (mul ~= self.PrevOutput) then
 			--self:SetOverlayText( "Thrust = " .. math.Round(self.force*mul*1000)/1000 .. "\nMul: " .. math.Round(self.force*1000)/1000 )
-			self:ShowOutput( true )
+			--self:ShowOutput( true )
 			self.PrevOutput = mul
 		end
 		
@@ -278,7 +283,7 @@ function ENT:Switch( on, mul )
 		
 		if (self.PrevOutput) then
 			--self:SetOverlayText( "Thrust = Off".."\nMul: "..math.Round(self.force*1000)/1000 )
-			self:ShowOutput( false )
+			--self:ShowOutput( false )
 			self.PrevOutput = nil
 		end
 	end

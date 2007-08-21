@@ -108,7 +108,7 @@ function ENT:Draw()
 		if (self:GetFloor()) then
 			DisplayA = math.floor(self:GetDisplayA( ))
 		else
-			DisplayA = math.floor(self:GetDisplayA( ) * 1000) / 1000
+			DisplayA = math.floor(self:GetDisplayA( ) * 1000)/ 1000
 		end
 		
 		if (self:GetLeftAlign()) then
@@ -135,8 +135,8 @@ function ENT:Draw()
 			DisplayA = math.floor(self:GetDisplayA( ))
 			DisplayB = math.floor(self:GetDisplayB( ))
 		else
-			DisplayA = math.floor(self:GetDisplayA( ) * 1000) / 1000
-			DisplayB = math.floor(self:GetDisplayB( ) * 1000) / 1000
+			DisplayA = math.floor(self:GetDisplayA( ) * 1000)/ 1000
+			DisplayB = math.floor(self:GetDisplayB( ) * 1000)/ 1000
 		end
 		
 		if (self:GetLeftAlign()) then
