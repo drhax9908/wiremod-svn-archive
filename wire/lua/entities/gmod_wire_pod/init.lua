@@ -39,12 +39,12 @@ function ENT:Initialize()
 	self.Outputs = Wire_CreateOutputs( self.Entity, outputs )
 	self.Inputs = Wire_CreateInputs( self.Entity, { "Lock" } )
 	self:SetOverlayText( "Pod Controller" )
+	self.TTLFP = CurTime()
 end
 
 -- Link to pod
 function ENT:Setup( pod )
 	self.Pod = pod
-	self.TTLFP = CurTime()
 end
 
 -- No inputs
@@ -126,7 +126,7 @@ end
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
 
-	if (self.Pod) and (self.Pod:IsValid()) then
+	if (self.Pod and self.Pod:IsValid()) then
 	    info.pod = self.Pod:EntIndex()
 	end
 
@@ -138,7 +138,7 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 
 	if (info.pod) then
 		self.Pod = GetEntByID(info.pod)
-		if (!self.Pod) then
+		if !(self.Pod and self.Pod:IsValid()) then
 			self.Pod = ents.GetByIndex(info.pod)
 		end
 	end
