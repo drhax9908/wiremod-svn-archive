@@ -38,7 +38,7 @@ WireGateExpressionParser.toktable = {
 	
 	["lpa"] = "(",
 	["rpa"] = ")",
-
+	
 	["trg"] = "~",
 	["dlt"] = "$",
 }
@@ -205,6 +205,11 @@ function WireGateExpressionParser:ParseSymbols(str)
 			elseif self.charvalue >= 65 and self.charvalue <= 90 or self.character == "_" then
 				while self.character and (self.charvalue >= 65 and self.charvalue <= 90 or self.charvalue >= 97 and self.charvalue <= 122 or self.character >= "0" and self.character <= "9" or self.character == "_") do self:ReadCharacter() end
 				self.symtok = "var"		
+			elseif self.character == "'" then
+				self:NextCharacter()
+				while self.character and self.character ~= "'" do self:ReadCharacter() end
+				self:NextCharacter()
+				self.symtok = "str"
 			elseif self.character == "" then
 				break
 			else
@@ -319,6 +324,8 @@ function WireGateExpressionParser:Expect(token) -- outputs bad errors (lpa) etc
 				self:Error("Expected symbol (" .. self.toktable[token] .. ") near variable (" .. self.symarg .. ") at line " .. self.line);
 			elseif self.symtok == "num" then
 				self:Error("Expected symbol (" .. self.toktable[token] .. ") near number (" .. self.symarg .. ") at line " .. self.line);
+			elseif self.symtok == "str" then
+				self:Error("Expected symbol (" .. self.toktable[token] .. ") near string (" .. self.symarg .. ") at line " .. self.line);
 			else
 				self:Error("Expected symbol (" .. self.toktable[token] .. ") near (" .. self.toktable[self.symtok] .. ") at line " .. self.line);
 			end
@@ -371,6 +378,7 @@ end
 --[[ 1 : exp2 , exp2 exp1 ]]
 function WireGateExpressionParser:expr1()
 	local expression = self:expr2()
+	
 	if self:Accept("com") or self.symtok then
 		return {"seq", expression, self:expr1()}
 	else
@@ -380,7 +388,17 @@ end
 
 --[[ 2 : exp4 , exp4->exp3; ]]
 function WireGateExpressionParser:expr2()
+	if self.symtok and self.symtok == "fun" and self.symarg == "concommand" then
+		self:NextSymbol()
+		self:Expect("lpa")
+		local arg = self.symarg
+		self:Expect("str")
+		self:Expect("rpa")
+		return {"con", arg}
+	end
+	
 	local expression = self:expr4()
+	
 	if self:Accept("imp") then
 		local expression = {"imp", expression, self:expr3()}
 		self:Expect("sem")

@@ -153,7 +153,7 @@ function TOOL:RightClick(trace)
 		for i = 1,60 do
 			local line = trace.Entity.GateLines[i]
 			if (line and line ~= "") then
-				player:SendLua('LocalPlayer():ConCommand(\'wire_gate_expression_line' .. i .. ' "' .. line .. '"\')')
+				player:SendLua('LocalPlayer():ConCommand("wire_gate_expression_line' .. i .. ' \\\"' .. line .. '\\\"")')
 			else
 				player:ConCommand('wire_gate_expression_line' .. i .. ' ""')
 			end
@@ -557,6 +557,7 @@ if CLIENT then
 		ModelPlug_AddToCPanel(panel, "gate", "wire_gate_expression", "Model:", nil, "Model:")
 		
 		if wire_gate_expression_state == 0 then
+			--[[
 			local configs = {
 				{ 1200, 7, 19 },
 				{ 1080, 5, 17 },
@@ -564,6 +565,18 @@ if CLIENT then
 				{ 1024, 5, 15 },
 				{  768, 3,  7 },
 				{  720, 3,  5 },
+				{  600, 3,  8 },
+				{  480, 3,  5 },
+			}
+			--]]
+			
+			local configs = {
+				{ 1200, 6, 12 },
+				{ 1080, 4, 10 },
+				{ 1050, 4, 9  },
+				{ 1024, 4, 8 },
+				{  768, 6,  12 },
+				{  720, 5,  11 },
 				{  600, 3,  8 },
 				{  480, 3,  5 },
 			}
