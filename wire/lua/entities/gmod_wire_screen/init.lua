@@ -27,7 +27,6 @@ function ENT:Think()
 	end
 	
 	self:NextThink(CurTime() + 0.05)
-	
 	return true
 end
 
@@ -51,7 +50,6 @@ function ENT:Setup(SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor)
 	//LeftAlign (TAD2020)
 	self:SetLeftAlign(LeftAlign)
 	//Floor (TAD2020)
-	self.Floor = Floor
 	self:SetFloor(Floor)
 	
 	// Put it here to update inputs if necessary (TheApathetic)
