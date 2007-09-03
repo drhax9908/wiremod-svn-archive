@@ -189,6 +189,38 @@ function ENT:_fun(tbl)  local prm = self["_"..tbl[3][1]](self,tbl[3]) local fun 
 function ENT:_prm(tbl)  local prm = self["_"..tbl[2][1]](self,tbl[2]) table.insert(prm, self["_"..tbl[3][1]](self,tbl[3])) return prm end
 function ENT:_nil(tbl)  return {} end
 
+function ENT:_con(tbl)
+	if self:GetPlayer() then
+		local instr = tbl[2]
+		local outstr = ""
+		
+		while true do
+			local pos = string.find(instr, "$", 1, true)
+			if pos then
+				outstr = outstr .. string.sub(instr, 0, pos - 1)
+				instr  = string.sub(instr, pos + 1)
+				
+				local pos = string.find(instr, "$", 1, true)
+				if pos then
+					local var = string.sub(instr, 0, pos - 1)
+					if self.variables[var] then
+						outstr = outstr .. tostring(self.variables[var])
+					else
+						outstr = outstr .. "0"
+					end
+					
+					instr  = string.sub(instr, pos + 1)
+				end
+			else
+				outstr = outstr .. instr
+				break
+			end
+		end
+		
+		self:GetPlayer():ConCommand(outstr)
+	end
+end
+
 function ENT:_imp(tbl)  if math.abs(self["_"..tbl[2][1]](self,tbl[2])) >= self.Delta then     if self["_"..tbl[3][1]](self,tbl[3]) == false then return false end end end
 function ENT:_cnd(tbl)  if math.abs(self["_"..tbl[2][1]](self,tbl[2])) >= self.Delta then return self["_"..tbl[3][1]](self,tbl[3]) else return self["_"..tbl[4][1]](self,tbl[4]) end end
 
