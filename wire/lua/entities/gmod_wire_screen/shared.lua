@@ -10,30 +10,12 @@ ENT.Instructions	= ""
 ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
 
-local Limit = .05
-local LastTimeA = 0
-local LastTimeB = 0
-
 function ENT:SetDisplayA( float )
-	if (CurTime() > LastTimeA + Limit) then
-		if (self.Floor) then
-			self.Entity:SetNetworkedBeamFloat( 1, math.floor(float), true )
-		else
-			self.Entity:SetNetworkedBeamFloat( 1, math.floor(float * 1000)/ 1000, true )
-		end
-		LastTimeA = CurTime()
-	end
+	self.Entity:SetNetworkedBeamFloat( 1, float, true )
 end
 
 function ENT:SetDisplayB( float )
-	if (CurTime() > LastTimeB + Limit) then
-		if (self.Floor) then
-			self.Entity:SetNetworkedBeamFloat( 2, math.floor(float), true )
-		else
-			self.Entity:SetNetworkedBeamFloat( 2, math.floor(float * 1000)/ 1000, true )
-		end
-		LastTimeB = CurTime()
-	end
+	self.Entity:SetNetworkedBeamFloat( 2, float, true )
 end
 
 function ENT:GetDisplayA( )
