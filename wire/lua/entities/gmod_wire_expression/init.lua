@@ -16,6 +16,11 @@ if !WireModPacket then
 	WireModPacketIndex = 0
 end
 
+if !WireModVector then
+	WireModVector = {}
+	WireModVectorIndex = 0
+end
+
 function ENT:Initialize()
 	self.Entity:PhysicsInit(SOLID_VPHYSICS)
 	self.Entity:SetMoveType(MOVETYPE_VPHYSICS)
@@ -321,6 +326,9 @@ ENT._clk_0 =      function (self, n)   if self.clocked then return 1 else return
 ENT._schedule_1 = function (self, n)   self.schedule = n return 0 end
 ENT._interval_1 = function (self, n)   self.schedule = -n return 0 end
 
+ENT._send_x =    function (self, ...)   WireModPacketIndex = WireModPacketIndex % 90 + 1 WireModPacket[WireModPacketIndex] = {...} return WireModPacketIndex + 9 end
+ENT._recv_2 =    function (self, id, p) id = id - 9 if WireModPacket[id] and WireModPacket[id][p] then return WireModPacket[id][p] else return -1 end end
+
 function WireGateExpressionSendPacket(...)
 	WireModPacketIndex = WireModPacketIndex % 90 + 1
 	WireModPacket[WireModPacketIndex] = {...}
@@ -336,57 +344,55 @@ function WireGateExpressionRecvPacket(packet, index)
 	end
 end
 
-ENT._send_x =    function (self, ...)   WireModPacketIndex = WireModPacketIndex % 90 + 1 WireModPacket[WireModPacketIndex] = {...} return WireModPacketIndex + 9 end
-ENT._recv_2 =    function (self, id, p) id = id - 9 if WireModPacket[id] and WireModPacket[id][p] then return WireModPacket[id][p] else return -1 end end
-
 -- HIGHLY EXPERIMENTAL FUNCTIONALITY --
+
+function ENT:GetVector(id)
+	return WireModVector[id - 9]
+end
+
+function ENT:PutVector(v)
+	WireModVectorIndex = WireModVectorIndex % 90 + 1
+	WireModVector[WireModVectorIndex] = v
+	return WireModVectorIndex + 9
+end
+
+function ENT:CloneVector(v)
+	return Vector(v.x, v.y, v.z)
+end
 
 function ENT:IsVector(id1, id2)
 	id1 = id1 - 9
-	if not (WireModPacket[id1] and #WireModPacket[id1] == 3) then
-		return false
-	end
+	if !WireModVector[id1] then return false end
 
 	if id2 then
 		id2 = id2 - 9
-		if not (WireModPacket[id2] and #WireModPacket[id2] == 3) then
-			return false
-		end
+		if !WireModVector[id2] then	return false end
 	end
 
 	return true
 end
 
-function ENT:ToVector(id)
-	id = id - 9
-	return Vector(WireModPacket[id][1], WireModPacket[id][2], WireModPacket[id][3])
-end
 
-function ENT:FromVector(vec)
-	WireModPacketIndex = WireModPacketIndex % 90 + 1
-	WireModPacket[WireModPacketIndex] = {vec.x, vec.y, vec.z}
-	return WireModPacketIndex + 9
-end
+ENT._vector_2 =       function (self, x, y)    return self:PutVector(Vector(x, y, 0)) end
+ENT._vector_3 =       function (self, x, y, z) return self:PutVector(Vector(x, y, z)) end
 
-ENT._vector_3 =   function (self, x, y, z)   WireModPacketIndex = WireModPacketIndex % 90 + 1 WireModPacket[WireModPacketIndex] = {x, y, z} return WireModPacketIndex + 9 end
+ENT._vecx_1 =         function (self, v) if self:IsVector(v) then return self:GetVector(v).x else return -1 end end
+ENT._vecy_1 =         function (self, v) if self:IsVector(v) then return self:GetVector(v).y else return -1 end end
+ENT._vecz_1 =         function (self, v) if self:IsVector(v) then return self:GetVector(v).z else return -1 end end
 
-ENT._vecx_1 =         function (self, v) if self:IsVector(v) then return self:ToVector(v).x else return -1 end end
-ENT._vecy_1 =         function (self, v) if self:IsVector(v) then return self:ToVector(v).y else return -1 end end
-ENT._vecz_1 =         function (self, v) if self:IsVector(v) then return self:ToVector(v).z else return -1 end end
+ENT._vecpitch_1 =     function (self, v) if self:IsVector(v) then return (self:GetVector(v):Angle().p + 180) % 360 - 180 else return -1 end end
+ENT._vecyaw_1 =       function (self, v) if self:IsVector(v) then return (self:GetVector(v):Angle().y + 180) % 360 - 180 else return -1 end end
 
-ENT._vecpitch_1 =     function (self, v) if self:IsVector(v) then return (self:ToVector(v):Angle().p + 180) % 360 - 180 else return -1 end end
-ENT._vecyaw_1 =       function (self, v) if self:IsVector(v) then return (self:ToVector(v):Angle().y + 180) % 360 - 180 else return -1 end end
+ENT._veclength_1 =    function (self, v) if self:IsVector(v) then return self:GetVector(v):Length() else return -1 end end
+ENT._vecnormalize_1 = function (self, v) if self:IsVector(v) then return self:PutVector(self:GetVector(v):GetNormalized()) else return -1 end end
 
-ENT._veclength_1 =    function (self, v) if self:IsVector(v) then return self:ToVector(v):Length() else return -1 end end
-ENT._vecnormalize_1 = function (self, v) if self:IsVector(v) then return self:FromVector(self:ToVector(v):GetNormalized()) else return -1 end end
+ENT._vecdot_2 =       function (self, v1, v2) if self:IsVector(v1, v2) then return self:GetVector(v1):Dot(self:GetVector(v2)) else return -1 end end
+ENT._veccross_2 =     function (self, v1, v2) if self:IsVector(v1, v2) then return self:PutVector(self:GetVector(v1):Cross(self:GetVector(v2))) else return -1 end end
+ENT._vecdistance_2 =  function (self, v1, v2) if self:IsVector(v1, v2) then return self:GetVector(v1):Distance(self:GetVector(v2)) else return -1 end end
+ENT._vecadd_2 =       function (self, v1, v2) if self:IsVector(v1, v2) then return self:PutVector(self:GetVector(v1) + self:GetVector(v2)) else return -1 end end
+ENT._vecsub_2 =       function (self, v1, v2) if self:IsVector(v1, v2) then return self:PutVector(self:GetVector(v1) - self:GetVector(v2)) else return -1 end end
+ENT._vecmul_2 =       function (self, v1, v2) if self:IsVector(v1, v2) then return self:PutVector(self:GetVector(v1) * self:GetVector(v2)) else return -1 end end
+ENT._vecsmul_2 =      function (self, v, n)   if self:IsVector(v) then return self:PutVector(self:GetVector(v) * n) else return -1 end end
+ENT._vecsdiv_2 =      function (self, v, n)   if self:IsVector(v) then return self:PutVector(self:GetVector(v) / n) else return -1 end end
 
-ENT._vecdot_2 =       function (self, v1, v2) if self:IsVector(v1, v2) then return self:ToVector(v1):Dot(self:ToVector(v2)) else return -1 end end
-ENT._veccross_2 =     function (self, v1, v2) if self:IsVector(v1, v2) then return self:FromVector(self:ToVector(v1):Cross(self:ToVector(v2))) else return -1 end end
-ENT._vecdistance_2 =  function (self, v1, v2) if self:IsVector(v1, v2) then return self:ToVector(v1):Distance(self:ToVector(v2)) else return -1 end end
-ENT._vecadd_2 =       function (self, v1, v2) if self:IsVector(v1, v2) then return self:FromVector(self:ToVector(v1) + self:ToVector(v2)) else return -1 end end
-ENT._vecsub_2 =       function (self, v1, v2) if self:IsVector(v1, v2) then return self:FromVector(self:ToVector(v1) - self:ToVector(v2)) else return -1 end end
-ENT._vecmul_2 =       function (self, v1, v2) if self:IsVector(v1, v2) then return self:FromVector(self:ToVector(v1) * self:ToVector(v2)) else return -1 end end
-ENT._vecsmul_2 =      function (self, v, n)   if self:IsVector(v) then return self:FromVector(self:ToVector(v) * n) else return -1 end end
-ENT._vecsdiv_2 =      function (self, v, n)   if self:IsVector(v) then return self:FromVector(self:ToVector(v) / n) else return -1 end end
-
-ENT._vecrotate_4 =    function (self, v, p, y, r) if self:IsVector(v) then local vec = self:ToVector(v) vec:Rotate(Angle(p, y, r)) return self:FromVector(vec) else return -1 end end
+ENT._vecrotate_4 =    function (self, v, p, y, r) if self:IsVector(v) then local vec = self:CloneVector(self:GetVector(v)) vec:Rotate(Angle(p, y, r)) return self:PutVector(vec) else return -1 end end
