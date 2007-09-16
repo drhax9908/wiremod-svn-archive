@@ -1,153 +1,196 @@
-TOOL.Category		= "Wire - I/O"
-TOOL.Name			= "Pod Controller"
-TOOL.Command		= nil
-TOOL.ConfigName		= ""
+TOOL.Category = "Wire - I/O"
+TOOL.Name = "Pod Controller"
+TOOL.Command = nil -- What is this for?
+TOOL.ConfigName = ""
 
-if ( CLIENT ) then
-    language.Add( "Tool_wire_pod_name", "Pod Controller Tool (Wire)" )
-    language.Add( "Tool_wire_pod_desc", "Spawn/link a Wire Pod controller." )
-    language.Add( "Tool_wire_pod_0", "Primary: Create Pod controller. Secondary: Link controller." )
-    language.Add( "WirePodTool_pod", "Pod:" )
-    language.Add( "WirePodTool_Advanced", "Advanced Controller?:" )
-	language.Add( "sboxlimit_wire_pods", "You've hit your Pod Controller limit!" )
-	language.Add( "undone_wirepod", "Undone Wire Pod Controller" )
+if CLIENT then
+	language.Add("Tool_wire_pod_name", "Pod Controller Tool (Wire)")
+	language.Add("Tool_wire_pod_desc", "Spawn/link a Wire Pod controller.")
+	language.Add("Tool_wire_pod_0", "Primary: Create Pod controller. Secondary: Link controller.")
+	language.Add("Tool_wire_pod_1", "Now select the pod to link to.")
+	language.Add("WirePodTool_pod", "Pod:")
+	language.Add("WirePodTool_Advanced", "Bloated Controller?")
+	language.Add("WirePodTool_Keys", "Outputs:")
+	language.Add("sboxlimit_wire_pods", "You've hit your Pod Controller limit!")
+	language.Add("Undone_Wire Pod", "Undone Wire Pod Controller")
 end
 
-if (SERVER) then
+if SERVER then
 	CreateConVar('sbox_maxwire_pods', 20)
 end
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
 TOOL.ClientConVar["Advanced"] = "0"
+TOOL.ClientConVar["Keys"] = "W=0,1;A=0,1;S=0,1;D=0,1;"
 
-cleanup.Register( "wire_pods" )
+cleanup.Register("wire_pods")
 
-function TOOL:LeftClick( trace )
-	if (!trace.HitPos) then return false end
-	if (trace.Entity:IsPlayer()) then return false end
-	if ( CLIENT ) then return true end
+local keytable = {}
+keytable["attack"] = IN_ATTACK
+keytable["attack1"] = IN_ATTACK
+keytable["mouse"] = IN_ATTACK
+keytable["mouse1"] = IN_ATTACK
+keytable["attack2"] = IN_ATTACK2
+keytable["mouse2"] = IN_ATTACK2
+keytable["forward"] = IN_FORWARD
+keytable["w"] = IN_FORWARD
+keytable["left"] = IN_MOVELEFT
+keytable["a"] = IN_MOVELEFT
+keytable["back"] = IN_BACK
+keytable["s"] = IN_BACK
+keytable["right"] = IN_MOVERIGHT
+keytable["d"] = IN_MOVERIGHT
+keytable["reload"] = IN_RELOAD
+keytable["r"] = IN_RELOAD
+keytable["jump"] = IN_JUMP
+keytable["space"] = IN_JUMP
+keytable["duck"] = IN_DUCK
+keytable["ctrl"] = IN_DUCK
+keytable["sprint"] = IN_SPEED
+keytable["shift"] = IN_SPEED
+keytable["zoom"] = IN_ZOOM
+
+local function ParseKeys(str)
+	local keys = {}
+	for key, off, on in string.gmatch(str, "(%a+)=(%d+),(%d+);") do
+		local l = key:lower()
+		if keytable[l] then
+			keys[key] = {keytable[l], tonumber(on), tonumber(off)}
+		end
+	end
+	return keys
+end
+
+function TOOL:LeftClick(trace)
+	if not trace.HitPos then return false end
+	if trace.Entity:IsPlayer() then return false end
+	if CLIENT then return true end
 
 	local ply = self:GetOwner()
 
-	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_pod" && trace.Entity:GetTable().pl == ply ) then
+	if trace.Entity:IsValid() and trace.Entity:GetClass() == "gmod_wire_pod" and trace.Entity:GetTable().pl == ply then
+		trace.Entity:SetKeys(ParseKeys(self:GetClientInfo("Keys")))
+		return true
+	end
+	
+	if self:GetStage() == 1 then
+		if not trace.Entity.GetPassenger then return false end
+		self.PodCont:Setup(trace.Entity)
+		self:SetStage(0)
 		return true
 	end
 
-	if ( !self:GetSWEP():CheckLimit( "wire_pods" ) ) then return false end
+	if not self:GetSWEP():CheckLimit("wire_pods") then return false end
 
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-    local Advanced = (self:GetClientNumber( "Advanced" ) ~= 0)
+	-- local Advanced = self:GetClientNumber("Advanced") ~= 0
 
-	local wire_pod = MakeWirePod( ply, trace.HitPos, Advanced, Ang )
+	local wire_pod = MakeWirePod(ply, trace.HitPos, self:GetClientNumber("Advanced") ~= 0, Ang, nil, ParseKeys(self:GetClientInfo("Keys")))
 
-	local min = wire_pod:OBBMins()
-	wire_pod:SetPos( trace.HitPos - trace.HitNormal * min.z )
+	wire_pod:SetPos(trace.HitPos - trace.HitNormal * wire_pod:OBBMins().z)
 	
 	local const = WireLib.Weld(wire_pod, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("Wire Pod")
-		undo.AddEntity( wire_pod )
-		undo.AddEntity( const )
-		undo.SetPlayer( ply )
+		undo.AddEntity(wire_pod)
+		undo.AddEntity(const)
+		undo.SetPlayer(ply)
 	undo.Finish()
 
 
-	ply:AddCleanup( "wire_pods", wire_pod )
+	ply:AddCleanup("wire_pods", wire_pod)
 
 	return true
 end
 
-function TOOL:RightClick( trace )
-    if (!trace.HitPos) then return false end
-    --if trace.Entity:GetClass() != "gmod_wire_pod" || "prop_vehicle_prisoner_pod" then return false end
-    if ( CLIENT ) then return true end
-    if!(trace.Entity)then return false end
-    if!(trace.Entity:IsValid())then return false end
-    if (self.Oldent) then
-        -- Don't ask...
-        if trace.Entity:GetClass() == "prop_vehicle_prisoner_pod" or true then self.Oldent:GetTable():Setup(trace.Entity); self.Oldent = nil; return true end
-    else
-        if (trace.Entity:GetClass() == "gmod_wire_pod" || trace.Entity:GetClass() == "gmod_wire_adv_pod") then self.Oldent = trace.Entity; return true end
-    end
-    return false
+function TOOL:RightClick(trace)
+	if not trace.HitPos and trace.Entity and trace.Entity:IsValid() and trace.Entity:GetClass() == "gmod_wire_pod" then return false end
+	if CLIENT then return true end
+	self.PodCont = trace.Entity
+	self:SetStage(1)
+	return true
 end
 
 function TOOL:Reload(trace)
-	self.Oldent = nil
+	self:SetStage(0)
 end
 
-if (SERVER) then
+if SERVER then
 
-	function MakeWirePod( pl, Pos, Advanced, Ang, pod )
-		if ( !pl:CheckLimit( "wire_pods" ) ) then return false end
-	    
-	    local wire_pod
-	    if(Advanced)then
-	       wire_pod = ents.Create( "gmod_wire_adv_pod" )
-	    else
-		  wire_pod = ents.Create( "gmod_wire_pod" )
+	function MakeWirePod(pl, Pos, Advanced, Ang, pod, Keys)
+		if not pl:CheckLimit("wire_pods") then return false end
+		-- if Advanced and Keys then return false end
+		if Advanced and Keys then Keys = nil end
+		local wire_pod
+		if Advanced then
+			wire_pod = ents.Create("gmod_wire_adv_pod")
+		else
+			wire_pod = ents.Create("gmod_wire_pod")
 		end
 		
-		if (!wire_pod:IsValid()) then return false end
+		if not wire_pod:IsValid() then return false end
 
-		wire_pod:SetAngles( Ang )
-		wire_pod:SetPos( Pos )
-		wire_pod:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
+		wire_pod:SetAngles(Ang)
+		wire_pod:SetPos(Pos)
+		-- wire_pod:SetModel(Model("models/jaanus/wiretool/wiretool_siren.mdl"))
 		wire_pod:Spawn()
-		--Setup on secondary
-		--wire_pod:GetTable():Setup( )
-		if pod then wire_pod:GetTable():Setup( pod ) end
-		wire_pod:GetTable():SetPlayer( pl )
+		-- Setup on secondary
+		-- wire_pod:GetTable():Setup()
+		if pod then wire_pod:GetTable():Setup(pod) end
+		wire_pod:GetTable():SetPlayer(pl)
 
 		local ttable = {
 			pl = pl,
 			Advanced = Advanced,
 		}
 
-		table.Merge(wire_pod:GetTable(), ttable )
+		table.Merge(wire_pod:GetTable(), ttable)
 		
-		pl:AddCount( "wire_pods", wire_pod )
-
+		pl:AddCount("wire_pods", wire_pod)
+		
+		if Keys then
+			wire_pod:SetKeys(Keys)
+		end
+		
 		return wire_pod
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_pod", MakeWirePod, "Pos", "Advanced", "Ang", "Pod", "Vel", "aVel", "frozen")
-	local function  MakeWireAdvPod( pl, Pos, Advanced, Ang, pod )
-		return MakeWirePod( pl, Pos, true, Ang, pod )
+	duplicator.RegisterEntityClass("gmod_wire_pod", MakeWirePod, "Pos", "Advanced", "Ang", "Pod", "Keys","Vel", "aVel", "frozen")
+	local function  MakeWireAdvPod(pl, Pos, Advanced, Ang, pod)
+		return MakeWirePod(pl, Pos, true, Ang, pod)
 	end
 	duplicator.RegisterEntityClass("gmod_wire_adv_pod", MakeWireAdvPod, "Pos", "Advanced", "Ang", "Pod", "Vel", "aVel", "frozen")
 
 end
 
-function TOOL:UpdateGhostWirePod( ent, player )
-	if ( !ent || !ent:IsValid() ) then return end
+function TOOL:UpdateGhostWirePod(ent, player)
+	if  not ent or not ent:IsValid() then return end
 
-	local tr 	= utilx.GetPlayerTrace( player, player:GetCursorAimVector() )
-	local trace 	= util.TraceLine( tr )
+	local tr = utilx.GetPlayerTrace(player, player:GetCursorAimVector())
+	local trace = util.TraceLine(tr)
 
-	if (!trace.Hit || trace.Entity:IsPlayer() || trace.Entity:GetClass() == "gmod_wire_pod" ) then
-		ent:SetNoDraw( true )
+	if not trace.Hit or trace.Entity:IsPlayer() or trace.Entity:GetClass() == "gmod_wire_pod" then
+		ent:SetNoDraw(true)
 		return
 	end
 
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local min = ent:OBBMins()
-	ent:SetPos( trace.HitPos - trace.HitNormal * min.z )
-	ent:SetAngles( Ang )
+	ent:SetPos(trace.HitPos - trace.HitNormal * ent:OBBMins().z)
+	ent:SetAngles(Ang)
 
-	ent:SetNoDraw( false )
+	ent:SetNoDraw(false)
 end
 
 function TOOL:Think()
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if not self.GhostEntity or not self.GhostEntity:IsValid() or self.GhostEntity:GetModel() ~= self.Model then
+		self:MakeGhostEntity(self.Model, Vector(0,0,0), Angle(0,0,0))
 	end
 
-	self:UpdateGhostWirePod( self.GhostEntity, self:GetOwner() )
+	self:UpdateGhostWirePod(self.GhostEntity, self:GetOwner())
 end
 
 function TOOL.BuildCPanel(panel)
@@ -166,9 +209,13 @@ function TOOL.BuildCPanel(panel)
 		CVars = {
 		}
 	})
-	
 	panel:AddControl("CheckBox", {
 		Label = "#WirePodTool_Advanced",
 		Command = "wire_pod_Advanced"
+	})
+	panel:AddControl("TextBox", {
+		Label = "#WirePodTool_Keys",
+		Command = "wire_pod_Keys",
+		Disabled = "true" -- Does this work?
 	})
 end
