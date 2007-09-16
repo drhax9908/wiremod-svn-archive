@@ -13,14 +13,19 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	
-	-- Output self.Keys. Format: self.Keys["name"] = IN_*
+	-- Output keys. Format: self.Keys["name"] = IN_*
 	self.Keys = { }
-	self.Keys["W"] = IN_FORWARD
-	self.Keys["A"] = IN_MOVELEFT
-	self.Keys["S"] = IN_BACK
-	self.Keys["D"] = IN_MOVERIGHT
-	self.Keys["Mouse1"] = IN_ATTACK
-	self.Keys["R"] = IN_RELOAD
+	self.Keys["Attack"] = IN_ATTACK
+	self.Keys["Attack2"] = IN_ATTACK2
+	self.Keys["Forward"] = IN_FORWARD
+	self.Keys["Left"] = IN_MOVELEFT
+	self.Keys["Back"] = IN_BACK
+	self.Keys["Right"] = IN_MOVERIGHT
+	self.Keys["Reload"] = IN_RELOAD
+	self.Keys["Jump"] = IN_JUMP
+	self.Keys["Duck"] = IN_DUCK
+	self.Keys["Sprint"] = IN_SPEED
+	self.Keys["Zoom"] = IN_ZOOM
 	
 	-- Invert the table to use it with Wire_CreateOutputs
 	local outputs = { }
@@ -37,72 +42,57 @@ function ENT:Initialize()
 
 	-- Create outputs
 	self.Outputs = Wire_CreateOutputs( self.Entity, outputs )
-	self.Inputs = Wire_CreateInputs( self.Entity, { "Lock" } )
+	self.Inputs = Wire_CreateInputs( self.Entity, { "Lock", "Eject", "Crosshair", "Open" } )
 	self:SetOverlayText( "Pod Controller" )
-	self.TTLFP = CurTime()
+end
+
+function ENT:SetKeys(keys)
+	self.Keys = keys
+	local out = {}
+	for k,v in pairs(keys) do
+		out[#out+1] = k
+	end
+	out[#out+1] = "Active"
+	WireLib.AdjustOutputs(self.Entity, out)
 end
 
 -- Link to pod
-function ENT:Setup( pod )
+function ENT:Setup(pod)
 	self.Pod = pod
 end
 
--- No inputs
-function ENT:TriggerInput(iname, value)
-
-end
-
 function ENT:ShowOutput(value)
-	if (value ~= self.PrevOutput) then
+	if value ~= self.PrevOutput then
 		self:SetOverlayText( "Pod Controller" )
 		self.PrevOutput = value
 	end
 end
 
 function ENT:OnRestore()
-	self.Keys = { }
-	self.Keys["W"] = IN_FORWARD
-	self.Keys["A"] = IN_MOVELEFT
-	self.Keys["S"] = IN_BACK
-	self.Keys["D"] = IN_MOVERIGHT
-	self.Keys["Mouse1"] = IN_ATTACK
-	self.Keys["R"] = IN_RELOAD
-	
-    self.BaseClass.OnRestore(self)
+	self.BaseClass.OnRestore(self)
 end
 
 -- Called every 0.01 seconds, check for key down
 function ENT:Think()
 	-- Check that we have a pod
-	if self.Pod then
-		-- Check if we should look for player entering/exiting the vehicle TTLFP = TimeToLookForPod
-		if self.TTLFP < CurTime() then
-			-- Check if the old player still is in our vehicle
-			if !(self.Ply and self.Ply:GetVehicle() == self.Pod) then
-				-- Get all players
-				local plys = player.GetAll()
-				self.Ply = nil
-				-- Loop through all players and check if their vehicle is our vehicle
-				for k,v in pairs(plys) do
-					if v:GetVehicle() == self.Pod then self.Ply = v; break end
-				end
-				
-				if self.Ply then Wire_TriggerOutput( self.Entity, "Active", 1)
-				else Wire_TriggerOutput( self.Entity, "Active", 0) end
-			end
-			-- Look for players again in 1/10 second
-			self.TTLFP = CurTime() + 0.1
-		end
+	if self.Pod and self.Pod:IsValid() then
+		self.Ply = self.Pod:GetPassenger()
 		
-		if self.Ply then
+		if self.Ply and self.Ply:IsValid() and self.Keys then
 			-- Loop through all the self.Keys, and check if they was pressed last frame
-			for k, v in pairs( self.Keys )  do
-				if self.Ply:KeyDownLast( v ) then Wire_TriggerOutput( self.Entity, k, 1 )
-				else Wire_TriggerOutput( self.Entity, k, 0 ) end
+			for k, v in pairs(self.Keys)  do
+				if self.Ply:KeyDownLast(v[1]) then
+					Wire_TriggerOutput(self.Entity, k, v[2])
+				else
+					Wire_TriggerOutput(self.Entity, k, v[3])
+				end
 			end
 			local trace = util.GetPlayerTrace(self.Ply)
 			trace.filter = self.Pod
 			self.VPos = util.TraceLine(trace).HitPos
+			Wire_TriggerOutput(self.Entity, "Active", 1)
+		else
+			Wire_TriggerOutput(self.Entity, "Active", 0)
 		end
 	end
 	self.Entity:NextThink(CurTime() + 0.01)
@@ -110,11 +100,29 @@ function ENT:Think()
 end
 
 function ENT:TriggerInput(iname, value)
-	if !(self.Pod && self.Pod:IsValid()) then return end
-	if value > 0 then
-		self.Pod:Fire("Lock", "1", 0)
-	else
-		self.Pod:Fire("Unlock", "1", 0)
+	if not (self.Pod and self.Pod:IsValid()) then return end
+	if iname == "Lock" then
+		if value ~= 0 then
+			self.Pod:Fire("Lock", "1", 0)
+		else
+			self.Pod:Fire("Unlock", "1", 0)
+		end
+	elseif iname == "Eject" then
+		if value ~= 0 then
+			self.Pod:Fire("ExitVehicle", "1", 0)
+		end
+	elseif iname == "Crosshair" and self.Ply and self.Ply:IsValid() then
+		if value ~= 0 then
+			self.Ply:CrosshairEnable()
+		else
+			self.Ply:CrosshairDisable()
+		end
+	elseif iname == "Open" then
+		if value ~= 0 then
+			self.Pod:Fire("Open", "1", 0)
+		else
+			self.Pod:Fire("Close", "1", 0)
+		end
 	end
 end
 
@@ -122,11 +130,11 @@ function ENT:GetBeaconPos(sensor)
 	return self.VPos
 end
 
-//Duplicator support to save pod link (TAD2020)
+-- Duplicator support to save pod link (TAD2020)
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
 
-	if (self.Pod and self.Pod:IsValid()) then
+	if self.Pod and self.Pod:IsValid() then
 	    info.pod = self.Pod:EntIndex()
 	end
 
@@ -136,9 +144,9 @@ end
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 
-	if (info.pod) then
+	if info.pod then
 		self.Pod = GetEntByID(info.pod)
-		if !(self.Pod and self.Pod:IsValid()) then
+		if not (self.Pod and self.Pod:IsValid())  then
 			self.Pod = ents.GetByIndex(info.pod)
 		end
 	end
