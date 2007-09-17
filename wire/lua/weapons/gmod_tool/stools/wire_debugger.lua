@@ -140,7 +140,7 @@ if (CLIENT) then
 	    
 	    for i = 1,dbg_line_count do
 			draw.Text{
-				text = dbg_lines[i],
+				text = dbg_lines[i] or "",
 				font = "Default",
 				pos = { 30, ScrH()/2+(i-1)*14 }
 				}
@@ -155,7 +155,7 @@ if (CLIENT) then
 
 	function Debugger_Msg_Line(um)
 	    local i = um:ReadShort()
-	    dbg_lines[i] = um:ReadString()
+	    dbg_lines[i] = um:ReadString() or ""
 	end
 	usermessage.Hook("WireDbgLine", Debugger_Msg_Line)
 
