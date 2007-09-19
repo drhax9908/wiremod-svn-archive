@@ -106,7 +106,9 @@ function TOOL:LeftClick(trace)
 end
 
 function TOOL:RightClick(trace)
-	if not trace.HitPos and trace.Entity and trace.Entity:IsValid() and trace.Entity:GetClass() == "gmod_wire_pod" then return false end
+	if not (trace.Entity and trace.Entity:IsValid() and (trace.Entity:GetClass() == "gmod_wire_pod" or trace.Entity:GetClass() == "gmod_wire_pod_adv")) then
+		return false
+	end
 	if CLIENT then return true end
 	self.PodCont = trace.Entity
 	self:SetStage(1)
