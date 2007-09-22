@@ -9,7 +9,7 @@ if CLIENT then
 	language.Add("Tool_wire_pod_0", "Primary: Create Pod controller. Secondary: Link controller.")
 	language.Add("Tool_wire_pod_1", "Now select the pod to link to.")
 	language.Add("WirePodTool_pod", "Pod:")
-	language.Add("WirePodTool_Advanced", "Bloated Controller?")
+	language.Add("WirePodTool_Advanced", "Advanced Controller?")
 	language.Add("WirePodTool_Keys", "Outputs:")
 	language.Add("sboxlimit_wire_pods", "You've hit your Pod Controller limit!")
 	language.Add("Undone_Wire Pod", "Undone Wire Pod Controller")
@@ -72,13 +72,6 @@ function TOOL:LeftClick(trace)
 		trace.Entity:SetKeys(ParseKeys(self:GetClientInfo("Keys")))
 		return true
 	end
-	
-	if self:GetStage() == 1 then
-		if not trace.Entity.GetPassenger then return false end
-		self.PodCont:Setup(trace.Entity)
-		self:SetStage(0)
-		return true
-	end
 
 	if not self:GetSWEP():CheckLimit("wire_pods") then return false end
 
@@ -99,24 +92,29 @@ function TOOL:LeftClick(trace)
 		undo.SetPlayer(ply)
 	undo.Finish()
 
-
 	ply:AddCleanup("wire_pods", wire_pod)
 
 	return true
 end
 
 function TOOL:RightClick(trace)
-	if not (trace.Entity and trace.Entity:IsValid() and (trace.Entity:GetClass() == "gmod_wire_pod" or trace.Entity:GetClass() == "gmod_wire_pod_adv")) then
+	if (self:GetStage() == 0) and (trace.Entity:GetClass() == "gmod_wire_pod" or trace.Entity:GetClass() == "gmod_wire_adv_pod") then
+		self.PodCont = trace.Entity
+		self:SetStage(1)
+		return true
+	elseif self:GetStage() == 1 and trace.Entity.GetPassenger then
+		self.PodCont:Setup(trace.Entity)
+		self:SetStage(0)
+		self.PodCont = nil
+		return true
+	else
 		return false
 	end
-	if CLIENT then return true end
-	self.PodCont = trace.Entity
-	self:SetStage(1)
-	return true
 end
 
 function TOOL:Reload(trace)
 	self:SetStage(0)
+	self.PodCont = nil
 end
 
 if SERVER then
