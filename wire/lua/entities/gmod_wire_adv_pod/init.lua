@@ -12,14 +12,11 @@ function ENT:Initialize()
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	self.lockvar = 0
 	self.disablevar = 0
-	self.laservar = 0
 	self.crossvar = 0
 	-- Output keys. Format: self.keys["name"] = IN_*
 	self.keys = { }
 	self.keys["Mouse1"] = IN_ATTACK
 	self.keys["Mouse2"] = IN_ATTACK2
-	self.keys["MWHEELUP"] = IN_INVPREV
-	self.keys["MWHEELDOWN"] = IN_INVNEXT
 	self.keys["W"] = IN_FORWARD
 	self.keys["A"] = IN_MOVELEFT
 	self.keys["S"] = IN_BACK
@@ -62,59 +59,52 @@ function ENT:Initialize()
 	n = n + 1
 	outputs[n] = "Bearing"
 	
-	--n = n + 1
-	--outputs[n] = "Elevation"
+	n = n + 1
+	outputs[n] = "Elevation"
 	
 	self.VPos = Vector(0, 0, 0)
 	
-	-- Create outputs
 	self.Outputs = Wire_CreateOutputs( self.Entity, outputs )
-	self.Inputs = Wire_CreateInputs( self.Entity, { "Lock", "Terminate", "Strip weapons", "Eject", "Disable", "Crosshairs", "LaserSight"} )
+	self.Inputs = Wire_CreateInputs( self.Entity, { "Lock", "Terminate", "Strip weapons", "Eject", "Disable", "Crosshairs", "Brake"} )
 	self:SetOverlayText( "Adv. Pod Controller" )
 end
 
--- Link to pod
-function ENT:Setup( pod )
+function ENT:Setup(pod)
 	self.Pod = pod
-	self.TTLFP = CurTime()
 end
 
 function ENT:TriggerInput(iname, value)
 		if (iname == "Lock") then
 			if !(self.Pod && self.Pod:IsValid()) then return end
-				if (value >= 1) then
-					if (self.lockvar == 0) then
-						self.Pod:Fire("Lock", "1", 0)
-						self.lockvar = 1
-					else
-						self.Pod:Fire("Unlock", "1", 0)
-						self.lockvar = 0
-					end
+			if (value >= 1) then
+				if (self.lockvar == 0) then
+					self.Pod:Fire("Lock", "1", 0)
+					self.lockvar = 1
+				else
+					self.Pod:Fire("Unlock", "1", 0)
+					self.lockvar = 0
 				end
 			end
-		if (iname == "Terminate") then
-			if self.Ply then
+		elseif (iname == "Terminate") then
+			if self.Ply and self.Ply:IsValid() then
 				if (value > 0) then
 					self.Ply:Kill()
 				end
 			end
-		end
-		if (iname == "Strip weapons") then
-			if self.Ply then
+		elseif (iname == "Strip weapons") then
+			if self.Ply and self.Ply:IsValid() then
 				if (value > 0) then
 					self.Ply:StripWeapons( )
 					self.Ply:PrintMessage(HUD_PRINTTALK,"Your weapons have been stripped!\n")
 				end
 			end
-		end
-		if (iname == "Eject") then
-			if self.Ply then
+		elseif (iname == "Eject") then
+			if self.Ply and self.Ply:IsValid() then
 				if (value > 0) then
 					self.Ply:ExitVehicle( )
 				end
 			end
-		end
-		if (iname == "Disable") then
+		elseif (iname == "Disable") then
 			if (value >= 1) then
 				if (self.disablevar == 0) then
 					self.disablevar = 1
@@ -122,25 +112,25 @@ function ENT:TriggerInput(iname, value)
 					self.disablevar = 0
 				end
 			end
-		end
-		if (iname == "Crosshairs") then
+		elseif (iname == "Crosshairs") then
 			if (value >= 1) then
-				if (self.crossvar == 0) then
-					self.Ply:CrosshairEnable()
-					self.crossvar = 1
-				else
-					self.Ply:CrosshairDisable()
-					self.crossvar = 0
+				if self.Ply and self.Ply:IsValid() then
+					if (self.crossvar == 0) then
+						self.Ply:CrosshairEnable()
+						self.crossvar = 1
+					else
+						self.Ply:CrosshairDisable()
+						self.crossvar = 0
+					end
 				end
 			end
-		end
-		if (iname == "LaserSight") then
-			if (value >= 1) then
-				if (self.laservar == 0) then
-					self.laservar = 1
-				else
-					self.laservar = 0
-				end
+		elseif (iname == "Brake") then
+			if value >= 1 then
+				self.Pod:Fire("TurnOff", "1", 0)
+				self.Pod:Fire("HandBrakeOn", "1", 0)
+			else
+				self.Pod:Fire("TurnOn", "1", 0)
+				self.Pod:Fire("HandBrakeOff", "1", 0)
 			end
 		end
 end
@@ -156,8 +146,6 @@ function ENT:OnRestore()
 	self.keys = { }
 	self.keys["Mouse1"] = IN_ATTACK
 	self.keys["Mouse2"] = IN_ATTACK2
-	self.keys["MWHEELUP"] = IN_INVPREV
-	self.keys["MWHEELDOWN"] = IN_INVNEXT
 	self.keys["W"] = IN_FORWARD
 	self.keys["A"] = IN_MOVELEFT
 	self.keys["S"] = IN_BACK
@@ -170,79 +158,42 @@ function ENT:OnRestore()
     self.BaseClass.OnRestore(self)
 end
 
--- Called every 0.01 seconds, check for key down
 function ENT:Think()
-	local brng = Angle(0, 0, 0)
-	-- Check that we have a pod
 	if self.Pod then
-		-- Check if we should look for player entering/exiting the vehicle TTLFP = TimeToLookForPod
-		if ( !self.TTLFP ) then return end
-		if self.TTLFP < CurTime() then
-			-- Check if the old player is still in our vehicle
-			if !(self.Ply and self.Ply:GetVehicle() == self.Pod) then
-				-- Get all players
-				local plys = player.GetAll()
-				self.Ply = nil
-				-- Loop through all players and check if their vehicle is our vehicle
-				for k,v in pairs(plys) do
-					if v:GetVehicle() == self.Pod then self.Ply = v end
-				end
-				
-				if self.Ply then
-				Wire_TriggerOutput( self.Entity, "Active", 1)
-				else
-				Wire_TriggerOutput( self.Entity, "Active", 0) 
-				end
-			end
-			-- Look for players again in 1/10 second
-			self.TTLFP = CurTime() + 0.1
-		end
-		
-		if self.Ply then
-			-- Loop through all the self.keys, and check if they was pressed last frame
+		self.Ply = self.Pod:GetPassenger()
+		if self.Ply and self.Ply:IsValid() then
+			Wire_TriggerOutput( self.Entity, "Active", 1)
 			for k, v in pairs( self.keys )  do
 				if self.Ply:KeyDownLast( v ) then Wire_TriggerOutput( self.Entity, k, 1 )
 				else Wire_TriggerOutput( self.Entity, k, 0 ) end
 			end
+			local MyPos = self.Ply:GetShootPos()
+			local viewangle = self.Ply:GetAimVector():Angle()
 			local tmp2 = self.Ply:GetEyeTrace()
 			tmp2.Filter = self.Pod
 			local tmp = tmp2.HitPos
-			local MyPos = self.Ply:GetShootPos() + Vector(0,0,-20)
 			Wire_TriggerOutput( self.Entity, "X", tmp.x )
 			Wire_TriggerOutput( self.Entity, "Y", tmp.y )
 			Wire_TriggerOutput( self.Entity, "Z", tmp.z )
-			dist = (tmp-MyPos):Length()
+			local dist = (tmp-MyPos):Length()
 			Wire_TriggerOutput( self.Entity, "Distance", dist)
-			self.MyPos = MyPos
-			self.tmp = tmp
 			local plyteam = self.Ply:Team( )
 			Wire_TriggerOutput( self.Entity, "Team", plyteam)
 			local plyheal = self.Ply:Health( )
 			Wire_TriggerOutput( self.Entity, "Health", plyheal)
 			local plyarm = self.Ply:Armor( )
 			Wire_TriggerOutput( self.Entity, "Armor", plyarm)
-			local rp = RecipientFilter() // Grab a RecipientFilter object
-			rp:AddAllPlayers() // Send to all players!
-			umsg.Start("AdvPodInfo", rp)
-				umsg.Vector( self.MyPos )
-				umsg.Vector( self.tmp )
-				umsg.Long( self.laservar )
-			umsg.End()
-			--Beacon sensor compbatability stuff
-			local trace = util.GetPlayerTrace(self.Ply)
-			trace.Filter = self.Pod
-			self.VPos = util.TraceLine(trace).HitPos
-			--and now bearing stuff. If it's commented out, it's elevation code.
-			local DeltaPos = self.Entity:WorldToLocal(self.VPos)
-		    brng = DeltaPos:Angle()
-			--local pitch = -brng.p
-			local yaw = brng.y
-			--if (pitch > 180) then pitch = pitch - 360 end
-			if (yaw > 180) then yaw = yaw - 360 end
-			--if (pitch < -180) then pitch = pitch + 360 end
-			if (yaw < -180) then yaw = yaw + 360 end
-			Wire_TriggerOutput(self.Entity, "Bearing", yaw + 90)
-			--Wire_TriggerOutput(self.Entity, "Elevation", pitch)
+			self.VPos = tmp
+			local pitch = -viewangle.p
+			if pitch > 180 then pitch = pitch - 360 end
+			if pitch < -180 then pitch = pitch + 360 end
+			local yaw = viewangle.y
+			if yaw > 180 then yaw = yaw - 360 end
+			if yaw < -180 then yaw = yaw + 360 end
+			Wire_TriggerOutput(self.Entity, "Bearing", -(yaw + 90))
+			Wire_TriggerOutput(self.Entity, "Elevation", pitch)
+		else
+			Wire_TriggerOutput( self.Entity, "Active", 0) 
 		end
 		if (self.disablevar == 1) then
 			for k, v in pairs( self.keys )  do
