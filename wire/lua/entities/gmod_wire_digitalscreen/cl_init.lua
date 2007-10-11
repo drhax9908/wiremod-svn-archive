@@ -136,7 +136,15 @@ function ENT:Draw()
 			for tx = 0, 31 do
 				local a = tx + ty*32
 				local c = self.Memory1[a]
-				surface.SetDrawColor(c,c,c,255)
+
+				local crgb = math.floor(c / 1000)
+				local cgray = c - math.floor(c / 1000)*1000
+
+				local cb = 24*math.fmod(crgb,10)
+				local cg = 24*math.fmod(math.floor(crgb / 10),10)
+				local cr = 24*math.fmod(math.floor(crgb / 100),10)
+
+				surface.SetDrawColor(cgray+cr,cgray+cg,cgray+cb,255)
 				surface.DrawRect(x/RatioX + tx*6/RatioX,y + ty*6,6/RatioX,6)
 			end
 		end
