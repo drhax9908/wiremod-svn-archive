@@ -49,7 +49,7 @@ function ENT:Setup( damage, delaytime, removeafter, doblastdamage, radius, nocol
 	
 	self.NormInfo = ""
 	if (self.DoBlastDamage) then 
-		self.NormInfo = "Damage: " .. math.floor(self.Damage) .. "/nRadius: " .. math.floor(self.Radius)
+		self.NormInfo = "Damage: " .. math.floor(self.Damage) .. "\nRadius: " .. math.floor(self.Radius)
 	else
 		self.NormInfo = "Radius: " .. math.floor(self.Radius)
 	end
@@ -119,9 +119,9 @@ end
 function ENT:ShowOutput( )
 	local txt = ""
 	if (self.Exploded) then
-		txt = "Exploded/n"..self.NormInfo
+		txt = "Exploded\n"..self.NormInfo
 	else
-		txt = "Explosive/n"..self.NormInfo
+		txt = "Explosive\n"..self.NormInfo
 	end
 	self:SetOverlayText(txt)
 end
