@@ -26,8 +26,167 @@ TOOL.ClientConVar[ "dumpcode" ] = 0
 TOOL.ClientConVar[ "packet_bandwidth" ] = 100
 TOOL.ClientConVar[ "packet_rate_sp" ] = 0.05
 TOOL.ClientConVar[ "packet_rate_mp" ] = 0.4
+TOOL.ClientConVar[ "compile_rate" ] = 0.05
+TOOL.ClientConVar[ "compile_bandwidth" ] = 500
 
 cleanup.Register( "wire_cpus" )
+
+local cpu_tool = nil
+local cpu_ent = nil
+
+local function CompileProgram_Timer(firstpass)
+	local SendLinesMax = cpu_tool.LineNumber + cpu_tool:GetOwner():GetInfo("wire_cpu_compile_bandwidth")	
+	if (SendLinesMax > table.Count(SourceCode)) then SendLinesMax = table.Count(SourceCode) end
+
+	while (cpu_tool.LineNumber <= SendLinesMax) do
+		local line = SourceCode[tostring(cpu_tool.LineNumber)]
+		if (!line) then
+			cpu_tool:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Bad Line ["..cpu_tool.LineNumber.."]\n")
+		else
+			if (string.len(line) > 254) then
+				cpu_tool:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Line "..cpu_tool.LineNumber.." too long, skipping!\n")
+			else
+				cpu_ent:ParseProgram_ASM(cpu_tool:GetOwner(),line,cpu_tool.LineNumber,firstpass)	
+			end
+		end
+
+		cpu_tool.LineNumber = cpu_tool.LineNumber + 1
+
+//		cpu_tool:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Line["..cpu_tool.LineNumber.."] = "..line.."\n")
+//		end
+	end
+
+	local TempPercent = ((cpu_tool.LineNumber-1)/table.Count(SourceCode))*100
+//	cpu_tool:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compiling... ["..TempPercent.."]\n")
+	if (SinglePlayer()) then
+		if (firstpass) then
+			cpu_tool:GetOwner():PrintMessage(HUD_PRINTTALK,"-> ZyeliosASM: Compiling... ["..math.floor(TempPercent/2).."]\n")
+		else
+			cpu_tool:GetOwner():PrintMessage(HUD_PRINTTALK,"-> ZyeliosASM: Compiling... ["..50+math.floor(TempPercent/2).."]\n")
+		end
+	else
+		if (firstpass) then
+			Msg(HUD_PRINTTALK,"-> ZyeliosASM: Compiling... ["..math.floor(TempPercent/2).."]\n")
+		else
+			Msg(HUD_PRINTTALK,"-> ZyeliosASM: Compiling... ["..50+math.floor(TempPercent/2).."]\n")
+		end
+	end
+
+	if (TempPercent == 100) then
+		if (!cpu_tool.FirstPassDone) then
+			cpu_tool.FirstPassDone = true
+			cpu_tool:Compile_Pass2()
+		end
+		if (!firstpass) && (!cpu_tool.SecondPassDone) then
+			cpu_tool.SecondPassDone = true
+			cpu_tool:Compile_End()
+		end
+	end
+end
+
+function TOOL:StartCompile(pl,ent)
+	pl:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 2.0 <----\n")
+	pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compiling...\n")
+
+	ent.FatalError = false
+	ent.WIP = 0
+	ent.Labels = {}
+	ent.Compiling = true
+	if (self:GetClientInfo("userom") == "enable") then
+		ent.UseROM = true
+	else
+		ent.UseROM = false
+	end
+
+	if (self:GetClientInfo("dumpcode") == "enable") then
+		ent.MakeDump = true
+		ent.Dump = "Code listing:\n"
+	else
+		ent.MakeDump = false
+	end
+	
+	ent.Labels["version"] = 200
+	ent.Labels["platform"] = 0
+	ent.Labels["true"] = 1
+	ent.Labels["false"] = 0
+
+	self.FirstPassDone = false
+	self.SecondPassDone = false
+
+	cpu_tool = self
+	cpu_ent = ent
+	self:Compile_Pass1()
+
+//	local linen = 0
+//	for i = 1,table.Count(SourceCode)-1 do
+//		linen = linen + 1
+//		line = SourceCode[tostring(linen)]
+//		trace.Entity:ParseProgram_ASM(ply,line,linen,true)
+//	end
+//	
+//	trace.Entity.WIP = 0
+//	ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 2\n")
+//
+//	local linen = 0
+//	for i = 1,table.Count(SourceCode)-1 do
+//		linen = linen + 1
+//		line = SourceCode[tostring(linen)]
+//		trace.Entity:ParseProgram_ASM(ply,line,linen,false)
+//	end
+end
+
+function TOOL:Compile_Pass1()
+	self:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 1\n")
+
+	//Compile each line
+	local Reps = math.floor(table.Count(SourceCode)/self:GetOwner():GetInfo("wire_cpu_compile_bandwidth"))+1
+	self.Compiling = true
+
+	self.LineNumber = 0
+	timer.Create("CPUCompileTimer1",self:GetOwner():GetInfo("wire_cpu_compile_rate"),Reps,CompileProgram_Timer,true)
+end
+
+function TOOL:Compile_Pass2()
+	self:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 2\n")
+
+	//Compile each line
+	local Reps = math.floor(table.Count(SourceCode)/self:GetOwner():GetInfo("wire_cpu_compile_bandwidth"))+1
+	self.Compiling = true
+
+	self.LineNumber = 0
+	timer.Create("CPUCompileTimer2",self:GetOwner():GetInfo("wire_cpu_compile_rate"),Reps,CompileProgram_Timer,false)
+end
+
+
+function TOOL:Compile_End()
+ 	local pl = self:GetOwner()
+	local ent = cpu_ent
+
+	if (ent.FatalError) then
+		pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile aborted: fatal error has occured\n")			
+	else
+		pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile succeded! "..table.Count(SourceCode).." lines, "..ent.WIP.." bytes, "..table.Count(ent.Labels).." definitions.\n")
+	end
+
+	if (self:GetClientInfo("dumpcode") == "enable") then //lololol codedump
+		pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dumping data\n")
+		local codedump = "Count: "..ent.WIP.."\n"
+		local pointerdump = "Count: "..table.Count(ent.Labels).."\n"
+		for i = 0,ent.WIP do
+			codedump = codedump.."["..i.."]".."="..ent.Memory[i].."\n"
+		end
+		for k,v in pairs(ent.Labels) do
+			pointerdump = pointerdump.."#pointer "..k.." "..v.."\n"
+		end
+		file.Write("cdump.txt",codedump)
+		file.Write("ldump.txt",ent.Dump)
+		file.Write("pdump.txt",pointerdump)
+		pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dumped!\n")
+	end
+
+	ent:Reset()
+	ent.Compiling = false
+end
 
 function TOOL:LeftClick( trace )
 	if trace.Entity:IsPlayer() then return false end
@@ -36,108 +195,8 @@ function TOOL:LeftClick( trace )
 	local ply = self:GetOwner()
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_cpu" && trace.Entity.pl == ply ) then
-		//trace.Entity:LoadProgram("CPUChip/"..TOOL.ClientConVar[ "filename" ])
-		if (self:GetClientInfo( "compiler") == "ZyeliosASM") then
-			//PrintTable(SourceCode)
-			ply:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 1.2 <----\n")
-			ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compiling...\n")
-			ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 1\n")
-			trace.Entity.FatalError = false
-			trace.Entity.WIP = 0
-			trace.Entity.Labels = {}
-			trace.Entity.Compiling = true
-			if (self:GetClientInfo("userom") == "enable") then
-				trace.Entity.UseROM = true
-			else
-				trace.Entity.UseROM = false
-			end
-
-			if (self:GetClientInfo("dumpcode") == "enable") then
-				trace.Entity.MakeDump = true
-				trace.Entity.Dump = "Code listing:\n"
-			else
-				trace.Entity.MakeDump = false
-			end
-	
-			trace.Entity.Labels["version"] = 120
-			trace.Entity.Labels["platform"] = 0
-			trace.Entity.Labels["true"] = 1
-			trace.Entity.Labels["false"] = 0
-
-			local linen = 0
-			for i = 1,table.Count(SourceCode)-1 do
-				linen = linen + 1
-				line = SourceCode[tostring(linen)]
-				trace.Entity:ParseProgram_ASM(ply,line,linen,true)
-			end
-	
-			trace.Entity.WIP = 0
-			ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 2\n")
-
-			local linen = 0
-			for i = 1,table.Count(SourceCode)-1 do
-				linen = linen + 1
-				line = SourceCode[tostring(linen)]
-				trace.Entity:ParseProgram_ASM(ply,line,linen,false)
-			end
-
-			if (trace.Entity.FatalError) then
-				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile aborted: fatal error has occured\n")			
-			else
-				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile succeded! "..table.Count(SourceCode).." lines, "..trace.Entity.WIP.." bytes, "..table.Count(trace.Entity.Labels).." definitions.\n")
-			end
-
-			if (self:GetClientInfo("dumpcode") == "enable") then //lololol codedump
-				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dumping data\n")
-				local codedump = "Count: "..trace.Entity.WIP.."\n"
-				local pointerdump = "Count: "..table.Count(trace.Entity.Labels).."\n"
-				for i = 0,trace.Entity.WIP do
-					codedump = codedump.."["..i.."]".."="..trace.Entity.Memory[i].."\n"
-				end
-				for k,v in pairs(trace.Entity.Labels) do
-					pointerdump = pointerdump.."#pointer "..k.." "..v.."\n"
-				end
-				file.Write("cdump.txt",codedump)
-				file.Write("ldump.txt",trace.Entity.Dump)
-				file.Write("pdump.txt",pointerdump)
-				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dumped!\n")
-			end
-
-			trace.Entity:Reset()
-			trace.Entity.Compiling = false
-			return true
-		end
-		if (self:GetClientInfo( "compiler") == "ZyeliosBASIC") then
-			ply:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosBASIC compiler - Version 0.1 - CodeSet: Yellow <----\n")
-			ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosBASIC: Compiling...\n")
-			trace.Entity.FatalError = false
-			trace.Entity.WIP = 0
-			trace.Entity.Labels = {}
-	
-			trace.Entity.Labels["version"] = 100
-			trace.Entity.Labels["platform"] = 0
-			trace.Entity.Labels["true"] = 1
-			trace.Entity.Labels["false"] = 0
-
-			for i = 1,256 do
-				if (self:GetClientInfo("line"..i)) then
-					trace.Entity:ParseProgram_BASIC(ply, self:GetClientInfo( "line"..i),i,true)
-				end
-			end
-			trace.Entity.WIP = 0
-			for i = 1,256 do
-				if (self:GetClientInfo("line"..i)) then
-					trace.Entity:ParseProgram_BASIC(ply, self:GetClientInfo( "line"..i),i,false)
-				end
-			end
-			if (trace.Entity.FatalError) then
-				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosBASIC: Compile aborted: fatal error has occured\n")			
-			else
-				ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosBASIC: Compile succeded! Wrote "..trace.Entity.WIP.." bytes.\n")
-				trace.Entity.Clk = 0
-			end
-			return true
-		end
+		self:StartCompile(ply,trace.Entity)
+		return true
 	end
 	
 	if ( !self:GetSWEP():CheckLimit( "wire_cpus" ) ) then return false end
@@ -246,28 +305,51 @@ end
 	SourceLines = {}
 	SourceLineNumbers = {}
 	SourceLinesSent = 0
+	SourcePrevCharRate = 0
 	SourceSent = false
+	SourceTotalChars = 0
+	SourceLoadedChars = 0
 	
 	local function UploadProgram( pl )
 		local SendLinesMax = SourceLinesSent + pl:GetInfo("wire_cpu_packet_bandwidth")	
+		local TotalChars = 0
 		if (SendLinesMax > table.Count(SourceLines)) then SendLinesMax = table.Count(SourceLines) end
-		while (SourceLinesSent <= SendLinesMax) do
+		while (SourceLinesSent <= SendLinesMax) && (TotalChars < 10000) do
 			SourceLinesSent = SourceLinesSent + 1
 			local line = SourceLines[SourceLinesSent]
 			local linen = SourceLinesSent
 	
 			if (line) && (line ~= "\n") && (string.gsub(line, "\n", "") ~= "") then
 				pl:ConCommand('wire_cpu_addsrc "'..linen..'" "' .. string.gsub(line, "\n", "") .. '"')
+				TotalChars = TotalChars + string.len(line)
 			else
 				pl:ConCommand('wire_cpu_addsrc "'..linen..'" ""')
 			end	
 		end
-		local TempPercent = ((SourceLinesSent-1)/table.Count(SourceLines))*100
-		pl:PrintMessage(HUD_PRINTTALK,"CPU -> Sent packet ("..TempPercent.." )\n")
-		Msg("Temp packet: "..TempPercent.."\n")
+		SourceLoadedChars = SourceLoadedChars + TotalChars
+
+		local CharRate = (SourcePrevCharRate*1.95 + TotalChars*0.05) / 2	
+		SourcePrevCharRate = CharRate
+		
+		if (SinglePlayer()) then
+			CharRate = CharRate / pl:GetInfo("wire_cpu_packet_rate_sp")
+		else
+			CharRate = CharRate / pl:GetInfo("wire_cpu_packet_rate_mp")
+		end
+
+		local TimeLeft = math.floor((SourceTotalChars - SourceLoadedChars) / CharRate)
+
+//		SourcePrevChars = SourcePrevChars+TotalChars
+		local TempPercent = math.floor(((SourceLinesSent-1)/table.Count(SourceLines))*100)
 		if (TempPercent == 100) && (!SourceSent) then
 			pl:PrintMessage(HUD_PRINTTALK,"CPU -> Program uploaded\n")
 			SourceSent = true
+		else
+			if (SinglePlayer()) then
+				pl:PrintMessage(HUD_PRINTTALK,"CPU -> Sent packet ("..TempPercent.."% @ "..math.floor(CharRate / 1024).." kb/sec, avg. "..TimeLeft.." sec left)\n")
+			else
+				Msg("CPU -> Sent packet ("..TempPercent.."% @ "..math.floor(CharRate / 1024).." kb/sec, avg. "..TimeLeft.." sec left)\n")
+			end
 		end
 	end
 	
@@ -286,11 +368,16 @@ end
 		//SourceCode = string.Explode("\n", file.Read(fname) )
 	
 		pl:ConCommand('wire_cpu_clearsrc')
-	
-	
-		SourceLines = string.Explode("\n", file.Read(fname) )
+
+		local filedata = file.Read(fname)
+		SourceLines = string.Explode("\n", filedata )
 		SourceLinesSent = 0
 		SourceSent = false
+		SourceTotalChars = string.len(filedata)
+
+		SourcePrevCharRate = string.len(SourceLines[1])
+		SourceLoadedChars = 0
+
 		//Send 50 lines
 		pl:PrintMessage(HUD_PRINTTALK,"CPU -> Starting uploading program...\n")
 		if (SinglePlayer()) then

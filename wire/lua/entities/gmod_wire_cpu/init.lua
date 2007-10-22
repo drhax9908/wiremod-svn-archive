@@ -1174,7 +1174,10 @@ function ENT:Think()
 	
 	local timeout = self.ThinkTime*5
 	while (timeout > 0) && (self.Clk >= 1.0) do
-		self:Execute( )
+		if (!pcall(self:Execute( ))) then
+			Wire_TriggerOutput(self.Entity, "Error", 5.0)
+			self.Clk = 0.0
+		end
 		timeout = timeout - 1
 	end
 	self.Entity:NextThink(CurTime()+0.05)
