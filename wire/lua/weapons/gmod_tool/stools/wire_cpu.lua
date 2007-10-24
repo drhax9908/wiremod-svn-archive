@@ -5,9 +5,9 @@ TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
 if ( CLIENT ) then
-    language.Add( "Tool_wire_cpu_name", "CPU Tool (Wire)" )
-    language.Add( "Tool_wire_cpu_desc", "Spawns a Central Processor Unit (Programmable gate)" )
-    language.Add( "Tool_wire_cpu_0", "Primary: Create empty CPU / Upload current program to it" )
+	language.Add( "Tool_wire_cpu_name", "CPU Tool (Wire)" )
+	language.Add( "Tool_wire_cpu_desc", "Spawns a Central Processor Unit (Programmable gate)" )
+	language.Add( "Tool_wire_cpu_0", "Primary: Create empty CPU / Upload current program to it" )
 	language.Add( "sboxlimit_wire_cpu", "You've hit CPU limit!" )
 	language.Add( "undone_wirecpu", "Undone Wire CPU" )
 end
@@ -27,52 +27,67 @@ TOOL.ClientConVar[ "packet_bandwidth" ] = 100
 TOOL.ClientConVar[ "packet_rate_sp" ] = 0.05
 TOOL.ClientConVar[ "packet_rate_mp" ] = 0.4
 TOOL.ClientConVar[ "compile_rate" ] = 0.05
-TOOL.ClientConVar[ "compile_bandwidth" ] = 500
+TOOL.ClientConVar[ "compile_bandwidth" ] = 100
 
 cleanup.Register( "wire_cpus" )
 
+//=============================================================================
+// ZASM interface
+//=============================================================================
 local cpu_tool = nil
 local cpu_ent = nil
 
 local function CompileProgram_Timer(firstpass)
+	if (firstpass && cpu_tool.FirstPassDone) then return end
+	if (!firstpass && cpu_tool.SecondPassDone) then return end
+
 	local SendLinesMax = cpu_tool.LineNumber + cpu_tool:GetOwner():GetInfo("wire_cpu_compile_bandwidth")	
 	if (SendLinesMax > table.Count(SourceCode)) then SendLinesMax = table.Count(SourceCode) end
+	local Rate = 0
+
+	//WORKAROUND FOR LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG LINES
+	if SourceCode[tostring(cpu_tool.LineNumber)] then
+		if (string.len(SourceCode[tostring(cpu_tool.LineNumber)]) > 256) then
+			SendLinesMax = cpu_tool.LineNumber
+		end
+	end
 
 	while (cpu_tool.LineNumber <= SendLinesMax) do
 		local line = SourceCode[tostring(cpu_tool.LineNumber)]
 		if (!line) then
-			cpu_tool:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Bad Line ["..cpu_tool.LineNumber.."]\n")
+//			cpu_tool:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Bad Line ["..cpu_tool.LineNumber.."]\n")
 		else
 			if (string.len(line) > 254) then
-				cpu_tool:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Line "..cpu_tool.LineNumber.." too long, skipping!\n")
-			else
-				cpu_ent:ParseProgram_ASM(cpu_tool:GetOwner(),line,cpu_tool.LineNumber,firstpass)	
+				cpu_tool:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Line "..cpu_tool.LineNumber.." too long! I compile it, but it may trigger infinite loop thing.\n")
 			end
+			cpu_ent:ParseProgram_ASM(cpu_tool:GetOwner(),line,cpu_tool.LineNumber,firstpass)
 		end
 
 		cpu_tool.LineNumber = cpu_tool.LineNumber + 1
-
-//		cpu_tool:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Line["..cpu_tool.LineNumber.."] = "..line.."\n")
-//		end
+		Rate = Rate + 1
 	end
+
+	local TimeLeft = (table.Count(SourceCode) - cpu_tool.LineNumber) / Rate
+	cpu_tool.PrevRate = (cpu_tool.PrevRate*1.5+TimeLeft*0.5) / 2
+	TimeLeft = math.floor(cpu_tool.PrevRate)
+
+	//TODO: FIX. NON FLOORD PERCENT, AND BAD RATE
 
 	local TempPercent = ((cpu_tool.LineNumber-1)/table.Count(SourceCode))*100
-//	cpu_tool:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compiling... ["..TempPercent.."]\n")
-	if (SinglePlayer()) then
-		if (firstpass) then
-			cpu_tool:GetOwner():PrintMessage(HUD_PRINTTALK,"-> ZyeliosASM: Compiling... ["..math.floor(TempPercent/2).."]\n")
-		else
-			cpu_tool:GetOwner():PrintMessage(HUD_PRINTTALK,"-> ZyeliosASM: Compiling... ["..50+math.floor(TempPercent/2).."]\n")
+	if (firstpass) then
+		if (!cpu_tool.FirstPassDone) then
+			cpu_tool:GetOwner():ConCommand('wire_cpu_vgui_status "Compiling ('.. TimeLeft ..' seconds left), '..cpu_tool.LineNumber..' lines processed"')
+			cpu_tool:GetOwner():ConCommand('wire_cpu_vgui_progress "'..math.floor(TempPercent/2)..'"')
 		end
 	else
-		if (firstpass) then
-			Msg(HUD_PRINTTALK,"-> ZyeliosASM: Compiling... ["..math.floor(TempPercent/2).."]\n")
-		else
-			Msg(HUD_PRINTTALK,"-> ZyeliosASM: Compiling... ["..50+math.floor(TempPercent/2).."]\n")
+		if (!cpu_tool.SecondPassDone) then
+			cpu_tool:GetOwner():ConCommand('wire_cpu_vgui_status "Compiling ('.. TimeLeft ..' seconds left), '..cpu_tool.LineNumber..' lines processed"')
+			cpu_tool:GetOwner():ConCommand('wire_cpu_vgui_progress "'..math.floor(50+TempPercent/2)..'"')
 		end
 	end
 
-	if (TempPercent == 100) then
+	//(cpu_ent.FatalError) ||
+	if (cpu_tool.LineNumber > table.Count(SourceCode)) || (TempPercent >= 100) then
 		if (!cpu_tool.FirstPassDone) then
 			cpu_tool.FirstPassDone = true
 			cpu_tool:Compile_Pass2()
@@ -85,14 +100,19 @@ local function CompileProgram_Timer(firstpass)
 end
 
 function TOOL:StartCompile(pl,ent)
-	pl:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 2.0 <----\n")
+	pl:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 2.0 BETA <----\n")
 	pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compiling...\n")
+
+	pl:ConCommand('wire_cpu_vgui_open')
+	pl:ConCommand('wire_cpu_vgui_title "ZyeliosASM - Compiling"')
+	pl:ConCommand('wire_cpu_vgui_status "Initializing"')
+	pl:ConCommand('wire_cpu_vgui_progress "0"')
 
 	ent.FatalError = false
 	ent.WIP = 0
 	ent.Labels = {}
 	ent.Compiling = true
-	if (self:GetClientInfo("userom") == "enable") then
+	if (self:GetClientInfo("userom") == "1") then
 		ent.UseROM = true
 	else
 		ent.UseROM = false
@@ -113,52 +133,39 @@ function TOOL:StartCompile(pl,ent)
 	self.FirstPassDone = false
 	self.SecondPassDone = false
 
-	cpu_tool = self
-	cpu_ent = ent
-	self:Compile_Pass1()
+	timer.Destroy("CPUCompileTimer1")
+	timer.Destroy("CPUCompileTimer2")
 
-//	local linen = 0
-//	for i = 1,table.Count(SourceCode)-1 do
-//		linen = linen + 1
-//		line = SourceCode[tostring(linen)]
-//		trace.Entity:ParseProgram_ASM(ply,line,linen,true)
-//	end
-//	
-//	trace.Entity.WIP = 0
-//	ply:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 2\n")
-//
-//	local linen = 0
-//	for i = 1,table.Count(SourceCode)-1 do
-//		linen = linen + 1
-//		line = SourceCode[tostring(linen)]
-//		trace.Entity:ParseProgram_ASM(ply,line,linen,false)
-//	end
+	self:Compile_Pass1()
 end
 
 function TOOL:Compile_Pass1()
 	self:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 1\n")
 
 	//Compile each line
-	local Reps = math.floor(table.Count(SourceCode)/self:GetOwner():GetInfo("wire_cpu_compile_bandwidth"))+1
+//	local Reps = math.floor(table.Count(SourceCode)/self:GetOwner():GetInfo("wire_cpu_compile_bandwidth"))+1
 	self.Compiling = true
 
-	self.LineNumber = 0
-	timer.Create("CPUCompileTimer1",self:GetOwner():GetInfo("wire_cpu_compile_rate"),Reps,CompileProgram_Timer,true)
+	self.LineNumber = 1
+	self.PrevRate = 0
+	timer.Create("CPUCompileTimer1",self:GetOwner():GetInfo("wire_cpu_compile_rate"),0,CompileProgram_Timer,true)
 end
 
 function TOOL:Compile_Pass2()
+//	timer.Remove("CPUCompileTimer1")
 	self:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 2\n")
 
 	//Compile each line
-	local Reps = math.floor(table.Count(SourceCode)/self:GetOwner():GetInfo("wire_cpu_compile_bandwidth"))+1
+//	local Reps = math.floor(table.Count(SourceCode)/self:GetOwner():GetInfo("wire_cpu_compile_bandwidth"))+1
 	self.Compiling = true
 
-	self.LineNumber = 0
-	timer.Create("CPUCompileTimer2",self:GetOwner():GetInfo("wire_cpu_compile_rate"),Reps,CompileProgram_Timer,false)
+	self.LineNumber = 1
+	timer.Create("CPUCompileTimer2",self:GetOwner():GetInfo("wire_cpu_compile_rate"),0,CompileProgram_Timer,false)
 end
 
 
 function TOOL:Compile_End()
+//	timer.Remove("CPUCompileTimer2")
  	local pl = self:GetOwner()
 	local ent = cpu_ent
 
@@ -167,6 +174,8 @@ function TOOL:Compile_End()
 	else
 		pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile succeded! "..table.Count(SourceCode).." lines, "..ent.WIP.." bytes, "..table.Count(ent.Labels).." definitions.\n")
 	end
+
+	pl:ConCommand('wire_cpu_vgui_close')
 
 	if (self:GetClientInfo("dumpcode") == "enable") then //lololol codedump
 		pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dumping data\n")
@@ -188,11 +197,28 @@ function TOOL:Compile_End()
 	ent.Compiling = false
 end
 
+if (SERVER) then
+	local function CPU_Compile( pl, command, args )
+		if (cpu_ent) then
+			cpu_tool:StartCompile(pl,cpu_ent)
+		else
+			Msg("NO CPU ENT\n")
+		end
+	end
+	concommand.Add( "wire_cpu_compile", CPU_Compile )
+end
+
+//=============================================================================
+// Toolgun shit
+//=============================================================================
 function TOOL:LeftClick( trace )
 	if trace.Entity:IsPlayer() then return false end
 	if (CLIENT) then return true end
 
 	local ply = self:GetOwner()
+
+	cpu_tool = self
+	cpu_ent = trace.Entity
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_cpu" && trace.Entity.pl == ply ) then
 		self:StartCompile(ply,trace.Entity)
@@ -301,12 +327,77 @@ function TOOL:Think()
 	self:UpdateGhostWireCpu( self.GhostEntity, self:GetOwner() )
 end
 
+//=============================================================================
+// Code sending
+//=============================================================================
+if (CLIENT) then
+	local Frame
+	local StatusLabel
+	local PLabel
+	local ProgressBar
+	local BGBar
+
+	local function VGUI_Open( pl, command, args )
+		if (Frame) then
+			Frame:SetVisible(false)
+		end
+
+		Frame = vgui.Create("Panel")
+		Frame:SetSize(400,50)
+		Frame:SetPos(150,150)
+		Frame:SetVisible(true)
+//		Frame:SetBGColor(Color(160,160,160))
+//		Frame:MakePopup()
+
+		BGBar = vgui.Create("ProgressBar",Frame)
+		BGBar:SetVisible(true)
+		BGBar:SetSize(400,100)
+		BGBar:SetPos(0,0)
+
+		StatusLabel = vgui.Create("Label",Frame)
+		StatusLabel:SetSize(380,30)
+		StatusLabel:SetPos(10,10)
+		StatusLabel:SetVisible(true)
+
+		PLabel = vgui.Create("Label",Frame)
+		PLabel:SetSize(30,30)
+		PLabel:SetPos(360,10)
+		PLabel:SetVisible(true)
+	
+		ProgressBar = vgui.Create("ProgressBar",Frame)
+		ProgressBar:SetSize(280,30)
+		ProgressBar:SetPos(10,60)
+		ProgressBar:SetVisible(false)
+	end
+	concommand.Add( "wire_cpu_vgui_open", VGUI_Open )
+
+	local function VGUI_Close( pl, command, args )
+		Frame:SetVisible(false); //Make the frame	
+	end
+	concommand.Add( "wire_cpu_vgui_close", VGUI_Close )
+
+	local function VGUI_Title( pl, command, args )
+		Frame:PostMessage("SetTitle", "text", args[1]);
+	end
+	concommand.Add( "wire_cpu_vgui_title", VGUI_Title )
+
+	local function VGUI_Status( pl, command, args )
+		StatusLabel:PostMessage("SetText", "text", args[1]);
+	end
+	concommand.Add( "wire_cpu_vgui_status", VGUI_Status )
+
+	local function VGUI_Progress( pl, command, args )
+		ProgressBar:PostMessage("SetValue", "Float", args[1]/100 );
+		PLabel:PostMessage("SetText", "text", args[1] .. "%");
+	end
+	concommand.Add( "wire_cpu_vgui_progress", VGUI_Progress )
+end
+
 //if (CLIENT) then
 	SourceLines = {}
 	SourceLineNumbers = {}
 	SourceLinesSent = 0
 	SourcePrevCharRate = 0
-	SourceSent = false
 	SourceTotalChars = 0
 	SourceLoadedChars = 0
 	
@@ -314,12 +405,16 @@ end
 		local SendLinesMax = SourceLinesSent + pl:GetInfo("wire_cpu_packet_bandwidth")	
 		local TotalChars = 0
 		if (SendLinesMax > table.Count(SourceLines)) then SendLinesMax = table.Count(SourceLines) end
-		while (SourceLinesSent <= SendLinesMax) && (TotalChars < 10000) do
+		while (SourceLinesSent <= SendLinesMax) && (TotalChars < 1024) do
 			SourceLinesSent = SourceLinesSent + 1
 			local line = SourceLines[SourceLinesSent]
 			local linen = SourceLinesSent
 	
 			if (line) && (line ~= "\n") && (string.gsub(line, "\n", "") ~= "") then
+				//Msg("CONCOMMAND: "..'wire_cpu_addsrc "'..linen..'" "' .. string.gsub(line, "\n", "") .. '"' .. "\n")
+				//Filter out "exec"
+				line = string.gsub(line,"exec","lolgarryfucksakes")
+				line = string.gsub(line,"bind","fucksakesgarrywtf")
 				pl:ConCommand('wire_cpu_addsrc "'..linen..'" "' .. string.gsub(line, "\n", "") .. '"')
 				TotalChars = TotalChars + string.len(line)
 			else
@@ -338,18 +433,15 @@ end
 		end
 
 		local TimeLeft = math.floor((SourceTotalChars - SourceLoadedChars) / CharRate)
-
-//		SourcePrevChars = SourcePrevChars+TotalChars
 		local TempPercent = math.floor(((SourceLinesSent-1)/table.Count(SourceLines))*100)
-		if (TempPercent == 100) && (!SourceSent) then
-			pl:PrintMessage(HUD_PRINTTALK,"CPU -> Program uploaded\n")
-			SourceSent = true
-		else
-			if (SinglePlayer()) then
-				pl:PrintMessage(HUD_PRINTTALK,"CPU -> Sent packet ("..TempPercent.."% @ "..math.floor(CharRate / 1024).." kb/sec, avg. "..TimeLeft.." sec left)\n")
-			else
-				Msg("CPU -> Sent packet ("..TempPercent.."% @ "..math.floor(CharRate / 1024).." kb/sec, avg. "..TimeLeft.." sec left)\n")
-			end
+
+		//REPORT DATA
+		pl:ConCommand('wire_cpu_vgui_status "Uploading @ '..math.floor(CharRate / 1024)..' kb/sec, avg. '..TimeLeft..' sec left, '..SourceLinesSent..' lines sent"')
+		pl:ConCommand('wire_cpu_vgui_progress "'..TempPercent..'"')
+
+		if (SourceLinesSent > table.Count(SourceLines)) then
+			pl:ConCommand('wire_cpu_vgui_close')
+			timer.Remove("CPUSendTimer")
 		end
 	end
 	
@@ -372,32 +464,26 @@ end
 		local filedata = file.Read(fname)
 		SourceLines = string.Explode("\n", filedata )
 		SourceLinesSent = 0
-		SourceSent = false
 		SourceTotalChars = string.len(filedata)
 
 		SourcePrevCharRate = string.len(SourceLines[1])
 		SourceLoadedChars = 0
 
+		pl:ConCommand('wire_cpu_vgui_open')
+		pl:ConCommand('wire_cpu_vgui_title "CPU - Uploading program"')
+		pl:ConCommand('wire_cpu_vgui_status "Initializing"')
+		pl:ConCommand('wire_cpu_vgui_progress "0"')
+
 		//Send 50 lines
-		pl:PrintMessage(HUD_PRINTTALK,"CPU -> Starting uploading program...\n")
 		if (SinglePlayer()) then
-			local Reps = math.floor(table.Count(SourceLines)/pl:GetInfo("wire_cpu_packet_bandwidth"))+1	
-			timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_sp"),Reps,UploadProgram,pl)
+			timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_sp"),0,UploadProgram,pl)
 		else
-			local Reps = math.floor(table.Count(SourceLines)/pl:GetInfo("wire_cpu_packet_bandwidth"))+1	
-			timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_mp"),Reps,UploadProgram,pl)
+			timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_mp"),0,UploadProgram,pl)
 		end
 	end
 	concommand.Add( "wire_cpu_load", LoadProgram )
 	
 	local function StoreProgram( pl, command, args )
-	        //local lines = "";
-	        //for i = 1,256 do
-		//	if (pl:GetInfo("wire_cpu_line"..i) ~= "") then
-		//                lines = lines .. pl:GetInfo("wire_cpu_line"..i) .. "\n"
-		//	end
-	        //end
-	        //file.Write("CPUChip\\"..pl:GetInfo("wire_cpu_filename"),lines)
 		Msg("Storing program is disabled - its readonly!\n")
 	end
 	concommand.Add( "wire_cpu_store", StoreProgram )
@@ -423,7 +509,92 @@ if (SERVER) then
 
 end
 
+//=============================================================================
+// ZyeliosEditor
+//=============================================================================
+if (CLIENT) then
+	local frmMain
+	local frmMain_Editor
 
+	local SrcCode = {}
+
+	local function Editor_Start( pl, command, args )
+		if (!frmMain) then
+			frmMain = vgui.Create("Frame")
+			frmMain:SetSize(600,530)
+			frmMain:SetPos(200,100)
+			frmMain:SetVisible(true)
+			frmMain:SetText("Zyelios Editor - V1.2")
+			frmMain:MakePopup()
+
+			frmMain_Editor = vgui.Create("TextEntry",frmMain)
+			frmMain_Editor:SetVisible(true)
+			frmMain_Editor:SetSize(580,460)
+			frmMain_Editor:SetPos(10,30)
+			frmMain_Editor:SetMultiline(true)
+			frmMain_Editor:SetText(string.Implode("\n",SrcCode))
+
+			local frmMain_OpenButton
+			local frmMain_SaveButton
+			local frmMain_UploadButton
+			local frmMain_CompileButton
+
+			frmMain_OpenButton = vgui.Create("Button", frmMain);
+			frmMain_OpenButton:SetText("Open program");
+			frmMain_OpenButton:SetPos(10,500);
+
+			frmMain_SaveButton = vgui.Create("Button", frmMain);
+			frmMain_SaveButton:SetText("Save program");
+			frmMain_SaveButton:SetPos(100,500);
+
+			frmMain_UploadButton = vgui.Create("Button", frmMain);
+			frmMain_UploadButton:SetText("Upload program");
+			frmMain_UploadButton:SetPos(150,500);
+
+			frmMain_CompileButton = vgui.Create("Button", frmMain);
+			frmMain_CompileButton:SetText("Compile program");
+			frmMain_CompileButton:SetPos(200,500);
+
+			function frmMain_OpenButton:DoClick()
+				local fname = "CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename")
+				if (!file.Exists(fname)) then fname = "CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename")..".txt" end
+				if (!file.Exists(fname)) then return end
+
+				Msg("FILENAME: " .. fname .."\n")
+		
+				local filedata = file.Read(fname)
+				SrcCode = string.Explode("\n", filedata)
+				frmMain_Editor:SetText(filedata)
+		
+				LocalPlayer():ConCommand("wire_cpu_load")
+			end
+			
+			function frmMain_SaveButton:DoClick()
+				SrcCode = string.Explode(frmMain_Editor:GetValue())
+				file.Write("CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename"),frmMain_Editor:GetValue())
+			end
+	
+			function frmMain_UploadButton:DoClick()
+				SrcCode = string.Explode(frmMain_Editor:GetValue())
+				file.Write("CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename"),frmMain_Editor:GetValue())
+	
+				LocalPlayer():ConCommand("wire_cpu_load")
+			end
+		
+			function frmMain_CompileButton:DoClick()
+				LocalPlayer():ConCommand("wire_cpu_compile")
+			end
+		else
+			frmMain:SetVisible(true)
+			frmMain_Editor:SetText(string.Implode("\n",SrcCode))
+		end
+	end
+	concommand.Add( "wire_cpu_editor_start", Editor_Start )
+end
+
+//=============================================================================
+// Control panel
+//=============================================================================
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_cpu_name", Description = "#Tool_wire_cpu_desc" })
 
@@ -434,16 +605,10 @@ function TOOL.BuildCPanel(panel)
 	})
 
 	panel:AddControl("Button", {
-		Text = "Load",
+		Text = "Quick Load",
 		Name = "Load",
 		Command = "wire_cpu_load"
 	})
-
-//	panel:AddControl("Button", {
-//		Text = "Store",
-//		Name = "Store",
-//		Command = "wire_cpu_store"
-//	})
 	
 	panel:AddControl("Button", {
 		Text = "Clear",
@@ -456,22 +621,10 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_cpu_userom"
 	})
 
-//	panel:AddControl("ComboBox", {
-//		Label = "Compiler",
-//		MenuButton = "0",
-//
-//		Options = {
-//			["ZyeliosASM"]		= { wire_cpu_compiler = "ZyeliosASM" }
-//			["ZyeliosBASIC"]	= { wire_cpu_compiler = "ZyeliosBASIC" }
-//		}
+//	panel:AddControl("Button", {
+//		Text = "ZyeliosEditor",
+//		Name = "Edit",
+//		Command = "wire_cpu_editor_start"
 //	})
-	//Bye till better times:
-//	for i = 1,256 do
-//		panel:AddControl("TextBox", {
-//			Label = "Line "..i..":",
-//			Command = "wire_cpu_line"..i,
-//			MaxLength = "128"
-//		})
-//	end
 end
 	

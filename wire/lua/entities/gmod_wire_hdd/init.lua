@@ -13,13 +13,15 @@ function ENT:Initialize()
 	self.Entity:SetUseType( SIMPLE_USE )
 
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Data" })
-	self.Inputs = Wire_CreateInputs(self.Entity, { "Clk", "AddrRead", "AddrWrite", "Data" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "Clk", "File", "AddrRead", "AddrWrite", "Data" })
 
 	self.Clk = 0
 	self.AWrite = 0
 	self.Data = 0
 	self.ARead = 0
 	self.Out = 0
+
+	self.File = 0
 
 	//Hard drive id/folder id:
 	self.DriveID = 0
@@ -52,8 +54,8 @@ function ENT:GetCap( steamid )
 
 	//Create all files if needed
 	//for i = 0,self.DriveCap*1024/64 do
-	//	if (!file.Exists("WireFlash\\"..steamid.."\\"..self.DriveID.."\\"..i..".txt")) then
-	//		file.Write("WireFlash\\"..steamid.."\\"..self.DriveID.."\\"..i..".txt","")
+	//	if (!file.Exists("WireFlash\\"..steamid.."\\"..self.DriveID.."\\file"..self.File.."_"..i..".txt")) then
+	//		file.Write("WireFlash\\"..steamid.."\\"..self.DriveID.."\\file"..self.File.."_"..i..".txt","")
 	//	end
 	//end
 end
@@ -69,6 +71,7 @@ function ENT:ReadCell( Address )
 		steamid = string.gsub(steamid, ":", "_")
 		self:GetCap(steamid)
 
+		//TODO: Add proper size checking
 		if ((Address < self.DriveCap * 1024) && (Address >= 0)) then
 			local cachestruct = math.floor(Address / 64)
 			local cacheaddr = math.floor(Address) % 64
@@ -77,10 +80,10 @@ function ENT:ReadCell( Address )
 				return self.Cache[cacheaddr]
 			else
 				//Cache sector
-				if (!file.Exists("WireFlash\\"..steamid.."\\"..self.DriveID.."\\"..cachestruct..".txt")) then
-					file.Write("WireFlash\\"..steamid.."\\"..self.DriveID.."\\"..cachestruct..".txt","")
+				if (!file.Exists("WireFlash\\"..steamid.."\\"..self.DriveID.."\\file"..self.File.."_"..cachestruct..".txt")) then
+					file.Write("WireFlash\\"..steamid.."\\"..self.DriveID.."\\file"..self.File.."_"..cachestruct..".txt","")
 				end
-				local tempval = string.Explode("\n",file.Read("WireFlash\\"..steamid.."\\"..self.DriveID.."\\"..cachestruct..".txt"))
+				local tempval = string.Explode("\n",file.Read("WireFlash\\"..steamid.."\\"..self.DriveID.."\\file"..self.File.."_"..cachestruct..".txt"))
 				for i = 0,63 do
 					if ((tempval[i+1]) && (tonumber(tempval[i+1]))) then
 						self.Cache[i] = tempval[i+1]
@@ -124,15 +127,15 @@ function ENT:WriteCell( Address, value )
 					for i = 0,63 do
 						tempstr = tempstr..self.Cache[i].."\n"
 					end
-					file.Write("WireFlash\\"..steamid.."\\"..self.DriveID.."\\"..self.CachedStruct..".txt",tempstr)
+					file.Write("WireFlash\\"..steamid.."\\"..self.DriveID.."\\file"..self.File.."_"..self.CachedStruct..".txt",tempstr)
 				end
 				self.SaveSteps = 0
 
 				//Cache sector
-				if (!file.Exists("WireFlash\\"..steamid.."\\"..self.DriveID.."\\"..cachestruct..".txt")) then
-					file.Write("WireFlash\\"..steamid.."\\"..self.DriveID.."\\"..cachestruct..".txt","")
+				if (!file.Exists("WireFlash\\"..steamid.."\\"..self.DriveID.."\\file"..self.File.."_"..cachestruct..".txt")) then
+					file.Write("WireFlash\\"..steamid.."\\"..self.DriveID.."\\file"..self.File.."_"..cachestruct..".txt","")
 				end
-				local tempval = string.Explode("\n",file.Read("WireFlash\\"..steamid.."\\"..self.DriveID.."\\"..cachestruct..".txt"))
+				local tempval = string.Explode("\n",file.Read("WireFlash\\"..steamid.."\\"..self.DriveID.."\\file"..self.File.."_"..cachestruct..".txt"))
 				for i = 0,63 do
 					if ((tempval[i+1]) && (tonumber(tempval[i+1]))) then
 						self.Cache[i] = tempval[i+1]
@@ -153,7 +156,7 @@ function ENT:WriteCell( Address, value )
 				for i = 0,63 do
 					tempstr = tempstr..self.Cache[i].."\n"
 				end
-				file.Write("WireFlash\\"..steamid.."\\"..self.DriveID.."\\"..self.CachedStruct..".txt",tempstr)
+				file.Write("WireFlash\\"..steamid.."\\"..self.DriveID.."\\file"..self.File.."_"..self.CachedStruct..".txt",tempstr)
 				self.SaveSteps = 0
 			end
 
@@ -179,6 +182,8 @@ function ENT:TriggerInput(iname, value)
 				end
 			end
 		end
+	elseif (iname == "File") then
+		self.File = math.min(256,math.max(0,math.floor(value)))
 	elseif (iname == "AddrRead") then
 		self.ARead = value
 		local val = self:ReadCell(value)
@@ -205,7 +210,7 @@ function ENT:TriggerInput(iname, value)
 		end
 	end
 
-	self:SetOverlayText( "Flash memory - "..self.DriveCap.."kb".."\nWriteAddr:"..self.AWrite.."  Data:"..self.Data.."  Clock:"..self.Clk..
+	self:SetOverlayText( "Flash memory (File #"..self.File..") - "..self.DriveCap.."kb".."\nWriteAddr:"..self.AWrite.."  Data:"..self.Data.."  Clock:"..self.Clk..
         	                                                     "\nReadAddr:"..self.ARead.." = ".. self.Out)
 
 
