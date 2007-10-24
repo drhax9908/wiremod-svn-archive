@@ -1,5 +1,6 @@
 "ModelPack"
 {
+
 	"Button 0 new"
 	{
 		"categories"	"button"
@@ -17,7 +18,6 @@
 			"8"	"materials/models/cheeze/buttons2/rim.vtf"
 		}
 	}
-
 
 	"Button 1 new"
 	{
@@ -1063,5 +1063,690 @@
 		}
 	}
 
+	"Button Activate"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/activate.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/activate.dx80.vtx"
+			"1"     "models/cheeze/buttons2/activate.dx90.vtx"
+			"2"     "models/cheeze/buttons2/activate.phy"
+			"3"     "models/cheeze/buttons2/activate.sw.vtx"
+			"4"     "models/cheeze/buttons2/activate.vvd"
+			"5"     "materials/models/cheeze/buttons2/activate.vmt"
+			"6"     "materials/models/cheeze/buttons2/activate.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+
+	"Button Air"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/air.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/air.dx80.vtx"
+			"1"     "models/cheeze/buttons2/air.dx90.vtx"
+			"2"     "models/cheeze/buttons2/air.phy"
+			"3"     "models/cheeze/buttons2/air.sw.vtx"
+			"4"     "models/cheeze/buttons2/air.vvd"
+			"5"     "materials/models/cheeze/buttons2/air.vmt"
+			"6"     "materials/models/cheeze/buttons2/air.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Alert"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/alert.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/alert.dx80.vtx"
+			"1"     "models/cheeze/buttons2/alert.dx90.vtx"
+			"2"     "models/cheeze/buttons2/alert.phy"
+			"3"     "models/cheeze/buttons2/alert.sw.vtx"
+			"4"     "models/cheeze/buttons2/alert.vvd"
+			"5"     "materials/models/cheeze/buttons2/alert.vmt"
+			"6"     "materials/models/cheeze/buttons2/alert.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Cake"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/cake.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/cake.dx80.vtx"
+			"1"     "models/cheeze/buttons2/cake.dx90.vtx"
+			"2"     "models/cheeze/buttons2/cake.phy"
+			"3"     "models/cheeze/buttons2/cake.sw.vtx"
+			"4"     "models/cheeze/buttons2/cake.vvd"
+			"5"     "materials/models/cheeze/buttons2/cake.vmt"
+			"6"     "materials/models/cheeze/buttons2/cake.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Charge"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/charge.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/charge.dx80.vtx"
+			"1"     "models/cheeze/buttons2/charge.dx90.vtx"
+			"2"     "models/cheeze/buttons2/charge.phy"
+			"3"     "models/cheeze/buttons2/charge.sw.vtx"
+			"4"     "models/cheeze/buttons2/charge.vvd"
+			"5"     "materials/models/cheeze/buttons2/charge.vmt"
+			"6"     "materials/models/cheeze/buttons2/charge.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Clock (CLK)"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/clock.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/clock.dx80.vtx"
+			"1"     "models/cheeze/buttons2/clock.dx90.vtx"
+			"2"     "models/cheeze/buttons2/clock.phy"
+			"3"     "models/cheeze/buttons2/clock.sw.vtx"
+			"4"     "models/cheeze/buttons2/clock.vvd"
+			"5"     "materials/models/cheeze/buttons2/clock.vmt"
+			"6"     "materials/models/cheeze/buttons2/clock.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Compile"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/compile.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/compile.dx80.vtx"
+			"1"     "models/cheeze/buttons2/compile.dx90.vtx"
+			"2"     "models/cheeze/buttons2/compile.phy"
+			"3"     "models/cheeze/buttons2/compile.sw.vtx"
+			"4"     "models/cheeze/buttons2/compile.vvd"
+			"5"     "materials/models/cheeze/buttons2/compile.vmt"
+			"6"     "materials/models/cheeze/buttons2/compile.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Coolant"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/coolant.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/coolant.dx80.vtx"
+			"1"     "models/cheeze/buttons2/coolant.dx90.vtx"
+			"2"     "models/cheeze/buttons2/coolant.phy"
+			"3"     "models/cheeze/buttons2/coolant.sw.vtx"
+			"4"     "models/cheeze/buttons2/coolant.vvd"
+			"5"     "materials/models/cheeze/buttons2/coolant.vmt"
+			"6"     "materials/models/cheeze/buttons2/coolant.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Deactivate"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/deactivate.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/deactivate.dx80.vtx"
+			"1"     "models/cheeze/buttons2/deactivate.dx90.vtx"
+			"2"     "models/cheeze/buttons2/deactivate.phy"
+			"3"     "models/cheeze/buttons2/deactivate.sw.vtx"
+			"4"     "models/cheeze/buttons2/deactivate.vvd"
+			"5"     "materials/models/cheeze/buttons2/deactivate.vmt"
+			"6"     "materials/models/cheeze/buttons2/deactivate.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Divide"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/divide.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/divide.dx80.vtx"
+			"1"     "models/cheeze/buttons2/divide.dx90.vtx"
+			"2"     "models/cheeze/buttons2/divide.phy"
+			"3"     "models/cheeze/buttons2/divide.sw.vtx"
+			"4"     "models/cheeze/buttons2/divide.vvd"
+			"5"     "materials/models/cheeze/buttons2/divide.vmt"
+			"6"     "materials/models/cheeze/buttons2/divide.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Energy"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/energy.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/energy.dx80.vtx"
+			"1"     "models/cheeze/buttons2/energy.dx90.vtx"
+			"2"     "models/cheeze/buttons2/energy.phy"
+			"3"     "models/cheeze/buttons2/energy.sw.vtx"
+			"4"     "models/cheeze/buttons2/energy.vvd"
+			"5"     "materials/models/cheeze/buttons2/energy.vmt"
+			"6"     "materials/models/cheeze/buttons2/energy.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Equals"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/equals.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/equals.dx80.vtx"
+			"1"     "models/cheeze/buttons2/equals.dx90.vtx"
+			"2"     "models/cheeze/buttons2/equals.phy"
+			"3"     "models/cheeze/buttons2/equals.sw.vtx"
+			"4"     "models/cheeze/buttons2/equals.vvd"
+			"5"     "materials/models/cheeze/buttons2/equals.vmt"
+			"6"     "materials/models/cheeze/buttons2/equals.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Multiply"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/multiply.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/multiply.dx80.vtx"
+			"1"     "models/cheeze/buttons2/multiply.dx90.vtx"
+			"2"     "models/cheeze/buttons2/multiply.phy"
+			"3"     "models/cheeze/buttons2/multiply.sw.vtx"
+			"4"     "models/cheeze/buttons2/multiply.vvd"
+			"5"     "materials/models/cheeze/buttons2/multiply.vmt"
+			"6"     "materials/models/cheeze/buttons2/multiply.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Overide"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/overide.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/overide.dx80.vtx"
+			"1"     "models/cheeze/buttons2/overide.dx90.vtx"
+			"2"     "models/cheeze/buttons2/overide.phy"
+			"3"     "models/cheeze/buttons2/overide.sw.vtx"
+			"4"     "models/cheeze/buttons2/overide.vvd"
+			"5"     "materials/models/cheeze/buttons2/overide.vmt"
+			"6"     "materials/models/cheeze/buttons2/overide.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Power"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/power.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/power.dx80.vtx"
+			"1"     "models/cheeze/buttons2/power.dx90.vtx"
+			"2"     "models/cheeze/buttons2/power.phy"
+			"3"     "models/cheeze/buttons2/power.sw.vtx"
+			"4"     "models/cheeze/buttons2/power.vvd"
+			"5"     "materials/models/cheeze/buttons2/power.vmt"
+			"6"     "materials/models/cheeze/buttons2/power.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Pwr_blue"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/pwr_blue.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/pwr_blue.dx80.vtx"
+			"1"     "models/cheeze/buttons2/pwr_blue.dx90.vtx"
+			"2"     "models/cheeze/buttons2/pwr_blue.phy"
+			"3"     "models/cheeze/buttons2/pwr_blue.sw.vtx"
+			"4"     "models/cheeze/buttons2/pwr_blue.vvd"
+			"5"     "materials/models/cheeze/buttons2/pwr_blue.vmt"
+			"6"     "materials/models/cheeze/buttons2/pwr_blue.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Pwr_green"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/pwr_green.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/pwr_green.dx80.vtx"
+			"1"     "models/cheeze/buttons2/pwr_green.dx90.vtx"
+			"2"     "models/cheeze/buttons2/pwr_green.phy"
+			"3"     "models/cheeze/buttons2/pwr_green.sw.vtx"
+			"4"     "models/cheeze/buttons2/pwr_green.vvd"
+			"5"     "materials/models/cheeze/buttons2/pwr_green.vmt"
+			"6"     "materials/models/cheeze/buttons2/pwr_green.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Pwr_red"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/pwr_red.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/pwr_red.dx80.vtx"
+			"1"     "models/cheeze/buttons2/pwr_red.dx90.vtx"
+			"2"     "models/cheeze/buttons2/pwr_red.phy"
+			"3"     "models/cheeze/buttons2/pwr_red.sw.vtx"
+			"4"     "models/cheeze/buttons2/pwr_red.vvd"
+			"5"     "materials/models/cheeze/buttons2/pwr_red.vmt"
+			"6"     "materials/models/cheeze/buttons2/pwr_red.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Test"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/test.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/test.dx80.vtx"
+			"1"     "models/cheeze/buttons2/test.dx90.vtx"
+			"2"     "models/cheeze/buttons2/test.phy"
+			"3"     "models/cheeze/buttons2/test.sw.vtx"
+			"4"     "models/cheeze/buttons2/test.vvd"
+			"5"     "materials/models/cheeze/buttons2/test.vmt"
+			"6"     "materials/models/cheeze/buttons2/test.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Activate_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/activate_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/activate_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/activate_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/activate_small.phy"
+			"3"     "models/cheeze/buttons2/activate_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/activate_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/activate.vmt"
+			"6"     "materials/models/cheeze/buttons2/activate.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+
+	"Button Air_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/air_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/air_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/air_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/air_small.phy"
+			"3"     "models/cheeze/buttons2/air_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/air_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/air.vmt"
+			"6"     "materials/models/cheeze/buttons2/air.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Alert_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/alert_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/alert_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/alert_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/alert_small.phy"
+			"3"     "models/cheeze/buttons2/alert_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/alert_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/alert.vmt"
+			"6"     "materials/models/cheeze/buttons2/alert.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Cake_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/cake_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/cake_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/cake_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/cake_small.phy"
+			"3"     "models/cheeze/buttons2/cake_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/cake_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/cake.vmt"
+			"6"     "materials/models/cheeze/buttons2/cake.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Charge_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/charge_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/charge_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/charge_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/charge_small.phy"
+			"3"     "models/cheeze/buttons2/charge_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/charge_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/charge.vmt"
+			"6"     "materials/models/cheeze/buttons2/charge.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Clock_small (CLK)"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/clock_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/clock_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/clock_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/clock_small.phy"
+			"3"     "models/cheeze/buttons2/clock_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/clock_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/clock.vmt"
+			"6"     "materials/models/cheeze/buttons2/clock.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Compile_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/compile_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/compile_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/compile_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/compile_small.phy"
+			"3"     "models/cheeze/buttons2/compile_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/compile_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/compile.vmt"
+			"6"     "materials/models/cheeze/buttons2/compile.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Coolant_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/coolant_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/coolant_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/coolant_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/coolant_small.phy"
+			"3"     "models/cheeze/buttons2/coolant_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/coolant_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/coolant.vmt"
+			"6"     "materials/models/cheeze/buttons2/coolant.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Deactivate_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/deactivate_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/deactivate_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/deactivate_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/deactivate_small.phy"
+			"3"     "models/cheeze/buttons2/deactivate_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/deactivate_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/deactivate.vmt"
+			"6"     "materials/models/cheeze/buttons2/deactivate.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Divide_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/divide_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/divide_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/divide_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/divide_small.phy"
+			"3"     "models/cheeze/buttons2/divide_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/divide_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/divide.vmt"
+			"6"     "materials/models/cheeze/buttons2/divide.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Energy_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/energy_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/energy_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/energy_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/energy_small.phy"
+			"3"     "models/cheeze/buttons2/energy_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/energy_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/energy.vmt"
+			"6"     "materials/models/cheeze/buttons2/energy.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Equals_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/equals_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/equals_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/equals_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/equals_small.phy"
+			"3"     "models/cheeze/buttons2/equals_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/equals_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/equals.vmt"
+			"6"     "materials/models/cheeze/buttons2/equals.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Multiply_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/multiply_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/multiply_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/multiply_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/multiply_small.phy"
+			"3"     "models/cheeze/buttons2/multiply_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/multiply_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/multiply.vmt"
+			"6"     "materials/models/cheeze/buttons2/multiply.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Overide_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/overide_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/overide_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/overide_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/overide_small.phy"
+			"3"     "models/cheeze/buttons2/overide_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/overide_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/overide.vmt"
+			"6"     "materials/models/cheeze/buttons2/overide.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Power_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/power_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/power_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/power_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/power_small.phy"
+			"3"     "models/cheeze/buttons2/power_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/power_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/power.vmt"
+			"6"     "materials/models/cheeze/buttons2/power.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Pwr_blue_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/pwr_blue_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/pwr_blue_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/pwr_blue_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/pwr_blue_small.phy"
+			"3"     "models/cheeze/buttons2/pwr_blue_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/pwr_blue_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/pwr_blue.vmt"
+			"6"     "materials/models/cheeze/buttons2/pwr_blue.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Pwr_green_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/pwr_green_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/pwr_green_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/pwr_green_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/pwr_green_small.phy"
+			"3"     "models/cheeze/buttons2/pwr_green_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/pwr_green_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/pwr_green.vmt"
+			"6"     "materials/models/cheeze/buttons2/pwr_green.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Pwr_red_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/pwr_red_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/pwr_red_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/pwr_red_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/pwr_red_small.phy"
+			"3"     "models/cheeze/buttons2/pwr_red_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/pwr_red_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/pwr_red.vmt"
+			"6"     "materials/models/cheeze/buttons2/pwr_red.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
+
+	"Button Test_small"
+	{
+		"categories"	"button"
+		"model"			"models/cheeze/buttons2/test_small.mdl"
+		"files"
+		{
+			"0"     "models/cheeze/buttons2/test_small.dx80.vtx"
+			"1"     "models/cheeze/buttons2/test_small.dx90.vtx"
+			"2"     "models/cheeze/buttons2/test_small.phy"
+			"3"     "models/cheeze/buttons2/test_small.sw.vtx"
+			"4"     "models/cheeze/buttons2/test_small.vvd"
+			"5"     "materials/models/cheeze/buttons2/test.vmt"
+			"6"     "materials/models/cheeze/buttons2/test.vtf"
+			"7"     "materials/models/cheeze/buttons2/rim.vmt"
+			"8"	"materials/models/cheeze/buttons2/rim.vtf"
+		}
+	}
 
 }
