@@ -63,17 +63,17 @@
 	"Portable Radio 1"
 	{
 		"categories"    "radio,radio2"
-		"model"			"models/props_lab/reciever01a.mdl.mdl"
+		"model"			"models/props_lab/reciever01a.mdl"
 	}
 	"Portable Radio 2"
 	{
 		"categories"    "radio,radio2"
-		"model"			"models/props_lab/reciever01b.mdl.mdl"
+		"model"			"models/props_lab/reciever01b.mdl"
 	}
 	"Portable radio 3"
 	{
 		"categories"    "radio,radio2"
-		"model"			"models/props_lab/reciever01c.mdl.mdl"
+		"model"			"models/props_lab/reciever01c.mdl"
 	}
 	"Beamcaster"
 	{
