@@ -117,7 +117,7 @@ function Wire_KeyOn( pl, cmd, args )
 	KeyBoardPlayerKeys[pl:EntIndex()] = args[1]
 
 	pl:ConCommand("wire_keyboard_blockinput")
-	pl:PrintMessage(HUD_PRINTTALK,"Wired keyboard turned on - press Right ALT to exit the mode!\n")
+	pl:PrintMessage(HUD_PRINTTALK,"Wired keyboard turned on - press ALT to exit the mode!\n")
 end
 concommand.Add("wire_keyboard_on", Wire_KeyOn)
 
@@ -132,7 +132,7 @@ function Wire_KeyPressed( pl, cmd, args )
 	local ent = ents.GetByIndex( KeyBoardPlayerKeys[pl:EntIndex()] )
 	if (!ent) || (!ent:IsValid()) || (!ent.InUse) then return end
 
-	if (key == KEY_RALT) then
+	if (key == KEY_RALT) || (key == KEY_LALT) then
 		pl:ConCommand("wire_keyboard_off")
 		return
 	end
