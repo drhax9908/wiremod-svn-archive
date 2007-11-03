@@ -7,5 +7,4 @@
 	"author_email"			"ErkleMad@gmail.com"
 	"author_url"			"http://www.wiremod.com/"
 	"info"				"A set of SEnts and STools that communicate through wires."
-	"override"			"0"
 }
