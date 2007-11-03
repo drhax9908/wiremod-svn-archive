@@ -346,6 +346,11 @@ function ENT:RemoveFuckingSpaces(str)
 	
 end
 
+function ENT:Error( pl, error )
+	pl:PrintMessage(HUD_PRINTCONSOLE,"-> "..error)
+	pl:ConCommand("wire_cpu_editor_addlog \""..error.."\"")
+end
+
 function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 	local opcodetable = self:Explode(" ", line or { } )
 	local dopcode = 0
@@ -367,19 +372,19 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 				if (not self.Labels[deftable[1]]) then
 					if (self:ValidNumber(deftable[2])) then
 						self.Labels[deftable[1]] = deftable[2]
-						//-pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Added define "..deftable[1].."["..deftable[2].."]\n")
+						//-self:Error(pl,"ZyeliosASM: Added define "..deftable[1].."["..deftable[2].."]\n")
 					else
-						pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E270) at line "..linenumber..": Attempt to define a non-number\n")
+						self:Error(pl,"ZyeliosASM: Error (E270) at line "..linenumber..": Attempt to define a non-number\n")
 						return false
 					end
 				else
 					if (firstpass) then
-						pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E236) at line "..linenumber..": Define "..deftable[1].." already exists\n")
+						self:Error(pl,"ZyeliosASM: Error (E236) at line "..linenumber..": Define "..deftable[1].." already exists\n")
 						return false
 					end
 				end
 			else
-				pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E335) at line "..linenumber..": Invalid number of parameters in DEFINE macro\n")
+				self:Error(pl,"ZyeliosASM: Error (E335) at line "..linenumber..": Invalid number of parameters in DEFINE macro\n")
 				return false	
 			end
 		elseif (nextdb) then
@@ -408,7 +413,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 								self:Write(self.Labels[dbvalue..":"])
 							else
 								if (not firstpass) then
-									pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E450) at line "..linenumber..": Invalid parameter in DB macro\n")
+									self:Error(pl,"ZyeliosASM: Error (E450) at line "..linenumber..": Invalid parameter in DB macro\n")
 									return false
 								end
 								//self:Write(0)
@@ -421,31 +426,31 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 			if self:ValidNumber(opcode) then
 				self.WIP = tonumber(opcode)
 			else
-				pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E333) at line "..linenumber..": Invalid parameter in ORG macro\n")
+				self:Error(pl,"ZyeliosASM: Error (E333) at line "..linenumber..": Invalid parameter in ORG macro\n")
 				return false
 			end
 		elseif (nextalloc) then
 			local alloctable = string.Explode(",", opcode )
 			if (table.Count(alloctable) == 0) then
-				//-pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Allocated new variable ".."0".." ["..self.WIP.."]\n")
+				//-self:Error(pl,"ZyeliosASM: Allocated new variable ".."0".." ["..self.WIP.."]\n")
 				self:Write( 0 )
 			end
 			if (table.Count(alloctable) == 1) then
 				alloctable[1] = string.Trim(alloctable[1])
 				local prefix = string.sub(alloctable[1],1,1)
 				if self:ValidNumber(alloctable[1]) then
-					//-pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Allocated variable ".."["..alloctable[1].."] ["..self.WIP.."]\n")
+					//-self:Error(pl,"ZyeliosASM: Allocated variable ".."["..alloctable[1].."] ["..self.WIP.."]\n")
 					for i = 0,alloctable[1]-1 do
 						self:Write( 0 )
 					end
 				else
 					if (not self.Labels[alloctable[1]]) then
 						self.Labels[alloctable[1]] = self.WIP
-						//-pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Allocated new variable "..alloctable[1].." ["..self.WIP.."]\n")
+						//-self:Error(pl,"ZyeliosASM: Allocated new variable "..alloctable[1].." ["..self.WIP.."]\n")
 						self:Write( 0 )
 					else
 						if (firstpass) then
-							pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E231) at line "..linenumber..": Variable "..opcode.." already exists\n")
+							self:Error(pl,"ZyeliosASM: Error (E231) at line "..linenumber..": Variable "..opcode.." already exists\n")
 							return false
 						else
 							self:Write( 0 )
@@ -458,11 +463,11 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 				alloctable[2] = string.Trim(alloctable[2])
 				if (not self.Labels[alloctable[1]]) then
 					self.Labels[alloctable[1]] = self.WIP
-					//-pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Allocated new variable "..alloctable[1].."["..alloctable[2].."] ["..self.WIP.."]\n")
+					//-self:Error(pl,"ZyeliosASM: Allocated new variable "..alloctable[1].."["..alloctable[2].."] ["..self.WIP.."]\n")
 					self:Write( alloctable[2] )
 				else
 					if (firstpass) then
-						pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E231) at line "..linenumber..": Variable "..opcode.." already exists\n")
+						self:Error(pl,"ZyeliosASM: Error (E231) at line "..linenumber..": Variable "..opcode.." already exists\n")
 						return false
 					else
 						self:Write( alloctable[2] )
@@ -475,13 +480,13 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 				alloctable[3] = string.Trim(alloctable[3])
 				if (not self.Labels[alloctable[1]]) then
 					self.Labels[alloctable[1]] = self.WIP
-					//-pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Allocated new array "..alloctable[1].."["..alloctable[2].."] ["..self.WIP.."]\n")
+					//-self:Error(pl,"ZyeliosASM: Allocated new array "..alloctable[1].."["..alloctable[2].."] ["..self.WIP.."]\n")
 					for i = 1, alloctable[2] do
 						self:Write( alloctable[3] )
 					end
 				else
 					if (firstpass) then
-						pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E231) at line "..linenumber..": Variable "..opcode.." already exists\n")
+						self:Error(pl,"ZyeliosASM: Error (E231) at line "..linenumber..": Variable "..opcode.." already exists\n")
 						return false
 					else
 						for i = 1, alloctable[2] do
@@ -500,8 +505,8 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 			local segment2 = -1
 
 			if (table.Count(paramtable) ~= self:OpcodeParamCount( dopcode )) then
-				pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E245) at line "..linenumber..": wrong number of parameters for opcode\n")
-				pl:PrintMessage(HUD_PRINTCONSOLE,"-> Code: ["..linenumber.."]"..self.WIP.." = "..line.."\n")
+				self:Error(pl,"ZyeliosASM: Error (E245) at line "..linenumber..": wrong number of parameters for opcode\n")
+				self:Error(pl,"Code: ["..linenumber.."]"..self.WIP.." = "..line.."\n")
 				return false
 			end
 			paramtable[1] = string.Trim(paramtable[1])
@@ -564,7 +569,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 						paramtable[1] = self.Labels[postprefix]
 					else	
 						if (not firstpass) then
-							pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E235) at line "..linenumber..": No such label: "..postprefix.."!\n")
+							self:Error(pl,"ZyeliosASM: Error (E235) at line "..linenumber..": No such label: "..postprefix.."!\n")
 							return false
 						end
 					end
@@ -596,14 +601,14 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 						if (postprefix) then
 							if (not self.ValidNumber(postprefix)) then
 								if (not firstpass) then
-									pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E236) at line "..linenumber..": No such variable: "..postprefix.."!\n") //I'm teh pirate yarr!
+									self:Error(pl,"ZyeliosASM: Error (E236) at line "..linenumber..": No such variable: "..postprefix.."!\n") //I'm teh pirate yarr!
 									return false
 								end
 							end
 							drm1 = 25
 							disp1 = postprefix
 						else
-							pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E490) at line "..linenumber..": Wrong memory reference syntax!\n")
+							self:Error(pl,"ZyeliosASM: Error (E490) at line "..linenumber..": Wrong memory reference syntax!\n")
 						end
 					end
 				end
@@ -670,7 +675,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 							paramtable[2] = self.Labels[postprefix]
 						else	
 							if (not firstpass) then
-								pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E232) at line "..linenumber..": No such label: "..postprefix.."!\n")
+								self:Error(pl,"ZyeliosASM: Error (E232) at line "..linenumber..": No such label: "..postprefix.."!\n")
 								return false
 							end
 						end
@@ -702,14 +707,14 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 							if (postprefix) then
 								if (not self.ValidNumber(postprefix)) then
 									if (not firstpass) then
-										pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E231) at line "..linenumber..": No such variable: "..postprefix.."!\n")
+										self:Error(pl,"ZyeliosASM: Error (E231) at line "..linenumber..": No such variable: "..postprefix.."!\n")
 										return false
 									end
 								end
 								drm2 = 25
 								disp2 = postprefix
 							else
-								pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E490) at line "..linenumber..": Wrong memory reference syntax!\n")
+								self:Error(pl,"ZyeliosASM: Error (E490) at line "..linenumber..": Wrong memory reference syntax!\n")
 							end
 						end
 					end	
@@ -761,7 +766,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 			elseif ( opcode == "code" ) then
 				if (self.Labels["codestart"]) then
 					if (firstpass) then
-						pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E600) at line "..linenumber..": CODESTART label exists - cant use CODE macro\n")
+						self:Error(pl,"ZyeliosASM: Error (E600) at line "..linenumber..": CODESTART label exists - cant use CODE macro\n")
 						return false
 					end
 				end
@@ -769,7 +774,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 			elseif ( opcode == "data" ) then
 				if (self.Labels["datastart"]) then
 					if (firstpass) then
-						pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E601) at line "..linenumber..": DATASTART label exists - cant use DATA macro\n")
+						self:Error(pl,"ZyeliosASM: Error (E601) at line "..linenumber..": DATASTART label exists - cant use DATA macro\n")
 						return false
 					end
 				end
@@ -781,7 +786,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 				else
 					self:Write(0)
 					if (not firstpass) then
-						pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E602) at line "..linenumber..": No CODE macro, cant use DATA macro\n")
+						self:Error(pl,"ZyeliosASM: Error (E602) at line "..linenumber..": No CODE macro, cant use DATA macro\n")
 						return false
 					end
 				end
@@ -801,16 +806,16 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 					if (lastsymbol == ":") then
 						if (not self.Labels[opcode]) then
 							self.Labels[opcode] = self.WIP
-							//-pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Added label "..opcode.."["..self.WIP.."]\n")
+							//-self:Error(pl,"ZyeliosASM: Added label "..opcode.."["..self.WIP.."]\n")
 						else
 							if (firstpass) then
-								pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E200) at line "..linenumber..": Label "..opcode.." already exists\n")
+								self:Error(pl,"ZyeliosASM: Error (E200) at line "..linenumber..": Label "..opcode.." already exists\n")
 								return false
 							end
 						end
 					else
 						if (opcode ~= "") && (opcode ~= " ") then
-							pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Error (E500) at line "..linenumber..": unknown opcode: "..opcode.."\n")
+							self:Error(pl,"ZyeliosASM: Error (E500) at line "..linenumber..": unknown opcode: "..opcode.."\n")
 							return false
 						end
 					end

@@ -203,6 +203,11 @@ function ENT:Read( )
 		end
 		return nil
 	end
+	if (!self.IP) then
+		Self:Reset()
+		Wire_TriggerOutput(self.Entity, "Error", 5.0)
+		return nil
+	end
 	self.IP = self.IP + 1
 	return self:ReadCell(self.IP-1+self.CS)
 end
@@ -435,6 +440,12 @@ function ENT:Execute( )
 	//end
 	//------------------------------------------
 	
+	if (!self.IP) then
+		Self:Reset()
+		Wire_TriggerOutput(self.Entity, "Error", 5.0)
+		return
+	end
+
 	self.XEIP = self.IP
 
 	local opcode = self:Read( ) //Temp buttfux fix
