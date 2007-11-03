@@ -21,7 +21,7 @@ end
 TOOL.ClientConVar[ "model" ] = "models/cheeze/wires/cpu.mdl"
 TOOL.ClientConVar[ "filename" ] = ""
 TOOL.ClientConVar[ "compiler" ] = "ZyeliosASM"
-TOOL.ClientConVar[ "userom" ] = 0
+TOOL.ClientConVar[ "userom" ] = 1
 TOOL.ClientConVar[ "dumpcode" ] = 0
 TOOL.ClientConVar[ "packet_bandwidth" ] = 100
 TOOL.ClientConVar[ "packet_rate_sp" ] = 0.05
@@ -103,6 +103,11 @@ function TOOL:StartCompile(pl,ent)
 	pl:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 2.0 BETA <----\n")
 	pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compiling...\n")
 
+	pl:ConCommand("wire_cpu_editor_clearlog")
+	pl:ConCommand("wire_cpu_editor_addlog \"".."---------------------------------------------------------------".."\"")
+	pl:ConCommand("wire_cpu_editor_addlog \"".."----> ZyeliosASM compiler - Version 2.0 BETA <----".."\"")
+	pl:ConCommand("wire_cpu_editor_addlog \"".."ZyeliosASM: Compiling...".."\"")
+
 	pl:ConCommand('wire_cpu_vgui_open')
 	pl:ConCommand('wire_cpu_vgui_title "ZyeliosASM - Compiling"')
 	pl:ConCommand('wire_cpu_vgui_status "Initializing"')
@@ -141,6 +146,7 @@ end
 
 function TOOL:Compile_Pass1()
 	self:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 1\n")
+	self:GetOwner():ConCommand("wire_cpu_editor_addlog \"".."ZyeliosASM: Pass 1".."\"")
 
 	//Compile each line
 //	local Reps = math.floor(table.Count(SourceCode)/self:GetOwner():GetInfo("wire_cpu_compile_bandwidth"))+1
@@ -154,6 +160,7 @@ end
 function TOOL:Compile_Pass2()
 //	timer.Remove("CPUCompileTimer1")
 	self:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 2\n")
+	self:GetOwner():ConCommand("wire_cpu_editor_addlog \"".."ZyeliosASM: Pass 2".."\"")
 
 	//Compile each line
 //	local Reps = math.floor(table.Count(SourceCode)/self:GetOwner():GetInfo("wire_cpu_compile_bandwidth"))+1
@@ -171,14 +178,17 @@ function TOOL:Compile_End()
 
 	if (ent.FatalError) then
 		pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile aborted: fatal error has occured\n")			
+		pl:ConCommand("wire_cpu_editor_addlog \"".."ZyeliosASM: Compile aborted: fatal error has occured".."\"")
 	else
 		pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile succeded! "..table.Count(SourceCode).." lines, "..ent.WIP.." bytes, "..table.Count(ent.Labels).." definitions.\n")
+		pl:ConCommand("wire_cpu_editor_addlog \"".."ZyeliosASM: Compile succeded! "..table.Count(SourceCode).." lines, "..ent.WIP.." bytes, "..table.Count(ent.Labels).." definitions.".."\"")
 	end
 
 	pl:ConCommand('wire_cpu_vgui_close')
 
 	if (self:GetClientInfo("dumpcode") == "enable") then //lololol codedump
-		pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dumping data\n")
+		pl:PrintMessage(HUD_PRINTCONSOLE,"ZyeliosASM: Dumping data\n")
+		pl:ConCommand("wire_cpu_editor_addlog \"".."-> ZyeliosASM: Dumping data".."\"")
 		local codedump = "Count: "..ent.WIP.."\n"
 		local pointerdump = "Count: "..table.Count(ent.Labels).."\n"
 		for i = 0,ent.WIP do
@@ -190,7 +200,8 @@ function TOOL:Compile_End()
 		file.Write("cdump.txt",codedump)
 		file.Write("ldump.txt",ent.Dump)
 		file.Write("pdump.txt",pointerdump)
-		pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Dumped!\n")
+		pl:PrintMessage(HUD_PRINTCONSOLE,"ZyeliosASM: Dumped!\n")
+		pl:ConCommand("wire_cpu_editor_addlog \"".."-> ZyeliosASM: Dumped!".."\"")
 	end
 
 	ent:Reset()
@@ -199,10 +210,11 @@ end
 
 if (SERVER) then
 	local function CPU_Compile( pl, command, args )
-		if (cpu_ent) then
+		if (cpu_ent && (cpu_ent.ParseProgram_ASM)) then
 			cpu_tool:StartCompile(pl,cpu_ent)
 		else
-			Msg("NO CPU ENT\n")
+			pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: No CPU entity - please click on some CPU before using this!\n")
+			pl:ConCommand("wire_cpu_editor_addlog \"".."ZyeliosASM: No CPU entity - please click on some CPU before using this!".."\"")
 		end
 	end
 	concommand.Add( "wire_cpu_compile", CPU_Compile )
@@ -387,7 +399,7 @@ if (CLIENT) then
 	concommand.Add( "wire_cpu_vgui_status", VGUI_Status )
 
 	local function VGUI_Progress( pl, command, args )
-		ProgressBar:PostMessage("SetValue", "Float", args[1]/100 );
+		ProgressBar:PostMessage("SetValue", "Float", tonumber(args[1])/100 );
 		PLabel:PostMessage("SetText", "text", args[1] .. "%");
 	end
 	concommand.Add( "wire_cpu_vgui_progress", VGUI_Progress )
@@ -401,7 +413,7 @@ end
 	SourceTotalChars = 0
 	SourceLoadedChars = 0
 	
-	local function UploadProgram( pl )
+	local function UploadProgram( pl, endwithcompile )
 		local SendLinesMax = SourceLinesSent + pl:GetInfo("wire_cpu_packet_bandwidth")	
 		local TotalChars = 0
 		if (SendLinesMax > table.Count(SourceLines)) then SendLinesMax = table.Count(SourceLines) end
@@ -442,6 +454,10 @@ end
 		if (SourceLinesSent > table.Count(SourceLines)) then
 			pl:ConCommand('wire_cpu_vgui_close')
 			timer.Remove("CPUSendTimer")
+
+			if (endwithcompile) then
+				pl:ConCommand('wire_cpu_compile')
+			end
 		end
 	end
 	
@@ -476,12 +492,50 @@ end
 
 		//Send 50 lines
 		if (SinglePlayer()) then
-			timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_sp"),0,UploadProgram,pl)
+			timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_sp"),0,UploadProgram,pl,false)
 		else
-			timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_mp"),0,UploadProgram,pl)
+			timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_mp"),0,UploadProgram,pl,false)
 		end
 	end
 	concommand.Add( "wire_cpu_load", LoadProgram )
+
+	local function LoadCompileProgram( pl, command, args )
+		local fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename");
+		if (!file.Exists(fname)) then
+			fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename")..".txt";
+		end
+	
+		if (!file.Exists(fname)) then
+			pl:PrintMessage(HUD_PRINTTALK,"CPU -> Sorry! Requested file was not found\n")
+			return
+		end
+		
+		//SP only:
+		//SourceCode = string.Explode("\n", file.Read(fname) )
+	
+		pl:ConCommand('wire_cpu_clearsrc')
+
+		local filedata = file.Read(fname)
+		SourceLines = string.Explode("\n", filedata )
+		SourceLinesSent = 0
+		SourceTotalChars = string.len(filedata)
+
+		SourcePrevCharRate = string.len(SourceLines[1])
+		SourceLoadedChars = 0
+
+		pl:ConCommand('wire_cpu_vgui_open')
+		pl:ConCommand('wire_cpu_vgui_title "CPU - Uploading program"')
+		pl:ConCommand('wire_cpu_vgui_status "Initializing"')
+		pl:ConCommand('wire_cpu_vgui_progress "0"')
+
+		//Send 50 lines
+		if (SinglePlayer()) then
+			timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_sp"),0,UploadProgram,pl,true)
+		else
+			timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_mp"),0,UploadProgram,pl,true)
+		end
+	end
+	concommand.Add( "wire_cpu_loadcompile", LoadCompileProgram )
 	
 	local function StoreProgram( pl, command, args )
 		Msg("Storing program is disabled - its readonly!\n")
@@ -515,13 +569,15 @@ end
 if (CLIENT) then
 	local frmMain
 	local frmMain_Editor
+	local frmMain_EditorLog
+	local frmMain_EditorFileName
 
-	local SrcCode = {}
+	local filedata
 
 	local function Editor_Start( pl, command, args )
 		if (!frmMain) then
 			frmMain = vgui.Create("Frame")
-			frmMain:SetSize(600,530)
+			frmMain:SetSize(600,630)
 			frmMain:SetPos(200,100)
 			frmMain:SetVisible(true)
 			frmMain:SetText("Zyelios Editor - V1.2")
@@ -529,10 +585,25 @@ if (CLIENT) then
 
 			frmMain_Editor = vgui.Create("TextEntry",frmMain)
 			frmMain_Editor:SetVisible(true)
-			frmMain_Editor:SetSize(580,460)
+			frmMain_Editor:SetSize(580,420)
 			frmMain_Editor:SetPos(10,30)
 			frmMain_Editor:SetMultiline(true)
-			frmMain_Editor:SetText(string.Implode("\n",SrcCode))
+//			frmMain_Editor:SetBGColor(255,255,255,255)
+			frmMain_Editor:SetText("")
+
+			frmMain_EditorLog = vgui.Create("TextEntry",frmMain)
+			frmMain_EditorLog:SetVisible(true)
+			frmMain_EditorLog:SetSize(580,110)
+			frmMain_EditorLog:SetPos(10,450)
+			frmMain_EditorLog:SetMultiline(true)
+//			frmMain_EditorLog:SetBGColor(255,255,255,255)
+			frmMain_EditorLog:SetText("")
+
+			frmMain_EditorFileName = vgui.Create("TextEntry",frmMain)
+			frmMain_EditorFileName:SetVisible(true)
+			frmMain_EditorFileName:SetSize(190,20)
+			frmMain_EditorFileName:SetPos(100,600)
+			frmMain_EditorFileName:SetText(pl:GetInfo("wire_cpu_filename"))
 
 			local frmMain_OpenButton
 			local frmMain_SaveButton
@@ -541,55 +612,79 @@ if (CLIENT) then
 
 			frmMain_OpenButton = vgui.Create("Button", frmMain);
 			frmMain_OpenButton:SetText("Open program");
-			frmMain_OpenButton:SetPos(10,500);
+			frmMain_OpenButton:SetPos(10,600);
+			frmMain_OpenButton:SetSize(80,20)
 
 			frmMain_SaveButton = vgui.Create("Button", frmMain);
 			frmMain_SaveButton:SetText("Save program");
-			frmMain_SaveButton:SetPos(100,500);
+			frmMain_SaveButton:SetPos(300,600);
+			frmMain_SaveButton:SetSize(100,20)
 
-			frmMain_UploadButton = vgui.Create("Button", frmMain);
-			frmMain_UploadButton:SetText("Upload program");
-			frmMain_UploadButton:SetPos(150,500);
+//			frmMain_UploadButton = vgui.Create("Button", frmMain);
+//			frmMain_UploadButton:SetText("Upload program");
+//			frmMain_UploadButton:SetPos(200,600);
+//			frmMain_UploadButton:SetSize(100,20)
 
 			frmMain_CompileButton = vgui.Create("Button", frmMain);
-			frmMain_CompileButton:SetText("Compile program");
-			frmMain_CompileButton:SetPos(200,500);
+			frmMain_CompileButton:SetText("Upload & compile program");
+			frmMain_CompileButton:SetPos(410,600);
+			frmMain_CompileButton:SetSize(150,20)
 
 			function frmMain_OpenButton:DoClick()
+				LocalPlayer():ConCommand('wire_cpu_filename "'..frmMain_EditorFileName:GetValue()..'"')
+
 				local fname = "CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename")
 				if (!file.Exists(fname)) then fname = "CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename")..".txt" end
 				if (!file.Exists(fname)) then return end
 
-				Msg("FILENAME: " .. fname .."\n")
-		
-				local filedata = file.Read(fname)
-				SrcCode = string.Explode("\n", filedata)
+				filedata = file.Read(fname)
+//				SrcCode = string.Explode("\n", filedata)
+//				Msg(filedata)
 				frmMain_Editor:SetText(filedata)
-		
+
 				LocalPlayer():ConCommand("wire_cpu_load")
 			end
 			
 			function frmMain_SaveButton:DoClick()
-				SrcCode = string.Explode(frmMain_Editor:GetValue())
+				LocalPlayer():ConCommand('wire_cpu_filename "'..frmMain_EditorFileName:GetValue()..'"')
+
+//				Msg(frmMain_Editor:GetValue())
+//				SrcCode = string.Explode(frmMain_Editor:GetValue())
 				file.Write("CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename"),frmMain_Editor:GetValue())
 			end
 	
-			function frmMain_UploadButton:DoClick()
-				SrcCode = string.Explode(frmMain_Editor:GetValue())
-				file.Write("CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename"),frmMain_Editor:GetValue())
-	
-				LocalPlayer():ConCommand("wire_cpu_load")
-			end
+//			function frmMain_UploadButton:DoClick()
+//				SrcCode = string.Explode(frmMain_Editor:GetValue())
+//				file.Write("CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename"),frmMain_Editor:GetValue())
+//	
+//				LocalPlayer():ConCommand("wire_cpu_load")
+//			end
 		
 			function frmMain_CompileButton:DoClick()
-				LocalPlayer():ConCommand("wire_cpu_compile")
+				frmMain_EditorLog:SetText("")
+
+				LocalPlayer():ConCommand('wire_cpu_filename "'..frmMain_EditorFileName:GetValue()..'"')
+
+				file.Write("CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename"),frmMain_Editor:GetValue())
+				LocalPlayer():ConCommand("wire_cpu_loadcompile")
 			end
 		else
 			frmMain:SetVisible(true)
-			frmMain_Editor:SetText(string.Implode("\n",SrcCode))
+//			frmMain_Editor:SetText("")
+			frmMain_EditorFileName:SetText(pl:GetInfo("wire_cpu_filename"))
 		end
 	end
 	concommand.Add( "wire_cpu_editor_start", Editor_Start )
+
+	local function Editor_AddLog( pl, command, args )
+		frmMain_EditorLog:SetText(frmMain_EditorLog:GetValue() .. args[1] .. "\n")
+	end
+	concommand.Add( "wire_cpu_editor_addlog", Editor_AddLog )
+
+	local function Editor_ClearLog( pl, command, args )
+		frmMain_EditorLog:SetText("")
+	end
+	concommand.Add( "wire_cpu_editor_clearlog", Editor_ClearLog )
 end
 
 //=============================================================================
@@ -621,10 +716,10 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_cpu_userom"
 	})
 
-//	panel:AddControl("Button", {
-//		Text = "ZyeliosEditor",
-//		Name = "Edit",
-//		Command = "wire_cpu_editor_start"
-//	})
+	panel:AddControl("Button", {
+		Text = "ZyeliosEditor",
+		Name = "Edit",
+		Command = "wire_cpu_editor_start"
+	})
 end
 	
