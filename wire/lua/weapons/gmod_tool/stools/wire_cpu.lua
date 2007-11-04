@@ -677,12 +677,16 @@ if (CLIENT) then
 	concommand.Add( "wire_cpu_editor_start", Editor_Start )
 
 	local function Editor_AddLog( pl, command, args )
-		frmMain_EditorLog:SetText(frmMain_EditorLog:GetValue() .. args[1] .. "\n")
+		if (frmMain_EditorLog) then
+			frmMain_EditorLog:SetText(frmMain_EditorLog:GetValue() .. args[1] .. "\n")
+		end
 	end
 	concommand.Add( "wire_cpu_editor_addlog", Editor_AddLog )
 
 	local function Editor_ClearLog( pl, command, args )
-		frmMain_EditorLog:SetText("")
+		if (frmMain_EditorLog) then
+			frmMain_EditorLog:SetText("")
+		end
 	end
 	concommand.Add( "wire_cpu_editor_clearlog", Editor_ClearLog )
 end
