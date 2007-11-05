@@ -13,8 +13,8 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 
-	self.Inputs = Wire_CreateInputs(self.Entity, { "A" })
-	self.Outputs = Wire_CreateOutputs(self.Entity, { "Out" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "A", "B", "C", "D",	"Channel"})
+	self.Outputs = Wire_CreateOutputs(self.Entity, { "A", "B", "C", "D" })
 	
 	self.Channel = 1
 	self.Transmitting = 0
@@ -23,35 +23,35 @@ function ENT:Initialize()
 end
 
 function ENT:Setup(channel)
+	channel = math.floor(channel)
 	self.Channel = channel
 	self.PrevOutput = nil
 
 	self:ShowOutput(Radio_Receive(channel))
-	Wire_TriggerOutput(self.Entity, "Out", Radio_Receive(channel))
 end
 
 function ENT:TriggerInput(iname, value)
-	if (iname == "A") then
-    	Radio_Transmit(self.Channel, value)
-    	self:ShowOutput(Radio_Receive(self.Channel))
+	if (iname == "A" || iname == "B" || iname == "C" || iname == "D") then
+		self.Inputs[iname].Value = value
+    	Radio_Transmit(self.Channel, self.Inputs.A.Value or 0,self.Inputs.B.Value or 0,self.Inputs.C.Value or 0,self.Inputs.D.Value or 0)
+		self:ShowOutput(self.Outputs.A.Value or 0,self.Outputs.B.Value or 0,self.Outputs.C.Value or 0,self.Outputs.D.Value or 0)
+	end
+	if (iname == "Channel") then
+		self.Channel = math.floor(value)
+		self:ShowOutput(Radio_Receive(self.Channel))
 	end
 end
 
-function ENT:CalcTransmit()
-	return self.Inputs.A.Value or 0
+function ENT:ReceiveRadio(A,B,C,D)
+	self:ShowOutput(A,B,C,D)
 end
 
-function ENT:ReceiveRadio(value)
-	self:ShowOutput(value)
-	Wire_TriggerOutput(self.Entity, "Out", value)
-end
-
-function ENT:ShowOutput(value)
-	if (value ~= self.PrevOutput) then
-		self:SetOverlayText( "(Channel " .. math.floor( self.Channel or 0 ) .. ") Transmit: " .. math.Round(self:CalcTransmit()*1000)/1000 .. " Receive: " .. value )
-		self.PrevOutput = value
-	end
-	return value
+function ENT:ShowOutput(A,B,C,D)
+	Wire_TriggerOutput(self.Entity,"A",A)
+	Wire_TriggerOutput(self.Entity,"B",B)
+	Wire_TriggerOutput(self.Entity,"C",C)
+	Wire_TriggerOutput(self.Entity,"D",D)
+	self:SetOverlayText( "(Channel " .. self.Channel .. ") Transmit A: " .. (self.Inputs.A.Value or 0) .. " B: " .. (self.Inputs.B.Value or 0) ..  " C: " .. (self.Inputs.C.Value or 0) ..  " D: " .. (self.Inputs.D.Value or 0) .. "\nReceive A: " .. (self.Outputs.A.Value or 0) .. " B: " .. (self.Outputs.B.Value or 0) ..  " C: " .. (self.Outputs.C.Value or 0) ..  " D: " .. (self.Outputs.D.Value or 0) )
 end
 
 function ENT:OnRestore()

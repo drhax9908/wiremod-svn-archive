@@ -110,6 +110,9 @@ function TOOL:LeftClick( trace )
 	local _weight		= self:GetClientNumber( "weight" )
 	local _invisibleatzero		= self:GetClientNumber( "invisibleatzero" ) == 1
 	
+	//Check Radius
+	if (_radius > 10000) then return false end 
+	
 	//get & check selected model
 	_model = self:GetSelModel( true )
 	if (!_model) then return false end
