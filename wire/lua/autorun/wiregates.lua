@@ -863,7 +863,7 @@ GateActions["ram128k"] = {
         AddrRead = math.floor(tonumber(AddrRead))
         AddrWrite = math.floor(tonumber(AddrWrite))
         if (Clk > 0) then
-            if (AddrWrite < 32768) then
+            if (AddrWrite < 131072) then
                     gate.LatchStore[AddrWrite] = Data
             end
         end
@@ -871,7 +871,7 @@ GateActions["ram128k"] = {
     end,
     reset = function(gate)
         gate.LatchStore = {}
-        for i = 0,32767 do
+        for i = 0,131071 do
             gate.LatchStore[i] = 0
         end
     end,
