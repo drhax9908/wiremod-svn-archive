@@ -7,20 +7,27 @@ function Radio_Register( o )
 	table.insert( radio_sets, o )
 end
 
-function Radio_Transmit( ch, v )
-	radio_channels[ch] = v
+function Radio_Transmit( ch, A,B,C,D )
+	radio_channels[ch] = {}
+	radio_channels[ch]['A'] = A
+	radio_channels[ch]['B'] = B
+	radio_channels[ch]['C'] = C
+	radio_channels[ch]['D'] = D
 
 	for i, o in ipairs( radio_sets ) do
-	    if (not o.Entity:IsValid()) then
+	    if (not IsEntity(o.Entity)) then
 	        table.remove(radio_sets, i)
 	    elseif (o.Channel == ch) then
-			o:ReceiveRadio(v)
+			o:ReceiveRadio(A,B,C,D)
 		end
 	end
 end
 
 function Radio_Receive( ch )
-	return radio_channels[ch] or 0
+	if (type(radio_channels[ch]) == "table") then
+		return radio_channels[ch]['A'] or 0,radio_channels[ch]['B'] or 0,radio_channels[ch]['C'] or 0, radio_channels[ch]['D'] or 0
+	end
+	return 0,0,0,0
 end
 
 local radio_twowaycounter = 0
@@ -31,3 +38,4 @@ function Radio_GetTwoWayID()
 end
 
 -- phenex: End radio mod.
+//Modified by High6 (To support 4 values)

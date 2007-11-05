@@ -27,10 +27,10 @@ function ENT:Initialize()
 end
 
 function ENT:TriggerInput(iname, value)
-	self:ShowOutput()
     if (self.MyPlug) and (self.MyPlug:IsValid()) then
 		self.MyPlug:SetValue(iname, value)
 	end
+	self:ShowOutput()
 end
 
 function ENT:SetValue(index,value)
@@ -44,6 +44,7 @@ function ENT:SetValue(index,value)
 end
 
 function ENT:Setup()
+	self:ShowOutput()
 end
 
 function ENT:Think()
@@ -60,8 +61,9 @@ function ENT:Think()
 		
 		self.ReceivedValue = 0 //We're now getting no signal
 		for i,v in pairs(self.Outputs)do
-		  Wire_TriggerOutput(self.Entity, v, 0)
+		  Wire_TriggerOutput(self.Entity, v.Name, 0)
 		end
+		self:ShowOutput()
 
 		self.Entity:NextThink( CurTime() + NEW_PLUG_WAIT_TIME ) //Give time before next grabbing a plug.
 		return true
@@ -122,12 +124,73 @@ function ENT:AttachPlug( plug )
 	plug:DeleteOnRemove( self.Const )
 	self.Entity:DeleteOnRemove( self.Const )
 	self.Const:DeleteOnRemove( self.NoCollideConst )
-
+	
+	for i,v in pairs(self.Inputs)do
+        plug:SetValue(v.Name,v.Value)
+ 	end
+	
 	plug:AttachedToSocket(self.Entity)
+	
+	self:ShowOutput()
 end
 
 function ENT:ShowOutput()
-	self:SetOverlayText("Socket")
+	self.OutText = "Socket"
+	if (self.Inputs) then
+		self.OutText = self.OutText .. "\nInputs: "
+		if (self.Inputs.A.Value) then
+			self.OutText = self.OutText .. " A:" .. self.Inputs.A.Value
+		end
+		if (self.Inputs.B.Value) then
+			self.OutText = self.OutText .. " B:" .. self.Inputs.B.Value
+		end
+		if (self.Inputs.C.Value) then
+			self.OutText = self.OutText .. " C:" .. self.Inputs.C.Value
+		end
+		if (self.Inputs.D.Value) then
+			self.OutText = self.OutText .. " D:" .. self.Inputs.D.Value
+		end
+		if (self.Inputs.E.Value) then
+			self.OutText = self.OutText .. " E:" .. self.Inputs.E.Value
+		end
+		if (self.Inputs.F.Value) then
+			self.OutText = self.OutText .. " F:" .. self.Inputs.F.Value
+		end
+		if (self.Inputs.G.Value) then
+			self.OutText = self.OutText .. " G:" .. self.Inputs.G.Value
+		end
+		if (self.Inputs.H.Value) then
+			self.OutText = self.OutText .. " H:" .. self.Inputs.H.Value
+		end
+	end
+	if (self.Outputs) then
+		self.OutText = self.OutText .. "\nOutputs: "
+		if (self.Outputs.A.Value) then
+			self.OutText = self.OutText .. " A:" .. self.Outputs.A.Value
+		end
+		if (self.Outputs.B.Value) then
+			self.OutText = self.OutText .. " B:" .. self.Outputs.B.Value
+		end
+		if (self.Outputs.C.Value) then
+			self.OutText = self.OutText .. " C:" .. self.Outputs.C.Value
+		end
+		if (self.Outputs.D.Value) then
+			self.OutText = self.OutText .. " D:" .. self.Outputs.D.Value
+		end
+		if (self.Outputs.E.Value) then
+			self.OutText = self.OutText .. " E:" .. self.Outputs.E.Value
+		end
+		if (self.Outputs.F.Value) then
+			self.OutText = self.OutText .. " F:" .. self.Outputs.F.Value
+		end
+		if (self.Outputs.G.Value) then
+			self.OutText = self.OutText .. " G:" .. self.Outputs.G.Value
+		end
+		if (self.Outputs.H.Value) then
+			self.OutText = self.OutText .. " H:" .. self.Outputs.H.Value
+		end
+	end
+	self:SetOverlayText(self.OutText)
 end
 
 function ENT:OnRestore()

@@ -95,6 +95,9 @@ function TOOL:LeftClick( trace )
 	local _nocollide		= self:GetClientNumber( "nocollide" ) == 1
 	local _weight		= self:GetClientNumber( "weight" )
 	
+	//Check radius
+	if (_radius > 10000) then return false end 
+	
 	//get & check selected model
 	_model = self:GetSelModel( true )
 	if (!_model) then return false end

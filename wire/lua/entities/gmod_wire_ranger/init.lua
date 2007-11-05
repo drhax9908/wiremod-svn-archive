@@ -14,17 +14,17 @@ function ENT:Initialize()
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	self.Entity:StartMotionController()
 
-	self.Inputs = Wire_CreateInputs(self.Entity, { "X", "Y" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "X", "Y", "SelectValue"})
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Dist" })
 end
 
-function ENT:Setup( max_range, default_zero, show_beam, ignore_world, trace_water, out_dist, out_pos, out_vel, out_ang, out_col, out_val )
+function ENT:Setup( max_range, default_zero, show_beam, ignore_world, trace_water, out_dist, out_pos, out_vel, out_ang, out_col, out_val, out_sid, out_uid, out_eid )
 	self.MaxRange = max_range
 	self.DefaultZero = default_zero
 	self.PrevOutput = nil
 	self.ShowBeam = show_beam
 	self.IgnoreWorld = ignore_world
-
+	self.Inputs.SelectValue.Value = 0
 	if (show_beam) then
 		self:SetBeamLength(math.min(self.MaxRange, 2000))
 	else
@@ -64,6 +64,16 @@ function ENT:Setup( max_range, default_zero, show_beam, ignore_world, trace_wate
 	end
 	if (out_val) then
 	    table.insert(onames, "Val")
+		table.insert(onames, "ValSize")
+	end
+	if (out_sid) then
+		table.insert(onames, "SteamID")
+	end
+	if (out_uid) then
+		table.insert(onames, "UniqueID")
+	end
+	if (out_eid) then
+		table.insert(onames, "EntID")
 	end
 
 	Wire_AdjustOutputs(self.Entity, onames)
@@ -106,7 +116,10 @@ function ENT:Think()
 	local vel = Vector(0, 0, 0)
 	local ang = Angle(0, 0, 0)
 	local col = Color(255, 255, 255, 255)
-	local val = 0
+	local eid = 0
+	local sid = 0
+	local uid = 0
+	local val = {}
 	if (trace.Hit) then
 		dist = trace.Fraction*self.MaxRange
 
@@ -115,12 +128,26 @@ function ENT:Think()
 			vel = trace.Entity:GetVelocity()
 			ang = trace.Entity:GetAngles()
 			col = Color(trace.Entity:GetColor())
+			eid = trace.Entity:EntIndex()
+			
+			if (trace.Entity:IsPlayer()) then
+				sid = string.Explode(":", trace.Entity:SteamID())
+				if (table.getn(sid) == 3) then 
+					sid = tonumber(sid[2] .. sid[3]) or -1
+				else
+					sid = -1
+				end
+				uid = tonumber(trace.Entity:UniqueID()) or -1
+			end
 			
 			if (trace.Entity.Outputs) then
-			    for k,v in pairs(trace.Entity.Outputs) do
-			        val = v.Value or 0
-			        break
-			    end
+				local i = 0
+				for k,v in pairs(trace.Entity.Outputs) do
+					if (v.Value != nil) then
+						val[i] = v.Value
+						i = i + 1
+					end
+				end
 			end
 		elseif(self.IgnoreWorld) then
 			if (self.DefaultZero) then
@@ -135,7 +162,7 @@ function ENT:Think()
 		end
 	end
 	
-	self:TriggerOutput(dist, pos, vel, ang, col, val)
+	self:TriggerOutput(dist, pos, vel, ang, col, val, sid, uid, eid)
 	self:ShowOutput()
 	
 	self.Entity:NextThink(CurTime()+0.04)
@@ -174,13 +201,22 @@ function ENT:ShowOutput()
 			.. math.Round(self.Outputs["Col A"].Value*1000)/1000
 	end
 	if (self.Outputs["Val"]) then
-		txt = txt .. "\nValue = " .. math.Round((self.Outputs["Val"].Value or 0)*1000)/1000
+			txt = txt .. "\nValue = " .. math.Round((self.Outputs["Val"].Value)*1000)/1000 .. " ValSize = " .. self.Outputs["ValSize"].Value
+	end
+	if (self.Outputs["SteamID"]) then
+			txt = txt .. "\nSteamID = " .. (self.Outputs["SteamID"].Value or 0)
+	end
+	if (self.Outputs["UniqueID"]) then
+			txt = txt .. "\nUniqueID = " .. (self.Outputs["UniqueID"].Value or 0)
+	end
+	if (self.Outputs["EntID"]) then
+			txt = txt .. "\nEntID = " .. (self.Outputs["EntID"].Value or 0)
 	end
 
 	self:SetOverlayText(txt)
 end
 
-function ENT:TriggerOutput(dist, pos, vel, ang, col, val)
+function ENT:TriggerOutput(dist, pos, vel, ang, col, val,sid,uid,eid)
     Wire_TriggerOutput(self.Entity, "Dist", dist)
     Wire_TriggerOutput(self.Entity, "Pos X", pos.x)
     Wire_TriggerOutput(self.Entity, "Pos Y", pos.y)
@@ -195,5 +231,15 @@ function ENT:TriggerOutput(dist, pos, vel, ang, col, val)
     Wire_TriggerOutput(self.Entity, "Col G", col.g)
     Wire_TriggerOutput(self.Entity, "Col B", col.b)
     Wire_TriggerOutput(self.Entity, "Col A", col.a)
-    Wire_TriggerOutput(self.Entity, "Val", val)
+	Wire_TriggerOutput(self.Entity, "SteamID", sid)
+	Wire_TriggerOutput(self.Entity, "UniqueID", uid)
+	Wire_TriggerOutput(self.Entity, "EntID", eid)
+	
+	if (val != nil && table.getn(val) > 0 && self.Inputs.SelectValue.Value < table.Count(val)) then
+			Wire_TriggerOutput(self.Entity, "Val", val[self.Inputs.SelectValue.Value])
+			Wire_TriggerOutput(self.Entity,"ValSize",table.Count(val))
+	else
+		Wire_TriggerOutput(self.Entity, "Val", 0)
+		Wire_TriggerOutput(self.Entity,"ValSize",0)
+	end
 end
