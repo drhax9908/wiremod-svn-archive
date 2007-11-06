@@ -262,6 +262,7 @@ ENT._abs_1 =     function (self, n)    return math.abs(n) end
 ENT._ceil_1 =    function (self, n)    return math.ceil(n) end
 ENT._ceil_2 =    function (self, n, d) return math.ceil(n * 10 ^ d) / 10 ^ d end
 ENT._clamp_3 =   function (self, v, l, u) if v < l then return l elseif v > u then return u else return v end end
+ENT._inrange_3 = function (self, v, l, u) if v >= l and v <= u then return 1 else return 0 end end
 ENT._exp_1 =     function (self, n)    return math.exp(n) end
 ENT._floor_1 =   function (self, n)    return math.floor(n) end
 ENT._floor_2 =   function (self, n, d) return math.floor(n * 10 ^ d) / 10 ^ d end
