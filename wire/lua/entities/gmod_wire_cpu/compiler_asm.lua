@@ -1,3 +1,34 @@
+function ENT:InitASMOpcodes()
+	self.OpcodeCount = {}
+	for i=1,199 do
+		if ((i >= 1) && (i <= 9)) || (i == 69) then
+			self.OpcodeCount[i] = 1
+		elseif (i >= 10) && (i <= 19) then	
+			self.OpcodeCount[i] = 2
+		elseif (i >= 20) && (i <= 29) then
+			self.OpcodeCount[i] = 1
+		elseif (i >= 30) && (i <= 39) then
+			self.OpcodeCount[i] = 1
+		elseif (i >= 40) && (i <= 49) then
+			self.OpcodeCount[i] = 0
+		elseif (i >= 50) && (i <= 59) then
+			self.OpcodeCount[i] = 2
+		elseif (i >= 60) && (i <= 68) then
+			self.OpcodeCount[i] = 2
+		elseif (i >= 70) && (i <= 79) then
+			self.OpcodeCount[i] = 1
+		elseif (i >= 80) && (i <= 89) then
+			self.OpcodeCount[i] = 2
+		elseif (i >= 90) && (i <= 99) then
+			self.OpcodeCount[i] = 1
+		elseif (i >= 100) && (i <= 109) then
+			self.OpcodeCount[i] = 1
+		elseif (i >= 110) && (i <= 119) then
+			self.OpcodeCount[i] = 0
+		end
+	end
+end
+
 function ENT:DecodeOpcode( opcode )
 	//------------------------------------------------------------
 	if (opcode == "jne") || (opcode == "jnz") then		//JNE X   : IP = X, IF CMPR ~= 0
@@ -226,32 +257,11 @@ function ENT:DecodeOpcode( opcode )
 end
 
 function ENT:OpcodeParamCount( opcode )
-	if ((opcode >= 1) && (opcode <= 9)) || (opcode == 69) then
-		return 1
-	elseif (opcode >= 10) && (opcode <= 19) then	
-		return 2
-	elseif (opcode >= 20) && (opcode <= 29) then
-		return 1
-	elseif (opcode >= 30) && (opcode <= 39) then
-		return 1
-	elseif (opcode >= 40) && (opcode <= 49) then
-		return 0
-	elseif (opcode >= 50) && (opcode <= 59) then
-		return 2
-	elseif (opcode >= 60) && (opcode <= 68) then
-		return 2
-	elseif (opcode >= 70) && (opcode <= 79) then
-		return 1
-	elseif (opcode >= 80) && (opcode <= 89) then
-		return 2
-	elseif (opcode >= 90) && (opcode <= 99) then
-		return 1
-	elseif (opcode >= 100) && (opcode <= 109) then
-		return 1
-	elseif (opcode >= 110) && (opcode <= 119) then
+	if (self.OpcodeCount[opcode]) then
+		return self.OpcodeCount[opcode]
+	else
 		return 0
 	end
-	return 0
 end
 
 
@@ -266,7 +276,7 @@ function ENT:ValidNumber( line )
 	if (line) then
 		return self:Digit(string.sub(line,1,1))
 	else
-		return false;
+		return false
 	end
 end
 

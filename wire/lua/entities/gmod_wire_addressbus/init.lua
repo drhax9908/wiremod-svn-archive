@@ -16,27 +16,41 @@ function ENT:Initialize()
 	self.Memory = {}
 	self.MemStart = {}
 	self.MemEnd = {}
+	self.DataRate = 0
+	self.DataBytes = 0
 	for i = 1,4 do
 		self.Memory[i] = nil
 		self.MemStart[i] = 0
 		self.MemEnd[i] = 0
 	end
-	self:SetOverlayText( "Address bus" )
+	self:SetOverlayText( "Address bus\nData rate: 0 bps" )
 end
 
-/*function ENT:Think()
+function ENT:Think()
 	self.BaseClass.Think(self)
-end*/
+
+	self.DataRate = (self.DataRate*1.5 + self.DataBytes * 4 * 0.5) / 2
+	self.DataBytes = 0
+
+	self:SetOverlayText( "Address bus\nData rate: "..math.floor(self.DataRate).." bps" )
+	self.Entity:NextThink(CurTime()+0.25)
+end
 
 function ENT:ReadCell( Address )
 	for i = 1,4 do
 		if (Address >= self.MemStart[i]) && (Address <= self.MemEnd[i]) then
-			if (self.Memory[i]) && (self.Memory[i].ReadCell) then
-				local val = self.Memory[i]:ReadCell( Address - self.MemStart[i] )
-				if (val) then
-					return val
-				else
-					return 0
+			if (self.Memory[i]) then
+				if (self.Memory[i].LatchStore[ math.floor(Address) - self.MemStart[i] ] ) then
+					self.DataBytes = self.DataBytes + 1
+					return self.Memory[i].LatchStore[ math.floor(Address) - self.MemStart[i] ]
+				elseif (self.Memory[i].ReadCell) then
+					self.DataBytes = self.DataBytes + 1
+					local val = self.Memory[i]:ReadCell( Address - self.MemStart[i] )
+					if (val) then
+						return val
+					else
+						return 0
+					end
 				end
 			else
 				return 0
@@ -50,9 +64,14 @@ function ENT:WriteCell( Address, value )
 	local res = false
 	for i = 1,4 do
 		if (Address >= self.MemStart[i]) && (Address <= self.MemEnd[i]) then
-			if (self.Memory[i]) && (self.Memory[i].WriteCell) then
-				self.Memory[i]:WriteCell( Address - self.MemStart[i], value )
+			if (self.Memory[i]) then
+				if (self.Memory[i].LatchStore[ math.floor(Address) - self.MemStart[i] ] ) then
+					self.Memory[i].LatchStore[ math.floor(Address) - self.MemStart[i] ] = value
+				elseif (self.Memory[i].WriteCell) then
+					self.Memory[i]:WriteCell( Address - self.MemStart[i], value )
+				end
 			end
+			self.DataBytes = self.DataBytes + 1
 			res = true
 		end
 	end
