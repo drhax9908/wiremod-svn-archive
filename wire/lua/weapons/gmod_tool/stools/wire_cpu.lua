@@ -180,8 +180,8 @@ function TOOL:Compile_End()
 		pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile aborted: fatal error has occured\n")			
 		pl:ConCommand("wire_cpu_editor_addlog \"".."ZyeliosASM: Compile aborted: fatal error has occured".."\"")
 	else
-		pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile succeded! "..table.Count(SourceCode).." lines, "..ent.WIP.." bytes, "..table.Count(ent.Labels).." definitions.\n")
-		pl:ConCommand("wire_cpu_editor_addlog \"".."ZyeliosASM: Compile succeded! "..table.Count(SourceCode).." lines, "..ent.WIP.." bytes, "..table.Count(ent.Labels).." definitions.".."\"")
+		pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile succeded! "..(table.Count(SourceCode)-1).." lines, "..ent.WIP.." bytes, "..table.Count(ent.Labels).." definitions.\n")
+		pl:ConCommand("wire_cpu_editor_addlog \"".."ZyeliosASM: Compile succeded! "..(table.Count(SourceCode)-1).." lines, "..ent.WIP.." bytes, "..table.Count(ent.Labels).." definitions.".."\"")
 	end
 
 	pl:ConCommand('wire_cpu_vgui_close')

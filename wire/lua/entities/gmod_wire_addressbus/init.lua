@@ -40,7 +40,7 @@ function ENT:ReadCell( Address )
 	for i = 1,4 do
 		if (Address >= self.MemStart[i]) && (Address <= self.MemEnd[i]) then
 			if (self.Memory[i]) then
-				if (self.Memory[i].LatchStore[ math.floor(Address) - self.MemStart[i] ] ) then
+				if (self.Memory[i].LatchStore && self.Memory[i].LatchStore[ math.floor(Address) - self.MemStart[i] ] ) then
 					self.DataBytes = self.DataBytes + 1
 					return self.Memory[i].LatchStore[ math.floor(Address) - self.MemStart[i] ]
 				elseif (self.Memory[i].ReadCell) then
@@ -65,7 +65,7 @@ function ENT:WriteCell( Address, value )
 	for i = 1,4 do
 		if (Address >= self.MemStart[i]) && (Address <= self.MemEnd[i]) then
 			if (self.Memory[i]) then
-				if (self.Memory[i].LatchStore[ math.floor(Address) - self.MemStart[i] ] ) then
+				if (self.Memory[i].LatchStore && self.Memory[i].LatchStore[ math.floor(Address) - self.MemStart[i] ] ) then
 					self.Memory[i].LatchStore[ math.floor(Address) - self.MemStart[i] ] = value
 				elseif (self.Memory[i].WriteCell) then
 					self.Memory[i]:WriteCell( Address - self.MemStart[i], value )
