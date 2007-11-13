@@ -217,7 +217,7 @@ function ENT:Read( )
 		return nil
 	end
 	if (!self.IP) then
-		Self:Reset()
+		self:Reset()
 		Wire_TriggerOutput(self.Entity, "Error", 5.0)
 		return nil
 	end
@@ -1077,7 +1077,7 @@ function ENT:Execute( )
 	end
 	
 	if (!self.IP) then
-		Self:Reset()
+		self:Reset()
 		Wire_TriggerOutput(self.Entity, "Error", 5.0)
 		return
 	end
