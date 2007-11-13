@@ -209,7 +209,7 @@ function MakeWireGate(pl, Pos, Ang, Model, action, noclip, Vel, aVel, frozen, no
 	wire_gate:Setup( GateActions[action], noclip )
 	wire_gate:SetPlayer( pl )
 
-	if (nocollide) then explosive:GetPhysicsObject():EnableCollision(false) end
+	if (nocollide) then wire_gate:SetCollisionGroup(COLLISION_GROUP_WORLD) end
 
 	local ttable =
 	{

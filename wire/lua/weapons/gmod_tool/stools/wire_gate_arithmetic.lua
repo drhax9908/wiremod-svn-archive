@@ -16,15 +16,12 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_gates', 30)
+	ModelPlug_Register("gate")
 end
 
 TOOL.ClientConVar[ "action" ] = "+"
 TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
-
-if (SERVER) then
-	ModelPlug_Register("gate")
-end
 
 cleanup.Register( "wire_gate_arithmetics" )
 
@@ -40,7 +37,7 @@ function TOOL:LeftClick( trace )
 	local action			= self:GetClientInfo( "action" )
 	local noclip			= self:GetClientNumber( "noclip" ) == 1
 	local model             = self:GetClientInfo( "model" )
-
+	
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_gate" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup( GateActions[action], noclip )
 		trace.Entity:GetTable().action = action
@@ -61,7 +58,7 @@ function TOOL:LeftClick( trace )
 	wire_gate_arithmetic:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
 	local const = WireLib.Weld(wire_gate_arithmetic, trace.Entity, trace.PhysicsBone, true)
-
+	
 	undo.Create("WireGateArithmetic")
 		undo.AddEntity( wire_gate_arithmetic )
 		undo.AddEntity( const )
@@ -78,40 +75,41 @@ function TOOL:RightClick( trace )
 	return self:LeftClick( trace )
 end
 
-function TOOL:UpdateGhostWireGateArithmetic( ent, player )
+function TOOL:UpdateGhost( ent, player )
 
-	if ( !ent || !ent:IsValid() ) then return end
+	if ( !ent ) then return end
+	if ( !ent:IsValid() ) then return end
 
 	local tr 	= utilx.GetPlayerTrace( player, player:GetCursorAimVector() )
 	local trace 	= util.TraceLine( tr )
+	if (!trace.Hit) then return end
 	
 	if (!trace.Hit || trace.Entity:IsPlayer() || trace.Entity:GetClass() == "gmod_wire_gate" ) then
 		ent:SetNoDraw( true )
 		return
 	end
-
+	
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
-
+	
 	local min = ent:OBBMins()
 	ent:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	ent:SetAngles( Ang )
-
+	
 	ent:SetNoDraw( false )
-
+	
 end
 
 function TOOL:Think()
 	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" )) then
 		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), Angle(0,0,0) )
 	end
-
-	self:UpdateGhostWireGateArithmetic( self.GhostEntity, self:GetOwner() )
+	self:UpdateGhost( self.GhostEntity, self:GetOwner() )
 end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_gate_arithmetic_name", Description = "#Tool_wire_gate_arithmetic_desc" })
-
+	
 	panel:AddControl("CheckBox", {
 		Label = "#WireGatesTool_noclip",
 		Command = "wire_gate_arithmetic_noclip"

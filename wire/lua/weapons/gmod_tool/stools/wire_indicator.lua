@@ -21,8 +21,10 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_indicators', 20)
+	ModelPlug_Register("indicator")
 end
 
+TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
 TOOL.ClientConVar[ "a" ] = "0"
 TOOL.ClientConVar[ "ar" ] = "255"
@@ -40,16 +42,14 @@ TOOL.ClientConVar[ "material" ] = "models/debug/debugwhite"
 cleanup.Register( "wire_indicators" )
 
 function TOOL:LeftClick( trace )
-
-	if trace.Entity && trace.Entity:IsPlayer() then return false end
 	
-	// If there's no physics object then we can't constraint it!
+	if trace.Entity && trace.Entity:IsPlayer() then return false end
 	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-
 	if (CLIENT) then return true end
 	
 	local ply = self:GetOwner()
 	
+	local noclip			= self:GetClientNumber( "noclip" ) == 1
 	local model			= self:GetClientInfo( "model" )
 	local a				= self:GetClientNumber("a")
 	local ar			= math.min(self:GetClientNumber("ar"), 255)
@@ -63,7 +63,6 @@ function TOOL:LeftClick( trace )
 	local ba			= math.min(self:GetClientNumber("ba"), 255)
 	local material		= self:GetClientInfo( "material" )
 	
-	// If we shot a wire_indicator change its force
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_indicator" && trace.Entity.pl == ply ) then
 		
 		trace.Entity:Setup(a, ar, ag, ab, aa, b, br, bg, bb, ba)
@@ -79,36 +78,23 @@ function TOOL:LeftClick( trace )
 		trace.Entity.bg	= bg
 		trace.Entity.bb	= bb
 		trace.Entity.ba	= ba
-
+		
 		return true
 	end
 	
 	if ( !self:GetSWEP():CheckLimit( "wire_indicators" ) ) then return false end
-
+	
 	if (not util.IsValidModel(model)) then return false end
 	if (not util.IsValidProp(model)) then return false end		// Allow ragdolls to be used?
-
-	//local Ang = trace.HitNormal:Angle()
+	
 	local Ang = self:GetSelectedAngle(trace.HitNormal:Angle())
 	Ang.pitch = Ang.pitch + 90
-
-	wire_indicator = MakeWireIndicator( ply, model, Ang, trace.HitPos, a, ar, ag, ab, aa, b, br, bg, bb, ba, material )
+	
+	local wire_indicator = MakeWireIndicator( ply, model, Ang, trace.HitPos, a, ar, ag, ab, aa, b, br, bg, bb, ba, material, noclip )
 	
 	local min = wire_indicator:OBBMins()
 	wire_indicator:SetPos( trace.HitPos - trace.HitNormal * self:GetSelectedMin(min) )
 	
-	local const, nocollide
-	
-	// Don't weld to world
-	/*if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_indicator, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		
-		// Don't disable collision if it's not attached to anything
-		if ( collision == 0 ) then 
-			wire_indicator:GetPhysicsObject():EnableCollisions( false )
-			wire_indicator.nocollide = true
-		end
-	end*/
 	local const = WireLib.Weld(wire_indicator, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireIndicator")
@@ -116,13 +102,12 @@ function TOOL:LeftClick( trace )
 		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
-		
+	
 	ply:AddCleanup( "wire_indicators", wire_indicator )
 	ply:AddCleanup( "wire_indicators", const )
-	ply:AddCleanup( "wire_indicators", nocollide )
 	
 	return true
-
+	
 end
 
 if (SERVER) then
@@ -142,10 +127,7 @@ if (SERVER) then
 		wire_indicator:Setup(a, ar, ag, ab, aa, b, br, bg, bb, ba)
 		wire_indicator:SetPlayer(pl)
 		
-		if (nocollide) then
-			local phys = wire_indicator:GetPhysicsObject()
-			if ( phys:IsValid() ) then phys:EnableCollisions(false) end
-		end
+		if ( nocollide == true ) then wire_pixel:SetCollisionGroup(COLLISION_GROUP_WORLD) end
 		
 		local ttable = {
 			a	= a,
@@ -175,19 +157,17 @@ if (SERVER) then
 end
 
 function TOOL:UpdateGhostWireIndicator( ent, player )
-
+	
 	if ( !ent ) then return end
 	if ( !ent:IsValid() ) then return end
-
+	
 	local tr 	= utilx.GetPlayerTrace( player, player:GetCursorAimVector() )
 	local trace 	= util.TraceLine( tr )
 	if (!trace.Hit) then return end
 	
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_indicator" || trace.Entity:IsPlayer()) then
-	
 		ent:SetNoDraw( true )
 		return
-		
 	end
 	
 	local Ang = self:GetSelectedAngle(trace.HitNormal:Angle())
@@ -313,24 +293,7 @@ function TOOL.BuildCPanel(panel)
 		Multiplier = "255"
 	})
 	
-	panel:AddControl("ComboBox", {
-		Label = "#ToolWireIndicator_Model",
-		MenuButton = "0",
-
-		Options = {
-			["Siren"]				= { wire_indicator_model = "models/jaanus/wiretool/wiretool_siren.mdl" },
-			["Medium 7-seg bar"]	= { wire_indicator_model = "models/segment2.mdl" },
-			["Small 7-seg bar"]		= { wire_indicator_model = "models/segment.mdl" },
-			["Barrel"]				= { wire_indicator_model = "models/props_borealis/bluebarrel001.mdl" },
-			["Grave stone"]			= { wire_indicator_model = "models/props_c17/gravestone004a.mdl" },
-			["Pop can"]				= { wire_indicator_model = "models/props_junk/PopCan01a.mdl" },
-			["Traffic Cone"]		= { wire_indicator_model = "models/props_junk/TrafficCone001a.mdl" },
-			["Big Clock"]			= { wire_indicator_model = "models/props_trainstation/trainstation_clock001.mdl" },
-			["LED small"]			= { wire_indicator_model = "models/led.mdl" },
-			["LED large"]			= { wire_indicator_model = "models/led2.mdl" },			
-			
-	}
-	})
+	ModelPlug_AddToCPanel(panel, "indicator", "wire_indicator", "#ToolWireIndicator_Model", nil, "#ToolWireIndicator_Model")
 	
 	panel:AddControl("ComboBox", {
 		Label = "#ToolWireIndicator_Material",
@@ -347,4 +310,10 @@ function TOOL.BuildCPanel(panel)
 		Label = "#ToolWireIndicator_90",
 		Command = "wire_indicator_rotate90"
 	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireGatesTool_noclip",
+		Command = "wire_indicator_noclip"
+	})
+	
 end
