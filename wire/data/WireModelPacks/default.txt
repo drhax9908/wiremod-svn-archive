@@ -100,4 +100,64 @@
 		"categories"    "radio2"
 		"model"         "models/props_lab/bindergreen.mdl"
 	}
+
+	"Siren"
+	{
+		"categories"    "pixel,indicator"
+		"model"         "models/jaanus/wiretool/wiretool_siren.mdl"
+	}
+
+	"Medium 7-seg bar"
+	{
+		"categories"    "pixel,indicator"
+		"model"         "models/segment2.mdl"
+	}
+
+	"Small 7-seg bar"
+	{
+		"categories"    "pixel,indicator"
+		"model"         "models/segment.mdl"
+	}
+
+	"LED small"
+	{
+		"categories"    "pixel,indicator"
+		"model"         "models/led.mdl"
+	}
+
+	"LED large"
+	{
+		"categories"    "pixel,indicator"
+		"model"         "models/led2.mdl"
+	}
+
+	"Pop can"
+	{
+		"categories"    "pixel,indicator"
+		"model"         "models/props_junk/PopCan01a.mdl"
+	}
+
+	"Barrel"
+	{
+		"categories"    "indicator"
+		"model"         "models/props_borealis/bluebarrel001.mdl"
+	}
+
+	"Grave stone"
+	{
+		"categories"    "indicator"
+		"model"         "models/props_c17/gravestone004a.mdl"
+	}
+	
+	"Traffic Cone"
+	{
+		"categories"    "indicator"
+		"model"         "models/props_junk/TrafficCone001a.mdl"
+	}
+	
+	"Big Clock"
+	{
+		"categories"    "indicator"
+		"model"         "models/props_trainstation/trainstation_clock001.mdl"
+	}
 }
