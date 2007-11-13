@@ -127,7 +127,7 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_gates_noclip"
 	})
 	
-	for gatetype, gatefuncs in pairs(WireGatesSorted) do
+	/*for gatetype, gatefuncs in pairs(WireGatesSorted) do
 		
 		local Actions = {
 			Label = gatetype.." Gates", //#WireGateArithmeticTool_action",
@@ -142,6 +142,24 @@ function TOOL.BuildCPanel(panel)
 		
 		panel:AddControl("ListBox", Actions)
 		
+	end*/
+	
+	--this may not work in pre-gmod2007
+	local tree = vgui.Create( "DTree" )
+	tree:SetTall( 400 )
+	panel:AddPanel( tree )
+	
+	for gatetype, gatefuncs in pairs(WireGatesSorted) do
+		local node = tree:AddNode( gatetype.." Gates" )
+		table.SortByMember( gatefuncs, "name", true ) --doesn't work, fix
+		for k,v in pairs(gatefuncs) do
+			local cnode = node:AddNode( v.name or "No Name" )
+			cnode.myaction = k
+			function cnode:DoClick()
+				LocalPlayer():ConCommand( "wire_gates_action "..self.myaction )
+			end
+			cnode.Icon:SetImage( "gui/silkicons/newspaper" )
+		end
 	end
 	
 end
