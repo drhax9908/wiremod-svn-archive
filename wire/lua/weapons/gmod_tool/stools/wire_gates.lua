@@ -154,13 +154,14 @@ function TOOL.BuildCPanel(panel)
 		table.SortByMember( gatefuncs, "name", true ) --doesn't work, fix
 		for k,v in pairs(gatefuncs) do
 			local cnode = node:AddNode( v.name or "No Name" )
+			cnode.myname = v.name
 			cnode.myaction = k
 			function cnode:DoClick()
 				LocalPlayer():ConCommand( "wire_gates_action "..self.myaction )
 			end
-			cnode.Icon:SetImage( "gui/silkicons/plugin" )
-			--cnode.Icon:SetImage( "gui/silkicons/newspaper" ) --oops, missing file
+			cnode.Icon:SetImage( "gui/silkicons/newspaper" ) --oops, missing file
 		end
+		node.ChildNodes:SortByMember( "myname", false )
 	end
 	
 end
