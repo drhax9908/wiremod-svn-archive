@@ -1,7 +1,7 @@
 local WIRE_SCROLL_SPEED = 0.5
 local WIRE_BLINKS_PER_SECOND = 2
 local CurPathEnt = {}
-local Wire_DisableWireRender = 0
+local Wire_DisableWireRender = 2 --bug with mode 0 and gmod2007beta
 
 function Wire_Render(ent)
 	if (not ent:IsValid()) then return end

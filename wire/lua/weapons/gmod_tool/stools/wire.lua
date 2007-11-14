@@ -10,25 +10,18 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_0", "Primary: Attach to selected input.\nSecondary: Next input.\nReload: Unlink selected input." )
     language.Add( "Tool_wire_1", "Primary: Attach to output.\nSecondary: Attach but continue.\nReload: Cancel." )
     language.Add( "Tool_wire_2", "Primary: Confirm attach to output.\nSecondary: Next output.\nReload: Cancel." )
-    language.Add( "WireTool_addlength", "Add Length:" )
     language.Add( "WireTool_width", "Width:" )
-    language.Add( "WireTool_rigid", "Rigid:" )
-    language.Add( "WireTool_breakable", "Breakable:" )
     language.Add( "WireTool_material", "Material:" )
     language.Add( "WireTool_colour", "Material:" )
 	language.Add( "undone_wire", "Undone Wire" )
 end
 
-//TOOL.ClientConVar[ "addlength" ] = "4"
 TOOL.ClientConVar[ "width" ] = "2"
-//TOOL.ClientConVar[ "rigid" ] = "0"
-//TOOL.ClientConVar[ "breakable" ] = "0"
 TOOL.ClientConVar[ "material" ] = "cable/cable2"
 TOOL.ClientConVar[ "color_r" ] = "255"
 TOOL.ClientConVar[ "color_g" ] = "255"
 TOOL.ClientConVar[ "color_b" ] = "255"
 
-TOOL.ForceLimit = 2000
 TOOL.CurrentComponent = nil
 TOOL.CurrentInput = nil
 TOOL.Inputs = nil
@@ -40,11 +33,8 @@ util.PrecacheSound("weapons/pistol/pistol_empty.wav")
 cleanup.Register( "wireconstraints" )
 
 function TOOL:LeftClick( trace )
-	if (trace.Entity:IsValid()) and (trace.Entity:IsPlayer()) then return end
-
-	// If there's no physics object then we can't constraint it!
-	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-
+	if (trace.Entity:IsWorld()) or (trace.Entity:IsPlayer()) then return end
+	
 	local stage = self:GetStage()
 	
 	if (stage == 0) then
@@ -56,9 +46,7 @@ function TOOL:LeftClick( trace )
 		elseif (self.CurrentInput) then
 			local material	= self:GetClientInfo("material")
 			local width		= self:GetClientNumber("width")
-			//local breakable	= (self:GetClientNumber("breakable") ~= 0)
 			local color     = Color(self:GetClientNumber("color_r"), self:GetClientNumber("color_g"), self:GetClientNumber("color_b"))
-
 			if (Wire_Link_Start(self:GetOwner():UniqueID(), trace.Entity, trace.Entity:WorldToLocal(trace.HitPos), self.CurrentInput, material, color, width)) then
 				self:SetStage(1)
 			    return true
@@ -97,7 +85,6 @@ function TOOL:LeftClick( trace )
 				table.insert(self.Outputs, key)
 			end
 		end
-		//table.sort(self.Outputs)
 
 		local oname = nil
 		for k,_ in pairs(trace.Entity.Outputs) do
@@ -106,7 +93,6 @@ function TOOL:LeftClick( trace )
 		        self.CurrentOutput = self.Outputs[1] //oname
 		        self.OutputEnt = trace.Entity
 		        self.OutputPos = trace.Entity:WorldToLocal(trace.HitPos)
-		    	//self:GetWeapon():SetNetworkedString("WireCurrentInput", "Output:"..self.CurrentOutput)
 				
 				local txt = "Output: "..self.CurrentOutput
 				if (self.OutputsDesc) and (self.OutputsDesc[self.CurrentOutput]) then
@@ -154,15 +140,12 @@ function TOOL:RightClick( trace )
 	local stage = self:GetStage()
 
 	if (stage < 2) then
-		if (not trace.Entity:IsValid()) or (trace.Entity:IsPlayer()) then return end
+		if (trace.Entity:IsWorld()) or (trace.Entity:IsPlayer()) then return end
 	end
-
-	// If there's no physics object then we can't constraint it!
-	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-
+	
 	if (stage == 0) then
 		if (CLIENT) then return end
-
+		
 		if (trace.Entity:IsValid()) then
 			self:SelectComponent(trace.Entity)
 		else
@@ -181,14 +164,6 @@ function TOOL:RightClick( trace )
 			
 		    self.CurrentInput = self.Inputs[iNextInput]
 			if (self.CurrentInput) then self.LastValidInput = self.CurrentInput end
-			
-			/*if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) and (self.CurrentInput)
-			  and (self.CurrentComponent.Inputs) and (self.CurrentComponent.Inputs[self.CurrentInput])
-			  and (self.CurrentComponent.Inputs[self.CurrentInput].Src) then
-		    	self:GetWeapon():SetNetworkedString("WireCurrentInput", "%"..(self.CurrentInput or ""))
-			else
-		    	self:GetWeapon():SetNetworkedString("WireCurrentInput", self.CurrentInput or "")
-			end*/
 			
 			local txt = ""
 			if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) and (self.CurrentInput)
@@ -310,53 +285,29 @@ function TOOL.BuildCPanel(panel)
 
 		Options = {
 			Default = {
-				//wire_addlength = "4",
 				wire_material = "cable/rope",
 				wire_width = "3",
-				//wire_rigid = "0",
-				//wire_breakable = "1"
 			}
 		},
 
 		CVars = {
 			[0] = "wire_width",
 			[1] = "wire_material",
-			//[0] = "wire_addlength",
-			//[3] = "wire_rigid",
-			//[4] = "wire_breakable"
 		}
 	})
-
-	/*panel:AddControl("Slider", {
-		Label = "#WireTool_addlength",
-		Type = "Float",
-		Min = "-1000",
-		Max = "1000",
-		Command = "wire_addlength"
-	})*/
-
+	
 	panel:AddControl("Slider", {
 		Label = "#WireTool_width",
 		Type = "Float",
-		Min = "1",
-		Max = "20",
+		Min = ".1",
+		Max = "5",
 		Command = "wire_width"
 	})
-
-	/*panel:AddControl("CheckBox", {
-		Label = "#WireTool_rigid",
-		Command = "wire_rigid"
-	})
-
-	panel:AddControl("CheckBox", {
-		Label = "#WireTool_breakable",
-		Command = "wire_breakable"
-	})*/
-
+	
 	panel:AddControl("MaterialGallery", {
 		Label = "#WireTool_material",
 		Height = "64",
-		Width = "28",
+		Width = "24",
 		Rows = "1",
 		Stretch = "1",
 
@@ -427,7 +378,6 @@ function TOOL:SelectComponent(ent)
 		end
 	end
 	
-	//table.sort(self.Inputs)
 	first = self.Inputs[1] or first
 
 	self.CurrentInput = best or first
