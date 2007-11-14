@@ -158,7 +158,8 @@ function TOOL.BuildCPanel(panel)
 			function cnode:DoClick()
 				LocalPlayer():ConCommand( "wire_gates_action "..self.myaction )
 			end
-			cnode.Icon:SetImage( "gui/silkicons/newspaper" )
+			cnode.Icon:SetImage( "gui/silkicons/plugin" )
+			--cnode.Icon:SetImage( "gui/silkicons/newspaper" ) --oops, missing file
 		end
 	end
 	
