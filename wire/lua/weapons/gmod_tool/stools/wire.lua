@@ -33,7 +33,7 @@ util.PrecacheSound("weapons/pistol/pistol_empty.wav")
 cleanup.Register( "wireconstraints" )
 
 function TOOL:LeftClick( trace )
-	if (trace.Entity:IsWorld()) or (trace.Entity:IsPlayer()) then return end
+	if (trace.Entity:IsValid()) and (trace.Entity:IsPlayer()) then return end
 	
 	local stage = self:GetStage()
 	
@@ -140,7 +140,7 @@ function TOOL:RightClick( trace )
 	local stage = self:GetStage()
 
 	if (stage < 2) then
-		if (trace.Entity:IsWorld()) or (trace.Entity:IsPlayer()) then return end
+		if (not trace.Entity:IsValid()) or (trace.Entity:IsPlayer()) then return end
 	end
 	
 	if (stage == 0) then

@@ -31,7 +31,7 @@ util.PrecacheSound("weapons/pistol/pistol_empty.wav")
 cleanup.Register( "wireconstraints" )
 
 function TOOL:LeftClick( trace )
-	if (trace.Entity:IsWorld()) or (trace.Entity:IsPlayer()) then return end
+	if (trace.Entity:IsValid()) and (trace.Entity:IsPlayer()) then return end
 	
 	local stage = self:GetStage()
 	
@@ -47,6 +47,7 @@ function TOOL:LeftClick( trace )
 			local color     = Color(self:GetClientNumber("color_r"), self:GetClientNumber("color_g"), self:GetClientNumber("color_b"))
 			if (Wire_Link_Start(self:GetOwner():UniqueID(), trace.Entity, trace.Entity:WorldToLocal(trace.HitPos), self.CurrentInput, material, color, width)) then
 				self:SetStage(1)
+				self:GetWeapon():SetNetworkedInt("WireAdvStage",1)
 			    return true
 			end
 		end
@@ -60,6 +61,7 @@ function TOOL:LeftClick( trace )
 		
 		if (not trace.Entity.Outputs) then
 			self:SetStage(0)
+			self:GetWeapon():SetNetworkedInt("WireAdvStage",0)
 		
 			Wire_Link_Cancel(self:GetOwner():UniqueID())
 
@@ -125,6 +127,7 @@ function TOOL:LeftClick( trace )
 				self:GetWeapon():SetNetworkedString("WireCurrentInput", txt)
 		        
 				self:SetStage(2)
+				self:GetWeapon():SetNetworkedInt("WireAdvStage",2)
 		        return true
 		    end
 
@@ -135,6 +138,7 @@ function TOOL:LeftClick( trace )
 
 		self:SelectComponent(nil)
 		self:SetStage(0)
+		self:GetWeapon():SetNetworkedInt("WireAdvStage",0)
 	else
 		if (CLIENT) then
 			self:SetStage(0)
@@ -150,6 +154,7 @@ function TOOL:LeftClick( trace )
 		
 		self:SelectComponent(nil)
 		self:SetStage(0)
+		self:GetWeapon():SetNetworkedInt("WireAdvStage",0)
 	end
 
 	return true
@@ -392,7 +397,7 @@ function TOOL:RightClick( trace )
 	local stage = self:GetStage()
 
 	if (stage < 2) then
-		if (trace.Entity:IsWorld()) or (trace.Entity:IsPlayer()) then return end
+		if (not trace.Entity:IsValid()) or (trace.Entity:IsPlayer()) then return end
 	end
 	
 	if (stage == 0) then
@@ -416,6 +421,14 @@ function TOOL:RightClick( trace )
 			
 		    self.CurrentInput = self.Inputs[iNextInput]
 			if (self.CurrentInput) then self.LastValidInput = self.CurrentInput end
+			
+			/*if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) and (self.CurrentInput)
+			  and (self.CurrentComponent.Inputs) and (self.CurrentComponent.Inputs[self.CurrentInput])
+			  and (self.CurrentComponent.Inputs[self.CurrentInput].Src) then
+		    	self:GetWeapon():SetNetworkedString("WireCurrentInput", (self.CurrentInput or ""))
+			else
+		    	self:GetWeapon():SetNetworkedString("WireCurrentInput", self.CurrentInput or "")
+			end*/
 			
 			local txt = ""
 			if (self.CurrentComponent) and (self.CurrentComponent:IsValid()) and (self.CurrentInput)
@@ -553,12 +566,14 @@ function TOOL:Reload(trace)
 	
 	Wire_Link_Cancel(self:GetOwner():UniqueID())
 	self:SetStage(0)
+	self:GetWeapon():SetNetworkedInt("WireAdvStage",0)
 	
 	return true
 end
 
 function TOOL:Holster()
 	self:SelectComponent(nil)
+	self:GetWeapon():SetNetworkedInt("WireAdvStage",0)
 end
 
 
@@ -577,11 +592,25 @@ if (CLIENT) then
 		*/
 		
 		//Begin
-		if string.sub(current_input,1,7) == "Output:" and type(self.Outputs) == "table" then
+		local stage = self:GetWeapon():GetNetworkedInt("WireAdvStage")
+		//draw.DrawText(stage,"Trebuchet24",0,0,Color(255,255,255,255),0)
+		if stage == 2 and type(self.Outputs) == "table" then
+			surface.SetFont("Trebuchet24")
+			local twa = surface.GetTextSize(self.WireCurrentInput)
+			draw.RoundedBox(8,
+				ScrW()/2+20,
+				ScrH()/2-12-4,
+				twa+16,
+				24+8,
+				Color(50,50,75,192)
+			)
+			draw.DrawText(self.WireCurrentInput,"Trebuchet24",ScrW()/2+20+8,ScrH()/2-12,Color(255,255,255,255),0)
+			twa = twa+16
+			
 			surface.SetFont("Trebuchet24")
 			local tw = surface.GetTextSize(table.concat(self.Outputs,"\n"))
 			draw.RoundedBox(8,
-				ScrW()/2+20,
+				twa+ScrW()/2+20,
 				ScrH()/2-#self.Outputs*24/2-8,
 				tw+16,
 				#self.Outputs*24+16,
@@ -589,9 +618,9 @@ if (CLIENT) then
 			)
 			
 			for k,v in pairs(self.Outputs) do
-				if current_input == "Output: "..v then
+				if self:GetWeapon():GetNetworkedString("WireCurrentInput") == "Output: "..v then
 					draw.RoundedBox(4,
-						ScrW()/2+20+4,
+						twa+ScrW()/2+20+4,
 						ScrH()/2-#self.Outputs*24/2+(k-1)*24,
 						tw+8,
 						24,
@@ -600,13 +629,13 @@ if (CLIENT) then
 				end
 				draw.DrawText(
 					v,"Trebuchet24",
-					ScrW()/2+20+8,
+					twa+ScrW()/2+20+8,
 					ScrH()/2-#self.Outputs*24/2+(k-1)*24,
 					Color(255,255,255,255),
 					0
 				)
 			end
-		else
+		elseif stage == 0 then
 
 			local tr = utilx.GetPlayerTrace(LocalPlayer(), LocalPlayer():GetCursorAimVector())
 			local trace = util.TraceLine(tr)
@@ -628,7 +657,7 @@ if (CLIENT) then
 						col = Color(255,0,0,255)
 					end
 					
-					if current_input == v then
+					if self:GetWeapon():GetNetworkedString("WireCurrentInput") == v then
 						draw.RoundedBox(4,
 							ScrW()/2+20+4,
 							ScrH()/2-#self.Inputs*24/2+(k-1)*24,
@@ -636,6 +665,7 @@ if (CLIENT) then
 							24,
 							Color(0,150,0,192)
 						)
+						self.WireCurrentInput = v
 					end
 					
 					draw.DrawText(
@@ -647,6 +677,17 @@ if (CLIENT) then
 					)
 				end
 			end
+		elseif stage == 1 then
+			surface.SetFont("Trebuchet24")
+			local tw = surface.GetTextSize(self.WireCurrentInput)
+			draw.RoundedBox(8,
+				ScrW()/2+20,
+				ScrH()/2-12-4,
+				tw+16,
+				24+8,
+				Color(50,50,75,192)
+			)
+			draw.DrawText(self.WireCurrentInput,"Trebuchet24",ScrW()/2+20+8,ScrH()/2-12,Color(255,255,255,255),0)
 		end
 	end
 	
@@ -747,9 +788,9 @@ if CLIENT then
 		if temp ~= "" then
 			self.InputEntClass = temp
 		end
-		self.Inputs = {"In:"}
+		self.Inputs = {}
 		self.InputsW = {}
-		for i = 2, um:ReadShort()+1 do
+		for i = 1, um:ReadShort() do
 			self.Inputs[i] = um:ReadString()
 			self.InputsW[i] = um:ReadBool()
 		end
@@ -760,8 +801,8 @@ if CLIENT then
 		if temp ~= "" then
 			self.OutputEntClass = temp
 		end
-		self.Outputs = {"Out:"}
-		for i = 2, um:ReadShort()+1 do
+		self.Outputs = {}
+		for i = 1, um:ReadShort() do
 			self.Outputs[i] = um:ReadString()
 		end
 	end)
