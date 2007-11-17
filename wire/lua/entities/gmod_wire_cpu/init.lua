@@ -1120,11 +1120,11 @@ function ENT:Execute( )
 			self.Segment2 = self:Read() //FIXME wrong order
 			self.Opcode = self.Opcode-10000
 			if (self.Opcode > 1000) then
-				self.Segment1 = self.self:Read()
+				self.Segment1 = self:Read()
 				self.Opcode = self.Opcode-1000
 			end
 		else
-			self.Segment1 = self.self:Read()
+			self.Segment1 = self:Read()
 			self.Opcode = self.Opcode-1000
 		end
 	end
