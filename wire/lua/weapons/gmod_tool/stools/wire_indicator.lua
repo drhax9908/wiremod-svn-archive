@@ -127,7 +127,7 @@ if (SERVER) then
 		wire_indicator:Setup(a, ar, ag, ab, aa, b, br, bg, bb, ba)
 		wire_indicator:SetPlayer(pl)
 		
-		if ( nocollide == true ) then wire_pixel:SetCollisionGroup(COLLISION_GROUP_WORLD) end
+		if ( nocollide == true ) then wire_indicator:SetCollisionGroup(COLLISION_GROUP_WORLD) end
 		
 		local ttable = {
 			a	= a,
