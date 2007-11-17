@@ -40,9 +40,14 @@ function ENT:TriggerInput(iname, value)
 			 local trace = util.TraceLine( trace ) 
 			
 			if (!trace.Entity) then return false end
-            if (!trace.Entity:IsValid() ) then return false end
-            if (trace.Entity:IsWorld()) then return false end
-            trace.Entity:Fire("use","1",0)
+	            	if (!trace.Entity:IsValid() ) then return false end
+		        if (trace.Entity:IsWorld()) then return false end
+
+			if trace.Entity.Use and trace.Entity.GetPlayer then
+			    trace.Entity:Use(trace.Entity:GetPlayer())
+			else
+			    trace.Entity:Fire("use","1",0)
+			end
 		end
     end
 end

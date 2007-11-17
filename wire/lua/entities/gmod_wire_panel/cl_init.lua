@@ -29,7 +29,9 @@ function ENT:Initialize()
 end
 
 function ENT:OnRemove()
-	LocalPlayer():SetNetworkedInt(self.Entity:EntIndex().."click",nil)
+	if (self.Entity) then
+		LocalPlayer():SetNetworkedInt(self.Entity:EntIndex().."click",nil)
+	end
 end
 
 
