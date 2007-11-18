@@ -21,6 +21,8 @@ function ENT:Initialize()
 	self.Memory1[2033] = 0
 	self.Memory1[2034] = 17
 
+	self.Memory1[2043] = 0.5
+
 	for i = 0, 2047 do
 		self.Memory2[i] = self.Memory1[i]
 	end
