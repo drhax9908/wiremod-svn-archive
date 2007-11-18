@@ -157,7 +157,7 @@ function TOOL.BuildCPanel(panel)
 			cnode.myname = v.name
 			cnode.myaction = k
 			function cnode:DoClick()
-				LocalPlayer():ConCommand( "wire_gates_action "..self.myaction )
+				RunConsoleCommand( "wire_gates_action "..self.myaction )
 			end
 			cnode.Icon:SetImage( "gui/silkicons/newspaper" ) --oops, missing file
 		end
