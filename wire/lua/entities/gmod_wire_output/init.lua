@@ -47,7 +47,9 @@ end
 
 function ENT:ShowOutput()
 	if (self.key) then
-		self:SetOverlayText("Numpad Output ("..keylist[self.key + 1]..")")
+		if (keylist[self.key + 1]) then
+			self:SetOverlayText("Numpad Output ("..keylist[self.key + 1]..")")
+		end
 	end
 end
 
