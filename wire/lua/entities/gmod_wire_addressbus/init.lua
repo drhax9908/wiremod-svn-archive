@@ -32,7 +32,9 @@ function ENT:Think()
 	self.DataRate = (self.DataRate*1.5 + self.DataBytes * 4 * 0.5) / 2
 	self.DataBytes = 0
 
-	self:SetOverlayText( "Address bus\nData rate: "..math.floor(self.DataRate).." bps" )
+	Wire_TriggerOutput(self.Entity, "Memory", self.DataRate)
+
+	self:SetOverlayText("Address bus\nData rate: "..math.floor(self.DataRate).." bps")
 	self.Entity:NextThink(CurTime()+0.25)
 end
 

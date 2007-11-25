@@ -18,7 +18,11 @@ end
 
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
 TOOL.ClientConVar[ "driveid" ] = 0
+TOOL.ClientConVar[ "client_driveid" ] = 0
 TOOL.ClientConVar[ "drivecap" ] = 128
+
+TOOL.ClientConVar[ "packet_bandwidth" ] = 100
+TOOL.ClientConVar[ "packet_rate" ] = 0.4
 
 cleanup.Register( "wire_hdds" )
 
@@ -29,8 +33,9 @@ function TOOL:LeftClick( trace )
 	local ply = self:GetOwner()
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_hdd" && trace.Entity.pl == ply ) then
-		trace.Entity.DriveID = self:GetClientInfo( "driveid" ) + 1 - 1
-		trace.Entity.DriveCap = self:GetClientInfo( "drivecap" ) + 1 - 1
+		trace.Entity.DriveID = tonumber(self:GetClientInfo( "driveid" ))
+		trace.Entity.DriveCap = tonumber(self:GetClientInfo( "drivecap" ))
+		trace.Entity.UpdateCap()
 		return true
 	end
 
@@ -49,8 +54,8 @@ function TOOL:LeftClick( trace )
 	local min = wire_hdd:OBBMins()
 	wire_hdd:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	wire_hdd.DriveID = self:GetClientInfo( "driveid" ) + 1 - 1
-	wire_hdd.DriveCap = self:GetClientInfo( "drivecap" ) + 1 - 1
+	wire_hdd.DriveID = tonumber(self:GetClientInfo( "driveid" ))
+	wire_hdd.DriveCap = tonumber(self:GetClientInfo( "drivecap" ))
 
 	local const = WireLib.Weld(wire_hdd, trace.Entity, trace.PhysicsBone, true)
 
@@ -141,6 +146,54 @@ function TOOL:Think()
 	self:UpdateGhostWirehdd( self.GhostEntity, self:GetOwner() )
 end
 
+/*"wire_hdd_driveid"
+"wire_hdd_client_driveid"
+"wire_hdd_downloadhdd"
+"wire_hdd_uploadhdd"
+"wire_hdd_clearhdd"
+"wire_hdd_clearhdd_client"
+
+local function UploadHDDData(pl, command, args)
+	//Send drive cap
+		//SP only:
+		//SourceCode = string.Explode("\n", file.Read(fname) )
+	
+		pl:ConCommand('wire_cpu_clearsrc')
+
+		local filedata = file.Read(fname)
+		SourceLines = string.Explode("\n", filedata )
+		SourceLinesSent = 0
+		SourceTotalChars = string.len(filedata)
+
+		SourcePrevCharRate = string.len(SourceLines[1])
+		SourceLoadedChars = 0
+
+		pl:ConCommand('wire_cpu_vgui_open')
+		pl:ConCommand('wire_cpu_vgui_title "CPU - Uploading program"')
+		pl:ConCommand('wire_cpu_vgui_status "Initializing"')
+		pl:ConCommand('wire_cpu_vgui_progress "0"')
+
+		//Send 50 lines
+		if (SinglePlayer()) then
+			timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_sp"),0,UploadProgram,pl,true)
+		else
+			timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_mp"),0,UploadProgram,pl,true)
+		end
+	end
+	concommand.Add( "wire_cpu_loadcompile", LoadCompileProgram )
+	
+	local function StoreProgram(pl, command, args)
+		Msg("Storing program is disabled - its readonly!\n")
+	end
+	concommand.Add("wire_cpu_store", StoreProgram)
+	
+if (SERVER) then
+	local function Send_DriveCap(pl, command, args)
+		
+	end
+	concommand.Add("wire_hdd_send_drivecap", Send_DriveCap )
+end*/
+
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_hdd_name", Description = "#Tool_wire_hdd_desc" })
 
@@ -153,21 +206,56 @@ function TOOL.BuildCPanel(panel)
 	})
 
 	panel:AddControl("Slider", {
-		Label = "Capacity",
+		Label = "Capacity (KB)",
 		Type = "Integer",
 		Min = "0",
 		Max = "128",
 		Command = "wire_hdd_drivecap"
 	})
 
-	panel:AddControl("Label", {
-		Text = "Beta testing. Report all faults to wiremod.com"
+/*	panel:AddControl("Label", {
+		Text = "Hard drive manager:"
 	})
-	panel:AddControl("Label", {
-		Text = "forums into topic in Developer's Showcase!"
+
+	panel:AddControl("Slider", {
+		Label = "Server drive ID",
+		Type = "Integer",
+		Min = "0",
+		Max = "3",
+		Command = "wire_hdd_driveid"
 	})
-	panel:AddControl("Label", {
-		Text = "Most of features are missing (up- & download)"
+
+	panel:AddControl("Slider", {
+		Label = "Client drive ID",
+		Type = "Integer",
+		Min = "0",
+		Max = "3",
+		Command = "wire_hdd_client_driveid"
 	})
+
+	panel:AddControl("Button", {
+		Text = "Download server drive to client drive",
+		Name = "Clear",
+		Command = "wire_hdd_downloadhdd"
+	})
+
+	panel:AddControl("Button", {
+		Text = "Upload client drive to server drive",
+		Name = "Clear",
+		Command = "wire_hdd_uploadhdd"
+	})
+
+	panel:AddControl("Button", {
+		Text = "Clear server drive",
+		Name = "Clear",
+		Command = "wire_hdd_clearhdd"
+	})
+
+	panel:AddControl("Button", {
+		Text = "Clear client drive",
+		Name = "Clear",
+		Command = "wire_hdd_clearhdd_client"
+	})*/
+
 end
 	
