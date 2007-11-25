@@ -399,8 +399,10 @@ if (CLIENT) then
 	concommand.Add( "wire_cpu_vgui_status", VGUI_Status )
 
 	local function VGUI_Progress( pl, command, args )
-		ProgressBar:PostMessage("SetValue", "Float", tonumber(args[1])/100 );
-		PLabel:PostMessage("SetText", "text", args[1] .. "%");
+		if (args[1]) then
+			ProgressBar:PostMessage("SetValue", "Float", tonumber(args[1])/100 );
+			PLabel:PostMessage("SetText", "text", args[1] .. "%");
+		end
 	end
 	concommand.Add( "wire_cpu_vgui_progress", VGUI_Progress )
 end
