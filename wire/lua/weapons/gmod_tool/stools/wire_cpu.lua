@@ -100,6 +100,8 @@ local function CompileProgram_Timer(firstpass)
 end
 
 function TOOL:StartCompile(pl,ent)
+	if (table.Count(SourceCode) <= 0) then return end
+
 	pl:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 2.0 BETA <----\n")
 	pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compiling...\n")
 

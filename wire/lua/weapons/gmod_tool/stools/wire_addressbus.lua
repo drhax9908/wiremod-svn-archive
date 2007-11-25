@@ -9,7 +9,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_addressbus_desc", "Spawns an address bus. Address spaces may overlap!" )
     language.Add( "Tool_wire_addressbus_0", "Primary: Create/Update address bus" )
 	language.Add( "sboxlimit_wire_addressbuss", "You've hit address buses limit!" )
-	language.Add( "undone_wiredigitalscreen", "Undone Address Bus" )
+	language.Add( "undone_wiredatarate", "Undone Address Bus" )
 end
 
 if (SERVER) then
