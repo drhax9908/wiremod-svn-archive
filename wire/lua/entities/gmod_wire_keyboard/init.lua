@@ -37,7 +37,11 @@ function ENT:ReadCell( Address )
 	if (Address >= 0) && (Address < 32) then
 		return self.Buffer[Address]
 	elseif (Address >= 32) && (Address < 256) then
-		return self.On[Address-32]
+		if (self.On[Address-32]) then
+			return 1
+		else
+			return 0
+		end
 	else
 		return nil
 	end

@@ -44,6 +44,7 @@ function ENT:Initialize()
 	self.Compiling = false
 	self.Dump = ""
 	self.MakeDump = false
+	self.LinePos = 0
 	//=================================
 
 	//Execution "local" vars
@@ -843,9 +844,9 @@ function ENT:InitializeOpcodeTable()
 		if (self.Params[1] == 0) then return end
 		for i = 1,math.Clamp(self.Params[1],1,8192) do
 			local val
-			val = self:ReadCell(self.ESI+segment1)
+			val = self:ReadCell(self.ESI+self.Segment1)
 			if (val == nil) then return end
-			if (self:WriteCell(self.EDI+segment2,val) == false) then return end
+			if (self:WriteCell(self.EDI+self.Segment2,val) == false) then return end
 			self.EDI = self.EDI + 1
 			self.ESI = self.ESI + 1
 		end
@@ -855,10 +856,10 @@ function ENT:InitializeOpcodeTable()
 		if (self.Params[1] == 0) then return end
 		for i = 1,math.Clamp(self.Params[1],1,8192) do
 			local val
-			val1 = self:ReadCell(self.ESI+segment1)
-			val2 = self:ReadCell(self.EDI+segment2)
+			val1 = self:ReadCell(self.ESI+self.Segment1)
+			val2 = self:ReadCell(self.EDI+self.Segment2)
 			if (val1 == nil) || (val2 == nil) then return end
-			if (self:WriteCell(self.EDI+segment2,val1) == false) || (self:WriteCell(self.ESI+segment1,val2) == false) then return end
+			if (self:WriteCell(self.EDI+self.Segment2,val1) == false) || (self:WriteCell(self.ESI+self.Segment1,val2) == false) then return end
 			self.EDI = self.EDI + 1
 			self.ESI = self.ESI + 1
 		end
@@ -1231,6 +1232,15 @@ function ENT:Execute( )
 		self.Params[2] = tonumber(self.Params[2])
 	end
 
+	if (!self.Params[1]) then
+		self:Interrupt(5)
+		return
+	end
+	if (!self.Params[2]) then
+		self:Interrupt(5)
+		return
+	end
+
 	if (self.INTR) then
 		self.INTR = false
 		return
@@ -1280,15 +1290,16 @@ function ENT:Use()
 end
 
 function ENT:Think()
-	self.BaseClass.Think(self)
-
-	self.CPUCyclesLeft = self.CPUCyclesLeft + self.ThinkTime*2.5
+//	self.BaseClass.Think(self)
+//
+	self.CPUCyclesLeft = self.ThinkTime*10//self.CPUCyclesLeft + self.ThinkTime*5
 	while (self.CPUCyclesLeft > 0) && (self.Clk >= 1.0) do
 		self:Execute()
 		self.CPUCyclesLeft = self.CPUCyclesLeft - 1
 	end
 	if (self.Clk >= 1.0) then
-		self.Entity:NextThink(CurTime()+0.025)
+//		self.Entity:NextThink(CurTime()+0.05)
+		self.Entity:NextThink(CurTime()+0.1)
 	end
 end
 
@@ -1306,7 +1317,7 @@ function ENT:TriggerInput(iname, value)
 			self.ThinkTime = 200 
 			return
 		end
-		if (value ~= 0) then
+		if (value > 0) then
 			self.ThinkTime = value/100
 		end
 	elseif (iname == "Reset") then
