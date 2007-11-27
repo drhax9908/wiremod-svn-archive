@@ -746,29 +746,29 @@ function TOOL.BuildCPanel(panel)
 		Stretch = "1",
 
 		Options = {
-			["Wire"] = { Material = "cable/rope_icon", wire_material = "cable/rope" },
-			["Cable 2"] = { Material = "cable/cable_icon", wire_material = "cable/cable2" },
-			["XBeam"] = { Material = "cable/xbeam", wire_material = "cable/xbeam" },
-			["Red Laser"] = { Material = "cable/redlaser", wire_material = "cable/redlaser" },
-			["Blue Electric"] = { Material = "cable/blue_elec", wire_material = "cable/blue_elec" },
-			["Physics Beam"] = { Material = "cable/physbeam", wire_material = "cable/physbeam" },
-			["Hydra"] = { Material = "cable/hydra", wire_material = "cable/hydra" },
+			["Wire"] = { Material = "cable/rope_icon", wire_adv_material = "cable/rope" },
+			["Cable 2"] = { Material = "cable/cable_icon", wire_adv_material = "cable/cable2" },
+			["XBeam"] = { Material = "cable/xbeam", wire_adv_material = "cable/xbeam" },
+			["Red Laser"] = { Material = "cable/redlaser", wire_adv_material = "cable/redlaser" },
+			["Blue Electric"] = { Material = "cable/blue_elec", wire_adv_material = "cable/blue_elec" },
+			["Physics Beam"] = { Material = "cable/physbeam", wire_adv_material = "cable/physbeam" },
+			["Hydra"] = { Material = "cable/hydra", wire_adv_material = "cable/hydra" },
 		
 		//new wire materials by Acegikmo
-			["Arrowire"] = { Material = "arrowire/arrowire", wire_material = "arrowire/arrowire" },
-			["Arrowire2"] = { Material = "arrowire/arrowire2", wire_material = "arrowire/arrowire2" },
+			["Arrowire"] = { Material = "arrowire/arrowire", wire_adv_material = "arrowire/arrowire" },
+			["Arrowire2"] = { Material = "arrowire/arrowire2", wire_adv_material = "arrowire/arrowire2" },
 		},
 
 		CVars = {
-			[0] = "wire_material"
+			[0] = "wire_adv_material"
 		}
 	})
 
 	panel:AddControl("Color", {
 		Label = "#WireTool_colour",
-		Red = "wire_color_r",
-		Green = "wire_color_g",
-		Blue = "wire_color_b",
+		Red = "wire_adv_color_r",
+		Green = "wire_adv_color_g",
+		Blue = "wire_adv_color_b",
 		ShowAlpha = "0",
 		ShowHSV = "1",
 		ShowRGB = "1",
