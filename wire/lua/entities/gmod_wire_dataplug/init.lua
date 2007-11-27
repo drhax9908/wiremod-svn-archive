@@ -49,7 +49,9 @@ end
 
 function ENT:SetSocket(socket)
 	self.MySocket = socket
-	self.MySocket:SetMemory(self.Memory)
+	if (self.MySocket) and (self.MySocket:IsValid()) then
+		self.MySocket:SetMemory(self.Memory)
+	end
 end
 
 function ENT:AttachedToSocket(socket)
