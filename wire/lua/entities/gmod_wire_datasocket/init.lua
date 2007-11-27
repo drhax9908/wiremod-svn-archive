@@ -131,7 +131,7 @@ function ENT:AttachPlug( plug )
 	    self.NoCollideConst:Remove()
 	    self.NoCollideConst = nil
 	    self.MyPlug = nil
-		plug:SetSocket(nil)
+	    plug:SetSocket(nil)
 	    self.Memory = nil
 	    return
 	end
