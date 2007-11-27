@@ -465,13 +465,11 @@ function AdvDupeClient.SaveGUI( pl, command, args )
 	
 	if !AdvDupeClient.gui.save or !AdvDupeClient.gui.save.frame then
 		AdvDupeClient.gui.save = {}
-		AdvDupeClient.gui.save.frame = vgui.Create( "Frame" )
-		AdvDupeClient.gui.save.frame:SetName( "basic" )
-		AdvDupeClient.gui.save.frame:LoadControlsFromString(AdvDupeClient.res.gengui("Save to File"))
-		AdvDupeClient.gui.save.frame:SetName("AdvDuplicatorSave")
+		AdvDupeClient.gui.save.frame = vgui.Create( "DFrame" )
+		AdvDupeClient.gui.save.frame:SetTitle("AdvDupe Save:")
+		AdvDupeClient.gui.save.frame:SetDeleteOnClose(false)
 		AdvDupeClient.gui.save.frame:SetSize(320,135)
-		AdvDupeClient.gui.save.frame:SetPos(400,250)
-		
+		AdvDupeClient.gui.save.frame:Center()
 		
 		AdvDupeClient.gui.save.lblFile = vgui.Create("Label",AdvDupeClient.gui.save.frame,"lblFile")
 		AdvDupeClient.gui.save.lblFile:SetPos(6,25)
@@ -483,39 +481,43 @@ function AdvDupeClient.SaveGUI( pl, command, args )
 		AdvDupeClient.gui.save.lblDesc:SetSize(185,25)
 		AdvDupeClient.gui.save.lblDesc:SetText("Description:")
 		
-		AdvDupeClient.gui.save.btnSave = vgui.Create("Button",AdvDupeClient.gui.save.frame,"btnSave")
+		AdvDupeClient.gui.save.btnSave = vgui.Create("DButton",AdvDupeClient.gui.save.frame,"btnSave")
 		AdvDupeClient.gui.save.btnSave:SetPos(184,110)
 		AdvDupeClient.gui.save.btnSave:SetSize(110,20)
 		AdvDupeClient.gui.save.btnSave:SetText("Save")
-		AdvDupeClient.gui.save.btnSave:SetCommand("Save")
 		
-		AdvDupeClient.gui.save.txtFile = vgui.Create("TextEntry",AdvDupeClient.gui.save.frame,"txtFile")
+		AdvDupeClient.gui.save.txtFile = vgui.Create("DTextEntry",AdvDupeClient.gui.save.frame,"txtFile")
 		AdvDupeClient.gui.save.txtFile:SetPos(6,45)
-		AdvDupeClient.gui.save.txtFile:SetSize(290,20)
+		AdvDupeClient.gui.save.txtFile:SetWide(290)
 		
 		
-		AdvDupeClient.gui.save.txtDesc = vgui.Create("TextEntry",AdvDupeClient.gui.save.frame,"txtDesc")
+		AdvDupeClient.gui.save.txtDesc = vgui.Create("DTextEntry",AdvDupeClient.gui.save.frame,"txtDesc")
 		AdvDupeClient.gui.save.txtDesc:SetPos(6,85)
-		AdvDupeClient.gui.save.txtDesc:SetSize(290,20)
+		AdvDupeClient.gui.save.txtDesc:SetWide(290)
 		
-		function AdvDupeClient.gui.save.frame:ActionSignal(key,value)
-			if key == "Save" then
-				local filename	= AdvDupeClient.gui.save.txtFile:GetValue()
-				local desc		= AdvDupeClient.gui.save.txtDesc:GetValue()
-				
-				LocalPlayer():ConCommand("adv_duplicator_save \""..filename.."\" \""..desc.."\"")
-				
-				AdvDupeClient.gui.save.frame:SetVisible(false)
-			end
+		function AdvDupeClient.gui.save.btnSave:DoClick()
+			local filename	= AdvDupeClient.gui.save.txtFile:GetValue()
+			local desc		= AdvDupeClient.gui.save.txtDesc:GetValue()
+			
+			LocalPlayer():ConCommand("adv_duplicator_save \""..filename.."\" \""..desc.."\"")
+			
+			AdvDupeClient.gui.save.frame:Close()
 		end
+		
+		function AdvDupeClient.gui.save.txtFile:OnEnter()
+			AdvDupeClient.gui.save.btnSave:DoClick()
+		end
+		
 	end
 	
 	AdvDupeClient.gui.save.txtFile:SetText("")
 	AdvDupeClient.gui.save.txtDesc:SetText("")
 	
+	AdvDupeClient.gui.save.frame:MakePopup()
 	AdvDupeClient.gui.save.frame:SetKeyBoardInputEnabled( true )
 	AdvDupeClient.gui.save.frame:SetMouseInputEnabled( true )
 	AdvDupeClient.gui.save.frame:SetVisible( true )
+	
 end
 concommand.Add( "adv_duplicator_save_gui", AdvDupeClient.SaveGUI )
 
