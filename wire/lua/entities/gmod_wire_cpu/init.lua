@@ -623,7 +623,7 @@ function ENT:InitializeOpcodeTable()
 		self.Result = math.floor(self.Params[1])
 	end
 	self.OpcodeTable[34] = function ()	//RND
-		self.Result = math.round(self.Params[1])
+		self.Result = math.Round(self.Params[1])
 	end
 	self.OpcodeTable[35] = function ()	//FLOOR
 		self.Result = self.Params[1] - math.floor(self.Params[1])
@@ -1174,7 +1174,7 @@ function ENT:Execute( )
 		elseif (self.dRM1 == 24) then self.Disp1     = math.floor(self.EBP)
 		elseif (self.dRM1 == 25) then
 			local addr = self:Read( )
-			if (addr ~= nil) then self.Disp1 = math.floor(addr) end
+			if (addr ~= nil) and (tonumber(addr)) then self.Disp1 = math.floor(addr) end
 		end
 		if (self.dRM1 >= 17) && (self.dRM1 <= 25) then
 			self.Params[1] = self:ReadCell(self.Disp1+self.Segment1)
@@ -1209,7 +1209,7 @@ function ENT:Execute( )
 		elseif (self.dRM2 == 24) then self.Disp2     = math.floor(self.EBP)
 		elseif (self.dRM2 == 25) then
 			local addr = self:Read( )
-			if (addr ~= nil) then self.Disp2 = math.floor(addr) end
+			if (addr ~= nil) and (tonumber(addr)) then self.Disp2 = math.floor(addr) end
 		end
 		if (self.dRM2 >= 17) && (self.dRM2 <= 25) then
 			self.Params[2] = self:ReadCell(self.Disp2+self.Segment2)
