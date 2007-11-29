@@ -44,6 +44,10 @@ function ENT:Draw()
 
 		render.SetMaterial(Material("tripmine_laser"))
 		render.DrawBeam(start, endpos, 6, 0, 10, Color(self.Entity:GetColor()))
+		if(self:GetForceBeam()==true)then
+		  render.SetMaterial(Material("Models/effects/comball_tape"))
+		  render.DrawBeam(start, endpos, 6, 0, 10, Color(255,255,255,255))
+		end
 	end
 end
 

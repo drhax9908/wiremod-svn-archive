@@ -23,6 +23,13 @@ function ENT:GetEffect( name )
 	return self.Entity:GetNetworkedString( "Effect" )
 end
 
+function ENT:SetForceBeam(on)
+    self.Entity:SetNetworkedBool("ForceBeam",on,true)
+end
+
+function ENT:GetForceBeam()
+    return self.Entity:GetNetworkedBool("ForceBeam")
+end
 
 function ENT:SetOn( boolon )
 	self.Entity:SetNetworkedBool( "On", boolon, true )

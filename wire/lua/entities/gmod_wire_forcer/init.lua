@@ -20,6 +20,7 @@ function ENT:Initialize()
 	self.V = 0
 	
 	self.Inputs = Wire_CreateInputs(self.Entity, { "Force", "OffsetForce", "Velocity" })
+	self:SetForceBeam(false)
 end
 
 function ENT:Setup(force, length, showbeam)
@@ -39,6 +40,7 @@ end
 function ENT:TriggerInput(iname, value)
 	if (iname == "Force") then
 		self.F = value
+		self:SetForceBeam(self.F != 0)
 		self:ShowOutput()
 	elseif (iname == "OffsetForce") then
 		self.FoO = value
