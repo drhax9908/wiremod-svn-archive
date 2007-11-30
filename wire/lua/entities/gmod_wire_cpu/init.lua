@@ -195,12 +195,16 @@ end
 
 function ENT:Write( value )
 	if (value) then
+		if (!tonumber(value)) then
+			self.WIP = self.WIP + 1
+		end
 		if (self.UseROM) then
 			if (self.WIP < 65536) then
 				self.ROMMemory[self.WIP] = value
 			end
 		else
-			self:WriteCell(self.WIP,value)
+			self.Memory[self.WIP] = value
+			//self:WriteCell(self.WIP,value)
 		end
 		if (self.Debug) then
 			//Msg("-> ZyeliosASM: Wrote "..value.." at ["..self.WIP.."]\n")
@@ -232,7 +236,7 @@ function ENT:ReadCell( Address )
 	end
 
 	if (Address < 0) then
-		return self.ReadPort(-Address-1)
+		return self:ReadPort(-Address-1)
 	end
 	if (Address < 65536) then
 		return self.Memory[math.floor(Address)]
@@ -277,7 +281,7 @@ function ENT:WriteCell( Address, value )
 		//self.LADD = math.floor(Address)
 		//self:Interrupt(8)
 		//return false
-		return WritePort(-Address-1,value)
+		return self:WritePort(-Address-1,value)
 	end
 	if (Address < 65536) then
 		if (self.Page[math.floor(Address / 128)]) then
