@@ -10,6 +10,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_data_transferer_0", "Primary: Create/Update data transferer" )
     language.Add( "WireDataTransfererTool_data_transferer", "Data Transferer:" )
     language.Add( "WireDataTransfererTool_Range", "Max Range:" )
+    language.Add( "WireDataTransfererTool_DefaultZero","Default To Zero:")
 	language.Add( "sboxlimit_wire_data_transferers", "You've hit data transferers limit!" )
 	language.Add( "undone_Wire Data Transferer", "Undone Wire data transferer" )
 end
@@ -21,6 +22,7 @@ end
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
 TOOL.ClientConVar[ "Range" ] = "25000"
+TOOL.ClientConVar[ "DefaultZero" ] = "0"
 
 cleanup.Register( "wire_data_transferers" )
 
@@ -41,8 +43,9 @@ function TOOL:LeftClick( trace )
 	Ang.pitch = Ang.pitch + 90
 	
 	local range = self:GetClientNumber("Range")
+	local defZero = (self:GetClientNumber("DefaultZero") ~= 0)
 
-	local wire_data_transferer = MakeWireTransferer( ply, trace.HitPos, range, Ang )
+	local wire_data_transferer = MakeWireTransferer( ply, trace.HitPos, range, defZero, Ang )
 
 	local min = wire_data_transferer:OBBMins()
 	wire_data_transferer:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -76,7 +79,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireTransferer( pl, Pos, Range, Ang )
+	function MakeWireTransferer( pl, Pos, Range, DefaultZero, Ang )
 		if ( !pl:CheckLimit( "wire_data_transferers" ) ) then return false end
 	
 		local wire_data_transferer = ents.Create( "gmod_wire_data_transferer" )
@@ -86,12 +89,13 @@ if (SERVER) then
 		wire_data_transferer:SetPos( Pos )
 		wire_data_transferer:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
 		wire_data_transferer:Spawn()
-		wire_data_transferer:Setup(Range)
+		wire_data_transferer:Setup(Range,DefaultZero)
 
 		wire_data_transferer:GetTable():SetPlayer( pl )
 
 		local ttable = {
 		    Range = Range,
+		    DefaultZero = DefaultZero,
 			pl = pl
 		}
 
@@ -102,7 +106,7 @@ if (SERVER) then
 		return wire_data_transferer
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_data_transferer", MakeWireTransferer, "Pos", "Range", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_data_transferer", MakeWireTransferer, "Pos", "Range", "DefaultZero", "Ang", "Vel", "aVel", "frozen")
 
 end
 
@@ -158,5 +162,7 @@ function TOOL.BuildCPanel(panel)
 		Max = "1000000",
 		Command = "wire_data_transferer_Range"
 	})
+	
+	panel:AddControl( "Checkbox", { Label = "#WireDataTransfererTool_DefaultZero", Command = "wire_data_transferer_DefaultZero" } )
 end
 

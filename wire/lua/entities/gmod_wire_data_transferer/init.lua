@@ -16,6 +16,9 @@ function ENT:Initialize()
 	self.Inputs = Wire_CreateInputs(self.Entity, {"Send","A","B","C","D","E","F","G","H"})
 	self.Outputs = Wire_CreateOutputs(self.Entity, {"A","B","C","D","E","F","G","H"})
 	self.Sending = false
+	self.Activated = false
+	self.ActivateTime = 0
+	self.DefaultZero = true
 	self.Values = {};
 	self.Values["A"] = 0
 	self.Values["B"] = 0
@@ -30,7 +33,8 @@ function ENT:Initialize()
 	self:ShowOutput()
 end
 
-function ENT:Setup(Range)
+function ENT:Setup(Range,DefaultZero)
+    self.DefaultZero = DefaultZero
     self:SetBeamRange(Range)
 end
 
@@ -65,6 +69,22 @@ function ENT:TriggerInput(iname, value)
 end
 
 function ENT:Think()
+    if(self.Activated == false && self.DefaultZero)then
+        Wire_TriggerOutput(self.Entity,"A",0)
+        Wire_TriggerOutput(self.Entity,"B",0)
+        Wire_TriggerOutput(self.Entity,"C",0)
+        Wire_TriggerOutput(self.Entity,"D",0)
+        Wire_TriggerOutput(self.Entity,"E",0)
+        Wire_TriggerOutput(self.Entity,"F",0)
+        Wire_TriggerOutput(self.Entity,"G",0)
+        Wire_TriggerOutput(self.Entity,"H",0)
+    else
+        if(CurTime() > self.ActivateTime + 0.5)then
+            self.Activated = false
+        end
+    end
+
+
 	local vStart = self.Entity:GetPos()
 	local vForward = self.Entity:GetUp()
 	
@@ -91,23 +111,23 @@ function ENT:Think()
     end
     
     if(trace.Entity:GetClass() == "gmod_wire_data_transferer")then
-    Wire_TriggerOutput(ent,"A",self.Values.A)
-    Wire_TriggerOutput(ent,"B",self.Values.B)
-    Wire_TriggerOutput(ent,"C",self.Values.C)
-    Wire_TriggerOutput(ent,"D",self.Values.D)
-    Wire_TriggerOutput(ent,"E",self.Values.E)
-    Wire_TriggerOutput(ent,"F",self.Values.F)
-    Wire_TriggerOutput(ent,"G",self.Values.G)
-    Wire_TriggerOutput(ent,"H",self.Values.H)
+        ent:RecieveValue("A",self.Values.A)
+        ent:RecieveValue("B",self.Values.B)
+        ent:RecieveValue("C",self.Values.C)
+        ent:RecieveValue("D",self.Values.D)
+        ent:RecieveValue("E",self.Values.E)
+        ent:RecieveValue("F",self.Values.F)
+        ent:RecieveValue("G",self.Values.G)
+        ent:RecieveValue("H",self.Values.H)
     elseif(trace.Entity:GetClass() == "gmod_wire_data_satellitedish")then
-        Wire_TriggerOutput(ent.Transmitter,"A",self.Values.A)
-        Wire_TriggerOutput(ent.Transmitter,"B",self.Values.B)
-        Wire_TriggerOutput(ent.Transmitter,"C",self.Values.C)
-        Wire_TriggerOutput(ent.Transmitter,"D",self.Values.D)
-        Wire_TriggerOutput(ent.Transmitter,"E",self.Values.E)
-        Wire_TriggerOutput(ent.Transmitter,"F",self.Values.F)
-        Wire_TriggerOutput(ent.Transmitter,"G",self.Values.G)
-        Wire_TriggerOutput(ent.Transmitter,"H",self.Values.H)
+        ent.Transmitter:RecieveValue("A",self.Values.A)
+        ent.Transmitter:RecieveValue("B",self.Values.B)
+        ent.Transmitter:RecieveValue("C",self.Values.C)
+        ent.Transmitter:RecieveValue("D",self.Values.D)
+        ent.Transmitter:RecieveValue("E",self.Values.E)
+        ent.Transmitter:RecieveValue("F",self.Values.F)
+        ent.Transmitter:RecieveValue("G",self.Values.G)
+        ent.Transmitter:RecieveValue("H",self.Values.H)
     elseif(trace.Entity:GetClass() == "gmod_wire_data_store")then
         Wire_TriggerOutput(self.Entity,"A",ent.Values.A)
         Wire_TriggerOutput(self.Entity,"B",ent.Values.B)
@@ -139,3 +159,8 @@ function ENT:OnRestore()
     Wire_Restored(self.Entity)
 end
 
+function ENT:RecieveValue(output,value)
+    self.Activated = true
+    self.ActivateTime = CurTime()
+    Wire_TriggerOutput(self.Entity,output,value)
+end
