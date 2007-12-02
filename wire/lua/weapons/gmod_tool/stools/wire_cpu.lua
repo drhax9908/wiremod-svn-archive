@@ -164,6 +164,8 @@ function TOOL:Compile_Pass2()
 	self:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 2\n")
 	self:GetOwner():ConCommand("wire_cpu_editor_addlog \"".."ZyeliosASM: Pass 2".."\"")
 
+ 	cpu_ent.WIP = 0
+
 	//Compile each line
 //	local Reps = math.floor(table.Count(SourceCode)/self:GetOwner():GetInfo("wire_cpu_compile_bandwidth"))+1
 	self.Compiling = true
@@ -399,6 +401,7 @@ if (CLIENT) then
 		StatusLabel:PostMessage("SetText", "text", args[1]);
 	end
 	concommand.Add( "wire_cpu_vgui_status", VGUI_Status )
+	concommand.Add( ";wire_cpu_vgui_status", VGUI_Status )
 
 	local function VGUI_Progress( pl, command, args )
 		if (args[1]) then
@@ -407,6 +410,7 @@ if (CLIENT) then
 		end
 	end
 	concommand.Add( "wire_cpu_vgui_progress", VGUI_Progress )
+	concommand.Add( ";wire_cpu_vgui_progress", VGUI_Progress )
 end
 
 //if (CLIENT) then
@@ -686,6 +690,7 @@ if (CLIENT) then
 		end
 	end
 	concommand.Add( "wire_cpu_editor_addlog", Editor_AddLog )
+	concommand.Add( ";wire_cpu_editor_addlog", Editor_AddLog )
 
 	local function Editor_ClearLog( pl, command, args )
 		if (frmMain_EditorLog) then
