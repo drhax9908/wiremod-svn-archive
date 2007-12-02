@@ -813,10 +813,11 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 					end				
 				else
 					local lastsymbol = string.sub(opcode,-1,-1)
+					local labelname = string.sub(opcode,1,string.len(opcode)-1)
 					if (lastsymbol == ":") then
-						if (not self.Labels[opcode]) then
-							self.Labels[opcode] = self.WIP
-							//-self:Error(pl,"ZyeliosASM: Added label "..opcode.."["..self.WIP.."]\n")
+						if (not self.Labels[labelname]) then
+							self.Labels[labelname] = self.WIP
+							//self:Error(pl,"ZyeliosASM: Added label "..opcode.."["..self.WIP.."]\n")
 						else
 							if (firstpass) then
 								self:Error(pl,"ZyeliosASM: Error (E200) at line "..linenumber..": Label "..opcode.." already exists\n")

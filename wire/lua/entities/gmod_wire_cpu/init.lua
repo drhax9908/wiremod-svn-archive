@@ -196,7 +196,9 @@ end
 function ENT:Write( value )
 	if (value) then
 		if (!tonumber(value)) then
+			self.Memory[self.WIP] = 0
 			self.WIP = self.WIP + 1
+			return
 		end
 		if (self.UseROM) then
 			if (self.WIP < 65536) then
@@ -1093,10 +1095,6 @@ function ENT:Execute( )
 	self.Params = {0, 0}
 	self.Result = 0
 
-	if (self.Debug) then
-		Msg("OPCODE="..opcode.." RM="..rm.." ");
-	end
-
 	if (self.Opcode) then
 		self.ILTC = self.Opcode
 	else
@@ -1109,6 +1107,10 @@ function ENT:Execute( )
 	if (self.Opcode == nil) || (self.RM == nil) then
 		self.INTR = false
 		return
+	end
+
+	if (self.Debug) then
+		Msg("OPCODE="..self.Opcode.." RM="..self.RM.." ");
 	end
 
 	self.Opcode = self.Opcode + 1 - 1 //Dont laugh, it helps
