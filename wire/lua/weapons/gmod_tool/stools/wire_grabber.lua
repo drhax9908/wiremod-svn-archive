@@ -55,7 +55,11 @@ function TOOL:LeftClick( trace )
 	local wire_grabber = MakeWireGrabber( ply, trace.HitPos, range, gravity, model, Ang )
 
 	local min = wire_grabber:OBBMins()
-	wire_grabber:SetPos( trace.HitPos - trace.HitNormal * min.z )
+	if(model == "models/jaanus/wiretool/wiretool_grabber_forcer.mdl")then
+	   wire_grabber:SetPos( trace.HitPos - trace.HitNormal * (min.z + 20) )
+	else
+	   wire_grabber:SetPos( trace.HitPos - trace.HitNormal * min.z )
+	end
 
 	/*local const, nocollide
 

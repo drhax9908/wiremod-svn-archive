@@ -51,7 +51,11 @@ function TOOL:LeftClick( trace )
 	local wire_forcer = MakeWireForcer( ply, trace.HitPos, Ang, self:GetClientNumber( "multiplier" ), self:GetClientNumber( "length" ), showbeam, model )
 
 	local min = wire_forcer:OBBMins()
-	wire_forcer:SetPos( trace.HitPos - trace.HitNormal * min.z )
+	if(model == "models/jaanus/wiretool/wiretool_grabber_forcer.mdl")then
+	   wire_forcer:SetPos( trace.HitPos - trace.HitNormal * (min.z + 20) )
+	else
+	   wire_forcer:SetPos( trace.HitPos - trace.HitNormal * min.z )
+	end
 
 	/*local const, nocollide
 
