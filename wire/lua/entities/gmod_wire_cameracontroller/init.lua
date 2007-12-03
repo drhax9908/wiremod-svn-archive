@@ -14,7 +14,7 @@ function ENT:Initialize()
 	self.Outputs = Wire_CreateOutputs(self.Entity, {"On"})
     self.Active = false
     self.CamEnt = nil
-    self.CamPlayer = self:GetOwner()
+    self.CamPlayer = nil
     
     local cam = ents.Create("gmod_wire_cam")
     if (!cam:IsValid()) then return false end
@@ -26,6 +26,12 @@ function ENT:Initialize()
 	cam:Spawn()
 	
 	self.CamEnt = cam
+end
+
+function ENT:Setup(Player)
+    if(Player && Player:IsValid() && Player:IsPlayer())then
+        self.CamPlayer = Player
+    end
 end
 
 function ENT:OnRemove()

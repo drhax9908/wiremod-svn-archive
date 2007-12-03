@@ -13,6 +13,7 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
+	self.Inputs = Wire_CreateInputs(self.Entity,{"Reset"})
 	self.Outputs = Wire_CreateOutputs(self.Entity,{"Out"})
 end
 
@@ -26,6 +27,16 @@ function ENT:Setup(key_more,key_less,toggle,value_min,value_max,value_start,spee
 	self.Speed = speed
 	self:ShowOutput(self.Value)
 	Wire_TriggerOutput(self.Entity,"Out",self.Value)
+end
+
+function ENT:TriggerInput(iname, value)
+    if(iname == "Reset")then
+        if(value != 0)then
+            self.Value = 0
+            self:ShowOutput(self.Value)
+	        Wire_TriggerOutput(self.Entity,"Out",self.Value)
+	    end
+	end
 end
 
 function ENT:InputActivate(mul)
