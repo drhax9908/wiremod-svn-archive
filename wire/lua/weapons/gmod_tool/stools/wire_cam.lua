@@ -82,6 +82,7 @@ if (SERVER) then
 		wire_cam:SetPos( Pos )
 		wire_cam:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
 		wire_cam:Spawn()
+		wire_cam:Setup(pl)
 
 		wire_cam:GetTable():SetPlayer( pl )
 
