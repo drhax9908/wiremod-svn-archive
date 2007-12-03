@@ -19,7 +19,7 @@ end
 
 
 
-function ModelPlug_AddToCPanel(panel, category, toolname, label, type, textbox_label)
+function ModelPlug_AddToCPanel(panel, category, toolname, label, type, textbox_label, height)
 	
 	local list = list.Get( "Wire_"..category.."_Models" )
 	
@@ -28,7 +28,8 @@ function ModelPlug_AddToCPanel(panel, category, toolname, label, type, textbox_l
 		panel:AddControl( "PropSelect", { Label = "#WireThrusterTool_Model",
 			ConVar = toolname .. "_model",
 			Category = "",
-			Models = list
+			Models = list,
+			Height = height or 2
 		})
 		
 	end
