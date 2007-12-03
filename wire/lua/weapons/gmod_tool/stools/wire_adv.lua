@@ -172,7 +172,7 @@ if CLIENT then hook.Add("PlayerBindPress","wire_wire_adv",function(pl,bind,press
 		
 		local tr = utilx.GetPlayerTrace(LocalPlayer(), LocalPlayer():GetCursorAimVector())
 		local trace = util.TraceLine(tr)
-		local override = self:GetClientInfo("scrollwithoutmod") == "1" and trace.Entity:IsValid() and (trace.Entity:GetClass() == self.InputEntClass or trace.Entity:GetClass() == self.OutputEntClass)
+		local override = self:GetClientInfo("scrollwithoutmod") == "1" and trace.Entity and trace.Entity:IsValid() and (trace.Entity:GetClass() == self.InputEntClass or trace.Entity:GetClass() == self.OutputEntClass)
 		
 		if string.find(bind,"+menu_context") then
 			self.keyMOD = pressed

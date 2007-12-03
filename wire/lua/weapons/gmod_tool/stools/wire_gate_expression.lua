@@ -745,15 +745,12 @@ if CLIENT then
 			})
 		end
 	end
-
-
-	local player = LocalPlayer()
 	
 	wire_gate_expression_state =      0
-	wire_gate_expression_filename =   player:GetInfo('wire_gate_expression_filename')
-	wire_gate_expression_label =      player:GetInfo('wire_gate_expression_label')
-	wire_gate_expression_inputs =     player:GetInfo('wire_gate_expression_inputs')
-	wire_gate_expression_outputs =    player:GetInfo('wire_gate_expression_outputs')
+	wire_gate_expression_filename =   GetConVarString('wire_gate_expression_filename')
+	wire_gate_expression_label =      GetConVarString('wire_gate_expression_label')
+	wire_gate_expression_inputs =     GetConVarString('wire_gate_expression_inputs')
+	wire_gate_expression_outputs =    GetConVarString('wire_gate_expression_outputs')
 	wire_gate_expression_basefolder = "ExpressionGate"
 	wire_gate_expression_folder =     ""
 	wire_gate_expression_status =     "Previous expression resumed"

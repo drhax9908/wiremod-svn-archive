@@ -641,8 +641,8 @@ if (CLIENT) then
 			function frmMain_OpenButton:DoClick()
 				LocalPlayer():ConCommand('wire_cpu_filename "'..frmMain_EditorFileName:GetValue()..'"')
 
-				local fname = "CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename")
-				if (!file.Exists(fname)) then fname = "CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename")..".txt" end
+				local fname = "CPUChip\\"..GetConVarString("wire_cpu_filename")
+				if (!file.Exists(fname)) then fname = "CPUChip\\"..GetConVarString("wire_cpu_filename")..".txt" end
 				if (!file.Exists(fname)) then return end
 
 				filedata = file.Read(fname)
@@ -658,12 +658,12 @@ if (CLIENT) then
 
 //				Msg(frmMain_Editor:GetValue())
 //				SrcCode = string.Explode(frmMain_Editor:GetValue())
-				file.Write("CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename"),frmMain_Editor:GetValue())
+				file.Write("CPUChip\\"..GetConVarString("wire_cpu_filename"),frmMain_Editor:GetValue())
 			end
 	
 //			function frmMain_UploadButton:DoClick()
 //				SrcCode = string.Explode(frmMain_Editor:GetValue())
-//				file.Write("CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename"),frmMain_Editor:GetValue())
+//				file.Write("CPUChip\\"..GetConVarString("wire_cpu_filename"),frmMain_Editor:GetValue())
 //	
 //				LocalPlayer():ConCommand("wire_cpu_load")
 //			end
@@ -673,7 +673,7 @@ if (CLIENT) then
 
 				LocalPlayer():ConCommand('wire_cpu_filename "'..frmMain_EditorFileName:GetValue()..'"')
 
-				file.Write("CPUChip\\"..LocalPlayer():GetInfo("wire_cpu_filename"),frmMain_Editor:GetValue())
+				file.Write("CPUChip\\"..GetConVarString("wire_cpu_filename"),frmMain_Editor:GetValue())
 				LocalPlayer():ConCommand("wire_cpu_loadcompile")
 			end
 		else
