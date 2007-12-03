@@ -11,6 +11,7 @@ if ( CLIENT ) then
     language.Add( "WireColorerTool_colorer", "Colorer:" )
     language.Add( "WireColorerTool_outColor", "Output Color:" )
     language.Add( "WireColorerTool_Range", "Max Range:" )
+    language.Add( "WireColorerTool_Model", "Choose a Model:")
 	language.Add( "sboxlimit_wire_colorers", "You've hit Colorers limit!" )
 	language.Add( "undone_Wire Colorer", "Undone Wire Colorer" )
 end
@@ -20,9 +21,13 @@ if (SERVER) then
 end
 
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
+TOOL.ClientConVar[ "Model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
 TOOL.ClientConVar[ "outColor" ] = "0"
 TOOL.ClientConVar[ "Range" ] = "2000"
+
+local colormodels = {
+    ["models/jaanus/wiretool/wiretool_siren.mdl"] = {},
+    ["models/jaanus/wiretool/wiretool_beamcaster.mdl"] = {}};
 
 cleanup.Register( "wire_colorers" )
 
@@ -44,8 +49,9 @@ function TOOL:LeftClick( trace )
 	
     local outColor = (self:GetClientNumber( "outColor" ) ~= 0)
     local range = self:GetClientNumber("Range")
+    local model = self:GetClientInfo("Model")
 
-	local wire_colorer = MakeWireColorer( ply, trace.HitPos, outColor, range, Ang )
+	local wire_colorer = MakeWireColorer( ply, trace.HitPos, outColor, range, model, Ang )
 
 	local min = wire_colorer:OBBMins()
 	wire_colorer:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -79,7 +85,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireColorer( pl, Pos, outColor, Range, Ang )
+	function MakeWireColorer( pl, Pos, outColor, Range, Model, Ang )
 		if ( !pl:CheckLimit( "wire_colorers" ) ) then return false end
 	
 		local wire_colorer = ents.Create( "gmod_wire_colorer" )
@@ -87,7 +93,7 @@ if (SERVER) then
 
 		wire_colorer:SetAngles( Ang )
 		wire_colorer:SetPos( Pos )
-		wire_colorer:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
+		wire_colorer:SetModel( Model )
 		wire_colorer:Spawn()
 		wire_colorer:Setup(outColor,Range)
 
@@ -106,7 +112,7 @@ if (SERVER) then
 		return wire_colorer
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_colorer", MakeWireColorer, "Pos", "outColor", "Range", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_colorer", MakeWireColorer, "Pos", "outColor", "Range", "Model", "Ang", "Vel", "aVel", "frozen")
 
 end
 
@@ -132,8 +138,8 @@ function TOOL:UpdateGhostWireColorer( ent, player )
 end
 
 function TOOL:Think()
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo("Model") ) then
+		self:MakeGhostEntity( self:GetClientInfo("Model"), Vector(0,0,0), Angle(0,0,0) )
 	end
 
 	self:UpdateGhostWireColorer( self.GhostEntity, self:GetOwner() )
@@ -156,6 +162,11 @@ function TOOL.BuildCPanel(panel)
 		  [0] = "wire_colorer_outColor"
 		}
 	})
+	
+	panel:AddControl( "PropSelect", { Label = "#WireColorerTool_Model",
+									 ConVar = "wire_colorer_Model",
+									 Category = "Wire Colorers",
+									 Models = colormodels } )
 	
 	panel:AddControl("CheckBox", {
 		Label = "#WireColorerTool_outColor",

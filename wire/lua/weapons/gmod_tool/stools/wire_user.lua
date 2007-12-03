@@ -10,6 +10,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_user_0", "Primary: Create/Update User" )
     language.Add( "WireUserTool_user", "User:" )
     language.Add( "WireUserTool_Range", "Max Range:" )
+    language.Add( "WireUserTool_Model", "Choose a Model:")
 	language.Add( "sboxlimit_wire_users", "You've hit Users limit!" )
 	language.Add( "undone_Wire User", "Undone Wire User" )
 end
@@ -19,7 +20,11 @@ if (SERVER) then
 end
 
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
+local usermodels = {
+    ["models/jaanus/wiretool/wiretool_siren.mdl"] = {},
+    ["models/jaanus/wiretool/wiretool_beamcaster.mdl"] = {}};
+    
+TOOL.ClientConVar[ "Model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
 TOOL.ClientConVar[ "Range" ] = "200"
 
 cleanup.Register( "wire_users" )
@@ -41,8 +46,9 @@ function TOOL:LeftClick( trace )
 	Ang.pitch = Ang.pitch + 90
 	
     local range = self:GetClientNumber("Range")
+    local model = self:GetClientInfo("Model")
 
-	local wire_user = MakeWireUser( ply, trace.HitPos, range, Ang )
+	local wire_user = MakeWireUser( ply, trace.HitPos, range, model, Ang )
 
 	local min = wire_user:OBBMins()
 	wire_user:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -76,7 +82,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireUser( pl, Pos, Range, Ang )
+	function MakeWireUser( pl, Pos, Range, model, Ang )
 		if ( !pl:CheckLimit( "wire_users" ) ) then return false end
 	
 		local wire_user = ents.Create( "gmod_wire_user" )
@@ -84,7 +90,7 @@ if (SERVER) then
 
 		wire_user:SetAngles( Ang )
 		wire_user:SetPos( Pos )
-		wire_user:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
+		wire_user:SetModel( Model(model) )
 		wire_user:Spawn()
 		wire_user:Setup(Range)
 
@@ -103,7 +109,7 @@ if (SERVER) then
 		return wire_user
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_user", MakeWireUser, "Pos", "Range", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_user", MakeWireUser, "Pos", "Range", "model", "Ang", "Vel", "aVel", "frozen")
 
 end
 
@@ -129,8 +135,8 @@ function TOOL:UpdateGhostWireUser( ent, player )
 end
 
 function TOOL:Think()
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo("Model") ) then
+		self:MakeGhostEntity( self:GetClientInfo("Model"), Vector(0,0,0), Angle(0,0,0) )
 	end
 
 	self:UpdateGhostWireUser( self.GhostEntity, self:GetOwner() )
@@ -151,6 +157,13 @@ function TOOL.BuildCPanel(panel)
 		CVars = {
 		}
 	})
+	
+	panel:AddControl( "PropSelect", { Label = "#WireUserTool_Model",
+									 ConVar = "wire_user_Model",
+									 Category = "Wire Users",
+									 Models = usermodels } )
+									 
+	panel:AddControl()
 	panel:AddControl("Slider", {
 		Label = "#WireUserTool_Range",
 		Type = "Float",

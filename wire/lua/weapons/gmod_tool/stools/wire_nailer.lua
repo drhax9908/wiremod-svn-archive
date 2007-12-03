@@ -9,6 +9,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_nailer_desc", "Spawns a constant nailer prop for use with the wire system." )
     language.Add( "Tool_wire_nailer_0", "Primary: Create/Update Nailer" )
     language.Add( "WireNailerTool_nailer", "Nailer:" )
+    language.Add( "WireNailerTool_Model", "Choose a Model:")
 	language.Add( "sboxlimit_wire_nailers", "You've hit nailers limit!" )
 	language.Add( "undone_wirenailer", "Undone Wire Nailer" )
 end
@@ -18,8 +19,11 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "forcelim" ] = "0"
+TOOL.ClientConVar[ "Model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
+local nailermodels = {
+    ["models/jaanus/wiretool/wiretool_beamcaster.mdl"] = {},
+    ["models/jaanus/wiretool/wiretool_siren.mdl"] = {}};
 
 cleanup.Register( "wire_nailers" )
 
@@ -38,8 +42,10 @@ function TOOL:LeftClick( trace )
 
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
+	
+	local model = self:GetClientInfo("Model")
 
-	local wire_nailer = MakeWireNailer( ply, trace.HitPos, Ang, self:GetClientNumber( "forcelim" ) )
+	local wire_nailer = MakeWireNailer( ply, trace.HitPos, Ang, self:GetClientNumber( "forcelim" ), model )
 
 	local min = wire_nailer:OBBMins()
 	wire_nailer:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -73,7 +79,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireNailer( pl, Pos, Ang, flim )
+	function MakeWireNailer( pl, Pos, Ang, flim, Model )
 		if ( !pl:CheckLimit( "wire_nailers" ) ) then return false end
 	
 		local wire_nailer = ents.Create( "gmod_wire_nailer" )
@@ -81,7 +87,7 @@ if (SERVER) then
 
 		wire_nailer:SetAngles( Ang )
 		wire_nailer:SetPos( Pos )
-		wire_nailer:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
+		wire_nailer:SetModel( Model )
 		wire_nailer:Spawn()
 
 		wire_nailer:GetTable():Setup( flim )
@@ -99,7 +105,7 @@ if (SERVER) then
 		return wire_nailer
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_nailer", MakeWireNailer, "Pos", "Ang", "Flim", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_nailer", MakeWireNailer, "Pos", "Ang", "Flim", "Model", "Vel", "aVel", "frozen")
 
 end
 
@@ -125,8 +131,8 @@ function TOOL:UpdateGhostWireNailer( ent, player )
 end
 
 function TOOL:Think()
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo("Model")  ) then
+		self:MakeGhostEntity( self:GetClientInfo("Model") , Vector(0,0,0), Angle(0,0,0) )
 	end
 
 	self:UpdateGhostWireNailer( self.GhostEntity, self:GetOwner() )
@@ -148,6 +154,12 @@ function TOOL.BuildCPanel(panel)
 		CVars = {
 		}
 	})
+	
+	panel:AddControl( "PropSelect", { Label = "#WireNailerTool_Model",
+									 ConVar = "wire_nailer_Model",
+									 Category = "Wire Nailer",
+									 Models = nailermodels } )
+	
 	panel:AddControl("Slider", {
 		Label = "Force Limit",
 		Type = "Float",

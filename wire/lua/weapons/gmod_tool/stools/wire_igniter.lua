@@ -11,6 +11,7 @@ if ( CLIENT ) then
     language.Add( "WireIgniterTool_igniter", "Igniter:" )
     language.Add( "WireIgniterTool_trgply", "Allow Player Igniting:" )
     language.Add( "WireIgniterTool_Range", "Max Range:" )
+    language.Add( "WireIgniterTool_Model", "Choose a Model:")
 	language.Add( "sboxlimit_wire_igniters", "You've hit igniters limit!" )
 	language.Add( "undone_Wire Igniter", "Undone Wire Igniter" )
 end
@@ -23,8 +24,11 @@ end
 
 TOOL.ClientConVar[ "trgply" ] = "0"
 TOOL.ClientConVar[ "Range" ] = 2048
+TOOL.ClientConVar[ "Model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
+local ignitermodels = {
+    ["models/jaanus/wiretool/wiretool_beamcaster.mdl"] = {},
+    ["models/jaanus/wiretool/wiretool_siren.mdl"] = {}};
 
 cleanup.Register( "wire_igniters" )
 
@@ -46,8 +50,9 @@ function TOOL:LeftClick( trace )
 	
 	local targetPlayers	= (self:GetClientNumber( "trgply" ) ~= 0)
 	local Range = self:GetClientNumber("Range")
+	local model = self:GetClientInfo("Model")
 
-	local wire_igniter = MakeWireIgniter( ply, trace.HitPos, targetPlayers, Range, Ang )
+	local wire_igniter = MakeWireIgniter( ply, trace.HitPos, targetPlayers, Range, model, Ang )
 
 	local min = wire_igniter:OBBMins()
 	wire_igniter:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -81,7 +86,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireIgniter( pl, Pos, trgply, Range, Ang )
+	function MakeWireIgniter( pl, Pos, trgply, Range, Model, Ang )
 		if ( !pl:CheckLimit( "wire_igniters" ) ) then return false end
 	
 		local wire_igniter = ents.Create( "gmod_wire_igniter" )
@@ -89,7 +94,7 @@ if (SERVER) then
 
 		wire_igniter:SetAngles( Ang )
 		wire_igniter:SetPos( Pos )
-		wire_igniter:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
+		wire_igniter:SetModel( Model )
 		wire_igniter:Spawn()
 		wire_igniter:Setup(trgply,Range)
 
@@ -108,7 +113,7 @@ if (SERVER) then
 		return wire_igniter
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_igniter", MakeWireIgniter, "Pos", "TargetPlayers", "Range", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_igniter", MakeWireIgniter, "Pos", "TargetPlayers", "Range", "Model", "Ang", "Vel", "aVel", "frozen")
 
 end
 
@@ -134,8 +139,8 @@ function TOOL:UpdateGhostWireIgniter( ent, player )
 end
 
 function TOOL:Think()
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo("Model") ) then
+		self:MakeGhostEntity( self:GetClientInfo("Model"), Vector(0,0,0), Angle(0,0,0) )
 	end
 
 	self:UpdateGhostWireIgniter( self.GhostEntity, self:GetOwner() )
@@ -157,6 +162,12 @@ function TOOL.BuildCPanel(panel)
 		CVars = {
 		}
 	})
+	
+	panel:AddControl( "PropSelect", { Label = "#WireIgniterTool_Model",
+									 ConVar = "wire_igniter_Model",
+									 Category = "Wire Igniter",
+									 Models = ignitermodels } )
+	
 	panel:AddControl("CheckBox", {
 		Label = "#WireIgniterTool_trgply",
 		Command = "wire_igniter_trgply"
