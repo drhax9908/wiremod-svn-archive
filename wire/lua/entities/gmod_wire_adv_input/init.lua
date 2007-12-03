@@ -24,16 +24,17 @@ function ENT:Setup(key_more,key_less,toggle,value_min,value_max,value_start,spee
 	self.ValueMin = value_min
 	self.ValueMax = value_max	
 	self.Value = value_start
+	self.Value_Start = value_start
 	self.Speed = speed
-	self:ShowOutput(self.Value)
+	self:ShowOutput()
 	Wire_TriggerOutput(self.Entity,"Out",self.Value)
 end
 
 function ENT:TriggerInput(iname, value)
     if(iname == "Reset")then
         if(value != 0)then
-            self.Value = 0
-            self:ShowOutput(self.Value)
+            self.Value = self.Value_Start
+            self:ShowOutput()
 	        Wire_TriggerOutput(self.Entity,"Out",self.Value)
 	    end
 	end
@@ -55,10 +56,8 @@ function ENT:Switch( on, mul )
 	if (!self.Entity:IsValid()) then return false end
 	self.On = on
 	if(on) then
-		self:ShowOutput(self.Value)
 		self.dir = mul
 	else
-		self:ShowOutput(self.Value)
 		self.dir = 0
 	end
 	return true
@@ -75,15 +74,15 @@ function ENT:Think()
 		elseif (self.Value > self.ValueMax) then
 			self.Value = self.ValueMax
 		end
-		self:ShowOutput(self.Value)
+		self:ShowOutput()
 		Wire_TriggerOutput(self.Entity,"Out",self.Value)
 		self.Entity:NextThink(CurTime()+0.02)
 		return true
 	end
 end
 
-function ENT:ShowOutput(value)
-	self:SetOverlayText("(" .. self.ValueMin .. " - " .. self.ValueMax .. ") = " .. value)
+function ENT:ShowOutput()
+	self:SetOverlayText("(" .. self.ValueMin .. " - " .. self.ValueMax .. ") = " .. self.Value)
 end
 
 local function On( pl, ent, mul )
