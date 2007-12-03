@@ -9,6 +9,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_forcer_desc", "Spawns a forcer prop for use with the wire system." )
     language.Add( "Tool_wire_forcer_0", "Primary: Create/Update Forcer" )
     language.Add( "WireForcerTool_forcer", "Forcer:" )
+    language.Add( "WireForcerTool_Model", "Choose a Model:")
 	language.Add( "sboxlimit_wire_forcers", "You've hit forcers limit!" )
 	language.Add( "undone_wireforcer", "Undone Wire Forcer" )
 end
@@ -20,8 +21,11 @@ end
 TOOL.ClientConVar[ "multiplier" ] = "1"
 TOOL.ClientConVar[ "length" ] = "100"
 TOOL.ClientConVar[ "beam" ] = "1"
+TOOL.ClientConVar[ "Model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
+local forcermodels = {
+    ["models/jaanus/wiretool/wiretool_grabber_forcer.mdl"] = {},
+    ["models/jaanus/wiretool/wiretool_siren.mdl"] = {}};
 
 cleanup.Register( "wire_forcers" )
 
@@ -42,8 +46,9 @@ function TOOL:LeftClick( trace )
 	Ang.pitch = Ang.pitch + 90
 	
 	local showbeam = self:GetClientNumber( "beam" ) == 1
+	local model = self:GetClientInfo("Model")
 	
-	local wire_forcer = MakeWireForcer( ply, trace.HitPos, Ang, self:GetClientNumber( "multiplier" ), self:GetClientNumber( "length" ), showbeam )
+	local wire_forcer = MakeWireForcer( ply, trace.HitPos, Ang, self:GetClientNumber( "multiplier" ), self:GetClientNumber( "length" ), showbeam, model )
 
 	local min = wire_forcer:OBBMins()
 	wire_forcer:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -77,7 +82,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireForcer( pl, Pos, Ang, Force, Length, showbeam )
+	function MakeWireForcer( pl, Pos, Ang, Force, Length, showbeam,Model )
 		if ( !pl:CheckLimit( "wire_forcers" ) ) then return false end
 	
 		local wire_forcer = ents.Create( "gmod_wire_forcer" )
@@ -85,7 +90,7 @@ if (SERVER) then
 
 		wire_forcer:SetAngles( Ang )
 		wire_forcer:SetPos( Pos )
-		wire_forcer:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
+		wire_forcer:SetModel( Model )
 		wire_forcer:Spawn()
 
 		wire_forcer:GetTable():Setup(Force, Length, showbeam)
@@ -105,7 +110,7 @@ if (SERVER) then
 		return wire_forcer
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_forcer", MakeWireForcer, "Pos", "Ang", "Force", "Length", "showbeam", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_forcer", MakeWireForcer, "Pos", "Ang", "Force", "Length", "showbeam", "Model", "Vel", "aVel", "frozen")
 	
 end
 
@@ -131,8 +136,8 @@ function TOOL:UpdateGhostWireForcer( ent, player )
 end
 
 function TOOL:Think()
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo("Model") ) then
+		self:MakeGhostEntity( self:GetClientInfo("Model"), Vector(0,0,0), Angle(0,0,0) )
 	end
 
 	self:UpdateGhostWireForcer( self.GhostEntity, self:GetOwner() )
@@ -154,6 +159,12 @@ function TOOL.BuildCPanel(panel)
 		CVars = {
 		}
 	})
+	
+	panel:AddControl( "PropSelect", { Label = "#WireForcerTool_Model",
+									 ConVar = "wire_forcer_Model",
+									 Category = "Wire Forcer",
+									 Models = forcermodels } )
+	
 	panel:AddControl("Slider", {
 		Label = "Force multiplier",
 		Type = "Float",

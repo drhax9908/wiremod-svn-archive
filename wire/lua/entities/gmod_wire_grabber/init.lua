@@ -6,10 +6,8 @@ include('shared.lua')
 
 ENT.WireDebugName = "Grabber"
 
-local MODEL = Model("models/jaanus/wiretool/wiretool_range.mdl")
 
 function ENT:Initialize()
-	self.Entity:SetModel( MODEL )
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
@@ -21,7 +19,7 @@ function ENT:Initialize()
 	self.ExtraProp = nil
 	self.ExtraPropWeld = nil
 	self.Gravity = true
-	self.Entity:GetPhysicsObject():SetMass(200)
+	self.Entity:GetPhysicsObject():SetMass(10)
 	
 	self:SetBeamRange(100)
 	
@@ -53,7 +51,9 @@ function ENT:ResetGrab()
         --Msg("-Weld1\n")
         if(self.WeldEntity)then
             if(self.WeldEntity:IsValid())then
-                self.WeldEntity:GetPhysicsObject():EnableGravity(true)
+                if(self.Gravity)then
+                    self.WeldEntity:GetPhysicsObject():EnableGravity(true)
+                end
             end
         end
     end

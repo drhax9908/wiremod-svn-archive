@@ -11,6 +11,7 @@ if ( CLIENT ) then
     language.Add( "WireDataTransfererTool_data_transferer", "Data Transferer:" )
     language.Add( "WireDataTransfererTool_Range", "Max Range:" )
     language.Add( "WireDataTransfererTool_DefaultZero","Default To Zero:")
+    language.Add( "WireDataTransfererTool_Model", "Choose a Model:")
 	language.Add( "sboxlimit_wire_data_transferers", "You've hit data transferers limit!" )
 	language.Add( "undone_Wire Data Transferer", "Undone Wire data transferer" )
 end
@@ -20,9 +21,13 @@ if (SERVER) then
 end
 
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
+TOOL.ClientConVar[ "Model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
 TOOL.ClientConVar[ "Range" ] = "25000"
 TOOL.ClientConVar[ "DefaultZero" ] = "0"
+
+local transmodels = {
+    ["models/jaanus/wiretool/wiretool_siren.mdl"] = {},
+    ["models/jaanus/wiretool/wiretool_beamcaster.mdl"] = {}};
 
 cleanup.Register( "wire_data_transferers" )
 
@@ -44,8 +49,9 @@ function TOOL:LeftClick( trace )
 	
 	local range = self:GetClientNumber("Range")
 	local defZero = (self:GetClientNumber("DefaultZero") ~= 0)
+	local model = self:GetClientInfo("Model")
 
-	local wire_data_transferer = MakeWireTransferer( ply, trace.HitPos, range, defZero, Ang )
+	local wire_data_transferer = MakeWireTransferer( ply, trace.HitPos, range, defZero, model, Ang )
 
 	local min = wire_data_transferer:OBBMins()
 	wire_data_transferer:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -79,7 +85,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireTransferer( pl, Pos, Range, DefaultZero, Ang )
+	function MakeWireTransferer( pl, Pos, Range, DefaultZero, Model, Ang )
 		if ( !pl:CheckLimit( "wire_data_transferers" ) ) then return false end
 	
 		local wire_data_transferer = ents.Create( "gmod_wire_data_transferer" )
@@ -87,7 +93,7 @@ if (SERVER) then
 
 		wire_data_transferer:SetAngles( Ang )
 		wire_data_transferer:SetPos( Pos )
-		wire_data_transferer:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
+		wire_data_transferer:SetModel( Model )
 		wire_data_transferer:Spawn()
 		wire_data_transferer:Setup(Range,DefaultZero)
 
@@ -106,7 +112,7 @@ if (SERVER) then
 		return wire_data_transferer
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_data_transferer", MakeWireTransferer, "Pos", "Range", "DefaultZero", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_data_transferer", MakeWireTransferer, "Pos", "Range", "DefaultZero", "Model", "Ang", "Vel", "aVel", "frozen")
 
 end
 
@@ -132,8 +138,8 @@ function TOOL:UpdateGhostWireTransferer( ent, player )
 end
 
 function TOOL:Think()
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo("Model") ) then
+		self:MakeGhostEntity( self:GetClientInfo("Model"), Vector(0,0,0), Angle(0,0,0) )
 	end
 
 	self:UpdateGhostWireTransferer( self.GhostEntity, self:GetOwner() )
@@ -155,6 +161,12 @@ function TOOL.BuildCPanel(panel)
 		CVars = {
 		}
 	})
+	
+	panel:AddControl( "PropSelect", { Label = "#WireTransfererTool_Model",
+									 ConVar = "wire_data_transferer_Model",
+									 Category = "Wire Data Transferer",
+									 Models = transmodels } )
+	
 	panel:AddControl("Slider", {
 		Label = "#WireDataTransfererTool_Range",
 		Type = "Float",

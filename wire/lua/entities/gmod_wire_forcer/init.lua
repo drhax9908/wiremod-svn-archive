@@ -7,10 +7,8 @@ include('shared.lua')
 ENT.WireDebugName = "Forcer"
 ENT.OverlayDelay = .05
 
-local MODEL = Model("models/jaanus/wiretool/wiretool_siren.mdl")
 
 function ENT:Initialize()
-	self.Entity:SetModel( MODEL )
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
