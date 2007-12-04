@@ -37,6 +37,12 @@ cleanup.Register( "wire_cpus" )
 local cpu_tool = nil
 local cpu_ent = nil
 
+local function CPUStool_Version()
+	local SVNString = "$Revision: 500 $"
+
+	return tonumber(string.sub(SVNString,12,14))
+end
+
 local function CompileProgram_Timer(firstpass)
 	if (firstpass && cpu_tool.FirstPassDone) then return end
 	if (!firstpass && cpu_tool.SecondPassDone) then return end
@@ -102,12 +108,12 @@ end
 function TOOL:StartCompile(pl,ent)
 	if (table.Count(SourceCode) <= 0) then return end
 
-	pl:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 2.0 BETA <----\n")
+	pl:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 2.0 (SVN REV "..CPUStool_Version().."/"..ent:Core_Version()..") <----\n")
 	pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compiling...\n")
 
 	pl:ConCommand("wire_cpu_editor_clearlog")
 	pl:ConCommand("wire_cpu_editor_addlog \"".."---------------------------------------------------------------".."\"")
-	pl:ConCommand("wire_cpu_editor_addlog \"".."----> ZyeliosASM compiler - Version 2.0 BETA <----".."\"")
+	pl:ConCommand("wire_cpu_editor_addlog \"".."----> ZyeliosASM compiler - Version (SVN REV "..CPUStool_Version()..") BETA <----".."\"")
 	pl:ConCommand("wire_cpu_editor_addlog \"".."ZyeliosASM: Compiling...".."\"")
 
 	pl:ConCommand('wire_cpu_vgui_open')

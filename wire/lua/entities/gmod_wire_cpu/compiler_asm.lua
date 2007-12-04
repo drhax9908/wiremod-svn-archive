@@ -29,6 +29,12 @@ function ENT:InitASMOpcodes()
 	end
 end
 
+function ENT:Core_Version()
+	local SVNString = "$Revision: 500 $"
+
+	return tonumber(string.sub(SVNString,12,14))
+end
+
 function ENT:DecodeOpcode( opcode )
 	//------------------------------------------------------------
 	if (opcode == "jne") || (opcode == "jnz") then		//JNE X   : IP = X, IF CMPR ~= 0
@@ -249,6 +255,8 @@ function ENT:DecodeOpcode( opcode )
 		return 106
 	elseif (opcode == "jer") || (opcode == "jzr") then	//JE X   : IP = IP+X, IF CMPR = 0	//2.00
 		return 107
+	elseif (opcode == "lneg") then	//LNEG X   : X = LOGNEGATE(X)	//3.00
+		return 108
 	//------------------------------------------------------------
 	elseif (opcode == "nmiret") then //NMIRET X : NMIRESTORE;	//2.00
 		return 110
