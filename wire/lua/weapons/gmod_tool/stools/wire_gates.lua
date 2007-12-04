@@ -127,42 +127,42 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_gates_noclip"
 	})
 	
-	/*for gatetype, gatefuncs in pairs(WireGatesSorted) do
+	local tree = vgui.Create( "DTree" ) --this may not work in pre-gmod2007
+	if (tree) then
+		tree:SetTall( 400 )
+		panel:AddPanel( tree )
 		
-		local Actions = {
-			Label = gatetype.." Gates", //#WireGateArithmeticTool_action",
-			MenuButton = "0",
-			Height = 100,
-			Options = {}
-		}
-		
-		for k,v in pairs(gatefuncs) do
-			Actions.Options[v.name or "No Name"] = { wire_gates_action = k }
-		end
-		
-		panel:AddControl("ListBox", Actions)
-		
-	end*/
-	
-	--this may not work in pre-gmod2007
-	local tree = vgui.Create( "DTree" )
-	tree:SetTall( 400 )
-	panel:AddPanel( tree )
-	
-	for gatetype, gatefuncs in pairs(WireGatesSorted) do
-		local node = tree:AddNode( gatetype.." Gates" )
-		table.SortByMember( gatefuncs, "name", true ) --doesn't work, fix
-		for k,v in pairs(gatefuncs) do
-			local cnode = node:AddNode( v.name or "No Name" )
-			cnode.myname = v.name
-			cnode.myaction = k
-			function cnode:DoClick()
-				RunConsoleCommand( "wire_gates_action "..self.myaction )
+		for gatetype, gatefuncs in pairs(WireGatesSorted) do
+			local node = tree:AddNode( gatetype.." Gates" )
+			table.SortByMember( gatefuncs, "name", true ) --doesn't work, fix
+			for k,v in pairs(gatefuncs) do
+				local cnode = node:AddNode( v.name or "No Name" )
+				cnode.myname = v.name
+				cnode.myaction = k
+				function cnode:DoClick()
+					RunConsoleCommand( "wire_gates_action "..self.myaction )
+				end
+				cnode.Icon:SetImage( "gui/silkicons/newspaper" ) --oops, missing file
 			end
-			cnode.Icon:SetImage( "gui/silkicons/newspaper" ) --oops, missing file
+			node.ChildNodes:SortByMember( "myname", false )
 		end
-		node.ChildNodes:SortByMember( "myname", false )
+	else
+		for gatetype, gatefuncs in pairs(WireGatesSorted) do
+			
+			local Actions = {
+				Label = gatetype.." Gates", //#WireGateArithmeticTool_action",
+				MenuButton = "0",
+				Height = 100,
+				Options = {}
+			}
+			
+			for k,v in pairs(gatefuncs) do
+				Actions.Options[v.name or "No Name"] = { wire_gates_action = k }
+			end
+			
+			panel:AddControl("ListBox", Actions)
+			
+		end
 	end
-	
 end
 

@@ -9,7 +9,7 @@ end
 CreateClientConVar( "wiremovetoolstotab", "0", true, false )
 
 local function WireTab()
-	if GetConVarNumber("wiremovetoolstotab") == "1" then
+	if GetConVarNumber("wiremovetoolstotab") == 1 then
 		spawnmenu.AddToolTab( "Wire", "Wire" )
 	end
 end
@@ -18,7 +18,7 @@ hook.Add( "AddToolMenuTabs", "WireTab", WireTab)
 
 //not really needed any more since gmod32, but do it anyway cause 31 required it
 local function WireToolCategories()
-	if GetConVarNumber("wiremovetoolstotab") == "1" then
+	if GetConVarNumber("wiremovetoolstotab") == 1 then
 		local oldspawnmenuAddToolMenuOption = spawnmenu.AddToolMenuOption
 		function spawnmenu.AddToolMenuOption( tab, category, itemname, text, command, controls, cpanelfunction, TheTable )
 			if ( tab == "Main" and "wire" == string.lower( string.Left(category, 4) ) ) then tab = "Wire" end
@@ -42,7 +42,7 @@ hook.Add( "AddToolMenuCategories", "WireToolCategories", WireToolCategories)
 
 // Add the wire tools to the wire tab
 /*local function AddWireSToolsToWireMenu()
-	if GetConVarNumber("wiremovetoolstotab") != "1" then
+	if GetConVarNumber("wiremovetoolstotab") != 1 then
 		local TOOLS_LIST
 		for k,v in pairs(weapons.GetList()) do
 			if v.Tool then
