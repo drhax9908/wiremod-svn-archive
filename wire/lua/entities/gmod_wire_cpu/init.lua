@@ -71,6 +71,12 @@ function ENT:Initialize()
 	self:InitASMOpcodes()
 end
 
+function ENT:CPUID_Version()
+	local SVNString = "$Revision: 500 $"
+
+	return tonumber(string.sub(SVNString,12,14))
+end
+
 function ENT:Reset()
 	self.IP = 0
 
@@ -489,8 +495,8 @@ function ENT:InitializeOpcodeTable()
 	end
 	//============================================================
 	self.OpcodeTable[8] = function ()	//CPUID
-		if (self.Params[1] == 0) then 		//CPU VERSION
-			self.EAX = 291			//= 3.00 BETA 2
+		if (self.Params[1] == 0) then 		//CPU REVISION/VERSION
+			self.EAX = self:CPUID_Version()	//= 3.00 BETA 2
 		elseif (self.Params[1] == 1) then	//AMOUNT OF RAM
 			self.EAX = 65536		//= 64KB
 		elseif (self.Params[1] == 2) then	//TYPE (0 - ZCPU; 1 - ZGPU)
@@ -1046,6 +1052,9 @@ function ENT:InitializeOpcodeTable()
 		end
 		self.WriteBack = false
 	end
+	self.OpcodeTable[108] = function ()	//LNEG
+		self.Result = 1-math.Clamp(self.Params[1]),0,1)
+	end
 	//------------------------------------------------------------
 	self.OpcodeTable[110] = function ()	//NMIRET
 		local newval
@@ -1356,7 +1365,7 @@ function ENT:TriggerInput(iname, value)
 
 			    self:Push(self.CMPR) && 
 			    self:Push(self.IP)) then
-				Interrupt(math.floor(value));
+				self:Interrupt(math.floor(value));
 			end
 		end
 	end
