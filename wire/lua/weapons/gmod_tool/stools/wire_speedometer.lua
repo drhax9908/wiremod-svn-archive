@@ -7,7 +7,8 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_speedometer_name", "Speedometer Tool (Wire)" )
     language.Add( "Tool_wire_speedometer_desc", "Spawns a speedometer for use with the wire system." )
     language.Add( "Tool_wire_speedometer_0", "Primary: Create/Update Speedometer" )
-    language.Add( "WireSpeedometerTool_z_only", "Split X,Y,Z:" )
+    language.Add( "Tool_wire_speedometer_xyz_mode", "Split Outputs to X,Y,Z:" )
+	language.Add( "Tool_wire_speedometer_angvel", "Add Angular Velocity Outputs" )
 	language.Add( "sboxlimit_wire_speedometers", "You've hit speedometers limit!" )
 	language.Add( "undone_wirespeedometer", "Undone Wire Speedometer" )
 end
@@ -16,7 +17,8 @@ if (SERVER) then
 	CreateConVar('sbox_maxwire_speedometers', 10)
 end
 
-TOOL.ClientConVar[ "z_only" ] = "1"
+TOOL.ClientConVar[ "xyz_mode" ] = "1"
+TOOL.ClientConVar[ "angvel" ] = 0
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_speed.mdl"
 
@@ -33,14 +35,14 @@ function TOOL:LeftClick( trace )
 
 	local ply = self:GetOwner()
 
-	local z_only = (self:GetClientNumber("z_only") ~= 0)
+	local xyz_mode = (self:GetClientNumber("xyz_mode") ~= 0)
+	local AngVel = (self:GetClientNumber( "angvel" ) == 1)
 
 	// If we shot a wire_speedometer do nothing
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_speedometer" && trace.Entity.pl == ply ) then
-		trace.Entity:Setup(z_only)
-		
-		trace.Entity.z_only = z_only
-	
+		trace.Entity:Setup(xyz_mode, AngVel)
+		trace.Entity.z_only = xyz_mode --was renamed but keep it the same to protect dupesaves
+		trace.Entity.AngVel = AngVel
 		return true
 	end
 
@@ -52,20 +54,11 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	wire_speedometer = MakeWireSpeedometer( ply, Ang, trace.HitPos, z_only )
+	wire_speedometer = MakeWireSpeedometer( ply, Ang, trace.HitPos, xyz_mode, AngVel )
 
 	local min = wire_speedometer:OBBMins()
 	wire_speedometer:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_speedometer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_speedometer:GetPhysicsObject():EnableCollisions( false )
-		wire_speedometer.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_speedometer, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireSpeedometer")
@@ -84,38 +77,38 @@ end
 
 if (SERVER) then
 
-	function MakeWireSpeedometer( pl, Ang, Pos, z_only, nocollide, Vel, aVel, frozen )
-
+	function MakeWireSpeedometer( pl, Ang, Pos, xyz_mode, AngVel, nocollide, Vel, aVel, frozen )
+		
 		if ( !pl:CheckLimit( "wire_speedometers" ) ) then return false end
-
+		
 		local wire_speedometer = ents.Create( "gmod_wire_speedometer" )
 		if (!wire_speedometer:IsValid()) then return false end
-
+		
 		wire_speedometer:SetAngles( Ang )
 		wire_speedometer:SetPos( Pos )
 		wire_speedometer:SetModel( Model("models/jaanus/wiretool/wiretool_speed.mdl") )
 		wire_speedometer:Spawn()
-
-		wire_speedometer:Setup(z_only)
+		
+		wire_speedometer:Setup(xyz_mode, AngVel)
 		wire_speedometer:SetPlayer(pl)
-
+		
 		if ( nocollide == true ) then wire_speedometer:GetPhysicsObject():EnableCollisions( false ) end
-
+		
 		local ttable = {
-            z_only = z_only,
+            z_only = xyz_mode, --was renamed but keep it the same to protect dupesaves
+			AngVel = AngVel,
 			pl = pl,
-			}
-
+		}
 		table.Merge(wire_speedometer:GetTable(), ttable )
-
+		
 		pl:AddCount( "wire_speedometers", wire_speedometer )
-
+		
 		return wire_speedometer
-
+		
 	end
-
-	duplicator.RegisterEntityClass("gmod_wire_speedometer", MakeWireSpeedometer, "Ang", "Pos", "z_only", "nocollide", "Vel", "aVel", "frozen")
-
+	
+	duplicator.RegisterEntityClass("gmod_wire_speedometer", MakeWireSpeedometer, "Ang", "Pos", "z_only", "AngVel", "nocollide", "Vel", "aVel", "frozen")
+	
 end
 
 function TOOL:UpdateGhostWireSpeedometer( ent, player )
@@ -160,7 +153,12 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_speedometer_name", Description = "#Tool_wire_speedometer_desc" })
 
 	panel:AddControl("CheckBox", {
-		Label = "#WireSpeedometerTool_z_only",
-		Command = "wire_speedometer_z_only"
+		Label = "#Tool_wire_speedometer_xyz_mode",
+		Command = "wire_speedometer_xyz_mode"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#Tool_wire_speedometer_angvel",
+		Command = "wire_speedometer_AngVel"
 	})
 end

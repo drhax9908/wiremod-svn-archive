@@ -10,6 +10,11 @@ function ENT:GetXYZMode()
 	return self.Entity:GetNetworkedBool( 0 )
 end
 
-function ENT:SetXYZMode( XYZMode )
-	return self.Entity:SetNetworkedBool( 0, XYZMode )
+function ENT:GetAngVel()
+	return self.Entity:GetNetworkedBool( 1 )
+end
+
+function ENT:SetModes( XYZMode, AngVel )
+	self.Entity:SetNetworkedBool( 0, XYZMode )
+	self.Entity:SetNetworkedBool( 1, AngVel )
 end
