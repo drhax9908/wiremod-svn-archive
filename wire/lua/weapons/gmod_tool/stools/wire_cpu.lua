@@ -38,7 +38,7 @@ local cpu_tool = nil
 local cpu_ent = nil
 
 local function CPUStool_Version()
-	local SVNString = "$Revision: 500 $"
+	local SVNString = "$Revision: 532 $"
 
 	return tonumber(string.sub(SVNString,12,14))
 end

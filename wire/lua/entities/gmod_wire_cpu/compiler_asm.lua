@@ -30,7 +30,7 @@ function ENT:InitASMOpcodes()
 end
 
 function ENT:Core_Version()
-	local SVNString = "$Revision: 500 $"
+	local SVNString = "$Revision: 532 $"
 
 	return tonumber(string.sub(SVNString,12,14))
 end
