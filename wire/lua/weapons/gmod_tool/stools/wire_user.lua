@@ -19,10 +19,11 @@ if (SERVER) then
 	CreateConVar('sbox_maxwire_users', 20)
 end
 
-
+--this should use the model pack system instead
 local usermodels = {
     ["models/jaanus/wiretool/wiretool_siren.mdl"] = {},
-    ["models/jaanus/wiretool/wiretool_beamcaster.mdl"] = {}};
+    ["models/jaanus/wiretool/wiretool_beamcaster.mdl"] = {}
+}
     
 TOOL.ClientConVar[ "Model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
 TOOL.ClientConVar[ "Range" ] = "200"
@@ -52,16 +53,7 @@ function TOOL:LeftClick( trace )
 
 	local min = wire_user:OBBMins()
 	wire_user:SetPos( trace.HitPos - trace.HitNormal * min.z )
-
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_nailer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_nailer:GetPhysicsObject():EnableCollisions( false )
-		wire_nailer:GetTable().nocollide = true
-	end*/
+	
 	local const = WireLib.Weld(wire_user, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("Wire User")
@@ -144,32 +136,19 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_user_name", Description = "#Tool_wire_user_desc" })
-
-	panel:AddControl("ComboBox", {
-		Label = "#Presets",
-		MenuButton = "1",
-		Folder = "wire_user",
-
-		Options = {
-			Default = {
-			}
-		},
-		CVars = {
-		}
-	})
 	
 	panel:AddControl( "PropSelect", { Label = "#WireUserTool_Model",
 									 ConVar = "wire_user_Model",
 									 Category = "Wire Users",
 									 Models = usermodels } )
-									 
-	panel:AddControl()
+	
 	panel:AddControl("Slider", {
 		Label = "#WireUserTool_Range",
 		Type = "Float",
 		Min = "1",
-		Max = "10000",
+		Max = "1000",
 		Command = "wire_user_Range"
 	})
+	
 end
 
