@@ -1053,7 +1053,7 @@ function ENT:InitializeOpcodeTable()
 		self.WriteBack = false
 	end
 	self.OpcodeTable[108] = function ()	//LNEG
-		self.Result = 1-math.Clamp(self.Params[1]),0,1)
+		self.Result = 1-math.Clamp(self.Params[1],0,1)
 	end
 	//------------------------------------------------------------
 	self.OpcodeTable[110] = function ()	//NMIRET
