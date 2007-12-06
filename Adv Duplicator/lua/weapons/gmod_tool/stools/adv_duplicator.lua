@@ -754,8 +754,16 @@ function TOOL:UpdateList()
 		self:GetOwner():SendLua( "AdvDupeClient.LoadListFiles2={}" )
 		self:GetOwner():SendLua( "AdvDupeClient.SScdir2=\""..cdir2.."\"" )
 		
-		if (cdir2 != AdvDupe.GetPlayersFolder(self:GetOwner())) then
+		if ( cdir2 == dupeshare.BaseDir.."/=Public Folder=" ) or ( dupeshare.NamedLikeAPublicDir(dupeshare.GetFileFromFilename(cdir2)) ) or ( cdir2 == "Contraption Saver Tool" ) then
+			self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs2[\"/..\"] = \""..AdvDupe.GetPlayersFolder(self:GetOwner()).."\"" )
+		elseif ( cdir2 != AdvDupe.GetPlayersFolder(self:GetOwner()) ) then
 			self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs2[\"/..\"] = \""..dupeshare.UpDir(cdir2).."\"" )
+		else //is at root
+			self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs2[\"/=Public Folder=\"] = \""..dupeshare.BaseDir.."/=Public Folder=\"" )
+			
+			if ( file.Exists("Contraption Saver Tool") && file.IsDir("Contraption Saver Tool") ) then
+				self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs2[\"/=Contraption Saver Dir=\"] = \"Contraption Saver Tool\"" )
+			end
 		end
 		
 		if ( file.Exists(cdir2) && file.IsDir(cdir2)) then
