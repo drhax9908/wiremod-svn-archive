@@ -201,42 +201,43 @@ end
 
 
 function TOOL:RightClick( trace )
+	if (CLIENT) then return true end
 	
 	local ply = self:GetOwner()
 	//shot an explosive, update it instead
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_explosive" && trace.Entity:GetTable().pl == ply ) then
 		//double you code double your fun (copy from above)
 		// Get client's CVars
-		local _tirgger		= self:GetClientNumber( "tirgger" ) 
-		local _damage 		= math.Clamp( self:GetClientNumber( "damage" ), 0, 1500 )
-		local _removeafter	= self:GetClientNumber( "removeafter" ) == 1
-		local _delaytime	= self:GetClientNumber( "delaytime" )
-		local _delayreloadtime	= self:GetClientNumber( "delayreloadtime" )
-		local _doblastdamage	= self:GetClientNumber( "doblastdamage" ) == 1
-		local _radius		= self:GetClientNumber( "radius" )
-		local _affectother	= self:GetClientNumber( "affectother" ) == 1
-		local _notaffected	= self:GetClientNumber( "notaffected" ) == 1
-		local _freeze		= self:GetClientNumber( "freeze" ) == 1
-		local _weld		= self:GetClientNumber( "weld" ) == 1
-		local _maxhealth		= self:GetClientNumber( "maxhealth" )
-		local _bulletproof		= self:GetClientNumber( "bulletproof" ) == 1
-		local _explosionproof		= self:GetClientNumber( "explosionproof" ) == 1
-		local _fallproof		= self:GetClientNumber( "fallproof" ) == 1
-		local _explodeatzero		= self:GetClientNumber( "explodeatzero" ) == 1
-		local _resetatexplode		= self:GetClientNumber( "resetatexplode" ) == 1
-		local _fireeffect		= self:GetClientNumber( "fireeffect" ) == 1
-		local _coloreffect		= self:GetClientNumber( "coloreffect" ) == 1
-		local _noparentremove		= self:GetClientNumber( "noparentremove" ) == 1
-		local _nocollide		= self:GetClientNumber( "nocollide" ) == 1
-		local _weight		= self:GetClientNumber( "weight" )
-		local _invisibleatzero		= self:GetClientNumber( "invisibleatzero" ) == 1
+		local tirgger			= self:GetClientNumber( "tirgger" ) 
+		local damage 			= math.Clamp( self:GetClientNumber( "damage" ), 0, 1500 )
+		local removeafter		= self:GetClientNumber( "removeafter" ) == 1
+		local delaytime			= self:GetClientNumber( "delaytime" )
+		local delayreloadtime	= self:GetClientNumber( "delayreloadtime" )
+		local doblastdamage		= self:GetClientNumber( "doblastdamage" ) == 1
+		local radius			= self:GetClientNumber( "radius" )
+		local affectother		= self:GetClientNumber( "affectother" ) == 1
+		local notaffected		= self:GetClientNumber( "notaffected" ) == 1
+		local freeze			= self:GetClientNumber( "freeze" ) == 1
+		local weld				= self:GetClientNumber( "weld" ) == 1
+		local maxhealth			= self:GetClientNumber( "maxhealth" )
+		local bulletproof		= self:GetClientNumber( "bulletproof" ) == 1
+		local explosionproof	= self:GetClientNumber( "explosionproof" ) == 1
+		local fallproof			= self:GetClientNumber( "fallproof" ) == 1
+		local explodeatzero		= self:GetClientNumber( "explodeatzero" ) == 1
+		local resetatexplode	= self:GetClientNumber( "resetatexplode" ) == 1
+		local fireeffect		= self:GetClientNumber( "fireeffect" ) == 1
+		local coloreffect		= self:GetClientNumber( "coloreffect" ) == 1
+		local noparentremove	= self:GetClientNumber( "noparentremove" ) == 1
+		local nocollide			= self:GetClientNumber( "nocollide" ) == 1
+		local weight			= self:GetClientNumber( "weight" )
+		local invisibleatzero	= self:GetClientNumber( "invisibleatzero" ) == 1
 		
-		trace.Entity:GetTable():Setup( _damage, _delaytime, _removeafter, _doblastdamage, _radius, _affectother, _notaffected, _delayreloadtime, _maxhealth, _bulletproof, _explosionproof, _fallproof, _explodeatzero, _resetatexplode, _fireeffect, _coloreffect, _invisibleatzero, _nocollide )
+		UpdateWireExplosive(trace.Entity, tirgger, damage, delaytime, removeafter, doblastdamage, radius, affectother, notaffected, delayreloadtime, maxhealth, bulletproof, explosionproof, fallproof, explodeatzero, resetatexplode, fireeffect, coloreffect, invisibleatzero, nocollide )
 		
-		if (_weight <= 0) then _weight = 1 end
+		if (weight <= 0) then weight = 1 end
 		trace.Entity:GetPhysicsObject():SetMass(_weight)
 		// Make sure the weight is duplicated as well (TheApathetic)
-		duplicator.StoreEntityModifier( trace.Entity, "MassMod", {Mass = _weight} )
+		duplicator.StoreEntityModifier( trace.Entity, "MassMod", {Mass = weight} )
 		
 		//reset color in case we turned the color effect off and it's still red
 		trace.Entity:SetColor(255, 255, 255, 255)
@@ -266,30 +267,16 @@ function TOOL:Reload( trace )
 end
 
 if SERVER then
-
-	function MakeWireExplosive(pl, Pos, Ang, key, damage, model, removeafter, delaytime, doblastdamage, radius, affectother, notaffected, delayreloadtime, maxhealth, bulletproof, explosionproof, fallproof, explodeatzero, resetatexplode, fireeffect, coloreffect, invisibleatzero, nocollide, Vel, aVel, frozen )
 	
-		if ( !pl:CheckLimit( "wire_explosive" ) ) then return nil end
-
-		local explosive = ents.Create( "gmod_wire_explosive" )
+	function UpdateWireExplosive(explosive, tirgger, damage, delaytime, removeafter, doblastdamage, radius, affectother, notaffected, delayreloadtime, maxhealth, bulletproof, explosionproof, fallproof, explodeatzero, resetatexplode, fireeffect, coloreffect, invisibleatzero, nocollide )
 		
-		explosive:SetModel( model )
-		explosive:SetPos( Pos )	
-		explosive:SetAngles( Ang )
-		explosive:Spawn()
-		explosive:Activate()
-		
-		explosive:GetTable():Setup( damage, delaytime, removeafter, doblastdamage, radius, affectother, notaffected, delayreloadtime, maxhealth, bulletproof, explosionproof, fallproof, explodeatzero, resetatexplode, fireeffect, coloreffect, invisibleatzero, nocollide )
-		
-		explosive:GetTable():SetPlayer( pl )
+		explosive:Setup( damage, delaytime, removeafter, doblastdamage, radius, affectother, notaffected, delayreloadtime, maxhealth, bulletproof, explosionproof, fallproof, explodeatzero, resetatexplode, fireeffect, coloreffect, invisibleatzero, nocollide )
 		
 		local ttable = 
 		{
-			key = key,
-			pl	= pl,
+			key = tirgger,
 			nocollide = nocollide,
 			description = description,
-			key = key, 
 			damage = damage, 
 			model = model, 
 			removeafter = removeafter, 
@@ -311,7 +298,27 @@ if SERVER then
 		}
 		
 		table.Merge( explosive:GetTable(), ttable )
-				
+		
+	end
+	
+	
+	function MakeWireExplosive(pl, Pos, Ang, tirgger, damage, model, removeafter, delaytime, doblastdamage, radius, affectother, notaffected, delayreloadtime, maxhealth, bulletproof, explosionproof, fallproof, explodeatzero, resetatexplode, fireeffect, coloreffect, invisibleatzero, nocollide, Vel, aVel, frozen )
+	
+		if ( !pl:CheckLimit( "wire_explosive" ) ) then return nil end
+
+		local explosive = ents.Create( "gmod_wire_explosive" )
+		
+		explosive:SetModel( model )
+		explosive:SetPos( Pos )	
+		explosive:SetAngles( Ang )
+		explosive:Spawn()
+		explosive:Activate()
+		
+		explosive:SetPlayer( pl )
+		explosive.pl = pl
+		
+		UpdateWireExplosive( explosive, tirgger, damage, delaytime, removeafter, doblastdamage, radius, affectother, notaffected, delayreloadtime, maxhealth, bulletproof, explosionproof, fallproof, explodeatzero, resetatexplode, fireeffect, coloreffect, invisibleatzero, nocollide )
+		
 		pl:AddCount( "wire_explosive", explosive )
 		
 		return explosive
