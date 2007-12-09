@@ -19,7 +19,7 @@ function ENT:SetEffect( name )
 	self.Entity:SetNetworkedString( "Effect", name )
 end
 
-function ENT:GetEffect( name )
+function ENT:GetEffect()
 	return self.Entity:GetNetworkedString( "Effect" )
 end
 
@@ -28,7 +28,7 @@ function ENT:SetOn( boolon )
 	self.Entity:SetNetworkedBool( "On", boolon, true )
 end
 
-function ENT:IsOn( name )
+function ENT:IsOn()
 	return self.Entity:GetNetworkedBool( "On" )
 end
 
@@ -36,14 +36,14 @@ function ENT:SetOffset( v )
 	self.Entity:SetNetworkedVector( "Offset", v, true )
 end
 
-function ENT:GetOffset( name )
+function ENT:GetOffset()
 	return self.Entity:GetNetworkedVector( "Offset" )
 end
 
-function ENT:SetBeamRange(length)
+function ENT:SetBeamLength( length )
 	self.Entity:SetNetworkedFloat("BeamLength", length)
 end
 
-function ENT:GetBeamRange()
+function ENT:GetBeamLength()
 	return self.Entity:GetNetworkedFloat("BeamLength") or 0
 end

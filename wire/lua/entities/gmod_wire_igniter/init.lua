@@ -13,7 +13,7 @@ function ENT:Initialize()
 	self.Inputs = Wire_CreateInputs(self.Entity, { "A", "Length" })
 	self.IgniteLength = 10
 	self.TargetPlayers = false
-	self:SetBeamRange(2048)
+	self:SetBeamLength(2048)
 	self:ShowOutput()
 end
 
@@ -23,7 +23,7 @@ end
 
 function ENT:Setup(trgply,Range)
     self.TargetPlayers = trgply
-    self:SetBeamRange(Range)
+    self:SetBeamLength(Range)
 end
 
 function ENT:TriggerInput(iname, value)
@@ -34,7 +34,7 @@ function ENT:TriggerInput(iname, value)
 			 
 			 local trace = {}
 				 trace.start = vStart
-				 trace.endpos = vStart + (vForward * self:GetBeamRange())
+				 trace.endpos = vStart + (vForward * self:GetBeamLength())
 				 trace.filter = { self.Entity }
 			 local trace = util.TraceLine( trace ) 
 			

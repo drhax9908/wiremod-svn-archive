@@ -59,7 +59,7 @@ end
 ---------------------------------------------------------*/
 function ENT:Setup( damage, delaytime, removeafter, doblastdamage, radius, affectother, notaffected, delayreloadtime, maxhealth, bulletproof, explosionproof, fallproof, explodeatzero, resetatexplode, fireeffect, coloreffect, invisibleatzero, nocollide )
 
-	self.Damage = damage 
+	self.Damage = math.Clamp( damage, 0, 1500 ) 
 	self.Delaytime = delaytime
 	self.Removeafter = removeafter
 	self.DoBlastDamage = doblastdamage

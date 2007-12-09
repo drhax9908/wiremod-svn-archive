@@ -79,15 +79,7 @@ function TOOL:LeftClick( trace )
 
 	// If we shot a wire_ranger change its range
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_ranger" && trace.Entity.pl == ply ) then
-
 		trace.Entity:Setup( range, default_zero, show_beam, ignore_world, trace_water, out_dist, out_pos, out_vel, out_ang, out_col, out_val, out_sid, out_uid, out_eid,hires )
-
-		trace.Entity.range = range
-		trace.Entity.default_zero = default_zero
-		trace.Entity.show_beam = show_beam
-		trace.Entity.ignore_world = ignore_world
-		trace.Entity.trace_water = trace_water
-
 		return true
 	end
 
@@ -99,20 +91,11 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	wire_ranger = MakeWireRanger( ply, Ang, trace.HitPos, range, default_zero, show_beam, ignore_world, trace_water, out_dist, out_pos, out_vel, out_ang, out_col, out_val, out_sid, out_uid, out_eid )
+	local wire_ranger = MakeWireRanger( ply, Ang, trace.HitPos, range, default_zero, show_beam, ignore_world, trace_water, out_dist, out_pos, out_vel, out_ang, out_col, out_val, out_sid, out_uid, out_eid )
 
 	local min = wire_ranger:OBBMins()
 	wire_ranger:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_ranger, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_ranger:GetPhysicsObject():EnableCollisions( false )
-		wire_ranger.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_ranger, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireRanger")
@@ -145,27 +128,12 @@ if (SERVER) then
 		wire_ranger:SetPlayer( pl )
 
 		if ( nocollide == true ) then wire_ranger:GetPhysicsObject():EnableCollisions( false ) end
-
-		local ttable = {
-			range = range,
-			default_zero = default_zero,
-			show_beam = show_beam,
-			ignore_world = ignore_world,
-			trace_water = trace_water,
-			out_dist = out_dist,
-			out_pos = out_pos,
-			out_vel = out_vel,
-			out_ang = out_ang,
-			out_col = out_col,
-			out_val = out_val,
-			hiRes = hires,
-			pl	= pl,
-			}
-
-		table.Merge(wire_ranger:GetTable(), ttable )
-
+		
+		wire_ranger.pl	= pl
+		wire_ranger.nocollide = nocollide
+		
 		pl:AddCount( "wire_rangers", wire_ranger )
-
+		
 		return wire_ranger
 	end
 
