@@ -12,7 +12,7 @@ function ENT:Initialize()
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	self.Inputs = Wire_CreateInputs(self.Entity, { "Fire"})
 	self.Outputs = Wire_CreateOutputs(self.Entity, {})
-    self:SetBeamRange(2048)
+    self:SetBeamLength(2048)
 end
 
 function ENT:OnRemove()
@@ -20,7 +20,7 @@ function ENT:OnRemove()
 end
 
 function ENT:Setup(Range)
-	self:SetBeamRange(Range)
+	self:SetBeamLength(Range)
 	self:ShowOutput()
 end
 
@@ -32,7 +32,7 @@ function ENT:TriggerInput(iname, value)
 			 
 			 local trace = {}
 				 trace.start = vStart
-				 trace.endpos = vStart + (vForward * self:GetBeamRange())
+				 trace.endpos = vStart + (vForward * self:GetBeamLength())
 				 trace.filter = { self.Entity }
 			 local trace = util.TraceLine( trace ) 
 			

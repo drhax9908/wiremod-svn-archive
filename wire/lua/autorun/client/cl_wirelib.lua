@@ -16,12 +16,7 @@ function Wire_Render(ent)
 	    if (f < 0.5) then
 			blink = ent:GetNetworkedBeamString("BlinkWire")
 		end
-
-		//local bbmin = ent:GetPos()+Vector(-8, -8, -8)
-		//local bbmax = ent:GetPos()+Vector(8, 8, 8)
-		local bbmin = ent:LocalToWorld(ent:OBBMins())
-		local bbmax = ent:LocalToWorld(ent:OBBMaxs())
-
+		
 		for i = 1,path_count do
 		    local path_name = ent:GetNetworkedBeamString("wpn_" .. i)
 		    if (blink ~= path_name) then
@@ -52,13 +47,6 @@ function Wire_Render(ent)
 							render.AddBeam(endpos, width, scroll, color)
 
 							start = endpos
-
-							if (endpos.x < bbmin.x) then bbmin.x = endpos.x end
-							if (endpos.y < bbmin.y) then bbmin.y = endpos.y end
-							if (endpos.z < bbmin.z) then bbmin.z = endpos.z end
-							if (endpos.x > bbmax.x) then bbmax.x = endpos.x end
-							if (endpos.y > bbmax.y) then bbmax.y = endpos.y end
-							if (endpos.z > bbmax.z) then bbmax.z = endpos.z end
 						end
 					end
 					render.EndBeam()
@@ -83,12 +71,7 @@ function Wire_Render(ent)
 		    if (f < 0.2) then
 				blink = ent:GetNetworkedBeamString("BlinkWire")
 			end
-
-			//local bbmin = ent:GetPos()+Vector(-8, -8, -8)
-			//local bbmax = ent:GetPos()+Vector(8, 8, 8)
-			local bbmin = ent:LocalToWorld(ent:OBBMins())
-			local bbmax = ent:LocalToWorld(ent:OBBMaxs())
-
+			
 			for i = 1,path_count do
 				local x = {}
 			    local path_name = ent:GetNetworkedBeamString("wpn_" .. i)
@@ -108,7 +91,6 @@ function Wire_Render(ent)
 
 					    local scroll = CurTime()*WIRE_SCROLL_SPEED
 					    
-						
 						x.material = Material(ent:GetNetworkedBeamString(net_name .. "_mat"))
 						x.startbeam = len + 1
 						x.start = start
@@ -117,9 +99,6 @@ function Wire_Render(ent)
 						x.color = color
 						x.beams = {}
 						
-						
-						
-
 						for j=1,len do
 							local v = {}
 						    local node_ent = ent:GetNetworkedBeamEntity(net_name .. "_" .. j .. "_ent")
@@ -128,9 +107,8 @@ function Wire_Render(ent)
 							v.node_endpos = endpos
 							if (node_ent:IsValid()) then
 								endpos = node_ent:LocalToWorld(endpos)
-
+								
 							    scroll = scroll+(endpos-start):Length()/10
-
 								
 								v.endpos = endpos
 								v.width = width
@@ -138,16 +116,7 @@ function Wire_Render(ent)
 								v.color = color
 								table.insert(x.beams, v)
 								
-								
-
 								start = endpos
-
-								if (endpos.x < bbmin.x) then bbmin.x = endpos.x end
-								if (endpos.y < bbmin.y) then bbmin.y = endpos.y end
-								if (endpos.z < bbmin.z) then bbmin.z = endpos.z end
-								if (endpos.x > bbmax.x) then bbmax.x = endpos.x end
-								if (endpos.y > bbmax.y) then bbmax.y = endpos.y end
-								if (endpos.z > bbmax.z) then bbmax.z = endpos.z end
 							end
 						end
 						
@@ -156,9 +125,6 @@ function Wire_Render(ent)
 					end
 				//end
 			end
-			
-			p.bbmin = bbmin
-			p.bbmax = bbmax
 			
 			ent.ppp = p
 		end
@@ -184,19 +150,16 @@ function Wire_Render(ent)
 			end
 		end
 		
-		ent:SetRenderBoundsWS(p.bbmin, p.bbmax, Vector()*6)
 	end
 end
 
 
-local function Wire_GetWireRenderBoundsWS(ent)
+local function Wire_GetWireRenderBounds(ent)
     if (not ent:IsValid()) then return end
 
     local paths = ent.WirePaths
-	//local bbmin = ent:GetPos()+Vector(-8, -8, -8)
-	//local bbmax = ent:GetPos()+Vector(8, 8, 8)
-	local bbmin = ent:LocalToWorld(ent:OBBMins())
-	local bbmax = ent:LocalToWorld(ent:OBBMaxs())
+	local bbmin = ent:OBBMins()
+	local bbmax = ent:OBBMaxs()
 
 	local path_count = ent:GetNetworkedBeamInt("wpn_count") or 0
 	if (path_count > 0) then
@@ -210,8 +173,8 @@ local function Wire_GetWireRenderBoundsWS(ent)
 				    local node_ent = ent:GetNetworkedBeamEntity(net_name .. "_" .. j .. "_ent")
 				    local nodepos = ent:GetNetworkedBeamVector(net_name .. "_" .. j .. "_pos")
 					if (node_ent:IsValid()) then
-						nodepos = node_ent:LocalToWorld(nodepos)
-
+						nodepos = ent:WorldToLocal(node_ent:LocalToWorld(nodepos))
+						
 						if (nodepos.x < bbmin.x) then bbmin.x = nodepos.x end
 						if (nodepos.y < bbmin.y) then bbmin.y = nodepos.y end
 						if (nodepos.z < bbmin.z) then bbmin.z = nodepos.z end
@@ -223,14 +186,26 @@ local function Wire_GetWireRenderBoundsWS(ent)
 			end
 		end
 	end
+	
+	if (ent.ExtraRBoxPoints) then
+		for _,point_l in ipairs( ent.ExtraRBoxPoints ) do
+			local point = point_l
+			if (point.x < bbmin.x) then bbmin.x = point.x end
+			if (point.y < bbmin.y) then bbmin.y = point.y end
+			if (point.z < bbmin.z) then bbmin.z = point.z end
+			if (point.x > bbmax.x) then bbmax.x = point.x end
+			if (point.y > bbmax.y) then bbmax.y = point.y end
+			if (point.z > bbmax.z) then bbmax.z = point.z end
+		end
+	end
 
 	return bbmin, bbmax
 end
 
 
 function Wire_UpdateRenderBounds(ent)
-	local bbmin, bbmax = Wire_GetWireRenderBoundsWS(ent)
-	ent:SetRenderBoundsWS(bbmin, bbmax, Vector()*6)
+	local bbmin, bbmax = Wire_GetWireRenderBounds(ent)
+	ent:SetRenderBounds(bbmin, bbmax)
 end
 
 local function WireDisableRender(pl, cmd, args)
@@ -241,3 +216,54 @@ local function WireDisableRender(pl, cmd, args)
 end
 concommand.Add( "cl_Wire_DisableWireRender", WireDisableRender )
 concommand.Add( "cl_Wire_SetWireRenderMode", WireDisableRender )
+
+
+function Wire_DrawTracerBeam( ent, beam_num, hilight, beam_length )
+	local beam_length = beam_length or ent:GetBeamLength(beam_num)
+	if (beam_length > 0) then
+		
+		local x, y = 0, 0
+		if (ent.GetSkewX and ent.GetSkewY) then
+			x, y = ent:GetSkewX(beam_num), ent:GetSkewY(beam_num)
+		end
+		
+		local start, ang = ent:GetPos(), ent:GetAngles()
+		
+		if (ent.ls != start or ent.la != ang or ent.ll != beam_length or ent.lx != x or ent.ly != y) then
+			ent.ls, ent.la = start, ang
+			
+			if (ent.ll != beam_length or ent.lx != x or ent.ly != y) then
+				ent.ll, ent.lx, ent.ly = beam_length, x, y
+				
+				if (x == 0 and y == 0) then
+					ent.endpos = start + (ent:GetUp() * beam_length)
+				else
+					local skew = Vector(x, y, 1)
+					skew = skew*(beam_length/skew:Length())
+					local beam_x = ent:GetRight()*skew.x
+					local beam_y = ent:GetForward()*skew.y
+					local beam_z = ent:GetUp()*skew.z
+					ent.endpos = start + beam_x + beam_y + beam_z
+				end
+				ent.ExtraRBoxPoints = ent.ExtraRBoxPoints or {}
+				ent.ExtraRBoxPoints[beam_num] = ent:WorldToLocal(ent.endpos)
+			else
+				ent.endpos = ent:LocalToWorld(ent.ExtraRBoxPoints[beam_num])
+			end
+		end
+		
+		local trace = {}
+		trace.start = start
+		trace.endpos = ent.endpos
+		trace.filter = { ent }
+		if (ent:GetNetworkedBool("TraceWater")) then trace.mask = MASK_ALL end
+		trace = util.TraceLine(trace)
+		
+		render.SetMaterial(Material("tripmine_laser"))
+		render.DrawBeam(start, trace.HitPos, 6, 0, 10, Color(ent:GetColor()))
+		if (hilight) then
+			render.SetMaterial(Material("Models/effects/comball_tape"))
+			render.DrawBeam(start, trace.HitPos, 6, 0, 10, Color(255,255,255,255))
+		end
+	end
+end

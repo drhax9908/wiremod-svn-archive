@@ -17,7 +17,7 @@ function ENT:Initialize()
     self.ValueG = 255
     self.ValueB = 255
     self.ValueA = 255
-    self:SetBeamRange(2048)
+    self:SetBeamLength(2048)
 end
 
 function ENT:OnRemove()
@@ -34,7 +34,7 @@ function ENT:Setup(outColor,Range)
 	    table.insert(onames, "A")
 	    Wire_AdjustOutputs(self.Entity, onames)
 	end
-	self:SetBeamRange(Range)
+	self:SetBeamLength(Range)
 	self:ShowOutput()
 end
 
@@ -46,7 +46,7 @@ function ENT:TriggerInput(iname, value)
 			 
 			 local trace = {}
 				 trace.start = vStart
-				 trace.endpos = vStart + (vForward * self:GetBeamRange())
+				 trace.endpos = vStart + (vForward * self:GetBeamLength())
 				 trace.filter = { self.Entity }
 			 local trace = util.TraceLine( trace ) 
 			
@@ -91,7 +91,7 @@ function ENT:Think()
 			 
 	    local trace = {}
 		  trace.start = vStart
-		  trace.endpos = vStart + (vForward * self:GetBeamRange())
+		  trace.endpos = vStart + (vForward * self:GetBeamLength())
 		  trace.filter = { self.Entity }
 	    local trace = util.TraceLine( trace ) 
 			

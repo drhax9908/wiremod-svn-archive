@@ -21,7 +21,7 @@ function ENT:Initialize()
 	self.Gravity = true
 	self.Entity:GetPhysicsObject():SetMass(10)
 	
-	self:SetBeamRange(100)
+	self:SetBeamLength(100)
 	
 	if(GetConVarNumber('sbox_wire_grabbers_onlyOwnersProps') > 0)then
 		self.OnlyGrabOwners = true
@@ -40,7 +40,7 @@ function ENT:OnRemove()
 end
 
 function ENT:Setup(Range,Gravity)
-    self:SetBeamRange(Range)
+    self:SetBeamLength(Range)
     self.Gravity = Gravity
     --Msg("Setup:\n\tRange:"..tostring(Range).."\n\tGravity:"..tostring(Gravity).."\n")
 end
@@ -78,7 +78,7 @@ function ENT:TriggerInput(iname, value)
 			 
 			 local trace = {}
 				 trace.start = vStart
-				 trace.endpos = vStart + (vForward * self:GetBeamRange())
+				 trace.endpos = vStart + (vForward * self:GetBeamLength())
 				 trace.filter = { self.Entity }
 			 local trace = util.TraceLine( trace ) 
 			
