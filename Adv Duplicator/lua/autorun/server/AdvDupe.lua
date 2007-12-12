@@ -18,6 +18,7 @@ AdvDupe.Version = 1.836
 AdvDupe.ToolVersion = 1.812
 AdvDupe.FileVersion = 0.83
 
+CreateConVar( "sv_AdvDupeEnablePublicFolder", 1, {FCVAR_ARCHIVE} )
 
 /*---------------------------------------------------------
   Process and save given dupe tables to file
