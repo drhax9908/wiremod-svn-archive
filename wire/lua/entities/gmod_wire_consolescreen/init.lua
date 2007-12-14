@@ -23,7 +23,7 @@ function ENT:Initialize()
 	self.CharY = 0
 	self.Char = 0
 	self.CharParam = 0
-	self.Clk = 0
+	self.Clk = 1
 	
 	//self.CursorEnabled = 0
 	//self.CursorX = 0

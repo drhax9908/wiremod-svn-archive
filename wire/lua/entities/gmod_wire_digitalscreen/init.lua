@@ -22,7 +22,7 @@ function ENT:Initialize()
 	self.PixelX = 0
 	self.PixelY = 0
 	self.PixelG = 0
-	self.Clk = 0
+	self.Clk = 1
 end
 
 function ENT:Use()
