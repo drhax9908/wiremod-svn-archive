@@ -46,6 +46,7 @@ end
 local function CompileProgram_Timer(firstpass)
 	if (firstpass && cpu_tool.FirstPassDone) then return end
 	if (!firstpass && cpu_tool.SecondPassDone) then return end
+	if (!cpu_tool:GetOwner()) then return end
 
 	local SendLinesMax = cpu_tool.LineNumber + cpu_tool:GetOwner():GetInfo("wire_cpu_compile_bandwidth")	
 	if (SendLinesMax > table.Count(SourceCode)) then SendLinesMax = table.Count(SourceCode) end
@@ -153,6 +154,7 @@ function TOOL:StartCompile(pl,ent)
 end
 
 function TOOL:Compile_Pass1()
+	if (!cpu_tool:GetOwner()) then return end
 	self:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 1\n")
 	self:GetOwner():ConCommand("wire_cpu_editor_addlog \"".."ZyeliosASM: Pass 1".."\"")
 
@@ -167,6 +169,7 @@ end
 
 function TOOL:Compile_Pass2()
 //	timer.Remove("CPUCompileTimer1")
+	if (!cpu_tool:GetOwner()) then return end
 	self:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 2\n")
 	self:GetOwner():ConCommand("wire_cpu_editor_addlog \"".."ZyeliosASM: Pass 2".."\"")
 
