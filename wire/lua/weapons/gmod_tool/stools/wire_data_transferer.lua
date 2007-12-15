@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Data"
 TOOL.Name			= "Transferer"
 TOOL.Command		= nil
@@ -19,7 +18,6 @@ end
 if (SERVER) then
 	CreateConVar('sbox_maxwire_data_transferers', 20)
 end
-
 
 TOOL.ClientConVar[ "Model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
 TOOL.ClientConVar[ "Range" ] = "25000"
@@ -56,15 +54,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_data_transferer:OBBMins()
 	wire_data_transferer:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_nailer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_nailer:GetPhysicsObject():EnableCollisions( false )
-		wire_nailer:GetTable().nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_data_transferer, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("Wire Data Transferer")
@@ -73,14 +62,10 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_data_transferers", wire_data_transferer )
+	ply:AddCleanup( "wire_data_transferers", const )
 
 	return true
-end
-
-function TOOL:RightClick( trace )
-	return false
 end
 
 if (SERVER) then
@@ -104,7 +89,6 @@ if (SERVER) then
 		    DefaultZero = DefaultZero,
 			pl = pl
 		}
-
 		table.Merge(wire_data_transferer:GetTable(), ttable )
 		
 		pl:AddCount( "wire_data_transferers", wire_data_transferer )

@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Grabber"
 TOOL.Command		= nil
@@ -21,7 +20,6 @@ if (SERVER) then
 	CreateConVar('sbox_wire_grabbers_onlyOwnersProps', 0)
 end
 
-
 TOOL.ClientConVar[ "Model" ] = "models/jaanus/wiretool/wiretool_range.mdl"
 TOOL.ClientConVar[ "Range" ] = "100"
 TOOL.ClientConVar[ "Gravity" ] = "1"
@@ -39,7 +37,14 @@ function TOOL:LeftClick( trace )
 
 	local ply = self:GetOwner()
 
+	local range = self:GetClientNumber("Range")
+	local gravity = (self:GetClientNumber("Gravity") != 0)
+	local model = self:GetClientInfo("Model")
+
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_grabber" && trace.Entity:GetTable().pl == ply ) then
+		trace.Entity:Setup(range, gravity)
+		trace.Entity.Gange = range
+		trace.Entity.Gravity = gravity
 		return true
 	end
 
@@ -48,10 +53,6 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 	
-	local range = self:GetClientNumber("Range")
-	local gravity = (self:GetClientNumber("Gravity") != 0)
-	local model = self:GetClientInfo("Model")
-
 	local wire_grabber = MakeWireGrabber( ply, trace.HitPos, range, gravity, model, Ang )
 
 	local min = wire_grabber:OBBMins()
@@ -61,15 +62,6 @@ function TOOL:LeftClick( trace )
 	   wire_grabber:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	end
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_nailer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_nailer:GetPhysicsObject():EnableCollisions( false )
-		wire_nailer:GetTable().nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_grabber, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("Wire Grabber")
@@ -77,7 +69,6 @@ function TOOL:LeftClick( trace )
 		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
-
 
 	ply:AddCleanup( "wire_grabbers", wire_grabber )
 
@@ -115,14 +106,13 @@ if (SERVER) then
 		wire_grabber:Spawn()
 		wire_grabber:Setup(Range, Gravity)
 
-		wire_grabber:GetTable():SetPlayer( pl )
+		wire_grabber:SetPlayer( pl )
 
 		local ttable = {
 		    Range = Range,
 		    Gravity = Gravity,
 			pl = pl
 		}
-
 		table.Merge(wire_grabber:GetTable(), ttable )
 		
 		pl:AddCount( "wire_grabbers", wire_grabber )

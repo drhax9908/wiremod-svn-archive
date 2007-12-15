@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Control"
 TOOL.Name			= "Gate - Arithmetic"
 TOOL.Command		= nil
@@ -33,7 +32,6 @@ function TOOL:LeftClick( trace )
 	
 	local ply = self:GetOwner()
 	
-	// Get client's CVars
 	local action			= self:GetClientInfo( "action" )
 	local noclip			= self:GetClientNumber( "noclip" ) == 1
 	local model             = self:GetClientInfo( "model" )
@@ -69,10 +67,6 @@ function TOOL:LeftClick( trace )
 	
 	return true
 	
-end
-
-function TOOL:RightClick( trace )
-	return self:LeftClick( trace )
 end
 
 function TOOL:UpdateGhost( ent, player )

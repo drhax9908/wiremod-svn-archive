@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Forcer"
 TOOL.Command		= nil
@@ -57,15 +56,6 @@ function TOOL:LeftClick( trace )
 	   wire_forcer:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	end
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_forcer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_forcer:GetPhysicsObject():EnableCollisions( false )
-		wire_forcer:GetTable().nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_forcer, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireForcer")
@@ -74,14 +64,9 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_forcers", wire_forcer )
 
 	return true
-end
-
-function TOOL:RightClick( trace )
-	return false
 end
 
 if (SERVER) then
@@ -97,8 +82,8 @@ if (SERVER) then
 		wire_forcer:SetModel( Model )
 		wire_forcer:Spawn()
 
-		wire_forcer:GetTable():Setup(Force, Length, showbeam)
-		wire_forcer:GetTable():SetPlayer( pl )
+		wire_forcer:Setup(Force, Length, showbeam)
+		wire_forcer:SetPlayer( pl )
 		
 		local ttable = {
 			pl		= pl,
@@ -106,7 +91,6 @@ if (SERVER) then
 			Length	= Length,
 			showbeam = showbeam,
 		}
-
 		table.Merge(wire_forcer:GetTable(), ttable )
 		
 		pl:AddCount( "wire_forcers", wire_forcer )

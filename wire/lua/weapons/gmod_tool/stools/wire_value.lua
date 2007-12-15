@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Constant Value"
 TOOL.Command		= nil
@@ -16,6 +15,7 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_values', 20)
+	ModelPlug_Register("value")
 end
 
 TOOL.ClientConVar[ "model" ] = "models/kobilica/value.mdl"
@@ -33,11 +33,6 @@ TOOL.ClientConVar[ "value10" ] = "0"
 TOOL.ClientConVar[ "value11" ] = "0"
 TOOL.ClientConVar[ "value12" ] = "0"
 
-
-if (SERVER) then
-	ModelPlug_Register("value")
-end
-
 cleanup.Register( "wire_values" )
 
 function TOOL:LeftClick( trace )
@@ -47,7 +42,6 @@ function TOOL:LeftClick( trace )
 	
 	local ply = self:GetOwner()
 	
-	// Get client's CVars
 	local model		= self:GetClientInfo( "model" )
 	local numvalues	= self:GetClientNumber( "numvalues" )
 	
@@ -128,10 +122,9 @@ if (SERVER) then
 		wire_value:SetPlayer( pl )
 
 		local ttable = {
-			value		= value,
-			pl              = pl
-			}
-
+			value	= value,
+			pl		= pl
+		}
 		table.Merge(wire_value:GetTable(), ttable )
 		
 		pl:AddCount( "wire_values", wire_value )
@@ -208,94 +201,6 @@ function TOOL.BuildCPanel(panel)
 			Command = "wire_value_value"..i
 		})
 	end
-	
-	/*panel:AddControl("Slider", {
-		Label = "#WireValueTool_value",
-		Type = "Float",
-		Min = "-10",
-		Max = "10",
-		Command = "wire_value_value2"
-	})
-	
-	panel:AddControl("Slider", {
-		Label = "#WireValueTool_value",
-		Type = "Float",
-		Min = "-10",
-		Max = "10",
-		Command = "wire_value_value3"
-	})
-	
-	panel:AddControl("Slider", {
-		Label = "#WireValueTool_value",
-		Type = "Float",
-		Min = "-10",
-		Max = "10",
-		Command = "wire_value_value4"
-	})
-	
-	panel:AddControl("Slider", {
-		Label = "#WireValueTool_value",
-		Type = "Float",
-		Min = "-10",
-		Max = "10",
-		Command = "wire_value_value5"
-	})
-	
-	panel:AddControl("Slider", {
-		Label = "#WireValueTool_value",
-		Type = "Float",
-		Min = "-10",
-		Max = "10",
-		Command = "wire_value_value6"
-	})
-	
-	panel:AddControl("Slider", {
-		Label = "#WireValueTool_value",
-		Type = "Float",
-		Min = "-10",
-		Max = "10",
-		Command = "wire_value_value7"
-	})
-	
-	panel:AddControl("Slider", {
-		Label = "#WireValueTool_value",
-		Type = "Float",
-		Min = "-10",
-		Max = "10",
-		Command = "wire_value_value8"
-	})
-	
-	panel:AddControl("Slider", {
-		Label = "#WireValueTool_value",
-		Type = "Float",
-		Min = "-10",
-		Max = "10",
-		Command = "wire_value_value9"
-	})
-	
-	panel:AddControl("Slider", {
-		Label = "#WireValueTool_value",
-		Type = "Float",
-		Min = "-10",
-		Max = "10",
-		Command = "wire_value_value10"
-	})
-	
-	panel:AddControl("Slider", {
-		Label = "#WireValueTool_value",
-		Type = "Float",
-		Min = "-10",
-		Max = "10",
-		Command = "wire_value_value11"
-	})
-	
-	panel:AddControl("Slider", {
-		Label = "#WireValueTool_value",
-		Type = "Float",
-		Min = "-10",
-		Max = "10",
-		Command = "wire_value_value12"
-	})*/
 	
 	ModelPlug_AddToCPanel(panel, "value", "wire_value", "#WireValueTool_model", nil, "#WireValueTool_model")
 end

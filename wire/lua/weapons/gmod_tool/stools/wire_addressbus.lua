@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Advanced"
 TOOL.Name			= "Address Bus"
 TOOL.Command		= nil
@@ -43,6 +42,7 @@ function TOOL:LeftClick( trace )
 		trace.Entity.MemEnd[2] = trace.Entity.MemStart[2] + self:GetClientInfo( "addrspace2sz" ) - 1
 		trace.Entity.MemEnd[3] = trace.Entity.MemStart[3] + self:GetClientInfo( "addrspace3sz" ) - 1
 		trace.Entity.MemEnd[4] = trace.Entity.MemStart[4] + self:GetClientInfo( "addrspace4sz" ) - 1
+		--TODO: update vars used by duplicator
 		return true
 	end
 
@@ -128,7 +128,6 @@ if (SERVER) then
 			Mem3sz = Mem3sz,
 			Mem4sz = Mem4sz,
 		}
-		
 		table.Merge(wire_addressbus:GetTable(), ttable )
 		
 		pl:AddCount( "wire_addressbuss", wire_addressbus )
@@ -151,10 +150,8 @@ function TOOL:UpdateGhostWireAddressBus( ent, player )
 	if (!trace.Hit) then return end
 
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_addressbus" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()

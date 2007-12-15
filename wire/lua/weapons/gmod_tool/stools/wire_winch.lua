@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Winch"
 TOOL.Command		= nil
@@ -10,7 +9,6 @@ TOOL.ClientConVar[ "fwd_speed" ] = "64"
 TOOL.ClientConVar[ "bwd_speed" ] = "64"
 
 if CLIENT then
-
     language.Add( "Tool_wire_winch_name", "Winch Tool (Wire)" )
     language.Add( "Tool_wire_winch_desc", "Makes a controllable winch" )
     language.Add( "Tool_wire_winch_0", "Primary: Place winch\nSecondary: Place winch along the hit normal" )
@@ -20,12 +18,10 @@ if CLIENT then
     language.Add( "WireWinchTool_material", "Material:" )
 	language.Add( "WireWinchTool_fixed", "Fixed:" )
 	language.Add( "undone_wirewinch", "Undone Wire Winch" )
-
 end
 
 
 function TOOL:LeftClick( trace )
-
 	if ( trace.Entity:IsValid() && trace.Entity:IsPlayer() ) then return end
 	
 	// If there's no physics object then we can't constraint it!

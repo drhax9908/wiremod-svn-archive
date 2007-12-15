@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Trail"
 TOOL.Command		= nil
@@ -18,7 +17,6 @@ if (SERVER) then
 	CreateConVar('sbox_maxwire_trails', 20)
 end
 
-
 TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
 TOOL.ClientConVar[ "material" ] = ""
 
@@ -30,9 +28,11 @@ function TOOL:LeftClick( trace )
 	if ( CLIENT ) then return true end
 
 	local ply = self:GetOwner()
+	local mat = self:GetClientInfo("material")
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_trail" && trace.Entity:GetTable().pl == ply ) then
-	       trace.Entity:Setup(self:GetClientInfo("material"))
+	    trace.Entity.mat = mat
+	    trace.Entity:Setup(mat)
 		return true
 	end
 
@@ -41,22 +41,11 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 	
-	local mat = self:GetClientInfo("material")
-
 	local wire_trail = MakeWireTrail( ply, trace.HitPos, mat, Ang )
 
 	local min = wire_trail:OBBMins()
 	wire_trail:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_nailer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_nailer:GetPhysicsObject():EnableCollisions( false )
-		wire_nailer:GetTable().nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_trail, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("Wire Trails")
@@ -65,14 +54,9 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_trails", wire_trail )
 
 	return true
-end
-
-function TOOL:RightClick( trace )
-	return false
 end
 
 if (SERVER) then
@@ -89,14 +73,10 @@ if (SERVER) then
 		wire_trail:Spawn()
 		wire_trail:Setup(mat)
 
-		wire_trail:GetTable():SetPlayer( pl )
+		wire_trail:SetPlayer( pl )
+		wire_trail.pl = pl
+		wire_trail.mat = mat
 
-		local ttable = {
-			pl = pl
-		}
-
-		table.Merge(wire_trail:GetTable(), ttable )
-		
 		pl:AddCount( "wire_trails", wire_trail )
 
 		return wire_trail
@@ -110,7 +90,7 @@ function TOOL:UpdateGhostWireTrail( ent, player )
 	if ( !ent || !ent:IsValid() ) then return end
 
 	local tr 	= utilx.GetPlayerTrace( player, player:GetCursorAimVector() )
-	local trace 	= util.TraceLine( tr )
+	local trace = util.TraceLine( tr )
 
 	if (!trace.Hit || trace.Entity:IsPlayer() || trace.Entity:GetClass() == "gmod_wire_trail" ) then
 		ent:SetNoDraw( true )
@@ -138,22 +118,6 @@ end
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_trail_name", Description = "#Tool_wire_trail_desc" })
 
-	panel:AddControl("ComboBox", {
-		Label = "#Presets",
-		MenuButton = "1",
-		Folder = "wire_trail",
-
-		Options = {
-			Default = {
-				wire_trail_trail = "0",
-			}
-		},
-		CVars = {
-		}
-	})
-	
-	local Options = list.Get( "trail_materials" )
-	
-	panel:AddControl( "MatSelect", { Height = "2", Label = "#WireTrailTool_mat", ConVar = "wire_trail_material", Options = Options, ItemWidth = 64, ItemHeight = 64 } )
+	panel:AddControl( "MatSelect", { Height = "2", Label = "#WireTrailTool_mat", ConVar = "wire_trail_material", Options = list.Get( "trail_materials" ), ItemWidth = 64, ItemHeight = 64 } )
 end
 

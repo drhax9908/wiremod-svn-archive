@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Weight"
 TOOL.Command		= nil
@@ -17,8 +16,6 @@ if (SERVER) then
 	CreateConVar('sbox_maxwire_weights', 20)
 end
 
-
-//TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
 TOOL.Model = "models/props_interiors/pot01a.mdl"
 
 cleanup.Register( "wire_weights" )
@@ -44,15 +41,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_weight:OBBMins()
 	wire_weight:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_nailer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_nailer:GetPhysicsObject():EnableCollisions( false )
-		wire_nailer:GetTable().nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_weight, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("Wire Weight")
@@ -60,7 +48,6 @@ function TOOL:LeftClick( trace )
 		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
-
 
 	ply:AddCleanup( "wire_weights", wire_weight )
 
@@ -84,13 +71,8 @@ if (SERVER) then
 		wire_weight:SetModel( Model("models/jaanus/wiretool/wiretool_range.mdl") )
 		wire_weight:Spawn()
 
-		wire_weight:GetTable():SetPlayer( pl )
-
-		local ttable = {
-			pl = pl
-		}
-
-		table.Merge(wire_weight:GetTable(), ttable )
+		wire_weight:SetPlayer( pl )
+		wire_weight.pl = pl
 		
 		pl:AddCount( "wire_weights", wire_weight )
 
@@ -132,19 +114,4 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_weight_name", Description = "#Tool_wire_weight_desc" })
-
-	panel:AddControl("ComboBox", {
-		Label = "#Presets",
-		MenuButton = "1",
-		Folder = "wire_weight",
-
-		Options = {
-			Default = {
-				wire_weight_weight = "0",
-			}
-		},
-		CVars = {
-		}
-	})
 end
-

@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Beacon"
 TOOL.Name			= "Waypoint"
 TOOL.Command		= nil
@@ -48,14 +47,11 @@ function TOOL:LeftClick(trace)
 	    return
 	end
 	
-	// Get client's CVars
 	local range = self:GetClientNumber("range")
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_waypoint" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup(range)
-		
-		trace.Entity:GetTable().range = range
-		
+		trace.Entity.range = range
 		return true
 	end	
 
@@ -83,7 +79,6 @@ function TOOL:LeftClick(trace)
 	ply:AddCleanup( "wire_waypoints", wire_waypoint )
 
 	return true
-	
 end
 
 function TOOL:RightClick(trace)
@@ -117,7 +112,6 @@ if SERVER then
 			range       = range,
 			nocollide	= nocollide,
 		}
-		
 		table.Merge( wire_waypoint:GetTable(), ttable )
 
 		pl:AddCount( "wire_waypoints", wire_waypoint )

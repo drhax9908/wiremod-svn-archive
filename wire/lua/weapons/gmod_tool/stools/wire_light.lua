@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Display"
 TOOL.Name			= "Light"
 TOOL.Command		= nil
@@ -21,18 +20,12 @@ end
 TOOL.ClientConVar[ "directional" ] = "0"
 TOOL.ClientConVar[ "radiant" ] = "0"
 
-
 TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
 
 cleanup.Register( "wire_lights" )
 
 function TOOL:LeftClick( trace )
-
 	if trace.Entity && trace.Entity:IsPlayer() then return false end
-	
-	// If there's no physics object then we can't constraint it!
-	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-
 	if (CLIENT) then return true end
 	
 	local ply = self:GetOwner()
@@ -40,19 +33,14 @@ function TOOL:LeftClick( trace )
 	local directional	= (self:GetClientNumber("directional") ~= 0)
 	local radiant	= (self:GetClientNumber("radiant") ~= 0)
 
-	
 	// If we shot a wire_light change its settings
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_light" && trace.Entity.pl == ply ) then
-
 		trace.Entity:Setup(directional, radiant)
-
 		trace.Entity.directional = directional
 		trace.Entity.radiant = radiant
-
 		return true
 	end
 
-	
 	if ( !self:GetSWEP():CheckLimit( "wire_lights" ) ) then return false end
 
 	if (not util.IsValidModel(self.Model)) then return false end
@@ -61,23 +49,11 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	wire_light = MakeWireLight( ply, Ang, trace.HitPos, directional, radiant )
+	local wire_light = MakeWireLight( ply, Ang, trace.HitPos, directional, radiant )
 	
 	local min = wire_light:OBBMins()
 	wire_light:SetPos( trace.HitPos - trace.HitNormal * min.z )
-	
-	/*local const, nocollide
-	
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_light, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		
-		// Don't disable collision if it's not attached to anything
-		if ( collision == 0 ) then 
-			wire_light:GetPhysicsObject():EnableCollisions( false )
-			wire_light:GetTable().nocollide = true
-		end
-	end*/
+
 	local const = WireLib.Weld(wire_light, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireLight")
@@ -87,8 +63,6 @@ function TOOL:LeftClick( trace )
 	undo.Finish()
 		
 	ply:AddCleanup( "wire_lights", wire_light )
-	ply:AddCleanup( "wire_lights", const )
-	ply:AddCleanup( "wire_lights", nocollide )
 	
 	return true
 
@@ -96,7 +70,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireLight( pl, Ang, Pos, directional, radiant, nocollide, Vel, aVel, frozen )
+	function MakeWireLight( pl, Ang, Pos, directional, radiant, nocollide, Vel, aVel, frozen, nocollide )
 		if ( !pl:CheckLimit( "wire_lights" ) ) then return false end
 	
 		local wire_light = ents.Create( "gmod_wire_light" )
@@ -116,8 +90,7 @@ if (SERVER) then
 			directional = directional,
 			radiant = radiant,
 			nocollide = nocollide
-			}
-
+		}
 		table.Merge(wire_light:GetTable(), ttable )
 
 		pl:AddCount( "wire_lights", wire_light )
@@ -125,7 +98,7 @@ if (SERVER) then
 		return wire_light
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_light", MakeWireLight, "Ang", "Pos", "directional", "radiant", "nocollide", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_light", MakeWireLight, "Ang", "Pos", "directional", "radiant", "nocollide", "Vel", "aVel", "frozen", "nocollide")
 
 end
 
@@ -139,10 +112,8 @@ function TOOL:UpdateGhostWireLight( ent, player )
 	if (!trace.Hit) then return end
 	
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_light" || trace.Entity:IsPlayer()) then
-	
 		ent:SetNoDraw( true )
 		return
-		
 	end
 	
 	local Ang = trace.HitNormal:Angle()

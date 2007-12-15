@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Advanced"
 TOOL.Name			= "Data Transferrer"
 TOOL.Command		= nil
@@ -76,7 +75,6 @@ if (SERVER) then
 			pl = pl,
 			Smodel = Smodel,
 		}
-		
 		table.Merge(wire_datarate:GetTable(), ttable )
 		
 		pl:AddCount( "wire_datarates", wire_datarate )
@@ -99,10 +97,8 @@ function TOOL:UpdateGhostWiredatarate( ent, player )
 	if (!trace.Hit) then return end
 
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_datarate" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()

@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Display"
 TOOL.Name			= "Panel"
 TOOL.Command		= nil
@@ -44,7 +43,7 @@ function TOOL:LeftClick( trace )
 		Ang.pitch = Ang.pitch + 90
 	end
 	
-	wire_panel = MakeWirePanel( ply, Ang, trace.HitPos, Smodel )
+	local wire_panel = MakeWirePanel( ply, Ang, trace.HitPos, Smodel )
 	local min = wire_panel:OBBMins()
 	wire_panel:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
@@ -85,7 +84,6 @@ if (SERVER) then
 			pl = pl,
 			Smodel = Smodel,
 		}
-		
 		table.Merge(wire_panel:GetTable(), ttable )
 		
 		pl:AddCount( "wire_panels", wire_panel )
@@ -108,10 +106,8 @@ function TOOL:UpdateGhostWirePanel( ent, player )
 	if (!trace.Hit) then return end
 
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_panel" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()

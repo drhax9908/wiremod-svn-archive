@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Nailer"
 TOOL.Command		= nil
@@ -34,7 +33,12 @@ function TOOL:LeftClick( trace )
 
 	local ply = self:GetOwner()
 
+	local model = self:GetClientInfo("Model")
+	local firm = self:GetClientNumber( "forcelim" )
+
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_nailer" && trace.Entity:GetTable().pl == ply ) then
+		trace.Entity:Setup( flim )
+		trace.Entity.Firm = firm
 		return true
 	end
 
@@ -43,22 +47,11 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 	
-	local model = self:GetClientInfo("Model")
-
-	local wire_nailer = MakeWireNailer( ply, trace.HitPos, Ang, self:GetClientNumber( "forcelim" ), model )
+	local wire_nailer = MakeWireNailer( ply, trace.HitPos, Ang, firm, model )
 
 	local min = wire_nailer:OBBMins()
 	wire_nailer:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_nailer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_nailer:GetPhysicsObject():EnableCollisions( false )
-		wire_nailer:GetTable().nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_nailer, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("Wire Nailer")
@@ -67,14 +60,9 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_nailers", wire_nailer )
 
 	return true
-end
-
-function TOOL:RightClick( trace )
-	return false
 end
 
 if (SERVER) then
@@ -90,14 +78,13 @@ if (SERVER) then
 		wire_nailer:SetModel( Model )
 		wire_nailer:Spawn()
 
-		wire_nailer:GetTable():Setup( flim )
-		wire_nailer:GetTable():SetPlayer( pl )
+		wire_nailer:Setup( flim )
+		wire_nailer:SetPlayer( pl )
 
 		local ttable = {
 			pl = pl,
 			Flim = flim
 		}
-
 		table.Merge(wire_nailer:GetTable(), ttable )
 		
 		pl:AddCount( "wire_nailers", wire_nailer )

@@ -1,22 +1,18 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Weld Latch"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
 if CLIENT then
-	
     language.Add( "Tool_wire_latch_name", "Latch Tool (Wire)" )
     language.Add( "Tool_wire_latch_desc", "Makes a controllable latch" )
     language.Add( "Tool_wire_latch_0", "Primary: Click on first entity to be latched" )
     language.Add( "Tool_wire_latch_1", "Left click on the second entity" )
     language.Add( "Tool_wire_latch_2", "Left click to place the controller" )
 	language.Add( "undone_wirelatch", "Undone Wire Latch" )
-	
 end
 
 function TOOL:LeftClick( trace )
-	
 	if ( trace.Entity:IsValid() && trace.Entity:IsPlayer() ) then return end
 	
 	// If there's no physics object then we can't constraint it!

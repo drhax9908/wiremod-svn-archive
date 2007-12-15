@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Display"
 TOOL.Name			= "Console Screen"
 TOOL.Command		= nil
@@ -68,13 +67,11 @@ if (SERVER) then
 			pl = pl,
 			Smodel = Smodel,
 		}
-		
 		table.Merge(wire_consolescreen:GetTable(), ttable )
 		
 		pl:AddCount( "wire_consolescreens", wire_consolescreen )
 		
 		return wire_consolescreen
-		
 	end
 
 	duplicator.RegisterEntityClass("gmod_wire_consolescreen", MakeWireconsoleScreen, "Ang", "Pos", "Smodel")
@@ -91,10 +88,8 @@ function TOOL:UpdateGhostWireconsoleScreen( ent, player )
 	if (!trace.Hit) then return end
 
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_consolescreen" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()

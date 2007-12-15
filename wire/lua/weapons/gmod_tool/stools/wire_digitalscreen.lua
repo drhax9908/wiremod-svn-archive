@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Display"
 TOOL.Name			= "Digital Screen"
 TOOL.Command		= nil
@@ -34,7 +33,7 @@ function TOOL:LeftClick( trace )
 	local Smodel = self:GetClientInfo( "model" )
 	Ang.pitch = Ang.pitch + 90
 	
-	wire_digitalscreen = MakeWireDigitalScreen( ply, Ang, trace.HitPos, Smodel )
+	local wire_digitalscreen = MakeWireDigitalScreen( ply, Ang, trace.HitPos, Smodel )
 	local min = wire_digitalscreen:OBBMins()
 	wire_digitalscreen:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
@@ -68,13 +67,11 @@ if (SERVER) then
 			pl = pl,
 			Smodel = Smodel,
 		}
-		
 		table.Merge(wire_digitalscreen:GetTable(), ttable )
 		
 		pl:AddCount( "wire_digitalscreens", wire_digitalscreen )
 		
 		return wire_digitalscreen
-		
 	end
 
 	duplicator.RegisterEntityClass("gmod_wire_digitalscreen", MakeWireDigitalScreen, "Ang", "Pos", "Smodel")
@@ -91,10 +88,8 @@ function TOOL:UpdateGhostWireDigitalScreen( ent, player )
 	if (!trace.Hit) then return end
 
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_digitalscreen" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()

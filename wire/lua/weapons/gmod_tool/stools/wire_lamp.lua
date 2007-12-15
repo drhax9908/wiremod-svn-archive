@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Display"
 TOOL.Name			= "Lamps"
 TOOL.Command		= nil
@@ -29,13 +28,9 @@ TOOL.ClientConVar[ "b" ] = "255"
 cleanup.Register( "wire_lamp" )
 
 function TOOL:LeftClick( trace, attach )
-
 	if trace.Entity && trace.Entity:IsPlayer() then return false end
 	if (CLIENT) then return true end
 	if (attach == nil) then attach = true end
-	
-	// If there's no physics object then we can't constraint it!
-	if ( SERVER && attach && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
 	
 	local ply = self:GetOwner()
 	
@@ -47,17 +42,17 @@ function TOOL:LeftClick( trace, attach )
 	
 	if	trace.Entity:IsValid() && 
 		trace.Entity:GetClass() == "gmod_wire_lamp" &&
-		trace.Entity:GetTable():GetPlayer() == ply
+		trace.Entity:GetPlayer() == ply
 	then
-		trace.Entity:GetTable():SetLightColor( r, g, b )
-		trace.Entity:GetTable().r = r
-		trace.Entity:GetTable().g = g
-		trace.Entity:GetTable().b = b
+		trace.Entity:SetLightColor( r, g, b )
+		trace.Entity.r = r
+		trace.Entity.g = g
+		trace.Entity.b = b
 		return true
 	end
 	
 	if ( !self:GetSWEP():CheckLimit( "wire_lamps" ) ) then return false end
-	wire_lamp = MakeWireLamp( ply, pos, ang, r, g, b )
+	local wire_lamp = MakeWireLamp( ply, pos, ang, r, g, b )
 	
 	if (!attach) then 
 	
@@ -111,35 +106,39 @@ function TOOL:RightClick( trace )
 
 end
 
-function MakeWireLamp( pl, Pos, Ang, r, g, b, Vel, aVel, frozen )
+if (SERVER) then
 
-	if ( !pl:CheckLimit( "wire_lamps" ) ) then return false end
+	function MakeWireLamp( pl, Pos, Ang, r, g, b, Vel, aVel, frozen )
 
-	local wire_lamp = ents.Create( "gmod_wire_lamp" )
-	if (!wire_lamp:IsValid()) then return end
-		wire_lamp:SetPos( Pos )
-		wire_lamp:SetAngles( Ang )
-		wire_lamp:GetTable():SetLightColor( r, g, b )
-	wire_lamp:Spawn()
+		if ( !pl:CheckLimit( "wire_lamps" ) ) then return false end
 
-	wire_lamp:Setup( r, g, b )
-	wire_lamp:GetTable():SetPlayer( pl )
+		local wire_lamp = ents.Create( "gmod_wire_lamp" )
+		if (!wire_lamp:IsValid()) then return end
+			wire_lamp:SetPos( Pos )
+			wire_lamp:SetAngles( Ang )
+			wire_lamp:SetLightColor( r, g, b )
+		wire_lamp:Spawn()
+
+		wire_lamp:Setup( r, g, b )
+		wire_lamp:SetPlayer( pl )
 
 
-	if (wire_lamp:GetPhysicsObject():IsValid()) then
-		Phys = wire_lamp:GetPhysicsObject()
-		if Vel then Phys:SetVelocity(Vel) end
-		if Vel then Phys:AddAngleVelocity(aVel) end
-		Phys:EnableMotion(frozen != true)
+		if (wire_lamp:GetPhysicsObject():IsValid()) then
+			Phys = wire_lamp:GetPhysicsObject()
+			if Vel then Phys:SetVelocity(Vel) end
+			if Vel then Phys:AddAngleVelocity(aVel) end
+			Phys:EnableMotion(frozen != true)
+		end
+		
+		pl:AddCount( "wire_lamps", wire_lamp )
+		pl:AddCleanup( "wire_lamp", wire_lamp )
+		
+		return wire_lamp
 	end
-	
-	pl:AddCount( "wire_lamps", wire_lamp )
-	pl:AddCleanup( "wire_lamp", wire_lamp )
-	
-	return wire_lamp
-end
 
-duplicator.RegisterEntityClass( "gmod_wire_lamp", MakeWireLamp, "Pos", "Ang", "lightr", "lightg", "lightb", "Vel", "aVel", "frozen" )
+	duplicator.RegisterEntityClass( "gmod_wire_lamp", MakeWireLamp, "Pos", "Ang", "lightr", "lightg", "lightb", "Vel", "aVel", "frozen" )
+
+end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_lamp_name", Description = "#Tool_wire_lamp_desc" })
@@ -187,10 +186,3 @@ function TOOL.BuildCPanel(panel)
 		Multiplier = "255"
 	})
 end
-
-
-TOOL.ClientConVar[ "ropelength" ] = "64"
-TOOL.ClientConVar[ "ropematerial" ] = "cable/rope"
-TOOL.ClientConVar[ "r" ] = "255"
-TOOL.ClientConVar[ "g" ] = "255"
-TOOL.ClientConVar[ "b" ] = "255"

@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Display"
 TOOL.Name			= "Sound Emitter"
 TOOL.Command		= nil
@@ -17,24 +16,17 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_emitters', 10)
+	ModelPlug_Register("speaker")
 end
 
 TOOL.ClientConVar[ "sound" ] = "common/warning.wav"
 TOOL.ClientConVar[ "collision" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/cheeze/wires/speaker.mdl"
 
-if (SERVER) then
-	ModelPlug_Register("speaker")
-end
-
 cleanup.Register( "wire_emitters" )
 
 function TOOL:LeftClick( trace )
 	if trace.Entity && trace.Entity:IsPlayer() then return false end
-	
-	// If there's no physics object then we can't constraint it!
-	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-
 	if (CLIENT) then return true end
 	
 	local ply = self:GetOwner()
@@ -47,7 +39,6 @@ function TOOL:LeftClick( trace )
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_soundemitter" && trace.Entity.pl == ply ) then
 		trace.Entity:SetSound( Sound(sound) )
 		trace.Entity.sound	= sound
-
 		return true
 	end
 	
@@ -59,20 +50,11 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	wire_emitter = MakeWireEmitter( ply, model, Ang, trace.HitPos, sound )
+	local wire_emitter = MakeWireEmitter( ply, model, Ang, trace.HitPos, sound )
 	
 	local min = wire_emitter:OBBMins()
 	wire_emitter:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
-	/*local const, nocollide
-	
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_emitter, trace.Entity, 0, trace.PhysicsBone, 0, (collision == 0), true )
-		// Don't disable collision if it's not attached to anything
-		wire_emitter:GetPhysicsObject():EnableCollisions( false )
-		wire_emitter.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_emitter, trace.Entity, trace.PhysicsBone, true, collision)
 
 	undo.Create("WireSoundEmitter")
@@ -109,8 +91,7 @@ if (SERVER) then
 		local etable = {
 			pl	= pl,
 			nocollide = nocollide
-			}
-
+		}
 		table.Merge(wire_emitter:GetTable(), etable )
 
 		pl:AddCount( "wire_emitters", wire_emitter )
@@ -133,10 +114,8 @@ function TOOL:UpdateGhostWireEmitter( ent, player )
 	if (!trace.Hit) then return end
 	
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_emitter" || trace.Entity:IsPlayer()) then
-	
 		ent:SetNoDraw( true )
 		return
-		
 	end
 	
 	local Ang = trace.HitNormal:Angle()

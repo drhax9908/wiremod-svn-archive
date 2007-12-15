@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Detection"
 TOOL.Name			= "Water Sensor"
 TOOL.Command		= nil
@@ -16,7 +15,6 @@ end
 if (SERVER) then
 	CreateConVar('sbox_maxwire_watersensors', 20)
 end
-
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
 
@@ -51,14 +49,9 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_watersensors", wire_watersensor )
 
 	return true
-end
-
-function TOOL:RightClick( trace )
-	return false
 end
 
 if (SERVER) then
@@ -74,14 +67,9 @@ if (SERVER) then
 		wire_watersensor:SetModel( Model("models/jaanus/wiretool/wiretool_range.mdl") )
 		wire_watersensor:Spawn()
 
-		wire_watersensor:GetTable():SetPlayer( pl )
+		wire_watersensor:SetPlayer( pl )
+		wire_watersensor.pl = pl
 
-		local ttable = {
-			pl = pl
-		}
-
-		table.Merge(wire_watersensor:GetTable(), ttable )
-		
 		pl:AddCount( "wire_watersensors", wire_watersensor )
 
 		return wire_watersensor
@@ -95,7 +83,7 @@ function TOOL:UpdateGhostWireWatersensor( ent, player )
 	if ( !ent || !ent:IsValid() ) then return end
 
 	local tr 	= utilx.GetPlayerTrace( player, player:GetCursorAimVector() )
-	local trace 	= util.TraceLine( tr )
+	local trace = util.TraceLine( tr )
 
 	if (!trace.Hit || trace.Entity:IsPlayer() || trace.Entity:GetClass() == "gmod_wire_watersensor" ) then
 		ent:SetNoDraw( true )
@@ -122,18 +110,4 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_watersensor_name", Description = "#Tool_wire_watersensor_desc" })
-
-	panel:AddControl("ComboBox", {
-		Label = "#Presets",
-		MenuButton = "1",
-		Folder = "wire_watersensor",
-
-		Options = {
-			Default = {
-			}
-		},
-		CVars = {
-		}
-	})
 end
-

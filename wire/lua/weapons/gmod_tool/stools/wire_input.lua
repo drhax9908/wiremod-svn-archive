@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Numpad Input"
 TOOL.Command		= nil
@@ -37,8 +36,6 @@ function TOOL:LeftClick( trace )
 
 	local ply = self:GetOwner()
 
-
-	// Get client's CVars
 	local _keygroup			= self:GetClientNumber( "keygroup" )
 	local _toggle			= self:GetClientNumber( "toggle" )
 	local _value_off		= self:GetClientNumber( "value_off" )
@@ -46,6 +43,10 @@ function TOOL:LeftClick( trace )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_input" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup( _keygroup, _toggle, _value_off, _value_on )
+		wire_input.keygroup		= _keygroup
+		wire_input.toggle		= _toggle
+		wire_input.value_off	= _value_off
+		wire_input.value_on		= _value_on
 		return true
 	end
 
@@ -59,15 +60,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_input:OBBMins()
 	wire_input:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_input, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_input:GetPhysicsObject():EnableCollisions( false )
-		wire_input.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_input, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireInput")
@@ -75,7 +67,6 @@ function TOOL:LeftClick( trace )
 		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
-
 
 	ply:AddCleanup( "wire_inputs", wire_input )
 
@@ -99,18 +90,13 @@ if (SERVER) then
 		wire_input:SetPlayer( pl )
 		wire_input:Setup( keygroup, toggle, value_off, value_on )
 
-		// Moved to ENT:Setup() to allow for updates (TheApathetic)
-		//numpad.OnDown( pl, keygroup, "WireInput_On", wire_input, 1 )
-		//numpad.OnUp( pl, keygroup, "WireInput_Off", wire_input, 1 )
-
 		local ttable = {
 			keygroup		= keygroup,
 			toggle			= toggle,
 			value_off		= value_off,
 			value_on		= value_on,
 			pl              = pl
-			}
-
+		}
 		table.Merge(wire_input, ttable )
 		
 		pl:AddCount( "wire_inputs", wire_input )

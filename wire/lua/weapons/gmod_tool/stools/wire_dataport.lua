@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Advanced"
 TOOL.Name			= "Data Port"
 TOOL.Command		= nil
@@ -70,7 +69,6 @@ if (SERVER) then
 			pl = pl,
 			Smodel = Smodel,
 		}
-		
 		table.Merge(wire_dataport:GetTable(), ttable )
 		
 		pl:AddCount( "wire_dataports", wire_dataport )
@@ -93,10 +91,8 @@ function TOOL:UpdateGhostWireDataPort( ent, player )
 	if (!trace.Hit) then return end
 
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_dataport" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()

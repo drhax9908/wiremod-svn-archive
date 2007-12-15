@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Detection"
 TOOL.Name			= "Laser Pointer Receiver"
 TOOL.Command		= nil
@@ -16,7 +15,6 @@ end
 if (SERVER) then
 	CreateConVar('sbox_maxwire_las_receivers', 20)
 end
-
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
 
@@ -43,15 +41,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_las_reciever:OBBMins()
 	wire_las_reciever:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_nailer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_nailer:GetPhysicsObject():EnableCollisions( false )
-		wire_nailer:GetTable().nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_las_reciever, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("Wire Laser Receiver")
@@ -60,14 +49,9 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_las_receivers", wire_las_reciever )
 
 	return true
-end
-
-function TOOL:RightClick( trace )
-	return false
 end
 
 if (SERVER) then
@@ -83,13 +67,8 @@ if (SERVER) then
 		wire_las_reciever:SetModel( Model("models/jaanus/wiretool/wiretool_range.mdl") )
 		wire_las_reciever:Spawn()
 
-		wire_las_reciever:GetTable():SetPlayer( pl )
-
-		local ttable = {
-			pl = pl
-		}
-
-		table.Merge(wire_las_reciever:GetTable(), ttable )
+		wire_las_reciever:SetPlayer( pl )
+		wire_las_reciever.pl = pl
 		
 		pl:AddCount( "wire_las_receivers", wire_las_reciever )
 

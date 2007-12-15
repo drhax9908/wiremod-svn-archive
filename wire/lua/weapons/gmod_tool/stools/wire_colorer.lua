@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Colorer"
 TOOL.Command		= nil
@@ -19,7 +18,6 @@ end
 if (SERVER) then
 	CreateConVar('sbox_maxwire_colorers', 20)
 end
-
 
 TOOL.ClientConVar[ "Model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
 TOOL.ClientConVar[ "outColor" ] = "0"
@@ -56,15 +54,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_colorer:OBBMins()
 	wire_colorer:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_nailer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_nailer:GetPhysicsObject():EnableCollisions( false )
-		wire_nailer:GetTable().nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_colorer, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("Wire Colorer")
@@ -73,14 +62,10 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_colorers", wire_colorer )
+	ply:AddCleanup( "wire_colorers", const )
 
 	return true
-end
-
-function TOOL:RightClick( trace )
-	return false
 end
 
 if (SERVER) then
@@ -97,14 +82,13 @@ if (SERVER) then
 		wire_colorer:Spawn()
 		wire_colorer:Setup(outColor,Range)
 
-		wire_colorer:GetTable():SetPlayer( pl )
+		wire_colorer:SetPlayer( pl )
 
 		local ttable = {
 		    outColor = outColor,
 		    Range = Range,
 			pl = pl
 		}
-
 		table.Merge(wire_colorer:GetTable(), ttable )
 		
 		pl:AddCount( "wire_colorers", wire_colorer )

@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Display"
 TOOL.Name			= "Pixel"
 TOOL.Command		= nil
@@ -31,7 +30,7 @@ function TOOL:LeftClick( trace )
 	
 	local ply = self:GetOwner()
 	
-	local noclip			= self:GetClientNumber( "noclip" ) == 1
+	local nocollide			= self:GetClientNumber( "noclip" ) == 1
 	local model             = self:GetClientInfo( "model" )
 	
 	// If we shot a wire_pixel change its force
@@ -47,7 +46,7 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	wire_pixel = MakeWirePixel( ply, Ang, trace.HitPos, model, noclip )
+	local wire_pixel = MakeWirePixel( ply, Ang, trace.HitPos, model, nocollide )
 	
 	local min = wire_pixel:OBBMins()
 	wire_pixel:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -61,7 +60,6 @@ function TOOL:LeftClick( trace )
 	undo.Finish()
 	
 	ply:AddCleanup( "wire_pixels", wire_pixel )
-	ply:AddCleanup( "wire_pixels", const )
 	
 	return true
 	
@@ -80,16 +78,15 @@ if (SERVER) then
 		wire_pixel:SetPos( Pos )
 		wire_pixel:Spawn()
 		
-		wire_pixel:GetTable():Setup()
-		wire_pixel:GetTable():SetPlayer(pl)
+		wire_pixel:Setup()
+		wire_pixel:SetPlayer(pl)
 		
 		if ( nocollide == true ) then wire_pixel:SetCollisionGroup(COLLISION_GROUP_WORLD) end
 		
 		local ttable = {
 			pl	= pl,
 			nocollide = nocollide
-			}
-		
+		}
 		table.Merge(wire_pixel:GetTable(), ttable )
 		
 		pl:AddCount( "wire_pixels", wire_pixel )

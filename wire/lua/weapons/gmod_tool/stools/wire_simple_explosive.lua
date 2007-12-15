@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Explosives (Simple)"
 TOOL.Command		= nil
@@ -11,59 +10,31 @@ TOOL.ClientConVar[ "damage" ] = 200		// Damage to inflict
 TOOL.ClientConVar[ "doblastdamage" ] = 1
 TOOL.ClientConVar[ "radius" ] = 300
 TOOL.ClientConVar[ "removeafter" ] = 0
---TOOL.ClientConVar[ "affectother" ] = 0
---TOOL.ClientConVar[ "notaffected" ] = 0
---TOOL.ClientConVar[ "delaytime" ] = 0
---TOOL.ClientConVar[ "delayreloadtime" ] = 0
 TOOL.ClientConVar[ "freeze" ] = 0
 TOOL.ClientConVar[ "weld" ] = 1
---TOOL.ClientConVar[ "maxhealth" ] = 100
---TOOL.ClientConVar[ "bulletproof" ] = 0
---TOOL.ClientConVar[ "explosionproof" ] = 0
 TOOL.ClientConVar[ "weight" ] = 400
---TOOL.ClientConVar[ "explodeatzero" ] = 1
---TOOL.ClientConVar[ "resetatexplode" ] = 1
---TOOL.ClientConVar[ "fireeffect" ] = 1
---TOOL.ClientConVar[ "coloreffect" ] = 1
 TOOL.ClientConVar[ "nocollide" ] = 0
 TOOL.ClientConVar[ "noparentremove" ] = 0
---TOOL.ClientConVar[ "invisibleatzero" ] = 0
 
 cleanup.Register( "wire_simple_explosive" )
 
-
 if ( CLIENT ) then
-	
     language.Add( "Tool_wire_simple_explosive_name", "Simple Wired Explosives Tool" )
     language.Add( "Tool_wire_simple_explosive_desc", "Creates a simple explosives for wire system." )
     language.Add( "Tool_wire_simple_explosive_0", "Left click to place the bomb. Right click update." )
 	language.Add( "WireSimpleExplosiveTool_Model", "Model:" )
 	language.Add( "WireSimpleExplosiveTool_modelman", "Manual model selection:" )
 	language.Add( "WireSimpleExplosiveTool_usemodelman", "Use manual model selection:" )
-	--language.Add( "WireSimpleExplosiveTool_Effects", "Effect:" )
 	language.Add( "WireSimpleExplosiveTool_tirgger", "Trigger value:" )
 	language.Add( "WireSimpleExplosiveTool_damage", "Dammage:" )
-	--language.Add( "WireSimpleExplosiveTool_delay", "On fire time (delay after triggered before explosion):" )
-	--language.Add( "WireSimpleExplosiveTool_delayreload", "Delay after explosion before it can be triggered again:" 
 	language.Add( "WireSimpleExplosiveTool_remove", "Remove on explosion:" )
 	language.Add( "WireSimpleExplosiveTool_doblastdamage", "Do blast damage:" )
-	--language.Add( "WireSimpleExplosiveTool_affectother", "Dammaged/moved by other wired Explosives:" )
-	--language.Add( "WireSimpleExplosiveTool_notaffected", "Not moved by any phyiscal damage:" )
 	language.Add( "WireSimpleExplosiveTool_radius", "Blast radius:" )
 	language.Add( "WireSimpleExplosiveTool_freeze", "Freeze:" )
 	language.Add( "WireSimpleExplosiveTool_weld", "Weld:" )
 	language.Add( "WireSimpleExplosiveTool_noparentremove", "Don't remove on parent remove:" )
 	language.Add( "WireSimpleExplosiveTool_nocollide", "No collide all but world:" )
-	--language.Add( "WireSimpleExplosiveTool_maxhealth", "Max health:" )
 	language.Add( "WireSimpleExplosiveTool_weight", "Weight:" )
-	--language.Add( "WireSimpleExplosiveTool_bulletproof", "Bullet proof:" )
-	--language.Add( "WireSimpleExplosiveTool_explosionproof", "Explosion proof:" )
-	--language.Add( "WireSimpleExplosiveTool_fallproof", "Fall proof:" )
-	--language.Add( "WireSimpleExplosiveTool_explodeatzero", "Explode when health = zero:" )
-	--language.Add( "WireSimpleExplosiveTool_resetatexplode", "Rest health then:" )
-	--language.Add( "WireSimpleExplosiveTool_fireeffect", "Enable fire effect on triggered:" )
-	--language.Add( "WireSimpleExplosiveTool_coloreffect", "Enable color change effect on damage:" )
-	--language.Add( "WireSimpleExplosiveTool_invisibleatzero", "Become invisible when health reaches 0:" )
 	language.Add( "Undone_WireSimpleExplosive", "Wired SimpleExplosive undone" )
 	language.Add( "sboxlimit_wire_simple_explosive", "You've hit wired explosives limit!" )
 end
@@ -71,7 +42,6 @@ end
 if (SERVER) then
     CreateConVar('sbox_maxwire_simple_explosive', 30)
 end 
-
 
 function TOOL:LeftClick( trace )
 
@@ -124,9 +94,6 @@ function TOOL:LeftClick( trace )
 		
 	// Don't weld to world
 	if ( trace.Entity:IsValid() && _weld ) then
-		// Why is this here? (TheApathetic)
-		//local const, nocollide = constraint.Weld( explosive, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0 )
-		//undo.AddEntity( const )
 		if (_noparentremove) then 
 			local const, nocollide = constraint.Weld( explosive, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0, false )
 			undo.AddEntity( const )
@@ -139,13 +106,11 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 	
-	
 	ply:AddCleanup( "wire_simple_explosive", explosive )
 	
 	return true
 	
 end
-
 
 function TOOL:GetSelModel( showerr )
 
@@ -209,7 +174,9 @@ function TOOL:RightClick( trace )
 		local _nocollide		= self:GetClientNumber( "nocollide" ) == 1
 		local _weight		= self:GetClientNumber( "weight" )
 		
-		trace.Entity:GetTable():Setup( _damage, _delaytime, _removeafter, _doblastdamage, _radius, _nocollide )
+		trace.Entity:Setup( _damage, _delaytime, _removeafter, _doblastdamage, _radius, _nocollide )
+		
+		--TODO: fix not updating vars used by duplicator
 		
 		if (_weight <= 0) then _weight = 1 end
 		trace.Entity:GetPhysicsObject():SetMass(_weight)
@@ -254,8 +221,8 @@ if SERVER then
 		explosive:Spawn()
 		explosive:Activate()
 		
-		explosive:GetTable():Setup( damage, delaytime, removeafter, doblastdamage, radius, nocollide )
-		explosive:GetTable():SetPlayer( pl )
+		explosive:Setup( damage, delaytime, removeafter, doblastdamage, radius, nocollide )
+		explosive:SetPlayer( pl )
 		
 		local ttable = 
 		{
@@ -270,7 +237,6 @@ if SERVER then
 			doblastdamage = doblastdamage, 
 			radius = radius
 		}
-		
 		table.Merge( explosive:GetTable(), ttable )
 				
 		pl:AddCount( "wire_simple_explosive", explosive )

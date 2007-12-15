@@ -76,7 +76,7 @@ function TOOL:LeftClick(trace)
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_pod = MakeWirePod(ply, trace.HitPos, Ang, nil, ParseKeys(self:GetClientInfo("Keys")))
+	local wire_pod = MakeWirePod(ply, trace.HitPos, Ang, ParseKeys(self:GetClientInfo("Keys")))
 
 	wire_pod:SetPos(trace.HitPos - trace.HitNormal * wire_pod:OBBMins().z)
 	
@@ -115,24 +115,17 @@ end
 
 if SERVER then
 
-	function MakeWirePod(pl, Pos, Ang, pod, Keys)
+	function MakeWirePod(pl, Pos, Ang, Keys)
 		if not pl:CheckLimit("wire_pods") then return false end
-		local wire_pod
-		wire_pod = ents.Create("gmod_wire_pod")
 		
+		local wire_pod = ents.Create("gmod_wire_pod")
 		if not wire_pod:IsValid() then return false end
-
+		
 		wire_pod:SetAngles(Ang)
 		wire_pod:SetPos(Pos)
 		wire_pod:Spawn()
-		if pod then wire_pod:GetTable():Setup(pod) end
-		wire_pod:GetTable():SetPlayer(pl)
-
-		local ttable = {
-			pl = pl,
-		}
-
-		table.Merge(wire_pod:GetTable(), ttable)
+		wire_pod:SetPlayer(pl)
+		wire_pod.pl = pl
 		
 		pl:AddCount("wire_pods", wire_pod)
 		
@@ -143,7 +136,7 @@ if SERVER then
 		return wire_pod
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_pod", MakeWirePod, "Pos", "Ang", "Pod", "Keys","Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_pod", MakeWirePod, "Pos", "Ang", "Keys","Vel", "aVel", "frozen")
 end
 
 function TOOL:UpdateGhostWirePod(ent, player)
@@ -176,20 +169,7 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_pod_name", Description = "#Tool_wire_pod_desc" })
-
-	panel:AddControl("ComboBox", {
-		Label = "#Presets",
-		MenuButton = "1",
-		Folder = "wire_pod",
-
-		Options = {
-			Default = {
-				wire_pod_pod = "0",
-			}
-		},
-		CVars = {
-		}
-	})
+	
 	panel:AddControl("TextBox", {
 		Label = "#WirePodTool_Keys",
 		Command = "wire_pod_Keys",

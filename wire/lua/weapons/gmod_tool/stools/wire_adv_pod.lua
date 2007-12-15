@@ -73,18 +73,15 @@ if SERVER then
 
 	function MakeWireAdvPod(pl, Pos, Ang)
 		if not pl:CheckLimit("wire_pods") then return false end
-		local wire_pod
-		wire_pod = ents.Create("gmod_wire_adv_pod")
+		
+		local wire_pod = ents.Create("gmod_wire_adv_pod")
 		if not wire_pod:IsValid() then return false end
+		
 		wire_pod:SetAngles(Ang)
 		wire_pod:SetPos(Pos)
 		wire_pod:Spawn()
-		if pod then wire_pod:GetTable():Setup(pod) end
-		wire_pod:GetTable():SetPlayer(pl)
-		local ttable = {
-			pl = pl
-		}
-		table.Merge(wire_pod:GetTable(), ttable)
+		wire_pod:SetPlayer(pl)
+		wire_pod.pl = pl
 		
 		pl:AddCount("wire_pods", wire_pod)
 		
@@ -123,18 +120,4 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_pod_name", Description = "#Tool_wire_pod_desc" })
-
-	panel:AddControl("ComboBox", {
-		Label = "#Presets",
-		MenuButton = "1",
-		Folder = "wire_pod",
-
-		Options = {
-			Default = {
-				wire_pod_pod = "0",
-			}
-		},
-		CVars = {
-		}
-	})
 end

@@ -53,9 +53,7 @@ function TOOL:LeftClick( trace )
 		Ang.pitch = Ang.pitch + 90
 	end
 	
-	--Ang.pitch = Ang.pitch + 90
-	
-	wire_graphics_tablet = MakeWireGraphicsTablet(ply, Ang, trace.HitPos, Smodel, gmode)
+	local wire_graphics_tablet = MakeWireGraphicsTablet(ply, Ang, trace.HitPos, Smodel, gmode)
 	local min = wire_graphics_tablet:OBBMins()
 	wire_graphics_tablet:SetPos( trace.HitPos - trace.HitNormal * min.z )
 

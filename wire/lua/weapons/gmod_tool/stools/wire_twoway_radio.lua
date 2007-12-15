@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Two-way Radio"
 TOOL.Command		= nil
@@ -16,29 +15,23 @@ end
 
 if (SERVER) then
   CreateConVar('sbox_maxwire_twoway_radioes',30)
+	ModelPlug_Register("radio")
 end
 
 TOOL.ClientConVar[ "model" ] = "models/props_lab/bindergreen.mdl"
-
-if (SERVER) then
-	ModelPlug_Register("radio")
-end
 
 TOOL.FirstPeer = nil
 
 cleanup.Register( "wire_twoway_radioes" )
 
 function TOOL:LeftClick( trace )
-
 	if (!trace.HitPos) then return false end
 	if (trace.Entity:IsPlayer()) then return false end
 	if ( CLIENT ) then return true end
 	
 	local ply = self:GetOwner()
-	
-	local model             = self:GetClientInfo( "model" )
+	local model = self:GetClientInfo( "model" )
 
-	// Get client's CVars
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_twoway_radio" && trace.Entity.pl == ply ) then
 		if (self.FirstPeer) and (self.FirstPeer:IsValid()) then
 		    local first = self.FirstPeer
@@ -69,22 +62,12 @@ function TOOL:LeftClick( trace )
 
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
+	
 	local wire_twoway_radio = MakeWireTwoWay_Radio( ply, model, trace.HitPos, Ang, nil )
 	
 	local min = wire_twoway_radio:OBBMins()
 	wire_twoway_radio:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
-	// Don't weld to world
-	/*local const
-	if ( trace.Entity:IsValid() ) then
-		local const = constraint.Weld( wire_twoway_radio, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		
-		// Don't disable collision if it's not attached to anything
-		if ( collision == 0 ) then 
-			wire_twoway_radio:GetPhysicsObject():EnableCollisions( false )
-			wire_twoway_radio:GetTable().nocollide = true
-		end
-	end*/
 	local const = WireLib.Weld(wire_twoway_radio, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireTwoWay_Radio")
@@ -120,7 +103,7 @@ if SERVER then
 	// Having PeerID and Other in the duplicator was making it error out
 	// by trying to reference a two-way radio that didn't exist yet
 	// Build/ApplyDupeInfo now handle this (TheApathetic)
-	function MakeWireTwoWay_Radio(pl, Model, Pos, Ang, Vel, aVel, frozen) //PeerID, Other, Vel, aVel, frozen )
+	function MakeWireTwoWay_Radio(pl, Model, Pos, Ang, Vel, aVel, frozen)
 		if ( !pl:CheckLimit( "wire_twoway_radioes" ) ) then return nil end
 
 		local wire_twoway_radio = ents.Create( "gmod_wire_twoway_radio" )
@@ -135,8 +118,6 @@ if SERVER then
 
 		local ttable = 
 		{
-			//PeerID      = PeerID,
-			//Other		= Other,
 			pl			= pl,
 			nocollide	= nocollide,
 			description = description
@@ -149,7 +130,7 @@ if SERVER then
 		return wire_twoway_radio
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_twoway_radio", MakeWireTwoWay_Radio, "Model", "Pos", "Ang", "Vel", "aVel", "frozen") //"PeerID", "Other", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_twoway_radio", MakeWireTwoWay_Radio, "Model", "Pos", "Ang", "Vel", "aVel", "frozen")
 
 end
 
