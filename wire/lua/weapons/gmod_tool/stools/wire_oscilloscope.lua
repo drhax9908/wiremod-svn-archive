@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Display"
 TOOL.Name			= "Oscilloscope"
 TOOL.Command		= nil
@@ -34,7 +33,7 @@ function TOOL:LeftClick( trace )
 	local Smodel = self:GetClientInfo( "model" )
 	Ang.pitch = Ang.pitch + 90
 	
-	wire_oscilloscope = MakeWireOscilloscope( ply, Ang, trace.HitPos, Smodel )
+	local wire_oscilloscope = MakeWireOscilloscope( ply, Ang, trace.HitPos, Smodel )
 	local min = wire_oscilloscope:OBBMins()
 	wire_oscilloscope:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
@@ -63,17 +62,11 @@ if (SERVER) then
 		wire_oscilloscope:Spawn()
 		
 		wire_oscilloscope:SetPlayer(pl)
-			
-		local ttable = {
-			pl = pl,
-		}
-		
-		table.Merge(wire_oscilloscope:GetTable(), ttable )
+		wire_oscilloscope.pl = pl
 		
 		pl:AddCount( "wire_oscilloscopes", wire_oscilloscope )
 		
 		return wire_oscilloscope
-		
 	end
 
 	duplicator.RegisterEntityClass("gmod_wire_oscilloscope", MakeWireOscilloscope, "Ang", "Pos", "Model")
@@ -90,10 +83,8 @@ function TOOL:UpdateGhostWireOscilloscope( ent, player )
 	if (!trace.Hit) then return end
 
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_oscilloscope" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()

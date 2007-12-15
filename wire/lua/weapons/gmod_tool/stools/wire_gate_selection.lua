@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Control"
 TOOL.Name			= "Chip - Selection"
 TOOL.Command		= nil
@@ -16,15 +15,12 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_gate_selections', 30)
+	ModelPlug_Register("gate")
 end
 
 TOOL.ClientConVar[ "action" ] = "sin"
 TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
-
-if (SERVER) then
-	ModelPlug_Register("gate")
-end
 
 cleanup.Register( "wire_gate_selections" )
 
@@ -60,15 +56,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_gate_selection:OBBMins()
 	wire_gate_selection:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_gate_selection, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_gate_selection:GetPhysicsObject():EnableCollisions( false )
-		wire_gate_selection.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_gate_selection, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireGateSelection")
@@ -77,15 +64,10 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 	
-
 	ply:AddCleanup( "wire_gate_selections", wire_gate_selection )
 	
 	return true
 	
-end
-
-function TOOL:RightClick( trace )
-	return self:LeftClick( trace )
 end
 
 function TOOL:UpdateGhostWireGateSelection( ent, player )

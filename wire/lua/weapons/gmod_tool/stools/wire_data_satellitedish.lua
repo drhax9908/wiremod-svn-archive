@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Data"
 TOOL.Name			= "Satellite Dish"
 TOOL.Command		= nil
@@ -20,8 +19,6 @@ end
 TOOL.ClientConVar["Model"] = "models/kobilica/wiremonitorrtbig.mdl"
 
 TOOL.FirstSelected = nil
-
-
 
 cleanup.Register( "wire_data_satellitedishs" )
 
@@ -46,15 +43,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_data_satellitedish:OBBMins()
 	wire_data_satellitedish:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_nailer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_nailer:GetPhysicsObject():EnableCollisions( false )
-		wire_nailer:GetTable().nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_data_satellitedish, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("Wire Data Satellite Dish")
@@ -63,16 +51,14 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_data_satellitedishs", wire_data_satellitedish )
+	ply:AddCleanup( "wire_data_satellitedishs", const )
 
 	return true
 end
 
 function TOOL:RightClick( trace )
-	if (CLIENT) then
-		return true
-	end
+	if (CLIENT) then return true end
 	
 	if (trace.Entity and trace.Entity:IsValid()) then
 		if (trace.Entity:GetClass() == "prop_physics") then
@@ -116,14 +102,9 @@ if (SERVER) then
 		wire_data_satellitedish:SetModel( Model )
 		wire_data_satellitedish:Spawn()
 
-		wire_data_satellitedish:GetTable():SetPlayer( pl )
+		wire_data_satellitedish:SetPlayer( pl )
+		wire_data_satellitedish.pl = pl
 
-		local ttable = {
-			pl = pl
-		}
-
-		table.Merge(wire_data_satellitedish:GetTable(), ttable )
-		
 		pl:AddCount( "wire_data_satellitedishs", wire_data_satellitedish )
 
 		return wire_data_satellitedish
@@ -164,19 +145,4 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_data_satellitedish_name", Description = "#Tool_wire_data_satellitedish_desc" })
-
-	panel:AddControl("ComboBox", {
-		Label = "#Presets",
-		MenuButton = "1",
-		Folder = "wire_data_satellitedish",
-
-		Options = {
-			Default = {
-				wire_data_satellitedish_data_satellitedish = "0",
-			}
-		},
-		CVars = {
-		}
-	})
 end
-

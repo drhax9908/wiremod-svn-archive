@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Detonator"
 TOOL.Command		= nil
@@ -15,33 +14,26 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_detonators', 20)
+	ModelPlug_Register("detonator")
 end
 
 TOOL.ClientConVar[ "damage" ] = "1"
 TOOL.ClientConVar[ "model" ] = "models/props_combine/breenclock.mdl"
 
-if (SERVER) then
-	ModelPlug_Register("detonator")
-end
-
 cleanup.Register( "wire_detonators" )
 
 function TOOL:LeftClick( trace )
-
 	if trace.Entity && trace.Entity:IsPlayer() then return false end
-	
-	// If there's no physics object then we can't constraint it!
 	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-
 	if (CLIENT) then return true end
 	
 	local ply = self:GetOwner()
 	local damage = self:GetClientNumber( "damage" )
-	local model             = self:GetClientInfo( "model" )
-
-	// If we shot a wire_detonator change its damage
+	local model = self:GetClientInfo( "model" )
+	
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_detonator" && trace.Entity:GetTable().pl == ply ) then
-		trace.Entity:GetTable():Setup(damage)
+		trace.Entity:Setup(damage)
+		trace.Entity.damage = damage
 		return true
 	end
 	
@@ -53,26 +45,7 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 	
-	local const, nocollide
-	
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		wire_detonator = MakeWireDetonator( ply, model, Ang, trace.HitPos, damage )
-		// See MakeWireDetonator() for explanation of this
-		wire_detonator:GetTable().target = trace.Entity
-
-		local min = wire_detonator:OBBMins()
-		wire_detonator:SetPos( trace.HitPos - trace.HitNormal * min.z )
-		
-		const = constraint.Weld( wire_detonator, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		
-		// Don't disable collision if it's not attached to anything
-		if ( collision == 0 ) then 
-			wire_detonator:GetPhysicsObject():EnableCollisions( false )
-			wire_detonator:GetTable().nocollide = true
-		end
-	else return false
-	end
+	local const = WireLib.Weld(wire_detonator, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireDetonator")
 		undo.AddEntity( wire_detonator )
@@ -82,10 +55,8 @@ function TOOL:LeftClick( trace )
 		
 	ply:AddCleanup( "wire_detonators", wire_detonator )
 	ply:AddCleanup( "wire_detonators", const )
-	ply:AddCleanup( "wire_detonators", nocollide )
 	
 	return true
-
 end
 
 if (SERVER) then
@@ -106,18 +77,16 @@ if (SERVER) then
 		wire_detonator:SetModel(Model)
 		wire_detonator:Spawn()
 
-		wire_detonator:GetTable():Setup(damage)
-		wire_detonator:GetTable():SetPlayer(pl)
+		wire_detonator:Setup(damage)
+		wire_detonator:SetPlayer(pl)
 
 		if ( nocollide == true ) then wire_detonator:GetPhysicsObject():EnableCollisions( false ) end
 
 		local ttable = {
 			pl	= pl,
 			damage = damage,
-			//target = target,
 			nocollide = nocollide
-			}
-
+		}
 		table.Merge(wire_detonator:GetTable(), ttable )
 
 		pl:AddCount( "wire_detonators", wire_detonator )
@@ -139,10 +108,8 @@ function TOOL:UpdateGhostWireDetonator( ent, player )
 	if (!trace.Hit) then return end
 	
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_detonator" || trace.Entity:IsPlayer()) then
-	
 		ent:SetNoDraw( true )
 		return
-		
 	end
 	
 	local Ang = trace.HitNormal:Angle()
@@ -166,6 +133,7 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_detonator_name", Description = "#Tool_wire_detonator_desc" })
+
 	panel:AddControl( "Slider",  { Label	= "#Damage",
 		Type	= "Integer",
 		Min		= 1,

@@ -68,11 +68,8 @@ function TOOL:LeftClick( trace )
 	undo.Finish()
 
 	ply:AddCleanup( "wire_speedometers", wire_speedometer )
-	ply:AddCleanup( "wire_speedometers", const )
-	ply:AddCleanup( "wire_speedometers", nocollide )
 
 	return true
-
 end
 
 if (SERVER) then
@@ -108,7 +105,6 @@ if (SERVER) then
 	end
 	
 	duplicator.RegisterEntityClass("gmod_wire_speedometer", MakeWireSpeedometer, "Ang", "Pos", "z_only", "AngVel", "nocollide", "Vel", "aVel", "frozen")
-	
 end
 
 function TOOL:UpdateGhostWireSpeedometer( ent, player )
@@ -121,10 +117,8 @@ function TOOL:UpdateGhostWireSpeedometer( ent, player )
 	if (!trace.Hit) then return end
 
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_speedometer" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()

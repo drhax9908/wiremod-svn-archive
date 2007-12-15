@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Display"
 TOOL.Name			= "Indicator"
 TOOL.Command		= nil
@@ -104,7 +103,6 @@ function TOOL:LeftClick( trace )
 	undo.Finish()
 	
 	ply:AddCleanup( "wire_indicators", wire_indicator )
-	ply:AddCleanup( "wire_indicators", const )
 	
 	return true
 	
@@ -143,8 +141,7 @@ if (SERVER) then
 			material = material,
 			pl	= pl,
 			nocollide = nocollide
-			}
-		
+		}
 		table.Merge(wire_indicator:GetTable(), ttable )
 		
 		pl:AddCount( "wire_indicators", wire_indicator )

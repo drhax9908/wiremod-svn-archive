@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Hoverball"
 TOOL.Command		= nil
@@ -6,7 +5,6 @@ TOOL.ConfigName		= ""
 
 
 if ( CLIENT ) then
-	
     language.Add( "Tool_wire_hoverball_name", "Wired Hoverball Tool" )
     language.Add( "Tool_wire_hoverball_desc", "Spawns a hoverball for use with the wire system." )
     language.Add( "Tool_wire_hoverball_0", "Primary: Create/Update Hoverball" )
@@ -24,9 +22,7 @@ TOOL.ClientConVar[ "resistance" ] = "0"
 TOOL.ClientConVar[ "strength" ] = "1"
 TOOL.ClientConVar[ "starton" ] = "1"
 
-
 cleanup.Register( "wire_hoverballs" )
-
 
 function TOOL:LeftClick( trace )
 
@@ -73,19 +69,6 @@ function TOOL:LeftClick( trace )
 
 	local wire_ball = MakeWireHoverBall( ply, trace.HitPos, speed, resistance, strength )
 	
-	/*local const, nocollide
-	
-	// Don't weld to world
-	if ( trace.Entity != NULL && !trace.Entity:IsWorld() ) then
-	
-		const 		= constraint.Weld( trace.Entity, wire_ball, trace.PhysicsBone, 0, 0, true, true )
-		nocollide = constraint.NoCollide( trace.Entity, wire_ball, 0, trace.PhysicsBone )
-		
-		wire_ball:GetPhysicsObject():EnableCollisions( false )
-		wire_ball:GetTable().nocollide = true
-		
-	end*/
-	
 	local const = WireLib.Weld(wire_ball, trace.Entity, trace.PhysicsBone, true)
 	
 	local nocollide
@@ -110,12 +93,6 @@ function TOOL:LeftClick( trace )
 
 end
 
-function TOOL:RightClick( trace )
-
-	return self:LeftClick( trace )
-	
-end
-
 if (SERVER) then
 
 	function MakeWireHoverBall( ply, Pos, speed, resistance, strength, Vel, aVel, frozen, nocollide )
@@ -127,10 +104,10 @@ if (SERVER) then
 
 		wire_ball:SetPos( Pos )
 		wire_ball:Spawn()
-		wire_ball:GetTable():SetSpeed( speed )
-		wire_ball:GetTable():SetPlayer( ply )
-		wire_ball:GetTable():SetAirResistance( resistance )
-		wire_ball:GetTable():SetStrength( strength )
+		wire_ball:SetSpeed( speed )
+		wire_ball:SetPlayer( ply )
+		wire_ball:SetAirResistance( resistance )
+		wire_ball:SetStrength( strength )
 
 		local ttable = 
 		{
@@ -140,7 +117,6 @@ if (SERVER) then
 			strength = strength,
 			resistance = resistance
 		}
-
 		table.Merge( wire_ball:GetTable(), ttable )
 		
 		ply:AddCount( "wire_hoverballs", wire_ball )

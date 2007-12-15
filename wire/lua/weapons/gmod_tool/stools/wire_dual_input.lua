@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Input (dual)"
 TOOL.Command		= nil
@@ -41,14 +40,13 @@ function TOOL:LeftClick( trace )
 
 	local ply = self:GetOwner()
 
-
 	// Get client's CVars
 	local _keygroup			= self:GetClientNumber( "keygroup" )
-	local _keygroup2			= self:GetClientNumber( "keygroup2" )
+	local _keygroup2		= self:GetClientNumber( "keygroup2" )
 	local _toggle			= self:GetClientNumber( "toggle" )
 	local _value_off		= self:GetClientNumber( "value_off" )
 	local _value_on			= self:GetClientNumber( "value_on" )
-	local _value_on2			= self:GetClientNumber( "value_on2" )
+	local _value_on2		= self:GetClientNumber( "value_on2" )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_dual_input" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup( _keygroup, _keygroup2, _toggle, _value_off, _value_on, _value_on2 )
@@ -65,15 +63,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_dual_input:OBBMins()
 	wire_dual_input:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_dual_input, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_dual_input:GetPhysicsObject():EnableCollisions( false )
-		wire_dual_input.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_dual_input, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireDualInput")
@@ -82,8 +71,8 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_dual_inputs", wire_dual_input )
+	ply:AddCleanup( "wire_dual_inputs", const )
 
 	return true
 
@@ -119,8 +108,7 @@ if (SERVER) then
 			value_on		= value_on,
 			value_on2		= value_on2,
 			pl              = pl
-			}
-
+		}
 		table.Merge(wire_dual_input, ttable )
 		
 		pl:AddCount( "wire_dual_inputs", wire_dual_input )

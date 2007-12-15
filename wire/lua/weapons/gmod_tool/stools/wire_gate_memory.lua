@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Control"
 TOOL.Name			= "Chip - Memory"
 TOOL.Command		= nil
@@ -16,15 +15,12 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_gate_memorys', 30)
+	ModelPlug_Register("gate")
 end
 
 TOOL.ClientConVar[ "action" ] = "latch"
 TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
-
-if (SERVER) then
-	ModelPlug_Register("gate")
-end
 
 cleanup.Register( "wire_gate_memorys" )
 
@@ -72,10 +68,6 @@ function TOOL:LeftClick( trace )
 	
 	return true
 	
-end
-
-function TOOL:RightClick( trace )
-	return self:LeftClick( trace )
 end
 
 function TOOL:UpdateGhostWireGateMemory( ent, player )

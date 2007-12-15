@@ -1,7 +1,3 @@
-/**********
-**tad2020**
-***********/
-
 TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Relay"
 TOOL.Command		= nil
@@ -53,8 +49,6 @@ function TOOL:LeftClick( trace )
 
 	local ply = self:GetOwner()
 
-
-	// Get client's CVars
 	local _keygroup1		= self:GetClientNumber( "keygroup1" )
 	local _keygroup2		= self:GetClientNumber( "keygroup2" )
 	local _keygroup3		= self:GetClientNumber( "keygroup3" )
@@ -83,15 +77,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_relay:OBBMins()
 	wire_relay:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_relay, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_relay:GetPhysicsObject():EnableCollisions( false )
-		wire_relay.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_relay, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireRelay")
@@ -100,11 +85,9 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_relays", wire_relay )
 
 	return true
-
 end
 
 if (SERVER) then
@@ -163,8 +146,7 @@ if (SERVER) then
 			throws			= throws,
 			nokey			= nokey,
 			pl              = pl
-			}
-
+		}
 		table.Merge(wire_relay, ttable )
 		
 		pl:AddCount( "wire_relays", wire_relay )

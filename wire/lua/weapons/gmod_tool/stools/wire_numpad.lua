@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Wired Numpad"
 TOOL.Command		= nil
@@ -35,7 +34,6 @@ function TOOL:LeftClick( trace )
 	
 	local ply = self:GetOwner()
 	
-	// Get client's CVars
 	local _toggle			= self:GetClientNumber( "toggle" )
 	local _value_off		= self:GetClientNumber( "value_off" )
 	local _value_on			= self:GetClientNumber( "value_on" )
@@ -65,7 +63,6 @@ function TOOL:LeftClick( trace )
 		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
-	
 	
 	ply:AddCleanup( "wire_numpads", wire_numpad )
 	
@@ -100,7 +97,6 @@ if (SERVER) then
 			value_on		= value_on,
 			pl              = pl
 		}
-		
 		table.Merge(wire_numpad, ttable )
 		
 		pl:AddCount( "wire_numpads", wire_numpad )

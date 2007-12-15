@@ -43,7 +43,7 @@ end
 if (SERVER) then
 	CreateConVar('sbox_maxwire_textscreens', 20)
 end
---TOOL.ClientConVar[ "model" ] = "models/kobilica/wiremonitorbig.mdl"
+
 for i = 0, 11 do
 	TOOL.ClientConVar["text"..i] = ""	
 end
@@ -52,11 +52,8 @@ TOOL.ClientConVar["tjust"] = 1
 TOOL.ClientConVar["tred"] = 255
 TOOL.ClientConVar["tblue"] = 255
 TOOL.ClientConVar["tgreen"] = 255
-
 TOOL.ClientConVar["ninputs"] = 3
 TOOL.ClientConVar["defaulton"] = 1
-
--- Create flat option (TheApathetic)
 TOOL.ClientConVar["createflat"] = 1
 
 local MaxTextLength = 80
@@ -80,7 +77,6 @@ function TOOL:LeftClick( trace )
 		TextList[i] = self:GetClientInfo("text"..i)
 	end
 	local chrPerLine = 16 - tonumber(self:GetClientInfo("tsize"))
-	--Msg("cpl from stool = "..tostring(chrPerLine).."\n")
 	local textJust = self:GetClientInfo("tjust")
 	local tRed		= math.min(self:GetClientNumber("tred"), 255)
 	local tGreen	= math.min(self:GetClientNumber("tgreen"), 255)
@@ -90,23 +86,27 @@ function TOOL:LeftClick( trace )
 	local CreateFlat = self:GetClientNumber("createflat")
 	local defaultOn = self:GetClientNumber("defaulton")
 
-	--update screen
 	if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_textscreen" && trace.Entity.pl == ply) then
 		trace.Entity:Setup(TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
+		trace.Entity.TextList	= TextList
+		trace.Entity.chrPerLine	= chrPerLine
+		trace.Entity.textJust	= textJust
+		trace.Entity.tRed		= tRed
+		trace.Entity.tGreen		= tGreen
+		trace.Entity.tBlue		= tBlue
+		trace.Entity.numInputs	= numInputs
+		trace.Entity.defaultOn	= defaultOn
 		return true
 	end
 
-	// Create flat if desired (TheApathetic)
 	if (CreateFlat == 0) then
 		Ang.pitch = Ang.pitch + 90
 	end
 	
-	--make text screen
-	wire_textscreen = MakeWireTextScreen( ply, Ang, trace.HitPos, Model(self.Model), TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
+	local wire_textscreen = MakeWireTextScreen( ply, Ang, trace.HitPos, Model(self.Model), TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
 	local min = wire_textscreen:OBBMins()
 	wire_textscreen:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	// Weld to surface (TheApathetic)
 	local const = WireLib.Weld(wire_textscreen, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireTextScreen")
@@ -144,7 +144,6 @@ if (SERVER) then
 			numInputs = numInputs,
 			defaultOn = defaultOn
 		}
-		
 		table.Merge(wire_textscreen:GetTable(), ttable )
 		
 		pl:AddCount( "wire_textscreens", wire_textscreen )
@@ -165,7 +164,6 @@ function TOOL:UpdateGhostWireTextScreen( ent, player )
 	end
 	local Ang = trace.HitNormal:Angle()
 	
-	// Check for create flat option (TheApathetic)
 	if (self:GetClientNumber("createflat") == 0) then
 		Ang.pitch = Ang.pitch + 90
 	end

@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Beacon"
 TOOL.Name			= "Locator"
 TOOL.Command		= nil
@@ -27,11 +26,8 @@ function TOOL:LeftClick(trace)
 	
 	local ply = self:GetOwner()
 	
-	// Get client's CVars
-
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_locator" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup()
-		
 		return true
 	end	
 
@@ -55,13 +51,9 @@ function TOOL:LeftClick(trace)
 	
 end
 
-function TOOL:RightClick(trace)
-	return self:LeftClick(trace)
-end
-
 if SERVER then
 
-	function MakeWireLocator(pl, Pos, Ang, Vel, aVel, frozen )
+	function MakeWireLocator(pl, Pos, Ang, Vel, aVel, frozen, nocollide )
 		if (!pl:CheckLimit("wire_locators")) then return end
 
 		local wire_locator = ents.Create("gmod_wire_locator")
@@ -73,12 +65,13 @@ if SERVER then
 
 		wire_locator:SetOverlayText("Locator Beacon")
 		wire_locator:SetPlayer(pl)
-
+		
+		if ( nocollide == true ) then wire_light:GetPhysicsObject():EnableCollisions( false ) end
+		
 		local ttable = {
 			pl			= pl,
 			nocollide	= nocollide,
 		}
-		
 		table.Merge( wire_locator:GetTable(), ttable )
 
 		pl:AddCount( "wire_locators", wire_locator )
@@ -86,7 +79,7 @@ if SERVER then
 		return wire_locator
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_locator", MakeWireLocator, "Pos", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_locator", MakeWireLocator, "Pos", "Ang", "Vel", "aVel", "frozen", "nocollide")
 
 end
 

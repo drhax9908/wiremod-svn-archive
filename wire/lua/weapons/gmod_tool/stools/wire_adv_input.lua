@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Adv. Input"
 TOOL.Command		= nil
@@ -43,7 +42,6 @@ function TOOL:LeftClick( trace )
 
 	local ply = self:GetOwner()
 
-
 	// Get client's CVars
 	local _keymore			= self:GetClientNumber( "keymore" )
 	local _keyless			= self:GetClientNumber( "keyless" )
@@ -55,6 +53,13 @@ function TOOL:LeftClick( trace )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_adv_input" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup( _keymore, _keyless, _toggle, _value_min, _value_max, _value_start, _speed )
+		trace.Entity.keymore		= _keymore
+		trace.Entity.keyless		= _keyless
+		trace.Entity.toggle			= _toggle
+		trace.Entity.value_min		= _value_min
+		trace.Entity.value_max		= _value_max
+		trace.Entity.value_start	= _value_start
+		trace.Entity.speed			= _speed
 		return true
 	end
 
@@ -68,14 +73,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_adv_input:OBBMins()
 	wire_adv_input:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
-	// Don't weld to world
-	/*local const, nocollide
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_adv_input, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_adv_input:GetPhysicsObject():EnableCollisions( false )
-		wire_adv_input.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_adv_input, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireInput")
@@ -83,7 +80,6 @@ function TOOL:LeftClick( trace )
 		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
-
 
 	ply:AddCleanup( "wire_adv_inputs", wire_adv_input )
 
@@ -123,14 +119,12 @@ if (SERVER) then
 			value_start		= value_start,
 			speed			= speed,
 			pl              = pl
-			}
-
+		}
 		table.Merge(wire_adv_input:GetTable(), ttable )
 		
 		pl:AddCount( "wire_adv_inputs", wire_adv_input )
-
-		return wire_adv_input
 		
+		return wire_adv_input
 	end
 
 	duplicator.RegisterEntityClass("gmod_wire_adv_input", MakeWireAdvInput, "Pos", "Ang", "keymore", "keyless", "toggle", "value_min", "value_max", "value_start", "speed", "Vel", "aVel", "frozen")

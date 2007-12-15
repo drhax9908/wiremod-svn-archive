@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "User"
 TOOL.Command		= nil
@@ -37,7 +36,12 @@ function TOOL:LeftClick( trace )
 
 	local ply = self:GetOwner()
 
+    local range = self:GetClientNumber("Range")
+    local model = self:GetClientInfo("Model")
+	
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_user" && trace.Entity:GetTable().pl == ply ) then
+		trace.Entity:Setup(range)
+		trace.Entity.Range = range
 		return true
 	end
 
@@ -46,9 +50,6 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 	
-    local range = self:GetClientNumber("Range")
-    local model = self:GetClientInfo("Model")
-
 	local wire_user = MakeWireUser( ply, trace.HitPos, range, model, Ang )
 
 	local min = wire_user:OBBMins()
@@ -61,7 +62,6 @@ function TOOL:LeftClick( trace )
 		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
-
 
 	ply:AddCleanup( "wire_users", wire_user )
 
@@ -85,15 +85,12 @@ if (SERVER) then
 		wire_user:SetModel( Model(model) )
 		wire_user:Spawn()
 		wire_user:Setup(Range)
-
-		wire_user:GetTable():SetPlayer( pl )
+		wire_user:SetPlayer( pl )
 
 		local ttable = {
-		    outColor = outColor,
 		    Range = Range,
 			pl = pl
 		}
-
 		table.Merge(wire_user:GetTable(), ttable )
 		
 		pl:AddCount( "wire_users", wire_user )

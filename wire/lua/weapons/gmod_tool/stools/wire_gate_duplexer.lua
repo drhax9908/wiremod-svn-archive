@@ -16,15 +16,12 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_gate_duplexer', 16)
+	ModelPlug_Register("gate")
 end
 
 TOOL.ClientConVar[ "action" ] = "4merge"
 TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
-
-if (SERVER) then
-	ModelPlug_Register("gate")
-end
 
 cleanup.Register( "wire_gate_duplexer" )
 
@@ -36,7 +33,6 @@ function TOOL:LeftClick( trace )
 	
 	local ply = self:GetOwner()
 	
-	// Get client's CVars
 	local action			= self:GetClientInfo( "action" )
 	local noclip			= self:GetClientNumber( "noclip" ) == 1
 	local model             = self:GetClientInfo( "model" )
@@ -72,10 +68,6 @@ function TOOL:LeftClick( trace )
 	
 	return true
 	
-end
-
-function TOOL:RightClick( trace )
-	return self:LeftClick( trace )
 end
 
 function TOOL:UpdateGhostWireGateTable( ent, player )

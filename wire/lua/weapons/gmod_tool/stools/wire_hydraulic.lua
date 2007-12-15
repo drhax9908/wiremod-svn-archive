@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Hydraulic"
 TOOL.Command		= nil
@@ -9,7 +8,6 @@ TOOL.ClientConVar[ "width" ] = "3"
 TOOL.ClientConVar[ "fixed" ] = "0"
 
 if CLIENT then
-
     language.Add( "Tool_wire_hydraulic_name", "Hydraulic Tool (Wire)" )
     language.Add( "Tool_wire_hydraulic_desc", "Makes a controllable hydraulic" )
     language.Add( "Tool_wire_hydraulic_0", "Primary: Place hydraulic\nSecondary: Place hydraulic along the hit normal" )
@@ -19,14 +17,10 @@ if CLIENT then
     language.Add( "WireHydraulicTool_material", "Material:" )
 	language.Add( "WireHydraulicTool_fixed", "Fixed:" )
 	language.Add( "undone_wirehydraulic", "Undone Wire Hydraulic" )
-
 end
 
 function TOOL:LeftClick( trace )
-
 	if ( trace.Entity:IsValid() && trace.Entity:IsPlayer() ) then return end
-	
-	// If there's no physics object then we can't constraint it!
 	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
 	
 	local iNum = self:NumObjects()

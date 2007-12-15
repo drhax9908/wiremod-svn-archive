@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Cam Controller"
 TOOL.Command		= nil
@@ -42,16 +41,7 @@ function TOOL:LeftClick( trace )
 
 	local min = wire_cam:OBBMins()
 	wire_cam:SetPos( trace.HitPos - trace.HitNormal * min.z )
-
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_nailer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_nailer:GetPhysicsObject():EnableCollisions( false )
-		wire_nailer:GetTable().nocollide = true
-	end*/
+	
 	local const = WireLib.Weld(wire_cam, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("Wire Cam")
@@ -60,14 +50,9 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_cams", wire_cam )
 
 	return true
-end
-
-function TOOL:RightClick( trace )
-	return false
 end
 
 if (SERVER) then
@@ -89,7 +74,6 @@ if (SERVER) then
 		local ttable = {
 			pl = pl
 		}
-
 		table.Merge(wire_cam:GetTable(), ttable )
 		
 		pl:AddCount( "wire_cams", wire_cam )
@@ -132,19 +116,5 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_cam_name", Description = "#Tool_wire_cam_desc" })
-
-	panel:AddControl("ComboBox", {
-		Label = "#Presets",
-		MenuButton = "1",
-		Folder = "wire_cam",
-
-		Options = {
-			Default = {
-			}
-		},
-		CVars = {
-		}
-	})
-
 end
 

@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Tools"
 TOOL.Name			= "Gate"
 TOOL.Command		= nil
@@ -17,15 +16,12 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_gates', 30)
+	ModelPlug_Register("gate")
 end
 
 TOOL.ClientConVar[ "action" ] = "+"
 TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
-
-if (SERVER) then
-	ModelPlug_Register("gate")
-end
 
 cleanup.Register( "wire_gates" )
 
@@ -82,10 +78,6 @@ function TOOL:LeftClick( trace )
 	
 end
 
-function TOOL:RightClick( trace )
-	return self:LeftClick( trace )
-end
-
 function TOOL:UpdateGhostWireGates( ent, player )
 
 	if ( !ent || !ent:IsValid() ) then return end
@@ -127,8 +119,8 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_gates_noclip"
 	})
 	
-	local tree = vgui.Create( "DTree" ) --this may not work in pre-gmod2007
-	if (tree) then
+	if (VERSION > 36) then
+		local tree = vgui.Create( "DTree" ) --this may not work in pre-gmod2007
 		tree:SetTall( 400 )
 		panel:AddPanel( tree )
 		

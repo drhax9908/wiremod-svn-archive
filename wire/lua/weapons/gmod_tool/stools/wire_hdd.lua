@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Advanced"
 TOOL.Name			= "Flash (EEPROM)"
 TOOL.Command		= nil
@@ -49,7 +48,7 @@ function TOOL:LeftClick( trace )
 	local Smodel = self:GetClientInfo( "model" )
 	Ang.pitch = Ang.pitch + 90
 	
-	wire_hdd = MakeWirehdd( ply, Ang, self:GetClientInfo( "driveid" ),
+	local wire_hdd = MakeWirehdd( ply, Ang, self:GetClientInfo( "driveid" ),
 					  self:GetClientInfo( "drivecap" ), trace.HitPos, Smodel )
 	local min = wire_hdd:OBBMins()
 	wire_hdd:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -121,10 +120,8 @@ function TOOL:UpdateGhostWirehdd( ent, player )
 	if (!trace.Hit) then return end
 
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_hdd" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()

@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Detection"
 TOOL.Name			= "Ranger"
 TOOL.Command		= nil
@@ -53,10 +52,6 @@ cleanup.Register( "wire_rangers" )
 
 function TOOL:LeftClick( trace )
 	if trace.Entity && trace.Entity:IsPlayer() then return false end
-
-	// If there's no physics object then we can't constraint it!
-	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-
 	if (CLIENT) then return true end
 
 	local ply = self:GetOwner()
@@ -77,7 +72,6 @@ function TOOL:LeftClick( trace )
 	local out_eid		= (self:GetClientNumber("out_eid") ~= 0)
 	local hires         = (self:GetClientNumber("hires") ~= 0)
 
-	// If we shot a wire_ranger change its range
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_ranger" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup( range, default_zero, show_beam, ignore_world, trace_water, out_dist, out_pos, out_vel, out_ang, out_col, out_val, out_sid, out_uid, out_eid,hires )
 		return true
@@ -105,8 +99,6 @@ function TOOL:LeftClick( trace )
 	undo.Finish()
 
 	ply:AddCleanup( "wire_rangers", wire_ranger )
-	ply:AddCleanup( "wire_rangers", const )
-	ply:AddCleanup( "wire_rangers", nocollide )
 
 	return true
 end
@@ -150,10 +142,8 @@ function TOOL:UpdateGhostWireRanger( ent, player )
 	if (!trace.Hit) then return end
 
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_ranger" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()

@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Turret"
 TOOL.Command		= nil
@@ -23,7 +22,6 @@ Sound( "NPC_FloorTurret.Shoot" )
 
 // Add Default Language translation (saves adding it to the txt files)
 if ( CLIENT ) then
-
 	language.Add( "Tool_wire_turret_name", "Turret" )
 	language.Add( "Tool_wire_turret_desc", "Throws bullets at things" )
 	language.Add( "Tool_wire_turret_0", "Click somewhere to spawn an turret. Click on an existing turret to change it." )
@@ -39,7 +37,6 @@ if ( CLIENT ) then
 	language.Add( "Cleanup_wire_turrets", "Turret" )
 	language.Add( "Cleaned_wire_turrets", "Cleaned up all Turrets" )
 	language.Add( "SBoxLimit_wire_turrets", "You've reached the Turret limit!" )
-
 end
 
 if (SERVER) then
@@ -47,15 +44,10 @@ if (SERVER) then
 end 
 
 function TOOL:LeftClick( trace, worldweld )
-
-	worldweld = worldweld or false
-
 	if ( trace.Entity && trace.Entity:IsPlayer() ) then return false end
-	
-	// If there's no physics object then we can't constraint it!
-	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-	
 	if (CLIENT) then return true end
+	
+	worldweld = worldweld or false
 	
 	local ply = self:GetOwner()
 	
@@ -69,19 +61,17 @@ function TOOL:LeftClick( trace, worldweld )
 	local spread	 	= self:GetClientNumber( "spread" )
 	local numbullets 	= self:GetClientNumber( "numbullets" )
 	
-	
 	// We shot an existing turret - just change its values
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_turret" && trace.Entity:GetTable().pl == ply ) then
-
-		trace.Entity:GetTable():SetDamage( damage )
-		trace.Entity:GetTable():SetDelay( delay )
-		trace.Entity:GetTable():SetToggle( toggle )
-		trace.Entity:GetTable():SetNumBullets( numbullets )
-		trace.Entity:GetTable():SetSpread( spread )
-		trace.Entity:GetTable():SetForce( force )
-		trace.Entity:GetTable():SetSound( sound )
-		trace.Entity:GetTable():SetTracer( tracer )
-		trace.Entity:GetTable():SetTrigger( trigger )
+		trace.Entity:SetDamage( damage )
+		trace.Entity:SetDelay( delay )
+		trace.Entity:SetToggle( toggle )
+		trace.Entity:SetNumBullets( numbullets )
+		trace.Entity:SetSpread( spread )
+		trace.Entity:SetForce( force )
+		trace.Entity:SetSound( sound )
+		trace.Entity:SetTracer( tracer )
+		trace.Entity:SetTrigger( trigger )
 		return true
 		
 	end
@@ -89,22 +79,13 @@ function TOOL:LeftClick( trace, worldweld )
 	if ( !self:GetSWEP():CheckLimit( "wire_turrets" ) ) then return false end
 
 	if ( trace.Entity != NULL && (!trace.Entity:IsWorld() || worldweld) ) then
-	
 		trace.HitPos = trace.HitPos + trace.HitNormal * 2
-	
 	else
-	
 		trace.HitPos = trace.HitPos + trace.HitNormal * 2
-	
 	end
 
-
 	local turret = MakeWireTurret( ply, trace.HitPos, nil, trigger, delay, toggle, damage, force, sound, numbullets, spread, tracer )
-	/*
-	local Angle = trace.HitNormal:Angle()
-		Angle:RotateAroundAxis( Angle:Forward(), 90 )
-		Angle:RotateAroundAxis( Angle:Forward(), 90 )
-	*/
+	
 	turret:SetAngles( trace.HitNormal:Angle() )
 	
 	local weld = WireLib.Weld(turret, trace.Entity, trace.PhysicsBone, true, false, worldweld)
@@ -116,7 +97,6 @@ function TOOL:LeftClick( trace, worldweld )
 	undo.Finish()
 	
 	return true
-
 end
 
 function TOOL:RightClick( trace )
@@ -136,38 +116,33 @@ if (SERVER) then
 		if ( Ang ) then turret:SetAngles( Ang ) end
 		turret:Spawn()
 		
-		
+		// Clamp stuff in multiplayer.. because people are idiots
 		if ( !SinglePlayer() ) then
-			
-			// Clamp stuff in multiplayer.. because people are idiots
-			
 			delay		= math.Clamp( delay, 0.05, 3600 )
 			numbullets	= 1
 			force		= math.Clamp( force, 0.01, 100 )
 			spread		= math.Clamp( spread, 0, 1 )
 			damage		= math.Clamp( damage, 0, 500 )
-			
 		end
 		
-		turret:GetTable():SetDamage( damage )
-		turret:GetTable():SetPlayer( ply )
+		turret:SetDamage( damage )
+		turret:SetPlayer( ply )
 		
-		turret:GetTable():SetSpread( spread )
-		turret:GetTable():SetForce( force )
-		turret:GetTable():SetSound( sound )
-		turret:GetTable():SetTracer( tracer )
+		turret:SetSpread( spread )
+		turret:SetForce( force )
+		turret:SetSound( sound )
+		turret:SetTracer( tracer )
 		
-		turret:GetTable():SetNumBullets( numbullets )
+		turret:SetNumBullets( numbullets )
 		
-		turret:GetTable():SetDelay( delay )
-		turret:GetTable():SetToggle( toggle )
+		turret:SetDelay( delay )
+		turret:SetToggle( toggle )
 		
-		turret:GetTable():SetTrigger( trigger )
+		turret:SetTrigger( trigger )
 		
 		if ( nocollide == true ) then turret:GetPhysicsObject():EnableCollisions( false ) end
 
-		local ttable = 
-		{
+		local ttable = {
 			trigger		= trigger,
 			delay 		= delay,
 			toggle 		= toggle,
@@ -180,14 +155,12 @@ if (SERVER) then
 			numbullets	= numbullets,
 			tracer		= tracer
 		}
-
 		table.Merge( turret:GetTable(), ttable )
 		
 		ply:AddCount( "wire_turrets", turret )
 		ply:AddCleanup( "wire_turrets", turret )
-
-		return turret
 		
+		return turret
 	end
 	
 	duplicator.RegisterEntityClass( "gmod_wire_turret", MakeWireTurret, "Pos", "Ang", "trigger", "delay", "toggle", "damage", "force", "sound", "numbullets", "spread", "tracer", "Vel", "aVel", "frozen", "nocollide" )
@@ -195,11 +168,8 @@ if (SERVER) then
 end
 
 function TOOL.BuildCPanel( CPanel )
-
-	// HEADER
 	CPanel:AddControl( "Header", { Text = "#Tool_wire_turret_name", Description	= "#Tool_wire_turret_desc" }  )
 	
-	// Presets
 	local params = { Label = "#Presets", MenuButton = 1, Folder = "wire_turret", Options = {}, CVars = {} }
 		
 		params.Options.default = {
@@ -305,6 +275,5 @@ function TOOL.BuildCPanel( CPanel )
 	
 	// The toggle switch.
 	CPanel:AddControl( "Checkbox", { Label = "#Toggle", Command = "wire_turret_toggle" } )
-
 
 end

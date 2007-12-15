@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Data"
 TOOL.Name			= "Store"
 TOOL.Command		= nil
@@ -16,7 +15,6 @@ end
 if (SERVER) then
 	CreateConVar('sbox_maxwire_data_stores', 20)
 end
-
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
 
@@ -43,15 +41,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_data_store:OBBMins()
 	wire_data_store:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_nailer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_nailer:GetPhysicsObject():EnableCollisions( false )
-		wire_nailer:GetTable().nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_data_store, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("Wire Data Store")
@@ -60,14 +49,10 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_data_stores", wire_data_store )
+	ply:AddCleanup( "wire_data_stores", const )
 
 	return true
-end
-
-function TOOL:RightClick( trace )
-	return false
 end
 
 if (SERVER) then
@@ -83,14 +68,9 @@ if (SERVER) then
 		wire_data_store:SetModel( Model("models/jaanus/wiretool/wiretool_range.mdl") )
 		wire_data_store:Spawn()
 
-		wire_data_store:GetTable():SetPlayer( pl )
+		wire_data_store:SetPlayer( pl )
+		wire_data_store.pl = pl
 
-		local ttable = {
-			pl = pl
-		}
-
-		table.Merge(wire_data_store:GetTable(), ttable )
-		
 		pl:AddCount( "wire_data_stores", wire_data_store )
 
 		return wire_data_store
@@ -131,19 +111,4 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_data_store_name", Description = "#Tool_wire_data_store_desc" })
-
-	panel:AddControl("ComboBox", {
-		Label = "#Presets",
-		MenuButton = "1",
-		Folder = "wire_data_store",
-
-		Options = {
-			Default = {
-				wire_data_store_data_store = "0",
-			}
-		},
-		CVars = {
-		}
-	})
 end
-

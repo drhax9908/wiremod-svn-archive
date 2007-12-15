@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Thruster"
 TOOL.ConfigName		= ""
@@ -42,10 +41,6 @@ cleanup.Register( "wire_thrusters" )
 
 function TOOL:LeftClick( trace )
 	if trace.Entity && trace.Entity:IsPlayer() then return false end
-	
-	// If there's no physics object then we can't constraint it!
-	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-
 	if (CLIENT) then return true end
 	
 	local ply = self:GetOwner()
@@ -59,8 +54,8 @@ function TOOL:LeftClick( trace )
 	local sound			= (self:GetClientNumber( "sound" ) ~= 0)
 	local oweffect		= self:GetClientInfo( "oweffect" )
 	local uweffect		= self:GetClientInfo( "uweffect" )
-	local owater			= (self:GetClientNumber( "owater" ) ~= 0)
-	local uwater			= (self:GetClientNumber( "uwater" ) ~= 0)
+	local owater		= (self:GetClientNumber( "owater" ) ~= 0)
+	local uwater		= (self:GetClientNumber( "uwater" ) ~= 0)
 	
 	if ( !trace.Entity:IsValid() ) then nocollide = false end
 	
@@ -94,12 +89,11 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 	
-	wire_thruster = MakeWireThruster( ply, model, Ang, trace.HitPos, force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, nocollide )
+	local wire_thruster = MakeWireThruster( ply, model, Ang, trace.HitPos, force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, nocollide )
 	
 	local min = wire_thruster:OBBMins()
 	wire_thruster:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
-	// Don't weld to world
 	local const = WireLib.Weld(wire_thruster, trace.Entity, trace.PhysicsBone, true, nocollide)
 
 	undo.Create("WireThruster")
@@ -107,9 +101,8 @@ function TOOL:LeftClick( trace )
 		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
-		
+	
 	ply:AddCleanup( "wire_thrusters", wire_thruster )
-	ply:AddCleanup( "wire_thrusters", const )
 	
 	return true
 end
@@ -144,13 +137,10 @@ if (SERVER) then
 			owater		= owater,
 			uwater		= uwater,
 			nocollide	= nocollide
-			}
-		
+		}
 		table.Merge(wire_thruster:GetTable(), ttable )
 		
 		pl:AddCount( "wire_thrusters", wire_thruster )
-		
-		--DoPropSpawnedEffect( wire_thruster )
 		
 		return wire_thruster
 	end
@@ -168,10 +158,8 @@ function TOOL:UpdateGhostWireThruster( ent, player )
 	if (!trace.Hit) then return end
 	
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_thruster" || trace.Entity:IsPlayer()) then
-	
 		ent:SetNoDraw( true )
 		return
-		
 	end
 	
 	local Ang = trace.HitNormal:Angle()
@@ -215,25 +203,6 @@ function TOOL.BuildCPanel(panel)
 			[2] = "wire_thruster_effect"
 		}
 	})
-
-	/*panel:AddControl("ComboBox", {
-		Label = "#WireThrusterTool_Model",
-		MenuButton = "0",
-
-		Options = {
-			["#Thruster"]				= { wire_thruster_model = "models/dav0r/thruster.mdl" },
-			["#Paint_Bucket"]			= { wire_thruster_model = "models/props_junk/plasticbucket001a.mdl" },
-			["#Small_Propane_Canister"]	= { wire_thruster_model = "models/props_junk/PropaneCanister001a.mdl" },
-			["#Medium_Propane_Tank"]	= { wire_thruster_model = "models/props_junk/propane_tank001a.mdl" },
-			["#Cola_Can"]				= { wire_thruster_model = "models/props_junk/PopCan01a.mdl" },
-			["#Bucket"]					= { wire_thruster_model = "models/props_junk/MetalBucket01a.mdl" },
-			["#Vitamin_Jar"]			= { wire_thruster_model = "models/props_lab/jar01a.mdl" },
-			["#Lamp_Shade"]				= { wire_thruster_model = "models/props_c17/lampShade001a.mdl" },
-			["#Fat_Can"]				= { wire_thruster_model = "models/props_c17/canister_propane01a.mdl" },
-			["#Black_Canister"]			= { wire_thruster_model = "models/props_c17/canister01a.mdl" },
-			["#Red_Canister"]			= { wire_thruster_model = "models/props_c17/canister02a.mdl" }
-		}
-	})*/
 	
 	panel:AddControl( "PropSelect", {
 		Label = "#WireThrusterTool_Model",
@@ -242,7 +211,6 @@ function TOOL.BuildCPanel(panel)
 		Models = list.Get( "ThrusterModels" )
 	})
 	
-
 	panel:AddControl("ComboBox", {
 		Label = "#WireThrusterTool_OWEffects",
 		MenuButton = "0",

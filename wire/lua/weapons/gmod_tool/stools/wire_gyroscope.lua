@@ -24,10 +24,6 @@ cleanup.Register( "wire_gyroscopes" )
 
 function TOOL:LeftClick( trace )
 	if trace.Entity && trace.Entity:IsPlayer() then return false end
-	
-	// If there's no physics object then we can't constraint it!
-	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-	
 	if (CLIENT) then return true end
 	
 	local ply = self:GetOwner()
@@ -49,20 +45,11 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 	
-	wire_gyroscope = MakeWireGyroscope( ply, self.Model, Ang, trace.HitPos, _out180 )
+	local wire_gyroscope = MakeWireGyroscope( ply, self.Model, Ang, trace.HitPos, _out180 )
 	
 	local min = wire_gyroscope:OBBMins()
 	wire_gyroscope:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
-	/*local const, nocollide
-	
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_gyroscope, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_gyroscope:GetPhysicsObject():EnableCollisions( false )
-		wire_gyroscope.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_gyroscope, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireGyroscope")
@@ -72,8 +59,6 @@ function TOOL:LeftClick( trace )
 	undo.Finish()
 	
 	ply:AddCleanup( "wire_gyroscopes", wire_gyroscope )
-	ply:AddCleanup( "wire_gyroscopes", const )
-	ply:AddCleanup( "wire_gyroscopes", nocollide )
 	
 	return true
 end
@@ -99,8 +84,7 @@ if (SERVER) then
 		local ttable = {
 			pl = pl,
 			out180 = out180,
-			}
-
+		}
 		table.Merge(wire_gyroscope:GetTable(), ttable )
 
 		pl:AddCount( "wire_gyroscopes", wire_gyroscope )
@@ -121,10 +105,8 @@ function TOOL:UpdateGhostWireGyroscope( ent, player )
 	if (!trace.Hit) then return end
 
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_gyroscope" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()

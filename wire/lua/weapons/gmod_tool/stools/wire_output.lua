@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Numpad Output"
 TOOL.Command		= nil
@@ -25,10 +24,6 @@ cleanup.Register( "wire_outputs" )
 
 function TOOL:LeftClick( trace )
 	if trace.Entity && trace.Entity:IsPlayer() then return false end
-
-	// If there's no physics object then we can't constraint it!
-	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-
 	if (CLIENT) then return true end
 
 	local ply = self:GetOwner()
@@ -51,14 +46,10 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	wire_output = MakeWireOutput( ply, Ang, trace.HitPos, key )
+	local wire_output = MakeWireOutput( ply, Ang, trace.HitPos, key )
 
 	local min = wire_output:OBBMins()
 	wire_output:SetPos( trace.HitPos - trace.HitNormal * min.z )
-
-	/*local const, nocollide
-	const = constraint.Weld( wire_output, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0, true )
-	wire_output:GetPhysicsObject():EnableCollisions( false )*/
 	
 	local const = WireLib.Weld(wire_output, trace.Entity, trace.PhysicsBone, true)
 
@@ -69,8 +60,6 @@ function TOOL:LeftClick( trace )
 	undo.Finish()
 
 	ply:AddCleanup( "wire_outputs", wire_output )
-	ply:AddCleanup( "wire_outputs", const )
-	ply:AddCleanup( "wire_outputs", nocollide )
 
 	return true
 end
@@ -96,8 +85,7 @@ if (SERVER) then
 		local ttable = {
 			key	= key,
 			pl	= pl,
-			}
-
+		}
 		table.Merge(wire_output:GetTable(), ttable )
 
 		wire_output:GetTable():ShowOutput()
@@ -120,10 +108,8 @@ function TOOL:UpdateGhostWireOutput( ent, player )
 	if (!trace.Hit) then return end
 
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_output" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()

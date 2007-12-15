@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Control"
 TOOL.Name			= "Chip - CPU"
 TOOL.Command		= nil
@@ -263,14 +262,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_cpu:OBBMins()
 	wire_cpu:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
-	/*local const, nocollide
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_cpu, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_cpu:GetPhysicsObject():EnableCollisions( false )
-		wire_cpu.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_cpu, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireCpu")
@@ -280,6 +271,7 @@ function TOOL:LeftClick( trace )
 	undo.Finish()
 
 	ply:AddCleanup( "wire_cpus", wire_cpu )
+	ply:AddCleanup( "wire_cpus", const )
 
 	return true
 end
@@ -304,13 +296,11 @@ if (SERVER) then
 			pl = pl,
 			Smodel = Smodel,
 		}
-		
 		table.Merge(wire_cpu:GetTable(), ttable )
 		
 		pl:AddCount( "wire_cpus", wire_cpu )
 		
 		return wire_cpu
-		
 	end
 
 	duplicator.RegisterEntityClass("gmod_wire_cpu", MakeWireCpu, "Ang", "Pos", "Smodel")
@@ -327,10 +317,8 @@ function TOOL:UpdateGhostWireCpu( ent, player )
 	if (!trace.Hit) then return end
 
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_cpu" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()

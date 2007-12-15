@@ -1,11 +1,7 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Vector Thruster"
 TOOL.Command		= nil
-
-if (not file.Exists("../addons/wire/settings/controls/wire_vthruster.txt")) then
-	TOOL.ConfigName		= ""
-end
+TOOL.ConfigName		= ""
 
 if ( CLIENT ) then
     language.Add( "Tool_wire_vthruster_name", "Vector Thruster Tool (Wire)" )
@@ -52,7 +48,6 @@ function TOOL:LeftClick( trace )
 	local mode			= self:GetClientNumber( "mode" )
 	local angle			= (self:GetClientNumber( "angle" ) ~= 0)
 	
-	
 	if (numobj == 0) then
 		if trace.Entity && trace.Entity:IsPlayer() then return false end
 		
@@ -94,7 +89,7 @@ function TOOL:LeftClick( trace )
 		local ang = trace.HitNormal:Angle()
 		ang.pitch = ang.pitch + 90
 		
-		wire_thruster = MakeWireVectorThruster( ply, model, ang, trace.HitPos, force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, nocollide, mode )
+		local wire_thruster = MakeWireVectorThruster( ply, model, ang, trace.HitPos, force, force_min, force_max, oweffect, uweffect, owater, uwater, bidir, sound, nocollide, mode )
 		
 		local min = wire_thruster:OBBMins()
 		wire_thruster:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -176,13 +171,10 @@ if (SERVER) then
 			nocollide	= nocollide,
 			mode		= mode,
 			angle		= angle,
-			}
-		
+		}
 		table.Merge(wire_thruster:GetTable(), ttable )
 		
 		pl:AddCount( "wire_thrusters", wire_thruster )
-		
-		--DoPropSpawnedEffect( wire_thruster )
 		
 		return wire_thruster
 	end

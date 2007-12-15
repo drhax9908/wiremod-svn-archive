@@ -21,10 +21,6 @@ cleanup.Register( "wire_gpss" )
 
 function TOOL:LeftClick( trace )
 	if trace.Entity && trace.Entity:IsPlayer() then return false end
-
-	// If there's no physics object then we can't constraint it!
-	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-
 	if (CLIENT) then return true end
 
 	local ply = self:GetOwner()
@@ -32,7 +28,6 @@ function TOOL:LeftClick( trace )
 	// If we shot a wire_gps do nothing
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_gps" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup()
-		
 		return true
 	end
 
@@ -49,15 +44,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_gps:OBBMins()
 	wire_gps:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_gps, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_gps:GetPhysicsObject():EnableCollisions( false )
-		wire_gps.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_gps, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireGPS")
@@ -67,8 +53,6 @@ function TOOL:LeftClick( trace )
 	undo.Finish()
 
 	ply:AddCleanup( "wire_gpss", wire_gps )
-	ply:AddCleanup( "wire_gpss", const )
-	ply:AddCleanup( "wire_gpss", nocollide )
 
 	return true
 end
@@ -88,14 +72,9 @@ if (SERVER) then
 
 		wire_gps:Setup()
 		wire_gps:SetPlayer(pl)
+		wire_gps.pl = pl
 
 		if ( nocollide == true ) then wire_gps:GetPhysicsObject():EnableCollisions( false ) end
-
-		local ttable = {
-			pl = pl,
-			}
-
-		table.Merge(wire_gps:GetTable(), ttable )
 
 		pl:AddCount( "wire_gpss", wire_gps )
 
@@ -115,10 +94,8 @@ function TOOL:UpdateGhostWireGPS( ent, player )
 	if (!trace.Hit) then return end
 
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_gps" || trace.Entity:IsPlayer()) then
-
 		ent:SetNoDraw( true )
 		return
-
 	end
 
 	local Ang = trace.HitNormal:Angle()

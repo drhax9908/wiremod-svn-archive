@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Beacon"
 TOOL.Name			= "Beacon Sensor"
 TOOL.Command		= nil
@@ -37,7 +36,6 @@ TOOL.ClientConVar[ "direction_normalized" ] = "0"
 TOOL.ClientConVar[ "target_velocity" ] = "0"
 TOOL.ClientConVar[ "velocity_normalized" ] = "0"
 TOOL.ClientConVar[ "vector_in" ] = "0"
-
 
 TOOL.Model = "models/props_lab/huladoll.mdl"
 
@@ -109,7 +107,6 @@ function TOOL:LeftClick(trace)
 	undo.Finish()
 	
 	ply:AddCleanup( "wire_sensors", wire_sensor )
-	ply:AddCleanup( "wire_sensors", const )
 	
 	return true
 end
@@ -153,7 +150,6 @@ if SERVER then
 			vector_in				= vector_in,
 			pl						= pl,
 		}
-		
 		table.Merge( wire_sensor:GetTable(), ttable )
 		
 		pl:AddCount( "wire_sensors", wire_sensor )

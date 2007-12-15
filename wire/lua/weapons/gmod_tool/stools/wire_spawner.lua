@@ -43,7 +43,7 @@ function TOOL:LeftClick( trace, attach )
 	local phys			= ent:GetPhysicsObject()
 	local pl			= self:GetOwner()
 	local delay			= self:GetClientNumber( "delay", 0 )
-	local undo_delay		= self:GetClientNumber( "undo_delay", 0 )
+	local undo_delay	= self:GetClientNumber( "undo_delay", 0 )
 	local model 		= trace.Entity:GetModel()
 	local Vel			= phys:GetVelocity()
 	local aVel			= phys:GetAngleVelocity()
@@ -75,8 +75,8 @@ function TOOL:LeftClick( trace, attach )
 	ent:Remove()
 
 	undo.Create("WireSpawner")
-	undo.AddEntity( wire_spawner )
-	undo.SetPlayer( pl )
+		undo.AddEntity( wire_spawner )
+		undo.SetPlayer( pl )
 	undo.Finish()
 
 	pl:AddCleanup( "wire_spawners", wire_spawner )
@@ -85,51 +85,52 @@ function TOOL:LeftClick( trace, attach )
 
 end
 
-function MakeWireSpawner( pl, Pos, Ang, delay, undo_delay, model, mat, r, g, b, vel, avel, frozen )
+if (SERVER) then
 
-	if ( !pl:CheckLimit( "wire_spawners" ) ) then return nil end
+	function MakeWireSpawner( pl, Pos, Ang, delay, undo_delay, model, mat, r, g, b, vel, avel, frozen )
 
-	local spawner = ents.Create( "gmod_wire_spawner" )
-	if (!spawner:IsValid()) then return end
-		spawner:SetPos( Pos )
-		spawner:SetAngles( Ang )
-		spawner:SetModel( model )
-		spawner:SetRenderMode( 3 )
-		//set material and color (TAD2020)
-		spawner:SetMaterial( mat or "" )
-		spawner:SetColor( (r or 255), (g or 255), (b or 255),100 )
-	spawner:Spawn()
+		if ( !pl:CheckLimit( "wire_spawners" ) ) then return nil end
 
-	if (spawner:GetPhysicsObject():IsValid()) then
-		Phys = spawner:GetPhysicsObject()
-		if Vel then Phys:SetVelocity(Vel) end
-		if Vel then Phys:AddAngleVelocity(aVel) end
-		Phys:EnableMotion( !frozen )
+		local spawner = ents.Create( "gmod_wire_spawner" )
+		if (!spawner:IsValid()) then return end
+			spawner:SetPos( Pos )
+			spawner:SetAngles( Ang )
+			spawner:SetModel( model )
+			spawner:SetRenderMode( 3 )
+			//set material and color (TAD2020)
+			spawner:SetMaterial( mat or "" )
+			spawner:SetColor( (r or 255), (g or 255), (b or 255),100 )
+		spawner:Spawn()
+
+		if (spawner:GetPhysicsObject():IsValid()) then
+			Phys = spawner:GetPhysicsObject()
+			if Vel then Phys:SetVelocity(Vel) end
+			if Vel then Phys:AddAngleVelocity(aVel) end
+			Phys:EnableMotion( !frozen )
+		end
+
+		spawner:SetPlayer(pl)
+		spawner:GetTable():SetDelays( delay, undo_delay )
+
+		local tbl = {
+			Player 		= pl,
+			delay		= delay,
+			undo_delay	= undo_delay;
+			mat			= mat,
+			r			= r,
+			g			= g,
+			b			= b
+		}
+		table.Merge(spawner:GetTable(), tbl )
+
+		pl:AddCount( "wire_spawners", spawner )
+
+		return spawner
 	end
 
-	spawner:SetPlayer(pl)
-	spawner:GetTable():SetDelays( delay, undo_delay )
-
-	local tbl = {
-		Player 		= pl,
-		delay		= delay,
-		undo_delay	= undo_delay;
-		mat			= mat,
-		r			= r,
-		g			= g,
-		b			= b
-	}
-
-	table.Merge(spawner:GetTable(), tbl )
-
-	pl:AddCount( "wire_spawners", spawner )
-
-	return spawner
+	duplicator.RegisterEntityClass( "gmod_wire_spawner", MakeWireSpawner, "Pos", "Ang", "delay", "undo_delay", "model", "mat", "r", "g", "b", "Vel", "aVel", "frozen" )
 
 end
-
-duplicator.RegisterEntityClass( "gmod_wire_spawner", MakeWireSpawner, "Pos", "Ang", "delay", "undo_delay", "model", "mat", "r", "g", "b", "Vel", "aVel", "frozen" )
-
 
 function TOOL.BuildCPanel( CPanel )
 

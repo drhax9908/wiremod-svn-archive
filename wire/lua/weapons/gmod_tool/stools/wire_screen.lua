@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Display"
 TOOL.Name			= "Screen"
 TOOL.Command		= nil
@@ -85,7 +84,7 @@ function TOOL:LeftClick( trace )
 		Ang.pitch = Ang.pitch + 90
 	end
 	
-	wire_screen = MakeWireScreen( ply, Ang, trace.HitPos, Smodel, SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor )
+	local wire_screen = MakeWireScreen( ply, Ang, trace.HitPos, Smodel, SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor )
 	local min = wire_screen:OBBMins()
 	wire_screen:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
@@ -130,7 +129,6 @@ if (SERVER) then
 			LeftAlign		= LeftAlign,
 			Floor			= Floor
 		}
-		
 		table.Merge(wire_screen:GetTable(), ttable )
 		
 		pl:AddCount( "wire_screens", wire_screen )

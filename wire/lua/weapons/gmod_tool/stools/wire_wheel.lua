@@ -1,9 +1,7 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Wheel"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
-
 
 TOOL.ClientConVar[ "torque" ] 		= "3000"
 TOOL.ClientConVar[ "friction" ] 	= "1"
@@ -12,7 +10,6 @@ TOOL.ClientConVar[ "forcelimit" ] 	= "0"
 TOOL.ClientConVar[ "fwd" ] 			= "1"	// Forward
 TOOL.ClientConVar[ "bck" ] 			= "-1"	// Back
 TOOL.ClientConVar[ "stop" ] 		= "0"	// Stop
-
 
 // Add Default Language translation (saves adding it to the txt files)
 if ( CLIENT ) then
@@ -29,7 +26,6 @@ if ( CLIENT ) then
 	language.Add( "Cleanup_wire_wheels", "Wired Wheels" )
 	language.Add( "Cleaned_wire_wheels", "Cleaned up all Wired Wheels" )
 	language.Add( "SBoxLimit_wire_wheels", "You've reached the wired wheels limit!" )
-
 end
 
 if (SERVER) then
@@ -42,12 +38,8 @@ cleanup.Register( "wire_wheels" )
    Places a wheel
 ---------------------------------------------------------*/
 function TOOL:LeftClick( trace )
-
 	if ( trace.Entity && trace.Entity:IsPlayer() ) then return false end
-	
-	// If there's no physics object then we can't constraint it!
 	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-	
 	if (CLIENT) then return true end
 	
 	local ply = self:GetOwner()
@@ -72,10 +64,8 @@ function TOOL:LeftClick( trace )
 	
 	if ( fwd == stop || bck == stop || fwd == bck ) then return false end
 	
-	
 	// Create the wheel
 	local wheelEnt = MakeWireWheel( ply, trace.HitPos, Angle(0,0,0), model, nil, nil, nil, fwd, bck, stop, torque )
-	
 	
 	// Make sure we have our wheel angle
 	self.wheelAngle = Angle( tonumber(ply:GetInfo( "wheel_rx" )), tonumber(ply:GetInfo( "wheel_ry" )), tonumber(ply:GetInfo( "wheel_rz" )) )
@@ -250,7 +240,6 @@ function TOOL:Think()
 	self:UpdateGhostWireWheel( self.GhostEntity, self:GetOwner() )
 	
 end
-
 
 
 function TOOL.BuildCPanel( CPanel )

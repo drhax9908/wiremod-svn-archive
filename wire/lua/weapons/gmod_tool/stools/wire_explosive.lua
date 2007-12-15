@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Explosives"
 TOOL.Command		= nil
@@ -33,9 +32,7 @@ TOOL.ClientConVar[ "invisibleatzero" ] = 0
 
 cleanup.Register( "wire_explosive" )
 
-
 if ( CLIENT ) then
-	
     language.Add( "Tool_wire_explosive_name", "Wired Explosives Tool" )
     language.Add( "Tool_wire_explosive_desc", "Creates a variety of different explosives for wire system." )
     language.Add( "Tool_wire_explosive_0", "Left click to place the bomb. Right click update." )
@@ -107,8 +104,8 @@ function TOOL:LeftClick( trace )
 	local _coloreffect		= self:GetClientNumber( "coloreffect" ) == 1
 	local _noparentremove	= self:GetClientNumber( "noparentremove" ) == 1
 	local _nocollide		= self:GetClientNumber( "nocollide" ) == 1
-	local _weight		= self:GetClientNumber( "weight" )
-	local _invisibleatzero		= self:GetClientNumber( "invisibleatzero" ) == 1
+	local _weight			= self:GetClientNumber( "weight" )
+	local _invisibleatzero	= self:GetClientNumber( "invisibleatzero" ) == 1
 	
 	//Check Radius
 	if (_radius > 10000) then return false end 
@@ -130,6 +127,7 @@ function TOOL:LeftClick( trace )
 	end
 	
 	// Don't weld to world
+	local const, nocollid
 	if ( trace.Entity:IsValid() && _weld ) then
 		if (_noparentremove) then
 			const, nocollide = constraint.Weld( explosive, trace.Entity, 0, trace.PhysicsBone, 0, collision == 0 )
@@ -145,11 +143,12 @@ function TOOL:LeftClick( trace )
 	
 	undo.Create("WireExplosive")
 		undo.AddEntity( explosive )
+		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
 	
-	
 	ply:AddCleanup( "wire_explosive", explosive )
+	ply:AddCleanup( "wire_explosive", const )
 	
 	return true
 	
@@ -204,7 +203,7 @@ function TOOL:RightClick( trace )
 	if (CLIENT) then return true end
 	
 	local ply = self:GetOwner()
-	//shot an explosive, update it instead
+	//shot an explosive, update it
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_explosive" && trace.Entity:GetTable().pl == ply ) then
 		//double you code double your fun (copy from above)
 		// Get client's CVars
@@ -296,7 +295,6 @@ if SERVER then
 			coloreffect = coloreffect,
 			invisibleatzero = invisibleatzero
 		}
-		
 		table.Merge( explosive:GetTable(), ttable )
 		
 	end

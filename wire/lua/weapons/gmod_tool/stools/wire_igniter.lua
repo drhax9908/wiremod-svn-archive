@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - Physics"
 TOOL.Name			= "Igniter"
 TOOL.Command		= nil
@@ -57,15 +56,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_igniter:OBBMins()
 	wire_igniter:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_nailer, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_nailer:GetPhysicsObject():EnableCollisions( false )
-		wire_nailer:GetTable().nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_igniter, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("Wire Igniter")
@@ -74,14 +64,9 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_igniters", wire_igniter )
 
 	return true
-end
-
-function TOOL:RightClick( trace )
-	return false
 end
 
 if (SERVER) then
@@ -105,7 +90,6 @@ if (SERVER) then
 		    Range = Range,
 			pl = pl
 		}
-
 		table.Merge(wire_igniter:GetTable(), ttable )
 		
 		pl:AddCount( "wire_igniters", wire_igniter )

@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Radio"
 TOOL.Command		= nil
@@ -16,35 +15,29 @@ end
 
 if (SERVER) then
   CreateConVar('sbox_maxwire_radioes',30)
+	ModelPlug_Register("radio")
 end
 
 TOOL.ClientConVar[ "channel" ] = 1
 TOOL.ClientConVar[ "model" ] = "models/props_lab/binderblue.mdl"
-
-if (SERVER) then
-	ModelPlug_Register("radio")
-end
 
 TOOL.Model = "models/props_lab/binderblue.mdl"
 
 cleanup.Register( "wire_radioes" )
 
 function TOOL:LeftClick( trace )
-
 	if (!trace.HitPos) then return false end
 	if (trace.Entity:IsPlayer()) then return false end
 	if ( CLIENT ) then return true end
 	
 	local ply = self:GetOwner()
 	
-
-	// Get client's CVars
 	local _channel			= self:GetClientInfo( "channel" )
 	local model             = self:GetClientInfo( "model" )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_radio" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup( _channel )
-		trace.Entity:GetTable().channel = _channel
+		trace.Entity.channel = _channel
 		return true
 	end
 
@@ -58,17 +51,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_radio:OBBMins()
 	wire_radio:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
-	// Don't weld to world
-	/*local const
-	if ( trace.Entity:IsValid() ) then
-		local const = constraint.Weld( wire_radio, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		
-		// Don't disable collision if it's not attached to anything
-		if ( collision == 0 ) then 
-			wire_radio:GetPhysicsObject():EnableCollisions( false )
-			wire_radio:GetTable().nocollide = true
-		end
-	end*/
 	local const = WireLib.Weld(wire_radio, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireRadio")
@@ -77,15 +59,9 @@ function TOOL:LeftClick( trace )
 		undo.AddEntity(const)
 	undo.Finish()
 	
-	
 	ply:AddCleanup( "wire_radioes", wire_radio )
 	
 	return true
-	
-end
-
-function TOOL:RightClick( trace )
-	return self:LeftClick( trace )
 end
 
 if SERVER then
@@ -103,14 +79,11 @@ if SERVER then
 		wire_radio:Setup( channel )
 		wire_radio:SetPlayer( pl )
 
-		local ttable = 
-		{
+		local ttable = {
 			channel      = channel,
 			pl			= pl,
 			nocollide	= nocollide,
-			description = description
 		}
-		
 		table.Merge( wire_radio:GetTable(), ttable )
 
 		pl:AddCount( "wire_radioes", wire_radio )

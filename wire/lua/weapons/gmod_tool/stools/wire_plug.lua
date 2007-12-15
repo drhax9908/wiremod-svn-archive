@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Plug"
 TOOL.Command		= nil
@@ -38,13 +37,10 @@ function TOOL:LeftClick( trace )
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_plug") then
 		return false
 	end
-	
 	if ( CLIENT ) then return true end
 
 	local ply = self:GetOwner()
 
-
-	// Get client's CVars
 	local a				= self:GetClientNumber("a")
 	local ar			= math.min(self:GetClientNumber("ar"), 255)
 	local ag			= math.min(self:GetClientNumber("ag"), 255)
@@ -68,31 +64,10 @@ function TOOL:LeftClick( trace )
 	if ( !self:GetSWEP():CheckLimit( "wire_sockets" ) ) then return false end
 
 	local Ang = trace.HitNormal:Angle()
-	
 	local Pos = trace.HitPos
-	
 	Pos = Pos + self:Offset( trace.HitNormal:Angle(), Vector(-12, 13, 0) )
 	
 	local wire_socket = MakeWireSocket( ply, Pos, Ang, a, ar, ag, ab, aa )
-
-	//local min = wire_socket:OBBMins()
-	//wire_socket:SetPos( trace.HitPos - trace.HitNormal * min.z )
-
-	/*local const, nocollide
-
-	const = constraint.Weld( wire_socket, trace.Entity, 0, trace.PhysicsBone, 0, true )
-
-	if (trace.HitWorld) then
-		 local socket_phys = wire_socket:GetPhysicsObject()
-	else
-		trace.Entity:DeleteOnRemove( wire_socket )
-		
-		// Don't disable collision if it's not attached to anything
-		if ( collision == 0 ) then 
-			wire_plug:GetPhysicsObject():EnableCollisions( false )
-			wire_plug.nocollide = true
-		end
-	end*/
 	
 	local const = WireLib.Weld(wire_socket, trace.Entity, trace.PhysicsBone, true, false, true)
 
@@ -102,9 +77,7 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_sockets", wire_socket )
-	ply:AddCleanup( "wire_sockets", nocollide )
 
 	return true
 end
@@ -118,8 +91,6 @@ function TOOL:RightClick( trace )
 
 	local ply = self:GetOwner()
 
-
-	// Get client's CVars
 	local a				= self:GetClientNumber("a")
 	local ar			= math.min(self:GetClientNumber("ar"), 255)
 	local ag			= math.min(self:GetClientNumber("ag"), 255)
@@ -148,16 +119,12 @@ function TOOL:RightClick( trace )
 	local min = wire_plug:OBBMins()
 	wire_plug:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	local const, nocollide
-
 	undo.Create("WirePlug")
 		undo.AddEntity( wire_plug )
-		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
 	ply:AddCleanup( "wire_plugs", wire_plug )
-	ply:AddCleanup( "wire_plugs", nocollide )
 
 	return true
 end
@@ -186,8 +153,7 @@ if (SERVER) then
 			aa				= aa,
 			pl              = pl,
 			MySocket		= nil
-			}
-
+		}
 		table.Merge(wire_plug:GetTable(), ttable )
 		
 		pl:AddCount( "wire_plug", wire_plug )
@@ -220,8 +186,7 @@ if (SERVER) then
 			aa				= aa,
 			pl              = pl,
 			ReceivedValue	= 0
-			}
-
+		}
 		table.Merge(wire_socket:GetTable(), ttable )
 		
 		pl:AddCount( "wire_socket", wire_socket )
@@ -250,8 +215,6 @@ function TOOL:UpdateGhostWireSocket( ent, player )
 	
 	Pos = Pos + self:Offset( trace.HitNormal:Angle(), Vector(-12, 13, 0) )
 
-	//local min = ent:OBBMins()
-	//ent:SetPos( Pos - trace.HitNormal * min.z )
 	ent:SetPos( Pos )
 	ent:SetAngles( Ang )
 

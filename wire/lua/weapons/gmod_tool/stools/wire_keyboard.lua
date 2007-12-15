@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Wired Keyboard"
 TOOL.Command		= nil
@@ -21,7 +20,6 @@ TOOL.Model = "models/jaanus/wiretool/wiretool_input.mdl"
 cleanup.Register( "wire_keyboards" )
 
 function TOOL:LeftClick( trace )
-	
 	if (!trace.HitPos) then return false end
 	if (trace.Entity:IsPlayer()) then return false end
 	if ( CLIENT ) then return true end
@@ -42,15 +40,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_keyboard:OBBMins()
 	wire_keyboard:SetPos( trace.HitPos - trace.HitNormal * min.z )
 	
-	/*local const, nocollide
-	
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_keyboard, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_keyboard:GetPhysicsObject():EnableCollisions( false )
-		wire_keyboard.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_keyboard, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireKeyboard")
@@ -58,7 +47,6 @@ function TOOL:LeftClick( trace )
 		undo.AddEntity( const )
 		undo.SetPlayer( ply )
 	undo.Finish()
-	
 	
 	ply:AddCleanup( "wire_keyboards", wire_keyboard )
 	
@@ -80,12 +68,7 @@ if (SERVER) then
 		wire_keyboard:Spawn()
 		
 		wire_keyboard:SetPlayer( pl )
-		
-		local ttable = {
-			pl              = pl
-		}
-		
-		table.Merge(wire_keyboard, ttable )
+		wire_keyboard.pl = pl
 		
 		pl:AddCount( "wire_keyboards", wire_keyboard )
 		

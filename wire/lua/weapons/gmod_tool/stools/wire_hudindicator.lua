@@ -154,18 +154,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_indicator:OBBMins()
 	wire_indicator:SetPos( trace.HitPos - trace.HitNormal * self:GetSelectedMin(min) )
 	
-	local const, nocollide
-	
-	// Don't weld to world
-	/*if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_indicator, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		
-		// Don't disable collision if it's not attached to anything
-		if ( collision == 0 ) then 
-			wire_indicator:GetPhysicsObject():EnableCollisions( false )
-			wire_indicator.nocollide = true
-		end
-	end*/
 	local const = WireLib.Weld(wire_indicator, trace.Entity, trace.PhysicsBone, true)
 	
 	undo.Create("WireHudIndicator")
@@ -175,8 +163,6 @@ function TOOL:LeftClick( trace )
 	undo.Finish()
 		
 	ply:AddCleanup( "wire_indicators", wire_indicator )
-	ply:AddCleanup( "wire_indicators", const )
-	ply:AddCleanup( "wire_indicators", nocollide )
 	
 	return true
 end
@@ -303,8 +289,7 @@ if (SERVER) then
 			hudstyle = hudstyle,
 			allowhook = allowhook,
 			fullcircleangle = fullcircleangle
-			}
-		
+		}
 		table.Merge(wire_indicator:GetTable(), ttable )
 		
 		pl:AddCount( "wire_indicators", wire_indicator )
@@ -327,10 +312,8 @@ function TOOL:UpdateGhostWireHudIndicator( ent, player )
 	if (!trace.Hit) then return end
 	
 	if (trace.Entity && trace.Entity:GetClass() == "gmod_wire_hudindicator" || trace.Entity:IsPlayer()) then
-	
 		ent:SetNoDraw( true )
 		return
-		
 	end
 	
 	local Ang = self:GetSelectedAngle(trace.HitNormal:Angle())

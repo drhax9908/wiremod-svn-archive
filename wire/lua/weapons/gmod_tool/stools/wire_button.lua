@@ -1,4 +1,3 @@
-
 TOOL.Category		= "Wire - I/O"
 TOOL.Name			= "Button"
 TOOL.Command		= nil
@@ -39,7 +38,6 @@ function TOOL:LeftClick( trace )
 
 	local ply = self:GetOwner()
 
-
 	// Get client's CVars
 	local _model			= self:GetClientInfo( "model" )
 	local _toggle			= (self:GetClientNumber( "toggle" ) ~= 0)
@@ -65,15 +63,6 @@ function TOOL:LeftClick( trace )
 	local min = wire_button:OBBMins()
 	wire_button:SetPos( trace.HitPos - trace.HitNormal * min.z )
 
-	/*local const, nocollide
-
-	// Don't weld to world
-	if ( trace.Entity:IsValid() ) then
-		const = constraint.Weld( wire_button, trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-		// Don't disable collision if it's not attached to anything
-		wire_button:GetPhysicsObject():EnableCollisions( false )
-		wire_button.nocollide = true
-	end*/
 	local const = WireLib.Weld(wire_button, trace.Entity, trace.PhysicsBone, true)
 
 	undo.Create("WireButton")
@@ -82,11 +71,9 @@ function TOOL:LeftClick( trace )
 		undo.SetPlayer( ply )
 	undo.Finish()
 
-
 	ply:AddCleanup( "wire_buttons", wire_button )
 
 	return true
-
 end
 
 if (SERVER) then
@@ -110,8 +97,7 @@ if (SERVER) then
 			value_off		= value_off,
 			value_on		= value_on,
 			pl              = pl
-			}
-
+		}
 		table.Merge(wire_button:GetTable(), ttable )
 		
 		pl:AddCount( "wire_buttons", wire_button )
@@ -176,28 +162,6 @@ function TOOL.BuildCPanel(panel)
 	})
 
 	ModelPlug_AddToCPanel(panel, "button", "wire_button", "#Button_Model", nil, "#Button_Model")
-
-//  ToDo: Move these to Wire Model Pack 1
-//			["Start"] = { wire_button_model = "models/cheeze/buttons/chz_button_start.mdl" },
-//			["Reset"] = { wire_button_model = "models/cheeze/buttons/chz_button_reset.mdl" },
-//			["Enter"] = { wire_button_model = "models/cheeze/buttons/chz_button_enter.mdl" },
-//			["Stop"] = { wire_button_model = "models/cheeze/buttons/chz_button_stop.mdl" },
-//			["Key 1"] = { wire_button_model = "models/cheeze/buttons/chz_button1.mdl" },
-//			["Key 2"] = { wire_button_model = "models/cheeze/buttons/chz_button2.mdl" },
-//			["Key 3"] = { wire_button_model = "models/cheeze/buttons/chz_button3.mdl" },
-//			["Key 4"] = { wire_button_model = "models/cheeze/buttons/chz_button4.mdl" },
-//			["Key 5"] = { wire_button_model = "models/cheeze/buttons/chz_button5.mdl" },
-//			["Key 6"] = { wire_button_model = "models/cheeze/buttons/chz_button6.mdl" },
-//			["Key 7"] = { wire_button_model = "models/cheeze/buttons/chz_button7.mdl" },
-//			["Key 8"] = { wire_button_model = "models/cheeze/buttons/chz_button8.mdl" },
-//			["Key 9"] = { wire_button_model = "models/cheeze/buttons/chz_button9.mdl" },
-//			["Key 0"] = { wire_button_model = "models/cheeze/buttons/chz_button0.mdl" },
-//			["Set"] = { wire_button_model = "models/cheeze/buttons/chz_button_set.mdl" },
-//			["Plus"] = { wire_button_model = "models/cheeze/buttons/chz_button_plus.mdl" },
-//			["Minus"] = { wire_button_model = "models/cheeze/buttons/chz_button_minus.mdl" },
-//			["Clear"] = { wire_button_model = "models/cheeze/buttons/chz_button_clear.mdl" },
-//			["Arm"] = { wire_button_model = "models/cheeze/buttons/chz_button_arm.mdl" },
-//			["Muffin!"] = { wire_button_model = "models/cheeze/buttons/muffin.mdl" },
 
 	panel:AddControl("CheckBox", {
 		Label = "#WireButtonTool_toggle",

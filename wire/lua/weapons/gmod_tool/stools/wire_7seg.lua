@@ -1,7 +1,3 @@
-/***********************************
-**blame tad2020 if it dosen't work**
-***********************************/
-
 TOOL.Category		= "Wire - Display"
 TOOL.Name			= "7 Segment Display"
 TOOL.Command		= nil
@@ -30,12 +26,8 @@ TOOL.ClientConVar[ "worldweld" ] = "1"
 
 
 function TOOL:LeftClick( trace )
-
 	if trace.Entity && trace.Entity:IsPlayer() then return false end
-	
-	// If there's no physics object then we can't constraint it!
 	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-
 	if (CLIENT) then return true end
 	
 	local ply = self:GetOwner()
@@ -78,43 +70,21 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 	
-	wire_indicators = MakeWire7Seg( ply, model, Ang, trace.HitPos, trace.HitNormal, 0, ar, ag, ab, aa, 1, br, bg, bb, ba )	
-	
-	local const = {}, nocollide
-	
-	// Don't weld to world, unless we wanted too
-	/*if ( trace.Entity:IsValid() || worldweld ) then
-		for x=1, 7 do
-			const[x] = constraint.Weld( wire_indicators[x], trace.Entity, 0, trace.PhysicsBone, 0, true, true )
-			
-			// Don't disable collision if it's not attached to anything
-			if ( collision == 0 ) then 
-				wire_indicators[x]:GetPhysicsObject():EnableCollisions( false )
-				wire_indicators[x]:GetTable().nocollide = true
-			end
-		end
-	end*/
-	
-	for x=1, 7 do
-		const[x] = WireLib.Weld(wire_indicators[x], trace.Entity, trace.PhysicsBone, true, false, worldweld)
-	end
+	local wire_indicators = MakeWire7Seg( ply, model, Ang, trace.HitPos, trace.HitNormal, 0, ar, ag, ab, aa, 1, br, bg, bb, ba )	
 	
 	undo.Create("Wire7Seg")
 		for x=1, 7 do
+			--make welds
+			local const = WireLib.Weld(wire_indicators[x], trace.Entity, trace.PhysicsBone, true, false, worldweld)
 			undo.AddEntity( wire_indicators[x] )
-			undo.AddEntity( const[x] )
+			undo.AddEntity( const )
+			ply:AddCleanup( "wire_indicators", wire_indicators[x] )
+			ply:AddCleanup( "wire_indicators", const)
 		end
 		undo.SetPlayer( ply )
 	undo.Finish()
 	
-	for x=1, 7 do
-		ply:AddCleanup( "wire_indicators", wire_indicators[x] )
-		ply:AddCleanup( "wire_indicators", const[x] )
-	end
-	ply:AddCleanup( "wire_indicators", nocollide )
-	
 	return true
-
 end
 
 if (SERVER) then
