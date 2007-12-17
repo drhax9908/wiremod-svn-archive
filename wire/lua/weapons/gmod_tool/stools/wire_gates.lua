@@ -142,6 +142,34 @@ local function fGateThink( self )
 	self:UpdateGhost( self.GhostEntity )
 end
 
+local function f_GateBuildCPanel( mode, action )
+	return function(panel)
+		panel:AddControl("Header", { Text = "#Tool_"..mode.."_name", Description = "#Tool_"..mode.."_desc" })
+		
+		panel:AddControl("CheckBox", {
+			Label = "#WireGatesTool_noclip",
+			Command = mode.."_noclip"
+		})
+		
+		local Actions = {
+			Label = "#WireGateTool_action",
+			MenuButton = "0",
+			Height = 180,
+			Options = {}
+		}
+		
+		for k,v in pairs(GateActions) do
+		    if(v.group == action) then
+		    	Actions.Options[v.name or "No Name"] = {}
+		    	Actions.Options[v.name or "No Name"][mode.."_action"] = k
+			end
+		end
+		
+		panel:AddControl("ListBox", Actions)
+		
+		ModelPlug_AddToCPanel(panel, "gate", mode, "#WireGateTool_model", nil, "#WireGateTool_model")
+	end
+end
 
 /*****************************
 	arithmetic gates stool
@@ -155,36 +183,11 @@ TOOL.ConfigName		= ""
 TOOL.LeftClick		= f_GateLeftClick
 TOOL.UpdateGhost	= f_GateUpdateGhost
 TOOL.Think			= fGateThink
+TOOL.BuildCPanel	= f_GateBuildCPanel( TOOL.Mode, "Arithmetic" )
 
 TOOL.ClientConVar[ "action" ] = "+"
 TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
-
-function TOOL.BuildCPanel(panel)
-	panel:AddControl("Header", { Text = "#Tool_wire_gate_arithmetic_name", Description = "#Tool_wire_gate_arithmetic_desc" })
-	
-	panel:AddControl("CheckBox", {
-		Label = "#WireGatesTool_noclip",
-		Command = "wire_gate_arithmetic_noclip"
-	})
-	
-	local Actions = {
-		Label = "#WireGateTool_action",
-		MenuButton = "0",
-		Height = 180,
-		Options = {}
-	}
-	
-	for k,v in pairs(GateActions) do
-	    if(v.group == "Arithmetic") then
-	    	Actions.Options[v.name or "No Name"] = { wire_gate_arithmetic_action = k }
-		end
-	end
-	
-	panel:AddControl("ListBox", Actions)
-	
-	ModelPlug_AddToCPanel(panel, "gate", "wire_gate_arithmetic", "#WireGateTool_model", nil, "#WireGateTool_model")
-end
 
 TOOL:CreateConVars()
 SWEP.Tool[ TOOL.Mode ] = TOOL
@@ -204,36 +207,11 @@ TOOL.ConfigName		= ""
 TOOL.LeftClick		= f_GateLeftClick
 TOOL.UpdateGhost	= f_GateUpdateGhost
 TOOL.Think			= fGateThink
+TOOL.BuildCPanel	= f_GateBuildCPanel( TOOL.Mode, "Comparison" )
 
 TOOL.ClientConVar[ "action" ] = "<"
 TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
-
-function TOOL.BuildCPanel(panel)
-	panel:AddControl("Header", { Text = "#Tool_wire_gate_comparison_name", Description = "#Tool_wire_gate_comparison_desc" })
-
-	panel:AddControl("CheckBox", {
-		Label = "#WireGatesTool_noclip",
-		Command = "wire_gate_comparison_noclip"
-	})
-	
-	local Actions = {
-		Label = "#WireGateTool_action",
-		MenuButton = "0",
-		Height = 180,
-		Options = {}
-	}
-	
-	for k,v in pairs(GateActions) do
-	    if(v.group == "Comparison") then
-	    	Actions.Options[v.name or "No Name"] = { wire_gate_comparison_action = k }
-		end
-	end
-	
-	panel:AddControl("ListBox", Actions)
-	
-	ModelPlug_AddToCPanel(panel, "gate", "wire_gate_comparison", "#WireGateTool_model", nil, "#WireGateTool_model")
-end
 
 TOOL:CreateConVars()
 SWEP.Tool[ TOOL.Mode ] = TOOL
@@ -246,43 +224,18 @@ TOOL = nil
 TOOL				= ToolObj:Create()
 TOOL.Mode			= "wire_gate_duplexer"
 TOOL.Category		= "Wire - Control"
-TOOL.Name			= "Chip - Duplexer"
+TOOL.Name			= "Gate - Duplexer"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
 TOOL.LeftClick		= f_GateLeftClick
 TOOL.UpdateGhost	= f_GateUpdateGhost
 TOOL.Think			= fGateThink
+TOOL.BuildCPanel	= f_GateBuildCPanel( TOOL.Mode, "Table" )
 
 TOOL.ClientConVar[ "action" ] = "4merge"
 TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
-
-function TOOL.BuildCPanel(panel)
-	panel:AddControl("Header", { Text = "#Tool_wire_gate_duplexer_name", Description = "#Tool_wire_gate_duplexer_desc" })
-	
-	panel:AddControl("CheckBox", {
-		Label = "#WireGatesTool_noclip",
-		Command = "wire_gate_duplexer_noclip"
-	})
-	
-	local Actions = {
-		Label = "#WireGateTool_action",
-		MenuButton = "0",
-		Height = 180,
-		Options = {}
-	}
-	
-	for k,v in pairs(GateActions) do
-	    if(v.group == "Table") then
-	    	Actions.Options[v.name or "No Name"] = { wire_gate_duplexer_action = k }
-		end
-	end
-	
-	panel:AddControl("ListBox", Actions)
-	
-	ModelPlug_AddToCPanel(panel, "gate", "wire_gate_duplexer", "#WireGateTool_model", nil, "#WireGateTool_model")
-end
 
 TOOL:CreateConVars()
 SWEP.Tool[ TOOL.Mode ] = TOOL
@@ -302,36 +255,11 @@ TOOL.ConfigName		= ""
 TOOL.LeftClick		= f_GateLeftClick
 TOOL.UpdateGhost	= f_GateUpdateGhost
 TOOL.Think			= fGateThink
+TOOL.BuildCPanel	= f_GateBuildCPanel( TOOL.Mode, "Logic" )
 
 TOOL.ClientConVar[ "action" ] = "and"
 TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
-
-function TOOL.BuildCPanel(panel)
-	panel:AddControl("Header", { Text = "#Tool_wire_gate_logic_name", Description = "#Tool_wire_gate_logic_desc" })
-	
-	panel:AddControl("CheckBox", {
-		Label = "#WireGatesTool_noclip",
-		Command = "wire_gate_logic_noclip"
-	})
-	
-	local Actions = {
-		Label = "#WireGateTool_action",
-		MenuButton = "0",
-		Height = 180,
-		Options = {}
-	}
-	
-	for k,v in pairs(GateActions) do
-	    if(v.group == "Logic") then
-	    	Actions.Options[v.name or "No Name"] = { wire_gate_logic_action = k }
-		end
-	end
-	
-	panel:AddControl("ListBox", Actions)
-	
-	ModelPlug_AddToCPanel(panel, "gate", "wire_gate_logic", "#WireGateTool_model", nil, "#WireGateTool_model")
-end
 
 TOOL:CreateConVars()
 SWEP.Tool[ TOOL.Mode ] = TOOL
@@ -344,43 +272,18 @@ TOOL = nil
 TOOL				= ToolObj:Create()
 TOOL.Mode			= "wire_gate_memory"
 TOOL.Category		= "Wire - Control"
-TOOL.Name			= "Chip - Memory"
+TOOL.Name			= "Gate - Memory"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
 TOOL.LeftClick		= f_GateLeftClick
 TOOL.UpdateGhost	= f_GateUpdateGhost
 TOOL.Think			= fGateThink
+TOOL.BuildCPanel	= f_GateBuildCPanel( TOOL.Mode, "Memory" )
 
 TOOL.ClientConVar[ "action" ] = "latch"
 TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
-
-function TOOL.BuildCPanel(panel)
-	panel:AddControl("Header", { Text = "#Tool_wire_gate_memory_name", Description = "#Tool_wire_gate_memory_desc" })
-
-	panel:AddControl("CheckBox", {
-		Label = "#WireGatesTool_noclip",
-		Command = "wire_gate_memory_noclip"
-	})
-	
-	local Actions = {
-		Label = "#WireGateTool_action",
-		MenuButton = "0",
-		Height = 180,
-		Options = {}
-	}
-	
-	for k,v in pairs(GateActions) do
-	    if(v.group == "Memory") then
-	    	Actions.Options[v.name or "No Name"] = { wire_gate_memory_action = k }
-		end
-	end
-	
-	panel:AddControl("ListBox", Actions)
-	
-	ModelPlug_AddToCPanel(panel, "chip", "wire_gate_memory", "#WireGateTool_model", nil, "#WireGateTool_model")
-end
 
 TOOL:CreateConVars()
 SWEP.Tool[ TOOL.Mode ] = TOOL
@@ -393,43 +296,18 @@ TOOL = nil
 TOOL				= ToolObj:Create()
 TOOL.Mode			= "wire_gate_selection"
 TOOL.Category		= "Wire - Control"
-TOOL.Name			= "Chip - Selection"
+TOOL.Name			= "Gate - Selection"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
 TOOL.LeftClick		= f_GateLeftClick
 TOOL.UpdateGhost	= f_GateUpdateGhost
 TOOL.Think			= fGateThink
+TOOL.BuildCPanel	= f_GateBuildCPanel( TOOL.Mode, "Selection" )
 
 TOOL.ClientConVar[ "action" ] = "sin"
 TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
-
-function TOOL.BuildCPanel(panel)
-	panel:AddControl("Header", { Text = "#Tool_wire_gate_selection_name", Description = "#Tool_wire_gate_selection_desc" })
-	
-	panel:AddControl("CheckBox", {
-		Label = "#WireGatesTool_noclip",
-		Command = "wire_gate_selection_noclip"
-	})
-	
-	local Actions = {
-		Label = "#WireGateTool_action",
-		MenuButton = "0",
-		Height = 180,
-		Options = {}
-	}
-	
-	for k,v in pairs(GateActions) do
-	    if(v.group == "Selection") then
-	    	Actions.Options[v.name or "No Name"] = { wire_gate_selection_action = k }
-		end
-	end
-	
-	panel:AddControl("ListBox", Actions)
-	
-	ModelPlug_AddToCPanel(panel, "chip", "wire_gate_selection", "#WireGateTool_model", nil, "#WireGateTool_model")
-end
 
 TOOL:CreateConVars()
 SWEP.Tool[ TOOL.Mode ] = TOOL
@@ -442,43 +320,18 @@ TOOL = nil
 TOOL				= ToolObj:Create()
 TOOL.Mode			= "wire_gate_time"
 TOOL.Category		= "Wire - Control"
-TOOL.Name			= "Chip - Time"
+TOOL.Name			= "Gate - Time"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
 TOOL.LeftClick		= f_GateLeftClick
 TOOL.UpdateGhost	= f_GateUpdateGhost
 TOOL.Think			= fGateThink
+TOOL.BuildCPanel	= f_GateBuildCPanel( TOOL.Mode, "Time" )
 
 TOOL.ClientConVar[ "action" ] = "timer"
 TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
-
-function TOOL.BuildCPanel(panel)
-	panel:AddControl("Header", { Text = "#Tool_wire_gate_time_name", Description = "#Tool_wire_gate_time_desc" })
-	
-	panel:AddControl("CheckBox", {
-		Label = "#WireGatesTool_noclip",
-		Command = "wire_gate_time_noclip"
-	})
-	
-	local Actions = {
-		Label = "#WireGateTool_action",
-		MenuButton = "0",
-		Height = 180,
-		Options = {}
-	}
-	
-	for k,v in pairs(GateActions) do
-	    if(v.group == "Time") then
-	    	Actions.Options[v.name or "No Name"] = { wire_gate_time_action = k }
-		end
-	end
-	
-	panel:AddControl("ListBox", Actions)
-	
-	ModelPlug_AddToCPanel(panel, "chip", "wire_gate_time", "#WireGateTool_model", nil, "#WireGateTool_model")
-end
 
 TOOL:CreateConVars()
 SWEP.Tool[ TOOL.Mode ] = TOOL
@@ -498,36 +351,11 @@ TOOL.ConfigName		= ""
 TOOL.LeftClick		= f_GateLeftClick
 TOOL.UpdateGhost	= f_GateUpdateGhost
 TOOL.Think			= fGateThink
+TOOL.BuildCPanel	= f_GateBuildCPanel( TOOL.Mode, "Trig" )
 
 TOOL.ClientConVar[ "action" ] = "sin"
 TOOL.ClientConVar[ "noclip" ] = "0"
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_gate.mdl"
-
-function TOOL.BuildCPanel(panel)
-	panel:AddControl("Header", { Text = "#Tool_wire_gate_trig_name", Description = "#Tool_wire_gate_trig_desc" })
-	
-	panel:AddControl("CheckBox", {
-		Label = "#WireGatesTool_noclip",
-		Command = "wire_gate_trignoclip"
-	})
-	
-	local Actions = {
-		Label = "#WireGateTool_action",
-		MenuButton = "0",
-		Height = 180,
-		Options = {}
-	}
-	
-	for k,v in pairs(GateActions) do
-	    if(v.group == "Trig") then
-	    	Actions.Options[v.name or "No Name"] = { wire_gate_trig_action = k }
-		end
-	end
-	
-	panel:AddControl("ListBox", Actions)
-	
-	ModelPlug_AddToCPanel(panel, "gate", "wire_gate_trig", "#WireGateTool_model", nil, "#WireGateTool_model")
-end
 
 TOOL:CreateConVars()
 SWEP.Tool[ TOOL.Mode ] = TOOL
