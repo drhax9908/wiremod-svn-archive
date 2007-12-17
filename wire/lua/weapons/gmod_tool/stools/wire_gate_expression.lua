@@ -7,7 +7,7 @@
 -- make better transfer from client->server (server->client needed?) ... limit of like 100 chars per line now
 
 TOOL.Category		= "Wire - Control"
-TOOL.Name			= "Gate - Expression"
+TOOL.Name			= "Chip - Expression"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
