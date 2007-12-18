@@ -5,6 +5,8 @@ include('shared.lua')
 
 ENT.WireDebugName = "HoverDrive"
 
+local useenergy = CreateConVar( "sv_HoverDriveUseEnergy", 0, {FCVAR_ARCHIVE} )
+
 /*---------------------------------------------------------
    Name: Initialize
 ---------------------------------------------------------*/
@@ -27,6 +29,11 @@ function ENT:Initialize()
 		phys:SetMass( 100 )
 		phys:EnableGravity( false )
 		phys:Wake() 
+	end
+	
+	if ( RES_DISTRIB == 2 ) then
+	    RD_AddResource(self, "energy", 0)
+	    LS_RegisterEnt(self, "Generator")
 	end
 	
 	//self.Entity:StartMotionController()
@@ -91,8 +98,10 @@ function ENT:TriggerInput(iname, value)
 		self:SetYawVelocity( value )
 	elseif (iname == "Roll_Velocity") then
 		self:SetRollVelocity( value )
-	elseif (iname == "Jump") and (value > 0) and (!self.Jumping) then
-		self:Jump()
+	elseif (iname == "Jump") then
+		if (value > 0) and (!self.Jumping) then
+			self:Jump()
+		end
 	elseif (iname == "X_JumpTarget") then
 		self.JumpTarget = self.JumpTarget or Vector(0,0,20)
 		self.JumpTarget.x = value
@@ -366,8 +375,46 @@ end
 
 ENT.JumpStage = 0
 
+
+//util.PrecacheSound("stargate/teleport.mp3")
+util.PrecacheSound("npc/turret_floor/die.wav")
+//util.PrecacheSound("npc/scanner/combat_scan_loop2.wav")
+util.PrecacheSound("ambient/levels/citadel/weapon_disintegrate2.wav")
+//util.PrecacheSound("ambient/levels/labs/electric_explosion2.wav")
+util.PrecacheSound("buttons/button2.wav")
+util.PrecacheSound("buttons/button8.wav")
+function ENT:FailJump()
+	self.Entity:EmitSound("npc/turret_floor/die.wav", 450, 70)
+end
+
 function ENT:Jump()
-	if (!self.JumpTargetSet) then return end
+	if (self.Jumping) then return end
+	
+	if (!self.JumpTargetSet) then
+		self.Entity:EmitSound("buttons/button8.wav", 130)
+		return
+	end
+	
+	if ( RES_DISTRIB == 2 and useenergy:GetBool() ) then
+		local dist = self.Entity:GetPos():Distance(self.JumpTarget)
+		local needed = math.floor(dist ^ 2 / 5000 + 200)
+		--Msg("hover drive requires ",needed," energy to jump ",dist,"\n")
+	    local energy = RD_GetResourceAmount(self, "energy")
+	    if (energy >= needed) then
+	        RD_ConsumeResource(self, "energy", needed)
+		else
+			self.Entity:EmitSound("buttons/button2.wav", 500)
+			self:FailJump()
+			return
+	    end
+	end
+	
+	if ( not util.IsInWorld( self.JumpTarget ) ) then
+		self.Entity:EmitSound("buttons/button8.wav", 500)
+		self:FailJump()
+		return
+	end
+	
 	self.Jumping = true
 	
 	self.other_gate = self.Entity
@@ -375,17 +422,12 @@ function ENT:Jump()
 	
 	self.JumpStage = 1
 	self.JumpTargetSet = false
-	Msg("Jumping!\n")
+	--Msg("Jumping!\n")
 end
 
-//util.PrecacheSound("stargate/teleport.mp3")
-util.PrecacheSound("npc/turret_floor/die.wav")
-//util.PrecacheSound("npc/scanner/combat_scan_loop2.wav")
-util.PrecacheSound("ambient/levels/citadel/weapon_disintegrate2.wav")
-//util.PrecacheSound("ambient/levels/labs/electric_explosion2.wav")
 function ENT:Think()
 	if (self.JumpStage == 1) then
-		Msg("Start Jump 1\n")
+		--Msg("Start Jump 1\n")
 		
 		local attached = self:GetEntitiesForTeleport(self.Entity);
 		if(attached) then
@@ -428,9 +470,9 @@ function ENT:Think()
 			self.JumpStage = 0
 		end
 		
-		Msg("End Jump 1\n")
+		--Msg("End Jump 1\n")
 	elseif (self.JumpStage == 2) then
-		Msg("Start Jump 2\n")
+		--Msg("Start Jump 2\n")
 		
 		self:Teleport(self.ents.Entity, self.Entity);
 		
@@ -469,7 +511,7 @@ function ENT:Think()
 		self.JumpStage = 0
 		self.Jumping = false
 		
-		Msg("End Jump 1\n")
+		--Msg("End Jump 1\n")
 	end
 end
 
