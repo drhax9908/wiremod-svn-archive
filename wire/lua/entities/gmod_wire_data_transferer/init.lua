@@ -47,22 +47,8 @@ function ENT:TriggerInput(iname, value)
         else
             self.Sending = false
         end
-	elseif(iname == "A") then
-		self.Values.A = value
-	elseif(iname == "B") then
-		self.Values.B = value
-	elseif(iname == "C") then
-		self.Values.C = value
-	elseif(iname == "D") then
-		self.Values.D = value      
-	elseif(iname == "E") then
-		self.Values.E = value 
-	elseif(iname == "F") then
-		self.Values.F = value 
-	elseif(iname == "G") then
-		self.Values.G = value 
-	elseif(iname == "H") then
-		self.Values.H = value 
+	else
+		self.Values[iname] = value 
 	end
 end
 
@@ -118,14 +104,18 @@ function ENT:Think()
         ent:RecieveValue("G",self.Values.G)
         ent:RecieveValue("H",self.Values.H)
     elseif(trace.Entity:GetClass() == "gmod_wire_data_satellitedish")then
-        ent.Transmitter:RecieveValue("A",self.Values.A)
-        ent.Transmitter:RecieveValue("B",self.Values.B)
-        ent.Transmitter:RecieveValue("C",self.Values.C)
-        ent.Transmitter:RecieveValue("D",self.Values.D)
-        ent.Transmitter:RecieveValue("E",self.Values.E)
-        ent.Transmitter:RecieveValue("F",self.Values.F)
-        ent.Transmitter:RecieveValue("G",self.Values.G)
-        ent.Transmitter:RecieveValue("H",self.Values.H)
+        if(ent.Transmitter && ent.Transmitter:IsValid())then
+            ent.Transmitter:RecieveValue("A",self.Values.A)
+            ent.Transmitter:RecieveValue("B",self.Values.B)
+            ent.Transmitter:RecieveValue("C",self.Values.C)
+            ent.Transmitter:RecieveValue("D",self.Values.D)
+            ent.Transmitter:RecieveValue("E",self.Values.E)
+            ent.Transmitter:RecieveValue("F",self.Values.F)
+            ent.Transmitter:RecieveValue("G",self.Values.G)
+            ent.Transmitter:RecieveValue("H",self.Values.H)
+        else
+            self.Entity:SetColor(255, 0, 0, 255)
+        end
     elseif(trace.Entity:GetClass() == "gmod_wire_data_store")then
         Wire_TriggerOutput(self.Entity,"A",ent.Values.A)
         Wire_TriggerOutput(self.Entity,"B",ent.Values.B)
