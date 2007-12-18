@@ -43,10 +43,10 @@ function TOOL:LeftClick( trace )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_input" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup( _keygroup, _toggle, _value_off, _value_on )
-		wire_input.keygroup		= _keygroup
-		wire_input.toggle		= _toggle
-		wire_input.value_off	= _value_off
-		wire_input.value_on		= _value_on
+		trace.Entity.keygroup	= _keygroup
+		trace.Entity.toggle		= _toggle
+		trace.Entity.value_off	= _value_off
+		trace.Entity.value_on	= _value_on
 		return true
 	end
 
