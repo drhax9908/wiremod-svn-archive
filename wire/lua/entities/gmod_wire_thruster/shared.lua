@@ -77,16 +77,15 @@ function ENT:GetOverlayText()
 		txt = txt .. "off"
 	end
 	txt = txt .. "\nMul: " ..force
-	
+	local PlayerName = self:GetPlayerName()
 	if (not SinglePlayer()) then
-		local PlayerName = self:GetPlayerName()
 		txt = txt .. "\n(" .. PlayerName .. ")"
 	end
-	if(name and name ~= "") then
+	if(PlayerName and PlayerName ~= "") then
 	    if (txt == "") then
-	        return "- "..name.." -"
+	        return "- "..PlayerName.." -"
 	    end
-	    return "- "..name.." -\n"..txt
+	    return "- "..PlayerName.." -\n"..txt
 	end
 	return txt
 end
