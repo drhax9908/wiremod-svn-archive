@@ -10,7 +10,7 @@ end
 WireToolHelpers = {}
 
 function WireToolHelpers.LeftClick( self, trace )
-	if ( not trace.HitPos or trace.Entity:IsPlayer() or trace.wEntity:IsNPC() ) then return false end
+	if ( not trace.HitPos or trace.Entity:IsPlayer() or trace.Entity:IsNPC() ) then return false end
 	if (CLIENT) then return true end
 
 	local ply = self:GetOwner()
