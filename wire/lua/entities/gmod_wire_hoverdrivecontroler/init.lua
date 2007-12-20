@@ -431,6 +431,24 @@ function ENT:Think()
 		
 		local attached = self:GetEntitiesForTeleport(self.Entity);
 		if(attached) then
+			
+			--TODO: LS2 energy required based on attached mass
+			/*if ( RES_DISTRIB == 2 and useenergy:GetBool() ) then
+				local mass = something
+				local dist = self.Entity:GetPos():Distance(self.JumpTarget)
+				local needed = math.floor(dist ^ 2 / 5000 + 200) + mass?
+				--Msg("hover drive requires ",needed," energy to jump ",dist,"\n")
+				local energy = RD_GetResourceAmount(self, "energy")
+				if (energy >= needed) then
+					RD_ConsumeResource(self, "energy", needed)
+				else
+					self.Entity:EmitSound("buttons/button2.wav", 500)
+					self:FailJump()
+					self.JumpStage = 0
+					return
+				end
+			end*/
+			
 			self.ents = self:PrepareTeleport(attached);
 			
 			DoPropSpawnedEffect( self.Entity );
@@ -467,6 +485,7 @@ function ENT:Think()
 			
 			self.JumpStage = 2
 		else
+			self:FailJump()
 			self.JumpStage = 0
 		end
 		
