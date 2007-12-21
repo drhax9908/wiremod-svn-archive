@@ -57,3 +57,50 @@ function ENT:TriggerInput( inputname, value, iter )
 		
 	end
 end
+
+
+function MakeWireHoloemitter( pl, pos, ang, r, g, b, a, showbeams, size )
+	// check the players limit
+	if( !pl:CheckLimit( "wire_holoemitters" ) ) then return; end
+	
+	// create the emitter
+	local emitter = ents.Create( "gmod_wire_holoemitter" );
+		emitter:SetPos( pos );
+		emitter:SetAngles( ang );
+	emitter:Spawn();
+	emitter:Activate();
+	
+	// setup the emitter.
+	emitter:SetColor( r, g, b, a );
+	emitter:SetPlayer( pl );
+	
+	// update size and show states
+	emitter:SetNetworkedBool( "ShowBeam", showbeams );
+	emitter:SetNetworkedFloat( "PointSize", size );
+	
+	// store the color on the table.
+	local tbl = {
+		r = r,
+		g = g,
+		b = b,
+		a = a,
+		showbeams = showbeams,
+		size = size,
+	};
+	table.Merge( emitter:GetTable(), tbl );
+	
+	// add to the players count
+	pl:AddCount( "wire_holoemitters", emitter );
+	
+	//
+	return emitter;
+end
+
+duplicator.RegisterEntityClass(
+	"gmod_wire_holoemitter",
+	MakeWireHoloemitter,
+	"Ang",
+	"Pos",
+	"r", "g", "b", "a"
+);
+

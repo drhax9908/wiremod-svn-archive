@@ -99,3 +99,32 @@ function ENT:TriggerInput(iname, value)
 		self:WriteCell(2039,math.Clamp( value, 0, 31 ))
 	end
 end
+
+
+function MakeWireDigitalScreen( pl, Ang, Pos, Smodel )
+	
+	if ( !pl:CheckLimit( "wire_digitalscreens" ) ) then return false end
+	
+	local wire_digitalscreen = ents.Create( "gmod_wire_digitalscreen" )
+	if (!wire_digitalscreen:IsValid()) then return false end
+	wire_digitalscreen:SetModel(Smodel)
+
+	wire_digitalscreen:SetAngles( Ang )
+	wire_digitalscreen:SetPos( Pos )
+	wire_digitalscreen:Spawn()
+	
+	wire_digitalscreen:SetPlayer(pl)
+		
+	local ttable = {
+		pl = pl,
+		Smodel = Smodel,
+	}
+	table.Merge(wire_digitalscreen:GetTable(), ttable )
+	
+	pl:AddCount( "wire_digitalscreens", wire_digitalscreen )
+	
+	return wire_digitalscreen
+end
+
+duplicator.RegisterEntityClass("gmod_wire_digitalscreen", MakeWireDigitalScreen, "Ang", "Pos", "Smodel")
+
