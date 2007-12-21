@@ -1,3 +1,4 @@
+AddCSLuaFile( "gates.lua" )
 
 if ( CLIENT ) then
     language.Add( "Tool_wire_gate_arithmetic_name", "Arithmetic Gate Tool (Wire)" )
@@ -41,7 +42,8 @@ if ( CLIENT ) then
     language.Add( "WireGatesTool_model", "Model:" )
 	language.Add( "sboxlimit_wire_gates", "You've hit your gates limit!" )
 	language.Add( "undone_gmod_wire_gate", "Undone wire gate" )
-	language.Add( "Cleanup_gmod_wire_gate", "Cleaned up wire gate" )
+	language.Add( "Cleanup_gmod_wire_gate", "Wire Gates" )
+	language.Add( "Cleaned_gmod_wire_gate", "Cleaned up wire gates" )
 end
 
 if (SERVER) then
@@ -82,6 +84,7 @@ local function buildTOOL( s_name, s_def )
 	local s_mode		= "wire_gate_"..string.lower(s_name)
 	TOOL.Mode			= s_mode
 	TOOL.Name			= "Gate - "..s_name
+	TOOL.ClientConVar[ "action" ] = s_def
 	if (CLIENT) then
 		TOOL.BuildCPanel = function(panel)
 			panel:AddControl("Header", { Text = "#Tool_"..s_mode.."_name", Description = "#Tool_"..s_mode.."_desc" })
@@ -105,14 +108,11 @@ local function buildTOOL( s_name, s_def )
 			ModelPlug_AddToCPanel(panel, "gate", s_mode, "#WireGateTool_model", nil, "#WireGateTool_model")
 		end
 	end
-	TOOL.ClientConVar[ "action" ] = s_def
-	TOOL:CreateConVars()
-	SWEP.Tool[ s_mode ] = TOOL
-	TOOL = nil
+	WireToolSetup.close()
 end
 
 
-table.Merge( TOOL, base_tool )
+openTOOL()
 buildTOOL( "Arithmetic", "+" )
 
 
@@ -146,6 +146,7 @@ buildTOOL( "Trig", "sin" )
 
 openTOOL()
 TOOL.Mode			= "wire_gates"
+TOOL.Category		= "Wire - Tools"
 TOOL.Name			= "Gate"
 TOOL.ClientConVar[ "action" ] = "+"
 
@@ -198,5 +199,8 @@ function TOOL.BuildCPanel(panel)
 	end
 end
 
+TOOL:CreateConVars()
+SWEP.Tool[ TOOL.Mode ] = TOOL
+TOOL = nil
 
 base_tool = nil
