@@ -1,72 +1,10 @@
 if ( VERSION < 31 ) then return end --pre gmod 31 = fail
 Msg("=== Loading Wire Menus ===\n")
 
-if ( SERVER ) then 
+if (SERVER) then
 	AddCSLuaFile( "autorun/WireMenus.lua" )
-end
-
-
-
-WireToolHelpers = {}
-
-function WireToolHelpers.LeftClick( self, trace )
-	if ( not trace.HitPos or trace.Entity:IsPlayer() or trace.Entity:IsNPC() ) then return false end
-	if (CLIENT) then return true end
-
-	local ply = self:GetOwner()
-
-	local ent = self:ToolMakeEnt( trace, ply )
-	if ( ent == true ) then return true end
-	if ( ent == nil or ent == false or not ent:IsValid() ) then return false end
-
-	local const = WireLib.Weld( ent, trace.Entity, trace.PhysicsBone, true )
-
-	undo.Create( self.WireClass )
-		undo.AddEntity( ent )
-		undo.AddEntity( const )
-		undo.SetPlayer( ply )
-	undo.Finish()
-
-	ply:AddCleanup( self.WireClass, ent )
-
-	return true
-end
-
-function WireToolHelpers.UpdateGhost( self, ent )
-
-	if ( !ent or !ent:IsValid() ) then return end
-
-	local tr 	= utilx.GetPlayerTrace( self:GetOwner(), self:GetOwner():GetCursorAimVector() )
-	local trace 	= util.TraceLine( tr )
-	if (!trace.Hit) then return end
-
-	if (!trace.Hit || trace.Entity:IsPlayer() || trace.Entity:GetClass() == self.WireClass ) then
-		ent:SetNoDraw( true )
-		return
-	end
-
-	local Ang = trace.HitNormal:Angle()
-	Ang.pitch = Ang.pitch + 90
-
-	local min = ent:OBBMins()
-	ent:SetPos( trace.HitPos - trace.HitNormal * min.z )
-	ent:SetAngles( Ang )
-
-	ent:SetNoDraw( false )
-
-end
-
-function WireToolHelpers.Think( self )
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" )) then
-		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), Angle(0,0,0) )
-	end
-	self:UpdateGhost( self.GhostEntity )
-end
-
-
-
-
-if (SERVER) then return end
+	return
+ end
 
 CreateClientConVar( "wiremovetoolstotab", "0", true, false )
 

@@ -1,3 +1,11 @@
+TOOL = nil
+
+--load our other stools first
+include( "wire/stools/manifest.lua" )
+
+--wire stool
+TOOL				= ToolObj:Create()
+TOOL.Mode			= "wire"
 TOOL.Category		= "Wire - Tools"
 TOOL.Name			= "Wire"
 TOOL.Command		= nil
@@ -26,10 +34,6 @@ TOOL.CurrentInput = nil
 TOOL.Inputs = nil
 TOOL.CurrentOutput = nil
 TOOL.Outputs = nil
-
-util.PrecacheSound("weapons/pistol/pistol_empty.wav")
-
-cleanup.Register( "wireconstraints" )
 
 function TOOL:LeftClick( trace )
 	if (trace.Entity:IsValid()) and (trace.Entity:IsPlayer()) then return end
