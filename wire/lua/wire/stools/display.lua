@@ -275,3 +275,236 @@ end
 
 
 
+
+--wire_consolescreen
+WireToolSetup.open( "consolescreen", "Display", "Console Screen", "gmod_wire_consolescreen", WireToolMakeConsoleScreen )
+
+if ( CLIENT ) then
+    language.Add( "Tool_wire_consolescreen_name", "Console Screen Tool (Wire)" )
+    language.Add( "Tool_wire_consolescreen_desc", "Spawns a console screen" )
+    language.Add( "Tool_wire_consolescreen_0", "Primary: Create/Update screen" )
+	language.Add( "sboxlimit_wire_consolescreens", "You've hit console screens limit!" )
+	language.Add( "undone_gmod_wire_consolescreen", "Undone Wire Screen" )
+	language.Add( "Cleanup_gmod_wire_consolescreen", "Wire Screens" )
+	language.Add( "Cleaned_gmod_wire_consolescreen", "Cleaned up wire screens" )
+end
+
+cleanup.Register( "gmod_wire_consolescreen" )
+
+if (SERVER) then
+	CreateConVar('sbox_maxwire_consolescreens', 20)
+end
+
+TOOL.ClientConVar[ "model" ] = "models/props_lab/monitor01b.mdl"
+
+function TOOL.BuildCPanel(panel)
+	panel:AddControl("Header", { Text = "#Tool_wire_consolescreen_name", Description = "#Tool_wire_consolescreen_desc" })
+	
+	panel:AddControl("ComboBox", {
+		Label = "#WireThrusterTool_Model",
+		MenuButton = "0",
+
+		Options = {
+			["#Small tv"]		= { wire_consolescreen_model = "models/props_lab/monitor01b.mdl" },
+			["#Plasma tv"]		= { wire_consolescreen_model = "models/props/cs_office/TV_plasma.mdl" },
+			["#LCD monitor"]	= { wire_consolescreen_model = "models/props/cs_office/computer_monitor.mdl" },
+			["#Monitor Big"]	= { wire_consolescreen_model = "models/kobilica/wiremonitorbig.mdl" },
+			["#Monitor Small"]	= { wire_consolescreen_model = "models/kobilica/wiremonitorsmall.mdl" },
+		}
+	})
+end
+
+
+
+
+--wire_digitalscreen
+WireToolSetup.open( "digitalscreen", "Display", "Digital Screen", "gmod_wire_digitalscreen", WireToolMakeDigitalScreen )
+
+if ( CLIENT ) then
+    language.Add( "Tool_wire_digitalscreen_name", "Digital Screen Tool (Wire)" )
+    language.Add( "Tool_wire_digitalscreen_desc", "Spawns a digital screen, which can be used to draw pixel by pixel. Resoultion is 32x32!" )
+    language.Add( "Tool_wire_digitalscreen_0", "Primary: Create/Update screen" )
+	language.Add( "sboxlimit_wire_digitalscreens", "You've hit digital screens limit!" )
+	language.Add( "undone_gmod_wire_digitalscreen", "Undone Wire Screen" )
+	language.Add( "Cleanup_gmod_wire_digitalscreen", "Wire Screens" )
+	language.Add( "Cleaned_gmod_wire_digitalscreen", "Cleaned Up Wire Screens" )
+end
+
+cleanup.Register( "gmod_wire_digitalscreen" )
+
+if (SERVER) then
+	CreateConVar('sbox_maxwire_digitalscreens', 20)
+end
+
+TOOL.ClientConVar[ "model" ] = "models/props_lab/monitor01b.mdl"
+
+function TOOL.BuildCPanel(panel)
+	panel:AddControl("Header", { Text = "#Tool_wire_digitalscreen_name", Description = "#Tool_wire_digitalscreen_desc" })
+	
+	panel:AddControl("ComboBox", {
+		Label = "#WireThrusterTool_Model",
+		MenuButton = "0",
+
+		Options = {
+			["#Small tv"]		= { wire_digitalscreen_model = "models/props_lab/monitor01b.mdl" },
+			["#Plasma tv"]		= { wire_digitalscreen_model = "models/props/cs_office/TV_plasma.mdl" },
+			["#LCD monitor"]	= { wire_digitalscreen_model = "models/props/cs_office/computer_monitor.mdl" },
+			["#Monitor Big"]	= { wire_digitalscreen_model = "models/kobilica/wiremonitorbig.mdl" },
+			["#Monitor Small"]	= { wire_digitalscreen_model = "models/kobilica/wiremonitorsmall.mdl" },
+		}
+	})
+end
+
+
+
+
+
+
+
+
+
+
+-- Holography--
+
+--wire_holoemitter
+WireToolSetup.open( "holoemitter", "Holography", "Emitter", "gmod_wire_holoemitter", WireToolMakeEmitter )
+
+if( CLIENT ) then
+	language.Add( "Tool_wire_holoemitter_name", "Holographic Emitter Tool (Wire)" )
+	language.Add( "Tool_wire_holoemitter_desc", "The emitter required for holographic projections" )
+	language.Add( "Tool_wire_holoemitter_0", "Primary: Create emitter      Secondary: Link emitter" )
+	language.Add( "Tool_wire_holoemitter_1", "Select the emitter point to link to." )
+	language.Add( "Tool_wire_holoemitter_showbeams", "Show beam" )
+	language.Add( "Tool_wire_holoemitter_size", "Point size" )
+	language.Add( "Tool_wire_holoemitter_minimum_fade_rate", "CLIENT: Minimum Fade Rate - Applyed to all holoemitters" )
+	language.Add( "sboxlimit_wire_holoemitters", "You've hit the holoemitters limit!" )
+	language.Add( "undone_gmod_wire_holoemitter", "Undone Wire Holoemitter" )
+	language.Add( "Cleanup_gmod_wire_holoemitter", "Wire Holoemitters" )
+	language.Add( "Cleaned_gmod_wire_holoemitter", "Cleaned Up Wire Holoemitters" )
+end
+
+cleanup.Register( "gmod_wire_holoemitter" )
+
+if( SERVER ) then CreateConVar( "sbox_maxwire_holoemitters", 30 ) end
+
+TOOL.ClientConVar["r"]	= "255"
+TOOL.ClientConVar["g"]	= "255"
+TOOL.ClientConVar["b"]	= "255"
+TOOL.ClientConVar["a"]	= "255"
+TOOL.ClientConVar["showbeams"]	= "1"
+TOOL.ClientConVar["size"]	= "4"
+
+TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
+TOOL.Emitter = nil
+TOOL.NoGhostOn = { "gmod_wire_hologrid" }
+TOOL.AllowLeftOnClass = true
+
+function TOOL:RightClick( tr )
+	if( !tr.HitNonWorld || tr.Entity:GetClass() != "gmod_wire_holoemitter" ) then return false end
+	if( CLIENT ) then return true end
+	
+	self.Emitter = tr.Entity
+	
+	return true
+end
+
+function TOOL.BuildCPanel( panel )
+	// add header.
+	panel:AddControl(
+		"Header",
+		{
+			Text 		= "#Tool_wire_holoemitter_name",
+			Description 	= "#Tool_wire_holoemitter_desc",
+		}
+	)
+	
+	// show beams.
+	panel:AddControl(
+		"Checkbox",
+		{
+			Label = "#Tool_wire_holoemitter_showbeams",
+			Command = "wire_holoemitter_showbeams",
+		}
+	)
+	
+	// point size
+	panel:AddControl(
+		"Slider",
+		{
+			Label = "#Tool_wire_holoemitter_size",
+			Type = "Float",
+			Min = "1",
+			Max = "32",
+			Command = "wire_holoemitter_size",
+		}
+	)
+	
+	// add color picker.
+	panel:AddControl(
+		"Color",
+		{
+			Label 	= "Color",
+			Red 	= "wire_holoemitter_r",
+			Green 	= "wire_holoemitter_g",
+			Blue 	= "wire_holoemitter_b",
+			Alpha 	= "wire_holoemitter_a",
+			ShowAlpha	= "1",
+			ShowHSV		= "1",
+			ShowRGB		= "1",
+			Multiplier	= "255",
+		}
+	)
+	if(not SinglePlayer( )) then
+		// Minimum Faderate
+		panel:AddControl(
+			"Slider",
+			{
+				Label = "#Tool_wire_holoemitter_minimum_fade_rate",
+				Type = "Float",
+				Min = "0.1",
+				Max = "100",
+				Command = "cl_wire_holoemitter_minfaderate",
+			}
+		)
+	end
+end
+
+
+
+
+--wire_hologrid
+WireToolSetup.open( "hologrid", "Holography", "Grid", "gmod_wire_hologrid", WireToolMakeHoloGrid )
+
+if( CLIENT ) then
+	language.Add( "Tool_wire_hologrid_name", "Holographic Grid Tool (Wire)" )
+	language.Add( "Tool_wire_hologrid_desc", "The grid to aid in holographic projections" )
+	language.Add( "Tool_wire_hologrid_0", "Primary: Create grid" )
+	language.Add( "sboxlimit_wire_hologrids", "You've hit the hologrids limit!" )
+	language.Add( "undone_gmod_wire_hologrid", "Undone Wire hologrid" )
+	language.Add( "Cleanup_gmod_wire_hologrid", "Wire hologrids" )
+	language.Add( "Cleaned_gmod_wire_hologrid", "Cleaned Up Wire hologrids" )
+end
+
+cleanup.Register( "gmod_wire_hologrid" )
+
+if( SERVER ) then CreateConVar( "sbox_maxwire_hologrids", 30 ) end
+
+TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
+TOOL.NoGhostOn = { "sbox_maxwire_holoemitters" }
+
+function TOOL.BuildCPanel( panel )
+	// add header.
+	panel:AddControl(
+		"Header",
+		{
+			Text 		= "#Tool_wire_hologrid_name",
+			Description 	= "#Tool_wire_hologrid_desc",
+		}
+	)
+end
+
+
+
+
+
+

@@ -147,3 +147,126 @@ function WireToolMakeIndicator( self, trace, ply )
 	return wire_indicator
 end
 
+
+function WireToolMakeConsoleScreen( self, trace, ply )
+	
+	if ( !self:GetSWEP():CheckLimit( "wire_consolescreens" ) ) then return false end
+	
+	local model = self:GetClientInfo( "model" )
+	
+	if (not util.IsValidModel(model)) then return false end
+	if (not util.IsValidProp(model)) then return false end
+	
+	local Ang = trace.HitNormal:Angle()
+	Ang.pitch = Ang.pitch + 90
+	
+	local wire_consolescreen = MakeWireconsoleScreen( ply, Ang, trace.HitPos, model )
+	local min = wire_consolescreen:OBBMins()
+	wire_consolescreen:SetPos( trace.HitPos - trace.HitNormal * min.z )
+
+	return wire_consolescreen
+end
+
+
+function WireToolMakeDigitalScreen( self, trace, ply )
+	
+	if ( !self:GetSWEP():CheckLimit( "wire_digitalscreens" ) ) then return false end
+	
+	local model = self:GetClientInfo( "model" )
+	
+	if (not util.IsValidModel(model)) then return false end
+	if (not util.IsValidProp(model)) then return false end
+	
+	local Ang = trace.HitNormal:Angle()
+	Ang.pitch = Ang.pitch + 90
+	
+	local wire_digitalscreen = MakeWireDigitalScreen( ply, Ang, trace.HitPos, model )
+	local min = wire_digitalscreen:OBBMins()
+	wire_digitalscreen:SetPos( trace.HitPos - trace.HitNormal * min.z )
+
+	return wire_digitalscreen
+end
+
+
+function WireToolMakeEmitter( self, tr, pl )
+	
+	local r = self:GetClientNumber( "r" );
+	local g = self:GetClientNumber( "g" );
+	local b = self:GetClientNumber( "b" );
+	local a = self:GetClientNumber( "a" );
+	local size = self:GetClientNumber( "size" );
+	local showbeams = util.tobool( self:GetClientNumber( "showbeams" ) );
+	
+	// did we hit another holoemitter?
+	if( tr.HitNonWorld && tr.Entity:GetClass() == "gmod_wire_holoemitter" ) then
+		// update it.
+		tr.Entity:SetColor( r, g, b, a );
+		
+		// update size and show states
+		tr.Entity:SetNetworkedBool( "ShowBeam", showbeams );
+		tr.Entity:SetNetworkedFloat( "PointSize", size );
+		
+		tr.Entity.r = r
+		tr.Entity.g = g
+		tr.Entity.b = b
+		tr.Entity.a = a
+		tr.Entity.showbeams = showbeams
+		tr.Entity.size = size
+		
+		return true;
+	end
+
+	// we linking?
+	if( tr.HitNonWorld && tr.Entity:IsValid() && tr.Entity:GetClass() == "gmod_wire_hologrid" ) then
+		// link to this point.
+		if( self.Emitter && self.Emitter:IsValid() ) then
+			// link.
+			self.Emitter:LinkToGrid( tr.Entity );
+			
+			// reset selected emitter
+			self.Emitter = nil;
+			
+			//
+			return true;
+		else
+			// prevent effects
+			return false;
+		end
+	end
+	
+	// create a holo emitter.
+	if( !self:GetSWEP():CheckLimit( "wire_holoemitters" ) ) then return false; end
+	
+	// fix angle
+	local ang = tr.HitNormal:Angle();
+	ang.pitch = ang.pitch + 90;
+	
+	// create emitter
+	local emitter = MakeWireHoloemitter( pl, tr.HitPos, ang, r, g, b, a, showbeams, size );
+	
+	// pull it out of the spawn point
+	local mins = emitter:OBBMins();
+	emitter:SetPos( tr.HitPos - tr.HitNormal * mins.z );
+	
+	return emitter
+end
+
+
+function WireToolMakeHoloGrid( self, tr, pl )
+	
+	if( !self:GetSWEP():CheckLimit( "wire_hologrids" ) ) then return false end
+	
+	local pl = self:GetOwner()
+	
+	local ang = tr.HitNormal:Angle()
+	ang.p = ang.p + 90
+	
+	local grid = MakeWireHologrid( pl, tr.HitPos, ang )
+	
+	local mins = grid:OBBMins()
+	grid:SetPos( tr.HitPos - tr.HitNormal * mins.z )
+	
+	return grid
+end
+
+

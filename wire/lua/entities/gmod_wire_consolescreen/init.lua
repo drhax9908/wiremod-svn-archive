@@ -119,3 +119,31 @@ function ENT:TriggerInput(iname, value)
 		self:WriteCell(2042,0)
 	end
 end
+
+
+function MakeWireconsoleScreen( pl, Ang, Pos, Smodel )
+	
+	if ( !pl:CheckLimit( "wire_consolescreens" ) ) then return false end
+	
+	local wire_consolescreen = ents.Create( "gmod_wire_consolescreen" )
+	if (!wire_consolescreen:IsValid()) then return false end
+	wire_consolescreen:SetModel(Smodel)
+
+	wire_consolescreen:SetAngles( Ang )
+	wire_consolescreen:SetPos( Pos )
+	wire_consolescreen:Spawn()
+	
+	wire_consolescreen:SetPlayer(pl)
+		
+	local ttable = {
+		pl = pl,
+		Smodel = Smodel,
+	}
+	table.Merge(wire_consolescreen:GetTable(), ttable )
+	
+	pl:AddCount( "wire_consolescreens", wire_consolescreen )
+	
+	return wire_consolescreen
+end
+
+duplicator.RegisterEntityClass("gmod_wire_consolescreen", MakeWireconsoleScreen, "Ang", "Pos", "Smodel")

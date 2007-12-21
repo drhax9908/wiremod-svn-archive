@@ -2,8 +2,13 @@ AddCSLuaFile( "helpers.lua" )
 
 WireToolHelpers = {}
 
+local function NoGhostOn(self, trace)
+	return self.NoGhostOn and table.HasValue( self.NoGhostOn, trace.Entity:GetClass())
+end
+
 function WireToolHelpers.LeftClick( self, trace )
 	if ( not trace.HitPos or trace.Entity:IsPlayer() or trace.Entity:IsNPC() ) then return false end
+	if ( not self.AllowLeftOnClass and trace.HitNonWorld and (trace.Entity:GetClass() == self.WireClass or NoGhostOn(self, trace)) ) then return false end
 	if (CLIENT) then return true end
 
 	local ply = self:GetOwner()
@@ -29,11 +34,11 @@ function WireToolHelpers.UpdateGhost( self, ent )
 
 	if ( !ent or !ent:IsValid() ) then return end
 
-	local tr 	= utilx.GetPlayerTrace( self:GetOwner(), self:GetOwner():GetCursorAimVector() )
+	local tr 		= utilx.GetPlayerTrace( self:GetOwner(), self:GetOwner():GetCursorAimVector() )
 	local trace 	= util.TraceLine( tr )
 	if (!trace.Hit) then return end
 
-	if (!trace.Hit || trace.Entity:IsPlayer() || trace.Entity:IsNPC() || trace.Entity:GetClass() == self.WireClass ) then
+	if (!trace.Hit || trace.Entity:IsPlayer() || trace.Entity:IsNPC() || trace.Entity:GetClass() == self.WireClass ) or ( NoGhostOn(self, trace) ) then
 		ent:SetNoDraw( true )
 		return
 	end
@@ -61,11 +66,12 @@ function WireToolHelpers.UpdateGhost( self, ent )
 end
 
 function WireToolHelpers.Think( self )
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" )) then
+	local model = self.Model or self:GetClientInfo( "model" )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != model) then
 		if (self.GetGhostAngle) then
-			self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), self:GetGhostAngle(Angle(0,0,0)) )
+			self:MakeGhostEntity( model, Vector(0,0,0), self:GetGhostAngle(Angle(0,0,0)) )
 		else
-			self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), self.GhostAngle or Angle(0,0,0) )
+			self:MakeGhostEntity( model, Vector(0,0,0), self.GhostAngle or Angle(0,0,0) )
 		end
 	end
 	self:UpdateGhost( self.GhostEntity )
@@ -76,7 +82,7 @@ WireToolSetup = {}
 
 function WireToolSetup.open( s_mode, s_cat, s_name, s_class, f_toolmakeent )
 	if (TOOL) then WireToolSetup.close() end
-	Msg( "WireToolSetup.open ",s_mode,"\n")
+	--Msg( "WireToolSetup.open ",s_mode,"\n")
 	
 	TOOL				= ToolObj:Create()
 	TOOL.Command		= nil
@@ -93,7 +99,7 @@ function WireToolSetup.open( s_mode, s_cat, s_name, s_class, f_toolmakeent )
 end
 
 function WireToolSetup.close()
-	Msg( "WireToolSetup.close ",TOOL.Mode,"\n")
+	--Msg( "WireToolSetup.close ",TOOL.Mode,"\n")
 	TOOL:CreateConVars()
 	SWEP.Tool[ TOOL.Mode ] = TOOL
 	TOOL = nil

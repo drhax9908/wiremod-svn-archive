@@ -56,3 +56,35 @@ function ENT:AcceptInput(name,activator,caller)
 		self.Entity:SetNetworkedBool( "UseGPS", self.usesgps > 0 );
 	end
 end
+
+
+function MakeWireHologrid( pl, pos, ang )
+	// check the players limit
+	if( !pl:CheckLimit( "wire_hologrids" ) ) then return; end
+	
+	// create the emitter
+	local emitter = ents.Create( "gmod_wire_hologrid" );
+		emitter:SetPos( pos );
+		emitter:SetAngles( ang );
+	emitter:Spawn();
+	emitter:Activate();
+	
+	// setup the emitter.
+	emitter:SetPlayer( pl );
+	
+	
+	// add to the players count
+	pl:AddCount( "wire_hologrids", emitter );
+	
+	//
+	return emitter;
+end
+
+// register with duplicator
+duplicator.RegisterEntityClass(
+	"gmod_wire_hologrid",
+	MakeWireHologrid,
+	"Ang",
+	"Pos"
+);
+
