@@ -122,3 +122,32 @@ end
 function ENT:OnRestore()
     self.BaseClass.OnRestore(self)
 end
+
+
+function MakeWirePanel( pl, Ang, Pos, Smodel )
+	
+	if ( !pl:CheckLimit( "wire_panels" ) ) then return false end
+	
+	local wire_panel = ents.Create( "gmod_wire_panel" )
+	if (!wire_panel:IsValid()) then return false end
+	wire_panel:SetModel(Smodel)
+
+	wire_panel:SetAngles( Ang )
+	wire_panel:SetPos( Pos )
+	wire_panel:Spawn()
+	
+	wire_panel:SetPlayer(pl)
+		
+	local ttable = {
+		pl = pl,
+		Smodel = Smodel,
+	}
+	table.Merge(wire_panel:GetTable(), ttable )
+	
+	pl:AddCount( "wire_panels", wire_panel )
+	
+	return wire_panel
+	
+end
+
+duplicator.RegisterEntityClass("gmod_wire_panel", MakeWirePanel, "Ang", "Pos", "Smodel")

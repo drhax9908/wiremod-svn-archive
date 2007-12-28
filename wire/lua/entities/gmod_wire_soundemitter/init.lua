@@ -55,3 +55,33 @@ function ENT:StopSounds()
 		self.SND:Stop()
 	end
 end
+
+
+function MakeWireEmitter( pl, Model, Ang, Pos, sound, nocollide, frozen )
+
+	if ( !pl:CheckLimit( "wire_emitters" ) ) then return false end
+
+	local wire_emitter = ents.Create( "gmod_wire_soundemitter" )
+	if (!wire_emitter:IsValid()) then return false end
+	wire_emitter:SetModel( Model )
+
+	wire_emitter:SetAngles( Ang )
+	wire_emitter:SetPos( Pos )
+	wire_emitter:Spawn()
+	
+	wire_emitter:SetSound( Sound(sound) )
+	wire_emitter:SetPlayer( pl )
+
+	local etable = {
+		pl	= pl,
+		nocollide = nocollide
+	}
+	table.Merge(wire_emitter:GetTable(), etable )
+
+	pl:AddCount( "wire_emitters", wire_emitter )
+
+	return wire_emitter
+	
+end
+
+duplicator.RegisterEntityClass("gmod_wire_soundemitter", MakeWireEmitter, "Model", "Ang", "Pos", "sound", "nocollide", "frozen")

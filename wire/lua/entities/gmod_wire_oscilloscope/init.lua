@@ -23,3 +23,26 @@ function ENT:Think()
 	self.Entity:NextThink(CurTime()+0.08)
 	return true
 end
+
+
+function MakeWireOscilloscope( pl, Ang, Pos, Model )
+	
+	if ( !pl:CheckLimit( "wire_oscilloscopes" ) ) then return false end
+	
+	local wire_oscilloscope = ents.Create( "gmod_wire_oscilloscope" )
+	if (!wire_oscilloscope:IsValid()) then return false end
+	wire_oscilloscope:SetModel( Model )
+
+	wire_oscilloscope:SetAngles( Ang )
+	wire_oscilloscope:SetPos( Pos )
+	wire_oscilloscope:Spawn()
+	
+	wire_oscilloscope:SetPlayer(pl)
+	wire_oscilloscope.pl = pl
+	
+	pl:AddCount( "wire_oscilloscopes", wire_oscilloscope )
+	
+	return wire_oscilloscope
+end
+
+duplicator.RegisterEntityClass("gmod_wire_oscilloscope", MakeWireOscilloscope, "Ang", "Pos", "Model")

@@ -146,3 +146,34 @@ function ENT:ShowOutput( R, G, B )
 		self.Entity:SetColor( R, G, B, 255 )
 	end
 end
+
+
+function MakeWireLight( pl, Ang, Pos, directional, radiant, nocollide, Vel, aVel, frozen, nocollide )
+	if ( !pl:CheckLimit( "wire_lights" ) ) then return false end
+
+	local wire_light = ents.Create( "gmod_wire_light" )
+	if (!wire_light:IsValid()) then return false end
+
+	wire_light:SetAngles( Ang )
+	wire_light:SetPos( Pos )
+	wire_light:Spawn()
+
+	wire_light:GetTable():Setup(directional, radiant)
+	wire_light:GetTable():SetPlayer(pl)
+
+	if ( nocollide == true ) then wire_light:GetPhysicsObject():EnableCollisions( false ) end
+
+	local ttable = {
+		pl	= pl,
+		directional = directional,
+		radiant = radiant,
+		nocollide = nocollide
+	}
+	table.Merge(wire_light:GetTable(), ttable )
+
+	pl:AddCount( "wire_lights", wire_light )
+
+	return wire_light
+end
+
+duplicator.RegisterEntityClass("gmod_wire_light", MakeWireLight, "Ang", "Pos", "directional", "radiant", "nocollide", "Vel", "aVel", "frozen", "nocollide")

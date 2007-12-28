@@ -42,16 +42,52 @@ function ENT:TriggerInput(iname, value)
 end
 
 function ENT:Setup(SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor)
-	// Extra stuff for Wire Screen (TheApathetic)
+	-- Extra stuff for Wire Screen (TheApathetic)
 	self:SetTextA(TextA)
 	self:SetTextB(TextB)
 	self:SetSingleBigFont(SingleBigFont)
 	
-	//LeftAlign (TAD2020)
+	--LeftAlign (TAD2020)
 	self:SetLeftAlign(LeftAlign)
-	//Floor (TAD2020)
+	--Floor (TAD2020)
 	self:SetFloor(Floor)
 	
-	// Put it here to update inputs if necessary (TheApathetic)
+	--Put it here to update inputs if necessary (TheApathetic)
 	self:SetSingleValue(SingleValue)
 end
+
+function MakeWireScreen( pl, Ang, Pos, Smodel, SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor )
+	
+	if ( !pl:CheckLimit( "wire_screens" ) ) then return false end
+	
+	local wire_screen = ents.Create( "gmod_wire_screen" )
+	if (!wire_screen:IsValid()) then return false end
+	wire_screen:SetModel(Smodel)
+	wire_screen:SetAngles( Ang )
+	wire_screen:SetPos( Pos )
+	wire_screen:Spawn()
+	
+	wire_screen:Setup(SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor)
+	
+	wire_screen:SetPlayer(pl)
+		
+	local ttable = {
+		pl				= pl,
+		Smodel			= Smodel,
+		SingleValue		= SingleValue,
+		SingleBigFont	= SingleBigFont,
+		TextA			= TextA,
+		TextB			= TextB,
+		LeftAlign		= LeftAlign,
+		Floor			= Floor
+	}
+	table.Merge(wire_screen:GetTable(), ttable )
+	
+	pl:AddCount( "wire_screens", wire_screen )
+	
+	return wire_screen
+	
+end
+
+duplicator.RegisterEntityClass("gmod_wire_screen", MakeWireScreen, "Ang", "Pos", "Smodel", "SingleValue", "SingleBigFont", "TextA", "TextB", "LeftAlign", "Floor")
+	

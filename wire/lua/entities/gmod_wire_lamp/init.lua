@@ -16,6 +16,7 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 	
+	--TODO: Fix for gmod2007
 	self.flashlight = ents.Create("effect_flashlight")
 	self.flashlight:SetPos( self.Entity:GetPos() )
 	self.flashlight:SetAngles( self.Entity:GetAngles() )
@@ -102,3 +103,33 @@ end
 
 include('shared.lua')
 
+
+function MakeWireLamp( pl, Pos, Ang, r, g, b, Vel, aVel, frozen )
+
+	if ( !pl:CheckLimit( "wire_lamps" ) ) then return false end
+
+	local wire_lamp = ents.Create( "gmod_wire_lamp" )
+	if (!wire_lamp:IsValid()) then return end
+		wire_lamp:SetPos( Pos )
+		wire_lamp:SetAngles( Ang )
+		wire_lamp:SetLightColor( r, g, b )
+	wire_lamp:Spawn()
+
+	wire_lamp:Setup( r, g, b )
+	wire_lamp:SetPlayer( pl )
+
+
+	if (wire_lamp:GetPhysicsObject():IsValid()) then
+		Phys = wire_lamp:GetPhysicsObject()
+		if Vel then Phys:SetVelocity(Vel) end
+		if Vel then Phys:AddAngleVelocity(aVel) end
+		Phys:EnableMotion(frozen != true)
+	end
+	
+	pl:AddCount( "wire_lamps", wire_lamp )
+	pl:AddCleanup( "wire_lamp", wire_lamp )
+	
+	return wire_lamp
+end
+
+duplicator.RegisterEntityClass( "gmod_wire_lamp", MakeWireLamp, "Pos", "Ang", "lightr", "lightg", "lightb", "Vel", "aVel", "frozen" )
