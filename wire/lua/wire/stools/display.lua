@@ -1,5 +1,13 @@
 AddCSLuaFile( "display.lua" )
 
+local function GetScreenAngle( self, Ang )
+	if (self:GetClientNumber("createflat") == 1) then
+		Ang.pitch = Ang.pitch - 90
+	end
+	return Ang
+end
+
+
 --wire_indicator
 WireToolSetup.open( "indicator", "Display", "Indicator", "gmod_wire_indicator", WireToolMakeIndicator )
 
@@ -27,20 +35,22 @@ if (SERVER) then
 	ModelPlug_Register("indicator")
 end
 
-TOOL.ClientConVar[ "noclip" ] = "0"
-TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
-TOOL.ClientConVar[ "a" ] = "0"
-TOOL.ClientConVar[ "ar" ] = "255"
-TOOL.ClientConVar[ "ag" ] = "0"
-TOOL.ClientConVar[ "ab" ] = "0"
-TOOL.ClientConVar[ "aa" ] = "255"
-TOOL.ClientConVar[ "b" ] = "1"
-TOOL.ClientConVar[ "br" ] = "0"
-TOOL.ClientConVar[ "bg" ] = "255"
-TOOL.ClientConVar[ "bb" ] = "0"
-TOOL.ClientConVar[ "ba" ] = "255"
-TOOL.ClientConVar[ "rotate90" ] = "0"
-TOOL.ClientConVar[ "material" ] = "models/debug/debugwhite"
+TOOL.ClientConVar = {
+	noclip	= "0",
+	model	= "models/jaanus/wiretool/wiretool_siren.mdl",
+	a	= "0",
+	ar	= "255",
+	ag	= "0",
+	ab	= "0",
+	aa	= "255",
+	b	= "1",
+	br	= "0",
+	bg	= "255",
+	bb	= "0",
+	ba	= "255",
+	rotate90 = "0",
+	material = "models/debug/debugwhite"
+}
 
 function TOOL:GetGhostAngle( Ang )
 	local Model = self:GetClientInfo( "model" )
@@ -188,16 +198,18 @@ if ( CLIENT ) then
 	language.Add( "undone_wire7seg", "Undone 7-Segment Display" )
 end
 
-TOOL.ClientConVar[ "model" ] = "models/segment.mdl"
-TOOL.ClientConVar[ "ar" ] = "70" --default: dark grey off, full red on
-TOOL.ClientConVar[ "ag" ] = "70" 
-TOOL.ClientConVar[ "ab" ] = "70"
-TOOL.ClientConVar[ "aa" ] = "255"
-TOOL.ClientConVar[ "br" ] = "255"
-TOOL.ClientConVar[ "bg" ] = "0"
-TOOL.ClientConVar[ "bb" ] = "0"
-TOOL.ClientConVar[ "ba" ] = "255"
-TOOL.ClientConVar[ "worldweld" ] = "1"
+TOOL.ClientConVar = {
+	model = "models/segment.mdl",
+	ar = "70", --default: dark grey off, full red on
+	ag = "70",
+	ab = "70",
+	aa = "255",
+	br = "255",
+	bg = "0",
+	bb = "0",
+	ba = "255",
+	worldweld = "1"
+}
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_7seg_name", Description = "#Tool_wire_7seg_desc" })
@@ -358,8 +370,525 @@ end
 
 
 
+--wire_lamp
+WireToolSetup.open( "lamp", "Display", "Lamp", "gmod_wire_lamp", WireToolMakeLamp )
+
+if ( CLIENT ) then
+    language.Add( "Tool_wire_lamp_name", "Wire Lamps" )
+    language.Add( "Tool_wire_lamp_desc", "Spawns a lamp for use with the wire system." )
+    language.Add( "Tool_wire_lamp_0", "Primary: Create hanging lamp Secondary: Create unattached lamp" )
+    language.Add( "WireLampTool_RopeLength", "Rope Length:")
+    language.Add( "WireLampTool_Color", "Color:" )
+    language.Add( "WireLampTool_Const", "Constraint:" )
+	language.Add( "SBoxLimit_wire_lamps", "You've hit the wire lamps limit!" )
+	language.Add( "undone_gmod_wire_lamp", "Undone Wire Lamp" )
+    language.Add( "Cleanup_gmod_wire_lamp", "Wire Lamps" )
+	language.Add( "Cleaned_gmod_wire_lamp", "Cleaned up all Wire Lamps" )
+end
+
+cleanup.Register( "gmod_wire_lamp" )
+
+if (SERVER) then
+	CreateConVar('sbox_maxwire_lamps', 10)
+end
+
+TOOL.GhostAngle = Angle(90, 0, 0)
+TOOL.Model = "models/props_wasteland/prison_lamp001c.mdl"
+TOOL.ClientConVar = {
+	ropelength = "64",
+	ropematerial = "cable/rope",
+	r = "255",
+	g = "255",
+	b = "255",
+	const = "rope"
+}
+
+function TOOL.BuildCPanel(panel)
+	panel:AddControl("Header", { Text = "#Tool_wire_lamp_name", Description = "#Tool_wire_lamp_desc" })
+
+	panel:AddControl("ComboBox", {
+		Label = "#Presets",
+		MenuButton = "1",
+		Folder = "wire_lamp",
+
+		Options = {
+			["#Default"] = {
+				wire_lamp_ropelength = "64",
+				wire_lamp_ropematerial = "cable/rope",
+				wire_lamp_r = "0",
+				wire_lamp_g = "0",
+				wire_lamp_b = "0"
+			}
+		},
+
+		CVars = {
+			[0] = "wire_lamp_ropelength",
+			[1] = "wire_lamp_ropematerial",
+			[2] = "wire_lamp_r",
+			[3] = "wire_lamp_g",
+			[4] = "wire_lamp_b",
+		}
+	})
+
+	panel:AddControl("Slider", {
+		Label = "#WireLampTool_RopeLength",
+		Type = "Float",
+		Min = "4",
+		Max = "400",
+		Command = "wire_lamp_ropelength"
+	})
+
+	panel:AddControl("Color", {
+		Label = "#WireLampTool_Color",
+        Red	= "wire_lamp_r",
+		Green = "wire_lamp_g",
+		Blue = "wire_lamp_b",
+		ShowAlpha = "0",
+		ShowHSV = "1",
+		ShowRGB = "1",
+		Multiplier = "255"
+	})
+
+	panel:AddControl("ComboBox", {
+		Label = "#WireLampTool_Const",
+		Options = {
+			["Rope"]	= { wire_lamp_const = "rope" },
+			["Weld"]	= { wire_lamp_const = "weld" },
+			["None"]	= { wire_lamp_const = "none" },
+		}
+	})
+end
 
 
+
+
+--wire_light
+WireToolSetup.open( "light", "Display", "Light", "gmod_wire_light", WireToolMakeLight )
+
+if ( CLIENT ) then
+    language.Add( "Tool_wire_light_name", "Light Tool (Wire)" )
+    language.Add( "Tool_wire_light_desc", "Spawns a Light for use with the wire system." )
+    language.Add( "Tool_wire_light_0", "Primary: Create Light" )
+    language.Add( "WireLightTool_directional", "Directional Component:" )
+    language.Add( "WireLightTool_radiant", "Radiant Component:" )
+ 	language.Add( "sboxlimit_wire_lights", "You've hit Lights limit!" )
+	language.Add( "undone_gmod_wire_light", "Undone Wire Light" )
+	language.Add( "Cleanup_gmod_wire_light", "Wire Lights" )
+	language.Add( "Cleaned_gmod_wire_light", "Cleaned Up Wire Lights" )
+end
+
+cleanup.Register( "gmod_wire_light" )
+
+if (SERVER) then
+	CreateConVar('sbox_maxwire_lights', 8)
+end
+
+TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
+TOOL.ClientConVar = {
+	directional = "0",
+	radiant = "0"
+}
+
+function TOOL.BuildCPanel(panel)
+	panel:AddControl("Header", { Text = "#Tool_wire_light_name", Description = "#Tool_wire_light_desc" })
+	
+		panel:AddControl("CheckBox", {
+		Label = "#WireLightTool_directional",
+		Command = "wire_light_directional"
+	})
+
+		panel:AddControl("CheckBox", {
+		Label = "#WireLightTool_radiant",
+		Command = "wire_light_radiant"
+	})
+
+end
+
+
+
+
+--wire_oscilloscope
+WireToolSetup.open( "oscilloscope", "Display", "Oscilloscope", "gmod_wire_oscilloscope", WireToolMakeOscilloscope )
+
+if ( CLIENT ) then
+    language.Add( "Tool_wire_oscilloscope_name", "Oscilloscope Tool (Wire)" )
+    language.Add( "Tool_wire_oscilloscope_desc", "Spawns a oscilloscope what display line graphs." )
+    language.Add( "Tool_wire_oscilloscope_0", "Primary: Create/Update oscilloscope" )
+	language.Add( "sboxlimit_wire_oscilloscopes", "You've hit oscilloscopes limit!" )
+	language.Add( "undone_gmod_wire_oscilloscope", "Undone Wire Oscilloscope" )
+	language.Add( "Cleanup_gmod_wire_oscilloscope", "Wire Oscilloscopes" )
+	language.Add( "Cleaned_gmod_wire_oscilloscope", "Cleaned Up Wire Oscilloscopes" )
+end
+
+cleanup.Register( "gmod_wire_oscilloscope" )
+
+if (SERVER) then
+	CreateConVar('sbox_maxwire_oscilloscopes', 20)
+end
+
+TOOL.ClientConVar[ "model" ] = "models/props_lab/monitor01b.mdl"
+
+function TOOL.BuildCPanel(panel)
+	panel:AddControl("Header", { Text = "#Tool_wire_oscilloscope_name", Description = "#Tool_wire_oscilloscope_desc" })
+	
+	panel:AddControl("ComboBox", {
+		Label = "#WireThrusterTool_Model",
+		MenuButton = "0",
+
+		Options = {
+			["#Small tv"]		= { wire_oscilloscope_model = "models/props_lab/monitor01b.mdl" },
+			["#Plasma tv"]		= { wire_oscilloscope_model = "models/props/cs_office/TV_plasma.mdl" },
+			["#LCD monitor"]	= { wire_oscilloscope_model = "models/props/cs_office/computer_monitor.mdl" },
+			["#Monitor Big"]	= { wire_oscilloscope_model = "models/kobilica/wiremonitorbig.mdl" },
+			["#Monitor Small"]	= { wire_oscilloscope_model = "models/kobilica/wiremonitorsmall.mdl" },
+		}
+	})
+end
+
+
+
+
+--wire_panel
+WireToolSetup.open( "panel", "Display", "Panel", "gmod_wire_panel", WireToolMakePanel )
+
+if ( CLIENT ) then
+    language.Add( "Tool_wire_panel_name", "Control Panel Tool (Wire)" )
+    language.Add( "Tool_wire_panel_desc", "Spawns a panel what display values." )
+    language.Add( "Tool_wire_panel_0", "Primary: Create/Update panel" )
+	language.Add( "sboxlimit_wire_panels", "You've hit panels limit!" )
+	language.Add( "Tool_wire_panel_createflat", "Create flat to surface:" )
+	language.Add( "undone_gmod_wire_panel", "Undone Wire Control Panel" )
+	language.Add( "Cleanup_gmod_wire_panel", "Wire Control Panels" )
+	language.Add( "Cleaned_gmod_wire_panel", "Cleaned Up Wire Control Panels" )
+end
+
+cleanup.Register( "gmod_wire_panel" )
+
+if (SERVER) then
+	CreateConVar('sbox_maxwire_panels', 20)
+end
+
+TOOL.GetGhostAngle = GetScreenAngle
+TOOL.ClientConVar = {
+	model = "models/props_lab/monitor01b.mdl",
+	createflat = "1",
+	weld = "1"
+}
+
+function TOOL.BuildCPanel(panel)
+	panel:AddControl("Header", { Text = "#Tool_wire_panel_name", Description = "#Tool_wire_panel_desc" })
+
+	panel:AddControl("ComboBox", {
+		Label = "#WireThrusterTool_Model",
+
+		Options = {
+			["#Small tv"]		= { wire_panel_model = "models/props_lab/monitor01b.mdl" },
+			["#Plasma tv"]		= { wire_panel_model = "models/props/cs_office/TV_plasma.mdl" },
+			["#LCD monitor"]	= { wire_panel_model = "models/props/cs_office/computer_monitor.mdl" },
+			["#Monitor Big"]	= { wire_panel_model = "models/kobilica/wiremonitorbig.mdl" },
+			["#Monitor Small"]	= { wire_panel_model = "models/kobilica/wiremonitorsmall.mdl" },
+		}
+	})
+
+	panel:AddControl( "PropSelect", {
+		Label = "#WireThrusterTool_Model",
+		ConVar = "wire_panel_model",
+		Category = "WirePanelModels",
+		Models = list.Get( "WireScreenModels" ),
+		Height = 2
+	})
+
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_panel_createflat", Command = "wire_panel_createflat"})
+
+	panel:AddControl("Checkbox", {Label = "Weld:", Command = "wire_panel_weld"})
+end
+
+
+
+
+--wire_pixel
+WireToolSetup.open( "pixel", "Display", "Pixel", "gmod_wire_panel", WireToolMakePixel )
+
+if ( CLIENT ) then
+    language.Add( "Tool_wire_pixel_name", "Pixel Tool (Wire)" )
+    language.Add( "Tool_wire_pixel_desc", "Spawns a Pixel for use with the wire system." )
+    language.Add( "Tool_wire_pixel_0", "Primary: Create Pixel" )
+    language.Add( "WirePixelTool_model", "Model:" )
+ 	language.Add( "sboxlimit_wire_pixels", "You've hit Pixels limit!" )
+	language.Add( "undone_gmod_wire_panel", "Undone Wire Pixel" )
+	language.Add( "Cleanup_gmod_wire_panel", "Wire Pixels" )
+	language.Add( "Cleaned_gmod_wire_panel", "Cleaned Up Wire Pixels" )
+end
+
+cleanup.Register( "gmod_wire_panel" )
+
+if (SERVER) then
+	CreateConVar('sbox_maxwire_pixels', 20)
+	ModelPlug_Register("pixel")
+end
+
+TOOL.ClientConVar = {
+	noclip = "0",
+	model = "models/jaanus/wiretool/wiretool_siren.mdl"
+}
+
+function TOOL.BuildCPanel(panel)
+	panel:AddControl("Header", { Text = "#Tool_wire_pixel_name", Description = "#Tool_wire_pixel_desc" })
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireGatesTool_noclip",
+		Command = "wire_pixel_noclip"
+	})
+	
+	ModelPlug_AddToCPanel(panel, "pixel", "wire_pixel", "#WirePixelTool_model", nil, "#WirePixelTool_model")
+end
+
+
+
+
+--wire_screen
+WireToolSetup.open( "screen", "Display", "Screen", "gmod_wire_screen", WireToolMakeScreen )
+
+if ( CLIENT ) then
+    language.Add( "Tool_wire_screen_name", "Screen Tool (Wire)" )
+    language.Add( "Tool_wire_screen_desc", "Spawns a screen that display values." )
+    language.Add( "Tool_wire_screen_0", "Primary: Create/Update screen" )
+	language.Add("Tool_wire_screen_singlevalue", "Only one value:")
+	language.Add("Tool_wire_screen_singlebigfont", "Use bigger font for single-value screen:")
+	language.Add("Tool_wire_screen_texta", "Text A:")
+	language.Add("Tool_wire_screen_textb", "Text B:")
+	language.Add("Tool_wire_screen_leftalign", "Left alignment:")
+	language.Add("Tool_wire_screen_floor", "Floor screen value:")
+	language.Add("Tool_wire_screen_createflat", "Create flat to surface:")
+	language.Add( "sboxlimit_wire_screens", "You've hit screens limit!" )
+	language.Add( "undone_gmod_wire_screen", "Undone Wire Screen" )
+	language.Add( "Cleanup_gmod_wire_screen", "Wire Screens" )
+	language.Add( "Cleaned_gmod_wire_screen", "Cleaned Up Wire Screens" )
+end
+
+cleanup.Register( "gmod_wire_screen" )
+
+if (SERVER) then
+	CreateConVar('sbox_maxwire_screens', 20)
+end
+
+TOOL.GetGhostAngle = GetScreenAngle
+TOOL.ClientConVar = {
+	model = "models/props_lab/monitor01b.mdl",
+	singlevalue = "0",
+	singlebigfont = "1",
+	texta = "Value A",
+	textb = "Value B",
+	createflat = "1",
+	leftalign = "0",
+	floor = "0"
+}
+
+local MaxTextLength = 20
+
+function TOOL.BuildCPanel(panel)
+	panel:AddControl("Header", { Text = "#Tool_wire_screen_name", Description = "#Tool_wire_screen_desc" })
+
+	panel:AddControl("ComboBox", {
+		Label = "#WireThrusterTool_Model",
+		MenuButton = "0",
+
+		Options = {
+			["#Small tv"]		= { wire_screen_model = "models/props_lab/monitor01b.mdl" },
+			["#Plasma tv"]		= { wire_screen_model = "models/props/cs_office/TV_plasma.mdl" },
+			["#LCD monitor"]	= { wire_screen_model = "models/props/cs_office/computer_monitor.mdl" },
+			["#Monitor Big"]	= { wire_screen_model = "models/kobilica/wiremonitorbig.mdl" },
+			["#Monitor Small"]	= { wire_screen_model = "models/kobilica/wiremonitorsmall.mdl" },
+		}
+	})
+
+	panel:AddControl( "PropSelect", {
+		Label = "#WireThrusterTool_Model",
+		ConVar = "wire_screen_model",
+		Category = "",
+		Models = list.Get( "WireScreenModels" ),
+		Height = 2
+	})
+
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_screen_singlevalue", Command = "wire_screen_singlevalue"})
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_screen_singlebigfont", Command = "wire_screen_singlebigfont"})
+
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_screen_leftalign", Command = "wire_screen_leftalign"})
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_screen_floor", Command = "wire_screen_floor"})
+
+	panel:AddControl("TextBox", {Label = "#Tool_wire_screen_texta", MaxLength = tostring(MaxTextLength), Command = "wire_screen_texta"})
+	panel:AddControl("TextBox", {Label = "#Tool_wire_screen_textb", MaxLength = tostring(MaxTextLength), Command = "wire_screen_textb"})
+
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_screen_createflat", Command = "wire_screen_createflat"})
+end
+
+
+
+
+--wire_soundemitter
+WireToolSetup.open( "soundemitter", "Display", "Sound Emitter", "gmod_wire_soundemitter", WireToolMakeSoundEmitter )
+
+if ( CLIENT ) then
+    language.Add( "Tool_wire_soundemitter_name", "Sound Emitter Tool (Wire)" )
+    language.Add( "Tool_wire_soundemitter_desc", "Spawns a sound emitter for use with the wire system." )
+    language.Add( "Tool_wire_soundemitter_0", "Primary: Create/Update Sound Emitter" )
+    language.Add( "WireEmitterTool_sound", "Sound:" )
+    language.Add( "WireEmitterTool_collision", "Collision:" )
+    language.Add( "WireEmitterTool_model", "Model:" )
+	language.Add( "sboxlimit_wire_soundemitters", "You've hit soundemitters limit!" )
+	language.Add( "undone_gmod_wire_soundemitter", "Undone Wire Soundemitter" )
+	language.Add( "Cleanup_gmod_wire_soundemitter", "Wire Soundemitters" )
+	language.Add( "Cleaned_gmod_wire_soundemitter", "Cleaned Up Wire Soundemitters" )
+end
+
+cleanup.Register( "gmod_wire_soundemitter" )
+
+if (SERVER) then
+	CreateConVar('sbox_maxwire_emitters', 10)
+	ModelPlug_Register("speaker")
+end
+
+TOOL.ClientConVar = {
+	sound = "common/warning.wav",
+	collision = "0",
+	model = "models/cheeze/wires/speaker.mdl"
+}
+
+function TOOL.BuildCPanel(panel)
+	panel:AddControl("Header", { Text = "#Tool_wire_soundemitter_name", Description = "#Tool_wire_soundemitter_desc" })
+		
+	panel:AddControl("ComboBox", {
+		Label = "#WireEmitterTool_sound",
+		MenuButton = "1", -- Don't remove that "MenuButton = 1" again please. Without that, we can't save our sounds, we added manually @aVoN
+		Folder = "wire_soundemitter",
+		Options = list.Get( "WireSounds" ),
+	})
+
+	panel:AddControl("TextBox", {
+		Label = "#WireEmitterTool_sound",
+		Command = "wire_soundemitter_sound",
+		MaxLength = "200"
+	})
+
+	panel:AddControl("CheckBox", { Label = "#WireEmitterTool_collision", Command = "wire_emitter_collision" })
+
+	ModelPlug_AddToCPanel(panel, "speaker", "wire_soundemitter", "#WireEmitterTool_model", nil, "#WireEmitterTool_model")
+end
+
+local WireSounds = {
+	Warning = "common/warning.wav",
+	Talk = "common/talk.wav",
+	Button = "buttons/button15.wav",
+	Denied = "buttons/weapon_cant_buy.wav",
+	Zap = "ambient/energy/zap2.wav",
+	["Oh No"] = "vo/npc/male01/ohno.wav",
+	Yeah = "vo/npc/male01/yeah02.wav",
+	["apc alarm"] = "ambient/alarms/apc_alarm_loop1.wav",
+	["Coast Siren"] = "coast.siren_citizen",
+	["Bunker Siren"] = "coast.bunker_siren1",
+	["Alarm Bell"] = "d1_canals.Floodgate_AlarmBellLoop",
+	["Engine Start"] = "ATV_engine_start",
+	["Engine Stop"] = "ATV_engine_stop",
+	["Zombie Breathe"] = "NPC_PoisonZombie.Moan1",
+	["Idle Zombies"] = "Zombie.Idle",
+	["Turret Alert"] = "NPC_FloorTurret.Alert",
+	["Helicopter Rotor"] = "NPC_CombineGunship.RotorSound",
+	Heartbeat = "k_lab.teleport_heartbeat",
+	Breathing = "k_lab.teleport_breathing",
+}
+
+for k,v in pairs(WireSounds) do
+	list.Set("WireSounds",k,{wire_soundemitter_sound=v});
+end
+
+
+
+
+--wire_textscreen
+--Wire text screen by greenarrow
+--http://gmodreviews.googlepages.com/
+--http://forums.facepunchstudios.com/greenarrow
+WireToolSetup.open( "textscreen", "Display", "Text Screen", "gmod_wire_textscreen", WireToolMakeTextScreen )
+
+TOOL.Model = "models/kobilica/wiremonitorbig.mdl"
+
+if ( CLIENT ) then
+    language.Add( "Tool_wire_textscreen_name", "Text Screen Tool (Wire)" )
+    language.Add( "Tool_wire_textscreen_desc", "Spawns a screen that display text." )
+    language.Add( "Tool_wire_textscreen_0", "Primary: Create/Update text screen" )
+	language.Add( "sboxlimit_wire_textscreens", "You've hit text screens limit!" )
+	language.Add( "undone_gmod_wire_textscreen", "Undone Wire Text Screen" )
+	language.Add( "Cleanup_gmod_wire_textscreen", "Wire Text Screens" )
+	language.Add( "Cleaned_gmod_wire_textscreen", "Cleaned Up Wire Text Screens" )
+
+	language.Add("Tool_wire_textscreen_text1", "Text 1:")
+	language.Add("Tool_wire_textscreen_text2", "Text 2:")
+	language.Add("Tool_wire_textscreen_text3", "Text 3:")
+	language.Add("Tool_wire_textscreen_text4", "Text 4:")
+	language.Add("Tool_wire_textscreen_text5", "Text 5:")
+	language.Add("Tool_wire_textscreen_text6", "Text 6:")
+	language.Add("Tool_wire_textscreen_text7", "Text 7:")
+	language.Add("Tool_wire_textscreen_text8", "Text 8:")
+	language.Add("Tool_wire_textscreen_text9", "Text 9:")
+	language.Add("Tool_wire_textscreen_text10", "Text 10:")
+	language.Add("Tool_wire_textscreen_text11", "Text 12:")
+	language.Add("Tool_wire_textscreen_text12", "Text 12:")
+	language.Add("Tool_wire_textscreen_tsize", "Text size:")
+	language.Add("Tool_wire_textscreen_tjust", "Text justification:")
+	language.Add("Tool_wire_textscreen_colour", "Text colour:")
+
+	language.Add("Tool_wire_textscreen_ninputs", "Number of inputs:")
+
+	language.Add("Tool_wire_textscreen_createflat", "Create flat to surface:")
+	language.Add("Tool_wire_textscreen_defaulton", "Force show text (make wires optional):")
+end
+
+cleanup.Register( "gmod_wire_textscreen" )
+
+if (SERVER) then
+	CreateConVar('sbox_maxwire_textscreens', 20)
+end
+
+TOOL.GetGhostAngle = GetScreenAngle
+TOOL.ClientConVar = {
+	tsize = 10,
+	tjust = 1,
+	tred = 255,
+	tblue = 255,
+	tgreen = 255,
+	ninputs = 3,
+	defaulton = 1,
+	createflat = 1
+}
+for i = 1, 12 do
+	TOOL.ClientConVar["text"..i] = ""	
+end
+
+local TSMaxTextLength = "80"
+
+function TOOL.BuildCPanel(panel)
+	panel:AddControl("Header", { Text = "#Tool_wire_textscreen_name", Description = "#Tool_wire_textscreen_desc" })
+
+	panel:AddControl("Slider", {Label = "#Tool_wire_textscreen_tsize", Description = "", Type = "Integer", Min = "1", Max = "15", Command = "wire_textscreen_tsize"})
+	panel:AddControl("Slider", {Label = "#Tool_wire_textscreen_tjust", Description = "", Type = "Integer", Min = "0", Max = "2", Command = "wire_textscreen_tjust"})
+	panel:AddControl("Slider", {Label = "#Tool_wire_textscreen_ninputs", Description = "", Type = "Integer", Min = "1", Max = "10", Command = "wire_textscreen_ninputs"})
+	panel:AddControl("Color", {
+		Label = "#Tool_wire_textscreen_colour",
+		Red = "wire_textscreen_tred",
+		Green = "wire_textscreen_tgreen",
+		Blue = "wire_textscreen_tblue",
+		ShowAlpha = "0",
+		ShowHSV = "1",
+		ShowRGB = "1",
+		Multiplier = "255"
+	})
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_textscreen_createflat", Command = "wire_textscreen_createflat"})
+	panel:AddControl("Checkbox", {Label = "#Tool_wire_textscreen_defaulton", Command = "wire_textscreen_defaulton"})
+
+	for i = 1, 12 do
+		panel:AddControl("TextBox", {Label = "#Tool_wire_textscreen_text"..i, MaxLength = TSMaxTextLength, Command = "wire_textscreen_text"..i})
+	end
+end
 
 
 
@@ -387,12 +916,14 @@ cleanup.Register( "gmod_wire_holoemitter" )
 
 if( SERVER ) then CreateConVar( "sbox_maxwire_holoemitters", 30 ) end
 
-TOOL.ClientConVar["r"]	= "255"
-TOOL.ClientConVar["g"]	= "255"
-TOOL.ClientConVar["b"]	= "255"
-TOOL.ClientConVar["a"]	= "255"
-TOOL.ClientConVar["showbeams"]	= "1"
-TOOL.ClientConVar["size"]	= "4"
+TOOL.ClientConVar ={
+	r	= "255",
+	g	= "255",
+	b	= "255",
+	a	= "255",
+	showbeams	= "1",
+	size	= "4"
+}
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
 TOOL.Emitter = nil
@@ -409,63 +940,41 @@ function TOOL:RightClick( tr )
 end
 
 function TOOL.BuildCPanel( panel )
-	// add header.
-	panel:AddControl(
-		"Header",
-		{
-			Text 		= "#Tool_wire_holoemitter_name",
-			Description 	= "#Tool_wire_holoemitter_desc",
-		}
-	)
-	
-	// show beams.
-	panel:AddControl(
-		"Checkbox",
-		{
-			Label = "#Tool_wire_holoemitter_showbeams",
-			Command = "wire_holoemitter_showbeams",
-		}
-	)
-	
-	// point size
-	panel:AddControl(
-		"Slider",
-		{
-			Label = "#Tool_wire_holoemitter_size",
-			Type = "Float",
-			Min = "1",
-			Max = "32",
-			Command = "wire_holoemitter_size",
-		}
-	)
-	
-	// add color picker.
-	panel:AddControl(
-		"Color",
-		{
-			Label 	= "Color",
-			Red 	= "wire_holoemitter_r",
-			Green 	= "wire_holoemitter_g",
-			Blue 	= "wire_holoemitter_b",
-			Alpha 	= "wire_holoemitter_a",
-			ShowAlpha	= "1",
-			ShowHSV		= "1",
-			ShowRGB		= "1",
-			Multiplier	= "255",
-		}
-	)
+	panel:AddControl( "Header", { Text = "#Tool_wire_holoemitter_name", Description = "#Tool_wire_holoemitter_desc", } )
+
+	panel:AddControl( "Checkbox", {
+		Label = "#Tool_wire_holoemitter_showbeams",
+		Command = "wire_holoemitter_showbeams",
+	})
+
+	panel:AddControl( "Slider", {
+		Label = "#Tool_wire_holoemitter_size",
+		Type = "Float",
+		Min = "1",
+		Max = "32",
+		Command = "wire_holoemitter_size",
+	})
+
+	panel:AddControl( "Color", {
+		Label 	= "Color",
+		Red 	= "wire_holoemitter_r",
+		Green 	= "wire_holoemitter_g",
+		Blue 	= "wire_holoemitter_b",
+		Alpha 	= "wire_holoemitter_a",
+		ShowAlpha	= "1",
+		ShowHSV		= "1",
+		ShowRGB		= "1",
+		Multiplier	= "255",
+	})
+
 	if(not SinglePlayer( )) then
-		// Minimum Faderate
-		panel:AddControl(
-			"Slider",
-			{
-				Label = "#Tool_wire_holoemitter_minimum_fade_rate",
-				Type = "Float",
-				Min = "0.1",
-				Max = "100",
-				Command = "cl_wire_holoemitter_minfaderate",
-			}
-		)
+		panel:AddControl( "Slider", {
+			Label = "#Tool_wire_holoemitter_minimum_fade_rate",
+			Type = "Float",
+			Min = "0.1",
+			Max = "100",
+			Command = "cl_wire_holoemitter_minfaderate",
+		})
 	end
 end
 
@@ -493,18 +1002,7 @@ TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
 TOOL.NoGhostOn = { "sbox_maxwire_holoemitters" }
 
 function TOOL.BuildCPanel( panel )
-	// add header.
-	panel:AddControl(
-		"Header",
-		{
-			Text 		= "#Tool_wire_hologrid_name",
-			Description 	= "#Tool_wire_hologrid_desc",
-		}
-	)
+	panel:AddControl( "Header", {Text = "#Tool_wire_hologrid_name", Description = "#Tool_wire_hologrid_desc", } )
 end
-
-
-
-
 
 

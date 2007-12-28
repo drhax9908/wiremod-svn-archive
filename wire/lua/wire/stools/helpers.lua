@@ -1,5 +1,31 @@
 AddCSLuaFile( "helpers.lua" )
 
+
+function ModelPlug_AddToCPanel(panel, category, toolname, label, type, textbox_label, height)
+	
+	local list = list.Get( "Wire_"..category.."_Models" )
+	
+	if (table.Count(list) > 1) then
+		
+		panel:AddControl( "PropSelect", { Label = "#WireThrusterTool_Model",
+			ConVar = toolname .. "_model",
+			Category = "",
+			Models = list,
+			Height = height or 2
+		})
+		
+	end
+	
+	if (textbox_label) and (GetConVarNumber("cl_showmodeltextbox") > 0) then
+		panel:AddControl("TextBox", {
+			Label = textbox_label,
+			Command = toolname .. "_model",
+			MaxLength = "200"
+		})
+	end
+end
+
+
 WireToolHelpers = {}
 
 local function NoGhostOn(self, trace)

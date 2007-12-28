@@ -145,3 +145,33 @@ function ENT:UpdateScreen()
 	end
 end
 
+
+function MakeWireTextScreen( pl, Ang, Pos, Smodel, TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
+	if ( !pl:CheckLimit( "wire_textscreens" ) ) then return false end
+	local wire_textscreen = ents.Create( "gmod_wire_textscreen" )
+	if (!wire_textscreen:IsValid()) then return false end
+	wire_textscreen:SetModel(Smodel)
+	wire_textscreen:Setup(TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
+	wire_textscreen:SetAngles( Ang )
+	wire_textscreen:SetPos( Pos )
+	wire_textscreen:Spawn()
+	wire_textscreen:SetPlayer(pl)
+		
+	local ttable = {
+		pl = pl,
+		Smodel = Smodel,
+		TextList = TextList,
+		chrPerLine = chrPerLine,
+		textJust = textJust,
+		tRed = tRed,
+		tGreen = tGreen,
+		tBlue = tBlue,
+		numInputs = numInputs,
+		defaultOn = defaultOn
+	}
+	table.Merge(wire_textscreen:GetTable(), ttable )
+	
+	pl:AddCount( "wire_textscreens", wire_textscreen )
+	return wire_textscreen
+end
+duplicator.RegisterEntityClass("gmod_wire_textscreen", MakeWireTextScreen, "Ang", "Pos", "Smodel", "TextList", "chrPerLine", "textJust", "tRed", "tGreen", "tBlue", "numInputs", "defaultOn")

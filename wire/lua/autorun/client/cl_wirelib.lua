@@ -267,3 +267,10 @@ function Wire_DrawTracerBeam( ent, beam_num, hilight, beam_length )
 		end
 	end
 end
+
+
+local function initplayer(um)
+	WireVersion = um:ReadShort()
+	Msg("===============================\n===  Wire  "..WireVersion.."   Installed  ===\n===============================\n")
+end
+usermessage.Hook( "wire_initplayer", initplayer )
