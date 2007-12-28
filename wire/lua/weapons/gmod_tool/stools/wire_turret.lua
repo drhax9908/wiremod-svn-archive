@@ -3,9 +3,7 @@ TOOL.Name			= "Turret"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
-TOOL.ClientConVar[ "trigger" ] 		= "1"
 TOOL.ClientConVar[ "delay" ] 		= "0.05"
-TOOL.ClientConVar[ "toggle" ] 		= "0"
 TOOL.ClientConVar[ "force" ] 		= "1"
 TOOL.ClientConVar[ "sound" ] 		= "0"
 TOOL.ClientConVar[ "damage" ] 		= "10"
@@ -30,7 +28,6 @@ if ( CLIENT ) then
 	language.Add( "Tool_wire_turret_numbullets", "Bullets per Shot" )
 	language.Add( "Tool_wire_turret_force", "Bullet Force" )
 	language.Add( "Tool_wire_turret_sound", "Shoot Sound" )
-	language.Add( "Tool_wire_turret_trigger", "Trigger Value" )
 	
 	language.Add( "Undone_wire_turret", "Undone Turret" )
 	
@@ -51,9 +48,7 @@ function TOOL:LeftClick( trace, worldweld )
 	
 	local ply = self:GetOwner()
 	
-	local trigger 		= self:GetClientNumber( "trigger" ) 
 	local delay 		= self:GetClientNumber( "delay" ) 
-	local toggle 		= self:GetClientNumber( "toggle" ) == 1
 	local force 		= self:GetClientNumber( "force" )
 	local sound 		= self:GetClientInfo( "sound" )
 	local tracer 		= self:GetClientInfo( "tracer" )
@@ -62,16 +57,15 @@ function TOOL:LeftClick( trace, worldweld )
 	local numbullets 	= self:GetClientNumber( "numbullets" )
 	
 	// We shot an existing turret - just change its values
-	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_turret" && trace.Entity:GetTable().pl == ply ) then
+	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_turret" && trace.Entity.pl == ply ) then
+
 		trace.Entity:SetDamage( damage )
 		trace.Entity:SetDelay( delay )
-		trace.Entity:SetToggle( toggle )
 		trace.Entity:SetNumBullets( numbullets )
 		trace.Entity:SetSpread( spread )
 		trace.Entity:SetForce( force )
 		trace.Entity:SetSound( sound )
 		trace.Entity:SetTracer( tracer )
-		trace.Entity:SetTrigger( trigger )
 		return true
 		
 	end
@@ -83,8 +77,10 @@ function TOOL:LeftClick( trace, worldweld )
 	else
 		trace.HitPos = trace.HitPos + trace.HitNormal * 2
 	end
-
-	local turret = MakeWireTurret( ply, trace.HitPos, nil, trigger, delay, toggle, damage, force, sound, numbullets, spread, tracer )
+	
+	Msg("tool ",delay, " | ", damage, " | ", force, " | ", sound, " | ", numbullets, " | ", spread, " | ", tracer,"\n")
+	
+	local turret = MakeWireTurret( ply, trace.HitPos, nil, delay, damage, force, sound, numbullets, spread, tracer )
 	
 	turret:SetAngles( trace.HitNormal:Angle() )
 	
@@ -105,8 +101,10 @@ end
 
 if (SERVER) then
 
-	function MakeWireTurret( ply, Pos, Ang, trigger, delay, toggle, damage, force, sound, numbullets, spread, tracer, Vel, aVel, frozen, nocollide )
-	
+	function MakeWireTurret( ply, Pos, Ang, delay, damage, force, sound, numbullets, spread, tracer, Vel, aVel, frozen, nocollide )
+		
+		Msg("MakeWireTurret ",delay, " | ", damage, " | ", force, " | ", sound, " | ", numbullets, " | ", spread, " | ", tracer,"\n")
+		
 		if ( !ply:CheckLimit( "wire_turrets" ) ) then return nil end
 		
 		local turret = ents.Create( "gmod_wire_turret" )
@@ -136,16 +134,11 @@ if (SERVER) then
 		turret:SetNumBullets( numbullets )
 		
 		turret:SetDelay( delay )
-		turret:SetToggle( toggle )
-		
-		turret:SetTrigger( trigger )
 		
 		if ( nocollide == true ) then turret:GetPhysicsObject():EnableCollisions( false ) end
 
 		local ttable = {
-			trigger		= trigger,
 			delay 		= delay,
-			toggle 		= toggle,
 			damage 		= damage,
 			pl			= ply,
 			nocollide 	= nocollide,
@@ -163,7 +156,7 @@ if (SERVER) then
 		return turret
 	end
 	
-	duplicator.RegisterEntityClass( "gmod_wire_turret", MakeWireTurret, "Pos", "Ang", "trigger", "delay", "toggle", "damage", "force", "sound", "numbullets", "spread", "tracer", "Vel", "aVel", "frozen", "nocollide" )
+	duplicator.RegisterEntityClass( "gmod_wire_turret", MakeWireTurret, "Pos", "Ang", "delay", "damage", "force", "sound", "numbullets", "spread", "tracer", "Vel", "aVel", "frozen", "nocollide" )
 
 end
 
@@ -173,19 +166,15 @@ function TOOL.BuildCPanel( CPanel )
 	local params = { Label = "#Presets", MenuButton = 1, Folder = "wire_turret", Options = {}, CVars = {} }
 		
 		params.Options.default = {
-			wire_turret_trigger		= 		1,
 			wire_turret_delay		=		0.2,
-			wire_turret_toggle		=		1,
 			wire_turret_force		=		1,
 			wire_turret_sound		=		"pistol",
 			wire_turret_damage		=		10,
 			wire_turret_spread		=		0,
 			wire_turret_numbullets	=		1,
 		}
-			
-		table.insert( params.CVars, "wire_turret_trigger" )
+		
 		table.insert( params.CVars, "wire_turret_delay" )
-		table.insert( params.CVars, "wire_turret_toggle" )
 		table.insert( params.CVars, "wire_turret_force" )
 		table.insert( params.CVars, "wire_turret_sound" )
 		table.insert( params.CVars, "wire_turret_damage" )
@@ -193,13 +182,6 @@ function TOOL.BuildCPanel( CPanel )
 		table.insert( params.CVars, "wire_turret_numbullets" )
 		
 	CPanel:AddControl( "ComboBox", params )
-	
-	//trigger value
-	CPanel:AddControl( "Slider",  { Label	= "#Tool_wire_turret_trigger",
-									Type	= "Integer",
-									Min		= 0,
-									Max		= 10,
-									Command = "wire_turret_trigger" }	 )
 	
 	// Shot sounds
 	local weaponSounds = {Label = "#Tool_wire_turret_sound", MenuButton = 0, Options={}, CVars = {}}
@@ -273,7 +255,4 @@ function TOOL.BuildCPanel( CPanel )
 	
 	end
 	
-	// The toggle switch.
-	CPanel:AddControl( "Checkbox", { Label = "#Toggle", Command = "wire_turret_toggle" } )
-
 end
