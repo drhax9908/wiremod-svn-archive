@@ -11,6 +11,7 @@ TOOL.ClientConVar[ "spread" ] 		= "0"
 TOOL.ClientConVar[ "numbullets" ]	= "1"
 TOOL.ClientConVar[ "automatic" ]	= "1"
 TOOL.ClientConVar[ "tracer" ] 		= "Tracer"
+TOOL.ClientConVar[ "tracernum" ] 	= "1"
 
 cleanup.Register( "wire_turrets" )
 
@@ -28,6 +29,7 @@ if ( CLIENT ) then
 	language.Add( "Tool_wire_turret_numbullets", "Bullets per Shot" )
 	language.Add( "Tool_wire_turret_force", "Bullet Force" )
 	language.Add( "Tool_wire_turret_sound", "Shoot Sound" )
+	language.Add( "Tool_wire_turret_tracernum", "Tracer Every x Bullets:" )
 	
 	language.Add( "Undone_wire_turret", "Undone Turret" )
 	
@@ -55,6 +57,7 @@ function TOOL:LeftClick( trace, worldweld )
 	local damage	 	= self:GetClientNumber( "damage" )
 	local spread	 	= self:GetClientNumber( "spread" )
 	local numbullets 	= self:GetClientNumber( "numbullets" )
+	local tracernum 	= self:GetClientNumber( "tracernum" )
 	
 	// We shot an existing turret - just change its values
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_turret" && trace.Entity.pl == ply ) then
@@ -66,6 +69,7 @@ function TOOL:LeftClick( trace, worldweld )
 		trace.Entity:SetForce( force )
 		trace.Entity:SetSound( sound )
 		trace.Entity:SetTracer( tracer )
+		trace.Entity:SetTracerNum( tracernum )
 		return true
 		
 	end
@@ -78,9 +82,7 @@ function TOOL:LeftClick( trace, worldweld )
 		trace.HitPos = trace.HitPos + trace.HitNormal * 2
 	end
 	
-	Msg("tool ",delay, " | ", damage, " | ", force, " | ", sound, " | ", numbullets, " | ", spread, " | ", tracer,"\n")
-	
-	local turret = MakeWireTurret( ply, trace.HitPos, nil, delay, damage, force, sound, numbullets, spread, tracer )
+	local turret = MakeWireTurret( ply, trace.HitPos, nil, delay, damage, force, sound, numbullets, spread, tracer, tracernum )
 	
 	turret:SetAngles( trace.HitNormal:Angle() )
 	
@@ -101,9 +103,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireTurret( ply, Pos, Ang, delay, damage, force, sound, numbullets, spread, tracer, Vel, aVel, frozen, nocollide )
-		
-		Msg("MakeWireTurret ",delay, " | ", damage, " | ", force, " | ", sound, " | ", numbullets, " | ", spread, " | ", tracer,"\n")
+	function MakeWireTurret( ply, Pos, Ang, delay, damage, force, sound, numbullets, spread, tracer, tracernum, Vel, aVel, frozen, nocollide )
 		
 		if ( !ply:CheckLimit( "wire_turrets" ) ) then return nil end
 		
@@ -121,6 +121,7 @@ if (SERVER) then
 			force		= math.Clamp( force, 0.01, 100 )
 			spread		= math.Clamp( spread, 0, 1 )
 			damage		= math.Clamp( damage, 0, 500 )
+			tracernum	= 1
 		end
 		
 		turret:SetDamage( damage )
@@ -130,6 +131,7 @@ if (SERVER) then
 		turret:SetForce( force )
 		turret:SetSound( sound )
 		turret:SetTracer( tracer )
+		turret:SetTracerNum( tracernum or 1 )
 		
 		turret:SetNumBullets( numbullets )
 		
@@ -235,7 +237,7 @@ function TOOL.BuildCPanel( CPanel )
 									Min		= 0,
 									Max		= 500,
 									Command = "wire_turret_force" }	 )
-									
+	
 	// The delay between shots.
 	if ( SinglePlayer() ) then
 	
@@ -244,7 +246,13 @@ function TOOL.BuildCPanel( CPanel )
 									Min		= 0.01,
 									Max		= 1.0,
 									Command = "wire_turret_delay" }	 )
-									
+	
+		CPanel:AddControl( "Slider",  { Label	= "#Tool_wire_turret_tracernum",
+									Type	= "Integer",
+									Min		= 0,
+									Max		= 15,
+									Command = "wire_turret_tracernum" }	 )
+	
 	else
 	
 		CPanel:AddControl( "Slider",  { Label	= "#Delay",
