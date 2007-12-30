@@ -308,6 +308,7 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "model" ] = "models/props_lab/monitor01b.mdl"
+TOOL.NoLeftOnClass = true
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_consolescreen_name", Description = "#Tool_wire_consolescreen_desc" })
@@ -349,6 +350,7 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "model" ] = "models/props_lab/monitor01b.mdl"
+TOOL.NoLeftOnClass = true
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_digitalscreen_name", Description = "#Tool_wire_digitalscreen_desc" })
@@ -527,6 +529,7 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "model" ] = "models/props_lab/monitor01b.mdl"
+TOOL.NoLeftOnClass = true
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_oscilloscope_name", Description = "#Tool_wire_oscilloscope_desc" })
@@ -574,6 +577,7 @@ TOOL.ClientConVar = {
 	createflat = "1",
 	weld = "1"
 }
+TOOL.NoLeftOnClass = true
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_panel_name", Description = "#Tool_wire_panel_desc" })
@@ -928,7 +932,6 @@ TOOL.ClientConVar ={
 TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
 TOOL.Emitter = nil
 TOOL.NoGhostOn = { "gmod_wire_hologrid" }
-TOOL.AllowLeftOnClass = true
 
 function TOOL:RightClick( tr )
 	if( !tr.HitNonWorld || tr.Entity:GetClass() != "gmod_wire_holoemitter" ) then return false end
@@ -1000,6 +1003,7 @@ if( SERVER ) then CreateConVar( "sbox_maxwire_hologrids", 30 ) end
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
 TOOL.NoGhostOn = { "sbox_maxwire_holoemitters" }
+TOOL.NoLeftOnClass = true
 
 function TOOL.BuildCPanel( panel )
 	panel:AddControl( "Header", {Text = "#Tool_wire_hologrid_name", Description = "#Tool_wire_hologrid_desc", } )

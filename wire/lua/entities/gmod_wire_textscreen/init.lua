@@ -56,7 +56,7 @@ function ENT:Setup(textTable, chrPl, textJust, tRed, tGreen, tBlue, numInputs, d
 	
 	--if option is selected, show text without the need for wire inputs
 	if (defaultOn == 1) then
-		Msg("dfo\n")
+		--Msg("dfo\n")
 		self:TriggerInput("Clk", 1)	--make text on by default
 		self:TriggerInput("Text", 1)
 	else
