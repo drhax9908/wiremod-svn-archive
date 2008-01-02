@@ -143,9 +143,9 @@ function dupeshare.Compress(str, ForConCommand)
 		end
 	end
 	
-	if (ForConCommand) then //„…ˆ‰Š‹Œ‘’“”•–—˜™š›œŸ ¡¢£¤¥¦§¨©ª unused special chars
-		str = string.gsub(string.gsub(string.gsub(str,"ƒ","|ƒ"),"†","|†"),"‡","|‡") //incase it has any of these...
-		str = string.gsub(string.gsub(string.gsub(str,"\n","ƒ"),"\t","†"),"\"","‡")
+	if (ForConCommand) then //„…ˆ‰Š‹Œ‘’“”•–—˜™š›œŸ ¡¢£¤¦§¨©ª unused special chars
+		str = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(str,"ƒ","|ƒ"),"†","|†"),"¥","|¥"),"‡","|‡"),"¤","|¤") //incase it has any of these...
+		str = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(str,"\n","ƒ"),"\t","†"),"\"","¥"),"bind","‡"),"exec","¤")
 	end
 	
 	local afterlen = string.len(str)
@@ -165,8 +165,8 @@ function dupeshare.DeCompress(str, FormConCommand)
 	end
 	
 	if (FormConCommand) then
-		str = string.gsub(string.gsub(string.gsub(str,"|ƒ","ƒ"),"|†","†"),"|‡","‡")
-		str = string.gsub(string.gsub(string.gsub(str,"ƒ","\n"),"†","\t"),"‡","\"")
+		str = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(str,"|ƒ","ƒ"),"|†","†"),"|¥","¥"),"|‡","‡"),"|¤","¤")
+		str = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(str,"ƒ","\n"),"†","\t"),"¥","\""),"‡","bind"),"¤","exec")
 	end
 	
 	local beforelen = string.len(str)
