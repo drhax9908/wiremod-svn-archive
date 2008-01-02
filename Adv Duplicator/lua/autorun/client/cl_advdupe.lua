@@ -9,9 +9,9 @@ AdvDupeClient.version = 1.741
 //
 //	Upload settings
 //
-local MaxUploadLength = 150
-local UploadPiecesPerSend = 2
-local UploadSendDelay = 0.25
+local MaxUploadLength = 180
+local UploadPiecesPerSend = 4
+local UploadSendDelay = 0.15
 local MaxUploadSize = 0
 local CanDownload = true
 
@@ -133,7 +133,8 @@ end
 usermessage.Hook("AdvDupeClientSendFinished", SendFinished)
 
 local function SendFinishedFailed( um )
-	if (UploadSendDelay < .5) then
+	--i don' think this did any good
+	/*if (UploadSendDelay < .5) then
 		UploadSendDelay = UploadSendDelay + 0.05
 		Msg("AdvDupe: increasing UploadSendDelay to "..UploadSendDelay.."\n")
 	elseif (UploadPiecesPerSend > 1) then
@@ -141,7 +142,7 @@ local function SendFinishedFailed( um )
 		Msg("AdvDupe: decreasing UploadPiecesPerSend to "..UploadPiecesPerSend.."\n")
 	else
 		Msg("AdvDupeERROR: UploadSendDelay and UploadPiecesPerSend maxed to .5 and 1, there's a problem if it's failed this many times.\n")
-	end
+	end*/
 	AdvDupeClient.temp2 = nil
 	AdvDupeClient.sending = false
 	AdvDuplicator_UpdateControlPanel()

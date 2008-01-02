@@ -1115,9 +1115,9 @@ AdvDupe.AdminSettings = {}
 //	I'll add limits if people break shit by fucking with this stuff too much.
 //
 //client upload settings
-local MaxUploadLength = 150			--common to all players. it's the size of string in each piece, over 200 and it _WILL_ fail
-local UploadPiecesPerSend = 2		--per player. number of pieces the player send per interval. over 5 and it _WILL_ fail
-local UploadSendDelay = 0.25		--per player. seconds between each inverval. under 0.01 and there is no real difference. Don't set less than .1 and 2 above, it will fail a lot.
+local MaxUploadLength = 180			--common to all players. it's the size of string in each piece, over 200 and it _WILL_ fail
+local UploadPiecesPerSend = 3		--per player. number of pieces the player send per interval. over 5 and it _WILL_ fail
+local UploadSendDelay = 0.15		--per player. seconds between each inverval. under 0.01 and there is no real difference. Don't set less than .1 and 2 above, it will fail a lot.
 local MaxUploadSize = 0				--per player. -1 disable, 0 no limit, >0 K characers allowed (K = 1024).  allows up to (MaxUploadLength - 1) charcters over this limit.,
 //download settings
 local MaxDownloadLength = 200		--common to all players. same as above, but limit is _MAX_ 255, but it doesn't work well above 200
