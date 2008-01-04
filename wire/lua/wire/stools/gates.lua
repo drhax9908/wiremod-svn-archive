@@ -167,13 +167,13 @@ function TOOL.BuildCPanel(panel)
 
 		for gatetype, gatefuncs in pairs(WireGatesSorted) do
 			local node = tree:AddNode( gatetype.." Gates" )
-			table.SortByMember( gatefuncs, "name", true ) --doesn't work, fix
+			table.SortByMember( gatefuncs, "name", true )
 			for k,v in pairs(gatefuncs) do
 				local cnode = node:AddNode( v.name or "No Name" )
 				cnode.myname = v.name
 				cnode.myaction = k
 				function cnode:DoClick()
-					RunConsoleCommand( "wire_gates_action "..self.myaction )
+					RunConsoleCommand( "wire_gates_action", self.myaction )
 				end
 				cnode.Icon:SetImage( "gui/silkicons/newspaper" )
 			end

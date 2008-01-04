@@ -307,12 +307,12 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_width"
 	})
 	
-	panel:AddControl("MaterialGallery", {
+	/*panel:AddControl("MaterialGallery", {
 		Label = "#WireTool_material",
-		Height = "64",
-		Width = "24",
-		Rows = "1",
-		Stretch = "1",
+		Height = 64,
+		Width = 24,
+		Rows = 1,
+		Stretch = 1,
 
 		Options = {
 			["Wire"] = { Material = "cable/rope_icon", wire_material = "cable/rope" },
@@ -331,7 +331,16 @@ function TOOL.BuildCPanel(panel)
 		CVars = {
 			[0] = "wire_material"
 		}
-	})
+	})*/
+	
+	panel:AddControl( "MatSelect", { 
+			Height = "1", 
+			Label = "#WireTool_material", 
+			ItemWidth = 24, 
+			ItemHeight = 64, 
+			ConVar = "wire_material", 
+			Options = list.Get( "WireMaterials" ) 
+		} )
 
 	panel:AddControl("Color", {
 		Label = "#WireTool_colour",
@@ -407,3 +416,14 @@ function TOOL:SelectComponent(ent)
 	    self.CurrentComponent:SetNetworkedBeamString("BlinkWire", self.CurrentInput)
 	end
 end
+
+list.Add( "WireMaterials", "cable/rope_icon" )
+list.Add( "WireMaterials", "cable/cable2" )
+list.Add( "WireMaterials", "cable/xbeam" )
+list.Add( "WireMaterials", "cable/redlaser" )
+list.Add( "WireMaterials", "cable/blue_elec" )
+list.Add( "WireMaterials", "cable/physbeam" )
+list.Add( "WireMaterials", "cable/hydra" )
+//new wire materials by Acegikmo
+list.Add( "WireMaterials", "arrowire/arrowire" )
+list.Add( "WireMaterials", "arrowire/arrowire2" )
