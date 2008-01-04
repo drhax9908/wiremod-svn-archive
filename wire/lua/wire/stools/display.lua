@@ -779,32 +779,6 @@ function TOOL.BuildCPanel(panel)
 	ModelPlug_AddToCPanel(panel, "speaker", "wire_soundemitter", "#WireEmitterTool_model", nil, "#WireEmitterTool_model")
 end
 
-local WireSounds = {
-	Warning = "common/warning.wav",
-	Talk = "common/talk.wav",
-	Button = "buttons/button15.wav",
-	Denied = "buttons/weapon_cant_buy.wav",
-	Zap = "ambient/energy/zap2.wav",
-	["Oh No"] = "vo/npc/male01/ohno.wav",
-	Yeah = "vo/npc/male01/yeah02.wav",
-	["apc alarm"] = "ambient/alarms/apc_alarm_loop1.wav",
-	["Coast Siren"] = "coast.siren_citizen",
-	["Bunker Siren"] = "coast.bunker_siren1",
-	["Alarm Bell"] = "d1_canals.Floodgate_AlarmBellLoop",
-	["Engine Start"] = "ATV_engine_start",
-	["Engine Stop"] = "ATV_engine_stop",
-	["Zombie Breathe"] = "NPC_PoisonZombie.Moan1",
-	["Idle Zombies"] = "Zombie.Idle",
-	["Turret Alert"] = "NPC_FloorTurret.Alert",
-	["Helicopter Rotor"] = "NPC_CombineGunship.RotorSound",
-	Heartbeat = "k_lab.teleport_heartbeat",
-	Breathing = "k_lab.teleport_breathing",
-}
-
-for k,v in pairs(WireSounds) do
-	list.Set("WireSounds",k,{wire_soundemitter_sound=v});
-end
-
 
 
 

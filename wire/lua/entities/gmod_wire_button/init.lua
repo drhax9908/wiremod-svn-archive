@@ -78,3 +78,33 @@ end
 function ENT:ShowOutput(value)
 	self:SetOverlayText( "(" .. self.ValueOff .. " - " .. self.ValueOn .. ") = " .. value )
 end
+
+
+function MakeWireButton( pl, Model, Pos, Ang, toggle, value_off, value_on, description, Vel, aVel, frozen )
+	if ( !pl:CheckLimit( "wire_buttons" ) ) then return false end
+
+	local wire_button = ents.Create( "gmod_wire_button" )
+	if (!wire_button:IsValid()) then return false end
+
+	wire_button:SetModel( Model )
+	wire_button:SetAngles( Ang )
+	wire_button:SetPos( Pos )
+	wire_button:Spawn()
+
+	wire_button:Setup(toggle, value_off, value_on )
+	wire_button:SetPlayer( pl )
+
+	local ttable = {
+		toggle			= toggle,
+		value_off		= value_off,
+		value_on		= value_on,
+		pl              = pl
+	}
+	table.Merge(wire_button:GetTable(), ttable )
+	
+	pl:AddCount( "wire_buttons", wire_button )
+
+	return wire_button
+end
+
+duplicator.RegisterEntityClass("gmod_wire_button", MakeWireButton, "Model", "Pos", "Ang", "toggle", "value_off", "value_on", "description", "Vel", "aVel", "frozen" )

@@ -96,3 +96,44 @@ local function Off( pl, ent, mul )
 end
 numpad.Register( "WireAdvInput_On",On)
 numpad.Register( "WireAdvInput_Off",Off)
+
+
+function MakeWireAdvInput( pl, Pos, Ang, keymore, keyless, toggle, value_min, value_max, value_start, speed, Vel, aVel, frozen )
+
+	if ( !pl:CheckLimit( "wire_adv_inputs" ) ) then return false end
+
+	local wire_adv_input = ents.Create( "gmod_wire_adv_input" )
+	if (!wire_adv_input:IsValid()) then return false end
+
+	wire_adv_input:SetAngles( Ang )
+	wire_adv_input:SetPos( Pos )
+	wire_adv_input:SetModel( Model("models/jaanus/wiretool/wiretool_input.mdl") )
+	wire_adv_input:Spawn()
+
+	wire_adv_input:Setup( keymore, keyless, toggle, value_min, value_max, value_start, speed )
+	wire_adv_input:SetPlayer( pl )
+
+	numpad.OnDown( pl, keymore, "WireAdvInput_On", wire_adv_input, 1 )
+	numpad.OnUp( pl, keymore, "WireAdvInput_Off", wire_adv_input, 1 )
+	
+	numpad.OnDown( pl, keyless, "WireAdvInput_On", wire_adv_input, -1 )
+	numpad.OnUp( pl, keyless, "WireAdvInput_Off", wire_adv_input, -1 )
+
+	local ttable = {
+		keymore			= keymore,
+		keyless			= keyless,
+		toggle			= toggle,
+		value_min		= value_min,
+		value_max		= value_max,
+		value_start		= value_start,
+		speed			= speed,
+		pl              = pl
+	}
+	table.Merge(wire_adv_input:GetTable(), ttable )
+	
+	pl:AddCount( "wire_adv_inputs", wire_adv_input )
+	
+	return wire_adv_input
+end
+
+duplicator.RegisterEntityClass("gmod_wire_adv_input", MakeWireAdvInput, "Pos", "Ang", "keymore", "keyless", "toggle", "value_min", "value_max", "value_start", "speed", "Vel", "aVel", "frozen")

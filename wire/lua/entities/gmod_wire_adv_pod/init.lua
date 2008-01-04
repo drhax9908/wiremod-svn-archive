@@ -230,3 +230,22 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 		end
 	end
 end
+
+
+function MakeWireAdvPod(pl, Pos, Ang)
+	if not pl:CheckLimit("wire_pods") then return false end
+	
+	local wire_pod = ents.Create("gmod_wire_adv_pod")
+	if not wire_pod:IsValid() then return false end
+	
+	wire_pod:SetAngles(Ang)
+	wire_pod:SetPos(Pos)
+	wire_pod:Spawn()
+	wire_pod:SetPlayer(pl)
+	wire_pod.pl = pl
+	
+	pl:AddCount("wire_pods", wire_pod)
+	
+	return wire_pod
+end
+duplicator.RegisterEntityClass("gmod_wire_adv_pod", MakeWireAdvPod, "Pos", "Ang", "Vel", "aVel", "frozen")
