@@ -33,12 +33,16 @@ function ENT:Think()
 	self.BaseClass.Think(self)
 
 	if ( self:IsOn() ) then
-		if (not self.PrevUser) or (not self.PrevUser:IsValid()) or (not self.PrevUser:KeyDown(IN_USE)) then
+		if (not self.PrevUser)
+		or (not self.PrevUser:IsValid())
+		or (not self.podpress and not self.PrevUser:KeyDown(IN_USE))
+		or (self.podpress and not self.PrevUser:KeyDown( IN_ATTACK )) then
 		    if (not self.Toggle) then
 				self:Switch(false)
 			end
 			
 			self.PrevUser = nil
+			self.podpress = nil
 		end
 
 		self.Entity:NextThink(CurTime()+0.05)
