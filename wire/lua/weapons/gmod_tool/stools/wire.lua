@@ -417,13 +417,4 @@ function TOOL:SelectComponent(ent)
 	end
 end
 
-list.Add( "WireMaterials", "cable/rope_icon" )
-list.Add( "WireMaterials", "cable/cable2" )
-list.Add( "WireMaterials", "cable/xbeam" )
-list.Add( "WireMaterials", "cable/redlaser" )
-list.Add( "WireMaterials", "cable/blue_elec" )
-list.Add( "WireMaterials", "cable/physbeam" )
-list.Add( "WireMaterials", "cable/hydra" )
-//new wire materials by Acegikmo
-list.Add( "WireMaterials", "arrowire/arrowire" )
-list.Add( "WireMaterials", "arrowire/arrowire2" )
+

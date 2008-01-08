@@ -3,6 +3,24 @@ local WIRE_BLINKS_PER_SECOND = 2
 local CurPathEnt = {}
 local Wire_DisableWireRender = 2 --bug with mode 0 and gmod2007beta
 
+Msg("loading materials\n")
+list.Add( "WireMaterials", "cable/rope_icon" )
+list.Add( "WireMaterials", "cable/cable2" )
+list.Add( "WireMaterials", "cable/xbeam" )
+list.Add( "WireMaterials", "cable/redlaser" )
+list.Add( "WireMaterials", "cable/blue_elec" )
+list.Add( "WireMaterials", "cable/physbeam" )
+list.Add( "WireMaterials", "cable/hydra" )
+//new wire materials by Acegikmo
+list.Add( "WireMaterials", "arrowire/arrowire" )
+list.Add( "WireMaterials", "arrowire/arrowire2" )
+
+local mats = { ["tripmine_laser"] = Material("tripmine_laser") }
+for _,mat in pairs(list.Get( "WireMaterials" )) do
+	Msg("loading material: ",mat,"\n")
+	mats[mat] = Material(mat)
+end
+
 function Wire_Render(ent)
 	if (not ent:IsValid()) then return end
 	if (Wire_DisableWireRender == 1) then return end
@@ -32,7 +50,7 @@ function Wire_Render(ent)
 
 				    local scroll = CurTime()*WIRE_SCROLL_SPEED
 				    
-					render.SetMaterial(Material(ent:GetNetworkedBeamString(net_name .. "_mat")))
+					render.SetMaterial(mats[ent:GetNetworkedBeamString(net_name .. "_mat")])
 					render.StartBeam(len+1)
 					render.AddBeam(start, width, scroll, color)
 
@@ -83,7 +101,7 @@ function Wire_Render(ent)
 
 					local scroll = CurTime()*WIRE_SCROLL_SPEED
 					
-					x.material = Material(ent:GetNetworkedBeamString(net_name .. "_mat"))
+					x.material = mats[ent:GetNetworkedBeamString(net_name .. "_mat")]
 					x.startbeam = len + 1
 					x.start = start
 					x.width = width
@@ -251,10 +269,10 @@ function Wire_DrawTracerBeam( ent, beam_num, hilight, beam_length )
 		if (ent:GetNetworkedBool("TraceWater")) then trace.mask = MASK_ALL end
 		trace = util.TraceLine(trace)
 		
-		render.SetMaterial(Material("tripmine_laser"))
+		render.SetMaterial(mats["tripmine_laser"])
 		render.DrawBeam(start, trace.HitPos, 6, 0, 10, Color(ent:GetColor()))
 		if (hilight) then
-			render.SetMaterial(Material("Models/effects/comball_tape"))
+			render.SetMaterial(mats["Models/effects/comball_tape"])
 			render.DrawBeam(start, trace.HitPos, 6, 0, 10, Color(255,255,255,255))
 		end
 	end
