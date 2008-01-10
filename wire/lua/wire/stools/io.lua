@@ -35,7 +35,7 @@ TOOL.ClientConVar = {
 	value_min = "0",
 	value_max = "10",
 	value_start = "5",
-	spee = "1"
+	speed = "1"
 }
 
 function TOOL.BuildCPanel( CPanel )
