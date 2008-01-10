@@ -397,3 +397,42 @@ ENT._vecsmul_2 =      function (self, v, n)   if self:IsVector(v) then return se
 ENT._vecsdiv_2 =      function (self, v, n)   if self:IsVector(v) then return self:PutVector(self:GetVector(v) / n) else return -1 end end
 
 ENT._vecrotate_4 =    function (self, v, p, y, r) if self:IsVector(v) then local vec = self:CloneVector(self:GetVector(v)) vec:Rotate(Angle(p, y, r)) return self:PutVector(vec) else return -1 end end
+
+-- EXTERNAL INPUT EXTENSION
+
+ENT._extcolor_3 =   function (self, r, g, b)    self:SetColor(math.Clamp(r, 0, 255), math.Clamp(g, 0, 255), math.Clamp(b, 0, 255), 255)                   return 0 end
+ENT._extcolor_4 =   function (self, r, g, b, a) self:SetColor(math.Clamp(r, 0, 255), math.Clamp(g, 0, 255), math.Clamp(b, 0, 255), math.Clamp(a, 0, 255)) return 0 end
+
+ENT._extcolorr_0 =  function (self) local tbl = { self:GetColor() } return tbl[0] end
+ENT._extcolorg_0 =  function (self) local tbl = { self:GetColor() } return tbl[1] end
+ENT._extcolorb_0 =  function (self) local tbl = { self:GetColor() } return tbl[2] end
+ENT._extcolora_0 =  function (self) local tbl = { self:GetColor() } return tbl[3] end
+
+ENT._extdirfwx_0 =   function (self) return self:GetForward().x end
+ENT._extdirfwy_0 =   function (self) return self:GetForward().y end
+ENT._extdirfwz_0 =   function (self) return self:GetForward().z end
+ENT._extdirfw_0 =    function (self) return self:PutVector(self:GetForward()) end
+
+ENT._extdirrtx_0 =   function (self) return self:GetRight().x end
+ENT._extdirrty_0 =   function (self) return self:GetRight().y end
+ENT._extdirrtz_0 =   function (self) return self:GetRight().z end
+ENT._extdirrt_0 =    function (self) return self:PutVector(self:GetRight()) end
+
+ENT._extdirupx_0 =   function (self) return self:GetUp().x end
+ENT._extdirupy_0 =   function (self) return self:GetUp().y end
+ENT._extdirupz_0 =   function (self) return self:GetUp().z end
+ENT._extdirup_0 =    function (self) return self:PutVector(self:GetUp()) end
+
+ENT._extposx_0 =   function (self) return self:GetPos().x end
+ENT._extposy_0 =   function (self) return self:GetPos().y end
+ENT._extposz_0 =   function (self) return self:GetPos().z end
+ENT._extpos_0 =    function (self) return self:PutVector(self:GetPos()) end
+
+ENT._extvelx_0 =   function (self) return self:GetVelocity().x end
+ENT._extvely_0 =   function (self) return self:GetVelocity().y end
+ENT._extvelz_0 =   function (self) return self:GetVelocity().z end
+ENT._extvel =      function (self) return self:PutVector(self:GetVelocity()) end
+
+ENT._extangr_0 =   function (self) return self:GetAngles().r end
+ENT._extangy_0 =   function (self) return self:GetAngles().y end
+ENT._extangp_0 =   function (self) return self:GetAngles().p end
