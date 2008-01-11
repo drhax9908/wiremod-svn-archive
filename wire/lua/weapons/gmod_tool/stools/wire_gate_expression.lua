@@ -86,6 +86,7 @@ TOOL.ClientConVar["filename"]  = ""
 TOOL.ClientConVar["label"]     = ""
 TOOL.ClientConVar["inputs"]    = ""
 TOOL.ClientConVar["outputs"]   = ""
+TOOL.ClientConVar["hintrev"]   = 0
 
 for i = 1,60 do
 	TOOL.ClientConVar["line" .. i] = ""
@@ -529,7 +530,6 @@ if CLIENT then
 
 	concommand.Add("wire_gate_expression_new_cl", WireGateExpressionPanelNew)
 
-
 	function WireGateExpressionRebuildCPanel(panel)
 		if panel then
 			WireGateExpressionDoRebuildCPanel(panel)
@@ -545,8 +545,36 @@ if CLIENT then
 			end
 		end
 	end
+	
+	function WireGateExpressionHide(player, command, args)
+		wire_gate_expression_hintrev = 1
+		player:ConCommand('wire_gate_expression_hintrev 1')
+		WireGateExpressionRebuildCPanel();
+	end
+
+	concommand.Add("wire_gate_expression_hide_cl", WireGateExpressionHide)
+
 
 	function WireGateExpressionDoRebuildCPanel(panel)
+		if wire_gate_expression_state == nil then
+			wire_gate_expression_state =      0
+			wire_gate_expression_filename =   GetConVarString('wire_gate_expression_filename')
+			wire_gate_expression_label =      GetConVarString('wire_gate_expression_label')
+			wire_gate_expression_inputs =     GetConVarString('wire_gate_expression_inputs')
+			wire_gate_expression_outputs =    GetConVarString('wire_gate_expression_outputs')
+			wire_gate_expression_basefolder = "ExpressionGate"
+			wire_gate_expression_folder =     ""
+			wire_gate_expression_status =     "Previous expression resumed"
+			wire_gate_expression_hintrev =    GetConVarNumber('wire_gate_expression_hintrev')
+			WireGateExpressionUpdateFilelist()
+
+			if !wire_gate_expression_filename then wire_gate_expression_filename = "" end
+			if !wire_gate_expression_label    then wire_gate_expression_label =    "" end
+			if !wire_gate_expression_inputs   then wire_gate_expression_inputs =   "" end
+			if !wire_gate_expression_outputs  then wire_gate_expression_outputs =  "" end
+			if !wire_gate_expression_status   then wire_gate_expression_status =   "" end
+		end
+	
 		panel:ClearControls()
 		
 		panel:AddControl("Header", {
@@ -704,6 +732,26 @@ if CLIENT then
 				Command = "wire_gate_expression_validate_cl"
 			})
 			
+			if wire_gate_expression_hintrev < 1 then
+				panel:AddControl("Label", {
+					Text = "             New self-awareness functionality available"
+				})
+				
+				panel:AddControl("Label", {
+					Text = "           Check out the selfaware folder for examples"
+				})
+				
+				panel:AddControl("Label", {
+					Text = "              Documentation available at wiremod.com"
+				})
+				
+				panel:AddControl("Button", {
+					Text = "                  Click here to hide this notification!",
+					Name = "Hide",
+					Command = "wire_gate_expression_hide_cl"
+				})
+			end
+			
 			panel:AddControl("TextBox", {
 				Label = "Label:",
 				Command = "wire_gate_expression_label",
@@ -745,20 +793,4 @@ if CLIENT then
 			})
 		end
 	end
-	
-	wire_gate_expression_state =      0
-	wire_gate_expression_filename =   GetConVarString('wire_gate_expression_filename')
-	wire_gate_expression_label =      GetConVarString('wire_gate_expression_label')
-	wire_gate_expression_inputs =     GetConVarString('wire_gate_expression_inputs')
-	wire_gate_expression_outputs =    GetConVarString('wire_gate_expression_outputs')
-	wire_gate_expression_basefolder = "ExpressionGate"
-	wire_gate_expression_folder =     ""
-	wire_gate_expression_status =     "Previous expression resumed"
-	WireGateExpressionUpdateFilelist()
-
-	if !wire_gate_expression_filename then wire_gate_expression_filename = "" end
-	if !wire_gate_expression_label    then wire_gate_expression_label =    "" end
-	if !wire_gate_expression_inputs   then wire_gate_expression_inputs =   "" end
-	if !wire_gate_expression_outputs  then wire_gate_expression_outputs =  "" end
-	if !wire_gate_expression_status   then wire_gate_expression_status =   "" end
 end
