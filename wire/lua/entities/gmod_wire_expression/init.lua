@@ -433,6 +433,10 @@ ENT._extvely_0 =   function (self) return self:GetVelocity().y end
 ENT._extvelz_0 =   function (self) return self:GetVelocity().z end
 ENT._extvel =      function (self) return self:PutVector(self:GetVelocity()) end
 
-ENT._extangr_0 =   function (self) return self:GetAngles().r end
-ENT._extangy_0 =   function (self) return self:GetAngles().y end
 ENT._extangp_0 =   function (self) return self:GetAngles().p end
+ENT._extangy_0 =   function (self) return self:GetAngles().y end
+ENT._extangr_0 =   function (self) return self:GetAngles().r end
+
+ENT._extangvelp_0 =   function (self) return self:GetPhysicsObject():GetAngleVelocity().x end
+ENT._extangvely_0 =   function (self) return self:GetPhysicsObject():GetAngleVelocity().y end
+ENT._extangvelr_0 =   function (self) return self:GetPhysicsObject():GetAngleVelocity().z end
