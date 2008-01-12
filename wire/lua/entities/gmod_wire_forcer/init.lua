@@ -45,6 +45,7 @@ function ENT:TriggerInput(iname, value)
 		self:ShowOutput()
 	elseif (iname == "Velocity") then
 		self.V = value
+		self:SetForceBeam(self.V != 0)
 		self:ShowOutput()
 	end
 end
