@@ -428,10 +428,15 @@ ENT._extposy_0 =   function (self) return self:GetPos().y end
 ENT._extposz_0 =   function (self) return self:GetPos().z end
 ENT._extpos_0 =    function (self) return self:PutVector(self:GetPos()) end
 
-ENT._extvelx_0 =   function (self) return self:GetVelocity().x end
-ENT._extvely_0 =   function (self) return self:GetVelocity().y end
-ENT._extvelz_0 =   function (self) return self:GetVelocity().z end
-ENT._extvel =      function (self) return self:PutVector(self:GetVelocity()) end
+ENT._extvelabsx_0 =   function (self) return self:GetVelocity().x end
+ENT._extvelabsy_0 =   function (self) return self:GetVelocity().y end
+ENT._extvelabsz_0 =   function (self) return self:GetVelocity().z end
+ENT._extvelabs_0 =    function (self) return self:PutVector(self:GetVelocity()) end
+
+ENT._extvelx_0 =   function (self) return -(self:WorldToLocal(self:GetVelocity() + self:GetPos())).y end
+ENT._extvely_0 =   function (self) return  (self:WorldToLocal(self:GetVelocity() + self:GetPos())).x end
+ENT._extvelz_0 =   function (self) return  (self:WorldToLocal(self:GetVelocity() + self:GetPos())).z end
+ENT._extvel_0 =    function (self) local v = (self:WorldToLocal(self:GetVelocity() + self:GetPos())) return self:PutVector(Vector(-v.y, v.x, v.z)) end
 
 ENT._extangp_0 =   function (self) return self:GetAngles().p end
 ENT._extangy_0 =   function (self) return self:GetAngles().y end
