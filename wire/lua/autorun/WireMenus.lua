@@ -6,11 +6,11 @@ if (SERVER) then
 	return
  end
 
-local movetotabvar = CreateClientConVar( "wiremovetoolstotab", "1", true, false )
+local usetab = CreateClientConVar( "cl_wire_usetab", "1", true, false )
 
 local function WireTab()
 	local mmenu = "Main"
-	if movetotabvar:GetBool() then
+	if usetab:GetBool() then
 		spawnmenu.AddToolTab( "Wire", "Wire" )
 		mmenu = "Wire"
 	end
@@ -30,7 +30,7 @@ hook.Add( "AddToolMenuTabs", "WireTab", WireTab)
 
 //not really needed any more since gmod32, but do it anyway cause 31 required it
 local function WireToolCategories()
-	if movetotabvar:GetBool() then
+	if usetab:GetBool() then
 		local oldspawnmenuAddToolMenuOption = spawnmenu.AddToolMenuOption
 		function spawnmenu.AddToolMenuOption( tab, category, itemname, text, command, controls, cpanelfunction, TheTable )
 			if ( tab == "Main" and "wire" == string.lower( string.Left(category, 4) ) ) then tab = "Wire" end
