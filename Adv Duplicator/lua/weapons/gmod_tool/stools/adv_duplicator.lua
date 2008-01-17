@@ -292,6 +292,7 @@ function TOOL:MakeGhostFromTable( EntTable, pParent, HoldAngle, HoldPos )
 		end*/
 		
 	GhostEntity:SetModel( EntTable.Model )
+	if ( EntTable.Skin ) then GhostEntity:SetSkin( EntTable.Skin ) end
 	
 	GhostEntity:SetPos( EntTable.LocalPos + HoldPos )
 	GhostEntity:SetAngles( EntTable.LocalAngle )
