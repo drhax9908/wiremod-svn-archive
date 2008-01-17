@@ -585,11 +585,12 @@ function AdvDupe.GetSaveableEntity( Ent, Offset )
 	// escape the model string properly cause something out there rapes it sometimes
 	SaveableEntity.Model = table.concat( dupeshare.split( Ent:GetModel(), '\\+' ), "/" )
 	
-	SaveableEntity.LocalPos		 = Tab.LocalPos
-	SaveableEntity.LocalAngle	 = Tab.LocalAngle
-	SaveableEntity.BoneMods		 = table.Copy( Tab.BoneMods )
-	SaveableEntity.EntityMods	 = table.Copy( Tab.EntityMods )
-	SaveableEntity.PhysicsObjects = table.Copy( Tab.PhysicsObjects )
+	SaveableEntity.Skin				= Ent:GetSkin()
+	SaveableEntity.LocalPos			= Tab.LocalPos
+	SaveableEntity.LocalAngle		= Tab.LocalAngle
+	SaveableEntity.BoneMods			= table.Copy( Tab.BoneMods )
+	SaveableEntity.EntityMods		= table.Copy( Tab.EntityMods )
+	SaveableEntity.PhysicsObjects	= table.Copy( Tab.PhysicsObjects )
 	
 	if ( Ent:GetParent() ) and ( Ent:GetParent():IsValid() ) then
 		SaveableEntity.SavedParentIdx = Ent:GetParent():EntIndex()
@@ -805,7 +806,7 @@ concommand.Add( "AdvDupe_NewSave", NewSaveSet )*/
 //
 local function CollisionGroupModifier(ply, Ent, group )
 	
-	if ( group == COLLISION_GROUP_WORLD ) then
+	if ( group == 19 or group == COLLISION_GROUP_WORLD ) then --COLLISION_GROUP_WORLD is fucked up
 		Ent:SetCollisionGroup( COLLISION_GROUP_WORLD )
 		Ent.CollisionGroup = COLLISION_GROUP_WORLD
 	else
@@ -2451,6 +2452,8 @@ function AdvDupe.PasteEntity( Player, EntTable, EntID, Offset, HoldAngle )
 		if ( !Success ) then
 			Msg("AdvDupeERROR: ApplyBoneModifiers Error: "..tostring(Result).."\n")
 		end
+		
+		if ( EntTable.Skin ) then Ent:SetSkin( EntTable.Skin ) end
 		
 		return Ent
 		
