@@ -160,23 +160,23 @@ function WireToolMakeLamp( self, trace, ply )
 		trace.Entity:GetPlayer() == ply
 	then
 		trace.Entity:SetLightColor( r, g, b )
-		trace.Entity.r = r
-		trace.Entity.g = g
-		trace.Entity.b = b
-		trace.Entity.texture = texture
+		trace.Entity.lightr = r
+		trace.Entity.lightg = g
+		trace.Entity.lightb = b
+		trace.Entity.Texture = texture
 		trace.Entity:SetFlashlightTexture( texture )
 		return true
 	end
 	
 	if ( !self:GetSWEP():CheckLimit( "wire_lamps" ) ) then return false end
 	
-	local wire_lamp = MakeWireLamp( ply, pos, ang, r, g, b, texture )
+	local wire_lamp = MakeWireLamp( ply, r, g, b, texture, { Pos = pos, Angle = ang } )
 	
 	ply:AddCleanup( "gmod_wire_lamp", wire_lamp )
 	
 	if (const == "weld") then
 
-		return wire_lamp --helper left click will handel weld
+		return wire_lamp --helper left click will do weld
 
 	elseif (const == "rope") then
 

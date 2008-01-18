@@ -153,27 +153,25 @@ end
 include('shared.lua')
 
 
-function MakeWireLamp( pl, Pos, Ang, r, g, b, Texture, Vel, aVel, frozen )
+function MakeWireLamp( pl, r, g, b, Texture, Data )
 
 	if ( !pl:CheckLimit( "wire_lamps" ) ) then return false end
 
 	local wire_lamp = ents.Create( "gmod_wire_lamp" )
 	if (!wire_lamp:IsValid()) then return end
-		wire_lamp:SetPos( Pos )
-		wire_lamp:SetAngles( Ang )
+		wire_lamp:SetFlashlightTexture( Texture or "effects/flashlight001" )
+		duplicator.DoGeneric( wire_lamp, Data )
 		wire_lamp:SetLightColor( r, g, b )
 	wire_lamp:Spawn()
-
-	wire_lamp:SetFlashlightTexture( Texture or "effects/flashlight001" )
-	wire_lamp:SetPlayer( pl )
-	wire_lamp.Texture = Texture or "effects/flashlight001"
 	
-	if (wire_lamp:GetPhysicsObject():IsValid()) then
-		Phys = wire_lamp:GetPhysicsObject()
-		if Vel then Phys:SetVelocity(Vel) end
-		if Vel then Phys:AddAngleVelocity(aVel) end
-		Phys:EnableMotion(frozen != true)
-	end
+	duplicator.DoGenericPhysics( wire_lamp, pl, Data )
+	
+	wire_lamp:SetPlayer( pl )
+	
+	wire_lamp.lightr = r
+	wire_lamp.lightg = g
+	wire_lamp.lightb = b
+	wire_lamp.Texture = Texture or "effects/flashlight001"
 	
 	pl:AddCount( "wire_lamps", wire_lamp )
 	pl:AddCleanup( "wire_lamp", wire_lamp )
@@ -181,4 +179,4 @@ function MakeWireLamp( pl, Pos, Ang, r, g, b, Texture, Vel, aVel, frozen )
 	return wire_lamp
 end
 
-duplicator.RegisterEntityClass( "gmod_wire_lamp", MakeWireLamp, "Pos", "Ang", "lightr", "lightg", "lightb", "Texture", "Vel", "aVel", "frozen" )
+duplicator.RegisterEntityClass( "gmod_wire_lamp", MakeWireLamp, "lightr", "lightg", "lightb", "Texture", "Data" )
