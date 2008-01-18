@@ -2,60 +2,80 @@
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
 
+include('shared.lua')
+
 ENT.WireDebugName = "Lamp"
 
 local MODEL = Model( "models/props_wasteland/prison_lamp001c.mdl" )
+
+AccessorFunc( ENT, "m_strFlashlightTexture", "FlashlightTexture" )
+
+ENT:SetFlashlightTexture( "effects/flashlight001" )
 
 /*---------------------------------------------------------
    Name: Initialize
 ---------------------------------------------------------*/
 function ENT:Initialize()
 
-	self.Entity:SetModel( MODEL )
-	self.Entity:PhysicsInit( SOLID_VPHYSICS )
-	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
-	self.Entity:SetSolid( SOLID_VPHYSICS )
+	self:SetModel( MODEL )
+	self:PhysicsInit( SOLID_VPHYSICS )
+	self:SetMoveType( MOVETYPE_VPHYSICS )
+	self:SetSolid( SOLID_VPHYSICS )
 	
-	--TODO: Fix for gmod2007
-	self.flashlight = ents.Create("effect_flashlight")
-	self.flashlight:SetPos( self.Entity:GetPos() )
-	self.flashlight:SetAngles( self.Entity:GetAngles() )
-	self.flashlight:SetParent( self.Entity )
-	self.flashlight:SetColor( self.Entity:GetVar( "lightr", 255 ), self.Entity:GetVar( "lightg", 255 ), self.Entity:GetVar( "lightb", 255 ), 255 )
-	self.flashlight:Spawn()
-	
-	local phys = self.Entity:GetPhysicsObject()
+	local phys = self:GetPhysicsObject()
 	
 	if (phys:IsValid()) then
 		phys:Wake()
 	end
 	
-	self.r = self.Entity:GetVar( "lightr", 255 )
-	self.g = self.Entity:GetVar( "lightg", 255 )
-	self.b = self.Entity:GetVar( "lightb", 255 )
+	self.r = 255
+	self.g = 255
+	self.b = 255
 	
-	self.Inputs = Wire_CreateInputs(self.Entity, { "Red", "Green", "Blue" })
-	
+	self.Inputs = Wire_CreateInputs(self.Entity, { "Red", "Green", "Blue", "On" })
+	self:TurnOn()
 end
-
-function ENT:Setup( r, g, b )    
-
-	self:SetOverlayText( "Red:" .. r .. " Green:" .. g .. " Blue" .. b )
-	
-end
-	
-
 
 /*---------------------------------------------------------
    Name: Sets the color of the light
 ---------------------------------------------------------*/
 function ENT:SetLightColor( r, g, b )
-
-	self.Entity:SetVar( "lightr", r )
-	self.Entity:SetVar( "lightg", g )
-	self.Entity:SetVar( "lightb", b )
+	
+	self.r = r
+	self.g = g
+	self.b = b
+	
+	self:SetVar( "lightr", r )
+	self:SetVar( "lightg", g )
+	self:SetVar( "lightb", b )
+	
+	self:SetColor( r, g, b, 255 )
 	
 	self.Entity:SetColor( r, g, b, 255 )
+	
+	self.m_strLightColor = Format( "%i %i %i", r, g, b )
+	
+	if ( self.flashlight ) then
+		self.flashlight:SetKeyValue( "lightcolor", self.m_strLightColor )
+	end
+	
+	self:SetOverlayText( "Red:" .. r .. " Green:" .. g .. " Blue" .. b )
+end
+
+function ENT:Setup( r, g, b )    
+	self:SetLightColor( r, g, b )
+end
+
+/*---------------------------------------------------------
+   Name: Sets the texture
+---------------------------------------------------------*/
+function ENT:SetFlashlightTexture( tex )
+
+	self.m_strFlashlightTexture = tex
+	
+	if ( self.flashlight ) then
+		self.flashlight:Input( "SpotlightTexture", NULL, NULL, self:GetFlashlightTexture() )
+	end
 
 end
 
@@ -66,32 +86,61 @@ function ENT:OnTakeDamage( dmginfo )
 	self.Entity:TakePhysicsDamage( dmginfo )
 end
 
-
-/*---------------------------------------------------------
-   Name: Use
----------------------------------------------------------*/
-function ENT:Use( activator, caller )
-
-end
-
 /*---------------------------------------------------------
    Name: TriggerInput
    Desc: the inputs
 ---------------------------------------------------------*/
 function ENT:TriggerInput(iname, value)
 	if (iname == "Red") then
-		self.r = value
+		self:SetLightColor( value, self.g, self.b )
 	elseif (iname == "Green") then
-	    self.g = value
+	    self:SetLightColor( self.r, value, self.b )
 	elseif (iname == "Blue") then
-		self.b = value
+		self:SetLightColor( self.r, self.g, value )
+	elseif (iname == "On") then
+		if value > 0 then
+			self:TurnOn()
+		else
+			self:TurnOff()
+		end
 	end
-	self:SetLightColor( self.r, self.g, self.b)
-	self.flashlight:SetColor( self.Entity:GetVar( "lightr", 255 ), self.Entity:GetVar( "lightg", 255 ), self.Entity:GetVar( "lightb", 255 ), 255 )
-	self:SetOverlayText( "Red:" .. self.r .. " Green:" .. self.g .. " Blue" .. self.b )
-end
 	
+end
 
+function ENT:TurnOn()
+	self:SetOn(true)
+	local angForward = self.Entity:GetAngles() + Angle( 90, 0, 0 )
+
+	self.flashlight = ents.Create( "env_projectedtexture" )
+
+		self.flashlight:SetParent( self.Entity )
+		
+		// The local positions are the offsets from parent..
+		self.flashlight:SetLocalPos( Vector( 0, 0, 0 ) )
+		self.flashlight:SetLocalAngles( Angle(90,90,90) )
+		
+		// Looks like only one flashlight can have shadows enabled!
+		self.flashlight:SetKeyValue( "enableshadows", 1 )
+		self.flashlight:SetKeyValue( "farz", 2048 )
+		self.flashlight:SetKeyValue( "nearz", 8 )
+		
+		//Todo: Make this tweakable?
+		self.flashlight:SetKeyValue( "lightfov", 50 )
+		
+		// Color.. Bright pink if none defined to alert us to error
+		self.flashlight:SetKeyValue( "lightcolor", self.m_strLightColor or "255 0 255" )
+		
+		
+	self.flashlight:Spawn()
+
+	self.flashlight:Input( "SpotlightTexture", NULL, NULL, self:GetFlashlightTexture() )
+end
+
+function ENT:TurnOff()
+	self:SetOn(false)
+	SafeRemoveEntity( self.flashlight )
+	self.flashlight = nil
+end
 
 function ENT:OnRemove()
 	Wire_Remove(self.Entity)
@@ -104,7 +153,7 @@ end
 include('shared.lua')
 
 
-function MakeWireLamp( pl, Pos, Ang, r, g, b, Vel, aVel, frozen )
+function MakeWireLamp( pl, Pos, Ang, r, g, b, Texture, Vel, aVel, frozen )
 
 	if ( !pl:CheckLimit( "wire_lamps" ) ) then return false end
 
@@ -115,10 +164,10 @@ function MakeWireLamp( pl, Pos, Ang, r, g, b, Vel, aVel, frozen )
 		wire_lamp:SetLightColor( r, g, b )
 	wire_lamp:Spawn()
 
-	wire_lamp:Setup( r, g, b )
+	wire_lamp:SetFlashlightTexture( Texture or "effects/flashlight001" )
 	wire_lamp:SetPlayer( pl )
-
-
+	wire_lamp.Texture = Texture or "effects/flashlight001"
+	
 	if (wire_lamp:GetPhysicsObject():IsValid()) then
 		Phys = wire_lamp:GetPhysicsObject()
 		if Vel then Phys:SetVelocity(Vel) end
@@ -132,4 +181,4 @@ function MakeWireLamp( pl, Pos, Ang, r, g, b, Vel, aVel, frozen )
 	return wire_lamp
 end
 
-duplicator.RegisterEntityClass( "gmod_wire_lamp", MakeWireLamp, "Pos", "Ang", "lightr", "lightg", "lightb", "Vel", "aVel", "frozen" )
+duplicator.RegisterEntityClass( "gmod_wire_lamp", MakeWireLamp, "Pos", "Ang", "lightr", "lightg", "lightb", "Texture", "Vel", "aVel", "frozen" )

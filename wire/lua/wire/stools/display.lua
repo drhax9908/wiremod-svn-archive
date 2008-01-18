@@ -394,7 +394,7 @@ if (SERVER) then
 	CreateConVar('sbox_maxwire_lamps', 10)
 end
 
-TOOL.GhostAngle = Angle(90, 0, 0)
+TOOL.GhostAngle = Angle(180, 0, 0)
 TOOL.Model = "models/props_wasteland/prison_lamp001c.mdl"
 TOOL.ClientConVar = {
 	ropelength = "64",
@@ -402,7 +402,8 @@ TOOL.ClientConVar = {
 	r = "255",
 	g = "255",
 	b = "255",
-	const = "rope"
+	const = "rope",
+	texture = "effects/flashlight001"
 }
 
 function TOOL.BuildCPanel(panel)
@@ -410,13 +411,14 @@ function TOOL.BuildCPanel(panel)
 
 	panel:AddControl("ComboBox", {
 		Label = "#Presets",
-		MenuButton = "1",
+		MenuButton = 1,
 		Folder = "wire_lamp",
 
 		Options = {
 			["#Default"] = {
 				wire_lamp_ropelength = "64",
 				wire_lamp_ropematerial = "cable/rope",
+				wire_lamp_texture		=		"effects/flashlight001",
 				wire_lamp_r = "0",
 				wire_lamp_g = "0",
 				wire_lamp_b = "0"
@@ -429,6 +431,7 @@ function TOOL.BuildCPanel(panel)
 			[2] = "wire_lamp_r",
 			[3] = "wire_lamp_g",
 			[4] = "wire_lamp_b",
+			[5] = "wire_texture",
 		}
 	})
 
@@ -459,6 +462,12 @@ function TOOL.BuildCPanel(panel)
 			["None"]	= { wire_lamp_const = "none" },
 		}
 	})
+
+	local MatSelect = panel:MatSelect( "wire_lamp_texture", nil, true, 0.33, 0.33 )
+
+	for k, v in pairs( list.Get( "LampTextures" ) ) do
+		MatSelect:AddMaterial( v.Name or k, k )
+	end
 end
 
 

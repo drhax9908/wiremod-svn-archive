@@ -11,3 +11,13 @@ ENT.Instructions	= ""
 
 ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
+
+
+function ENT:SetOn( _in_ )
+	self:SetNetworkedBool( "Enabled", _in_ )
+end
+
+function ENT:GetOn()
+	return self:GetNetworkedVar( "Enabled", true )
+end
+

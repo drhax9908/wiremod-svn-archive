@@ -153,6 +153,7 @@ function WireToolMakeLamp( self, trace, ply )
 	local g 	= math.Clamp( self:GetClientNumber( "g" ), 0, 255 )
 	local b 	= math.Clamp( self:GetClientNumber( "b" ), 0, 255 )
 	local const = self:GetClientInfo( "const" )
+	local texture 	= self:GetClientInfo( "texture" )
 	
 	if	trace.Entity:IsValid() and 
 		trace.Entity:GetClass() == "gmod_wire_lamp" and
@@ -162,12 +163,14 @@ function WireToolMakeLamp( self, trace, ply )
 		trace.Entity.r = r
 		trace.Entity.g = g
 		trace.Entity.b = b
+		trace.Entity.texture = texture
+		trace.Entity:SetFlashlightTexture( texture )
 		return true
 	end
 	
 	if ( !self:GetSWEP():CheckLimit( "wire_lamps" ) ) then return false end
 	
-	local wire_lamp = MakeWireLamp( ply, pos, ang, r, g, b )
+	local wire_lamp = MakeWireLamp( ply, pos, ang, r, g, b, texture )
 	
 	ply:AddCleanup( "gmod_wire_lamp", wire_lamp )
 	

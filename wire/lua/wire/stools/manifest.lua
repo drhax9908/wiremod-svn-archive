@@ -1,6 +1,6 @@
 AddCSLuaFile( "manifest.lua" )
 
-if ( VERSION < 32 ) then
+if ( VERSION < 34 ) then
 	Msg("Your GMod is out of date! Wire will not work on version: ",VERSION,"\n")
 	return
 end
