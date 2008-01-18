@@ -15,11 +15,22 @@ list.Add( "WireMaterials", "cable/hydra" )
 list.Add( "WireMaterials", "arrowire/arrowire" )
 list.Add( "WireMaterials", "arrowire/arrowire2" )
 
-local mats = { ["tripmine_laser"] = Material("tripmine_laser") }
+local mats = {
+	["tripmine_laser"] = Material("tripmine_laser"),
+	["Models/effects/comball_tape"] = Material("Models/effects/comball_tape")
+}
 for _,mat in pairs(list.Get( "WireMaterials" )) do
 	Msg("loading material: ",mat,"\n")
 	mats[mat] = Material(mat)
 end
+local function getmat( mat )
+	if mats[mat] == nil then 
+		mats[mat] = Material(mat)
+	end
+	return mats[mat]
+end
+local beam_mat = mats["tripmine_laser"]
+local beamhi_mat = mats["Models/effects/comball_tape"]
 
 function Wire_Render(ent)
 	if (not ent:IsValid()) then return end
@@ -50,7 +61,7 @@ function Wire_Render(ent)
 
 				    local scroll = CurTime()*WIRE_SCROLL_SPEED
 				    
-					render.SetMaterial(mats[ent:GetNetworkedBeamString(net_name .. "_mat")])
+					render.SetMaterial(getmat(ent:GetNetworkedBeamString(net_name .. "_mat")))
 					render.StartBeam(len+1)
 					render.AddBeam(start, width, scroll, color)
 
@@ -101,7 +112,7 @@ function Wire_Render(ent)
 
 					local scroll = CurTime()*WIRE_SCROLL_SPEED
 					
-					x.material = mats[ent:GetNetworkedBeamString(net_name .. "_mat")]
+					x.material = getmat(ent:GetNetworkedBeamString(net_name .. "_mat"))
 					x.startbeam = len + 1
 					x.start = start
 					x.width = width
@@ -269,10 +280,10 @@ function Wire_DrawTracerBeam( ent, beam_num, hilight, beam_length )
 		if (ent:GetNetworkedBool("TraceWater")) then trace.mask = MASK_ALL end
 		trace = util.TraceLine(trace)
 		
-		render.SetMaterial(mats["tripmine_laser"])
+		render.SetMaterial(beam_mat)
 		render.DrawBeam(start, trace.HitPos, 6, 0, 10, Color(ent:GetColor()))
 		if (hilight) then
-			render.SetMaterial(mats["Models/effects/comball_tape"])
+			render.SetMaterial(beamhi_mat)
 			render.DrawBeam(start, trace.HitPos, 6, 0, 10, Color(255,255,255,255))
 		end
 	end
