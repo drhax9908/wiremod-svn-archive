@@ -1,28 +1,26 @@
-AddCSLuaFile( "autorun/Beam_NetVars.lua" )
-
 ///////////////////////////////////////////////
-//		===BeamNetVars===			//
+//		===BeamNetVars===				//
 //	Custom Networked Vars Module			//
-//	Based off Garry's Networked Vars Module	//
-//	Modification by: TAD2020			//
+//	Based off Garry's Networked Vars Module		//
+//	Modification by: TAD2020				//
 ///////////////////////////////////////////////
-//	How to use:						//
-//	Just like NetVars, ent:SetNetworkedBeam*	//
-//	and ent:GetNetworkedBeam*			//
+//	How to use:							//
+//	Just like NetVars, ent:SetNetworkedBeam*		//
+//	and ent:GetNetworkedBeam*				//
 //	Key should be short or a small number.		//
 //	These functions should only be used instead	//
-//	standard NetVars when very large quanity	//
+//	standard NetVars when very large quanity		//
 //	of rarly updated values need to be sent with	//
-//	low importantance. Mainly this is used by	//
+//	low importantance. Mainly this is used by		//
 //	wire's client side beams and rapidly updating	//
-//	overlay text.					//
-//	Data is sent at a tick interval, if too much	//
-//	is in the outgoing query, the delay between	//
+//	overlay text.						//
+//	Data is sent at a tick interval, if too much		//
+//	is in the outgoing query, the delay between		//
 //	sends is increased.					//
-//	On player joins, all current data is queried to//
-//	to send to them in the lowest priority stack.	//
-//	Low priority stack sends a few entities's	//
-//	vars each tick.					//
+//	On player joins, all current data is queried to	//
+//	to send to them in the lowest priority stack.		//
+//	Low priority stack sends a few entities's		//
+//	vars each tick.						//
 ///////////////////////////////////////////////
 
 //RD header for multi distro-ablity
@@ -38,6 +36,8 @@ elseif (BeamNetVars) and (BeamNetVars.Version) then
 	Msg("======== Am Older Version of BeamNetVars Detected ========\n"..
 		"======== This ver: "..ThisBeamNetVarsVersion.." || Detected ver: "..BeamNetVars.Version.." || Overriding\n")
 end
+
+AddCSLuaFile( "autorun/Beam_NetVars.lua" )
 
 BeamNetVars = {}
 BeamNetVars.Version = ThisBeamNetVarsVersion
