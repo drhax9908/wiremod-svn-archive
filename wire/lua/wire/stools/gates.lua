@@ -160,43 +160,25 @@ function TOOL.BuildCPanel(panel)
 		Command = "wire_gates_noclip"
 	})
 
-	if (VERSION > 36) then
-		local tree = vgui.Create( "DTree" )
-		tree:SetTall( 400 )
-		panel:AddPanel( tree )
+	local tree = vgui.Create( "DTree" )
+	tree:SetTall( 400 )
+	panel:AddPanel( tree )
 
-		for gatetype, gatefuncs in pairs(WireGatesSorted) do
-			local node = tree:AddNode( gatetype.." Gates" )
-			table.SortByMember( gatefuncs, "name", true )
-			for k,v in pairs(gatefuncs) do
-				local cnode = node:AddNode( v.name or "No Name" )
-				cnode.myname = v.name
-				cnode.myaction = k
-				function cnode:DoClick()
-					RunConsoleCommand( "wire_gates_action", self.myaction )
-				end
-				cnode.Icon:SetImage( "gui/silkicons/newspaper" )
+	for gatetype, gatefuncs in pairs(WireGatesSorted) do
+		local node = tree:AddNode( gatetype.." Gates" )
+		table.SortByMember( gatefuncs, "name", true )
+		for k,v in pairs(gatefuncs) do
+			local cnode = node:AddNode( v.name or "No Name" )
+			cnode.myname = v.name
+			cnode.myaction = k
+			function cnode:DoClick()
+				RunConsoleCommand( "wire_gates_action", self.myaction )
 			end
-			node.ChildNodes:SortByMember( "myname", false )
+			cnode.Icon:SetImage( "gui/silkicons/newspaper" )
 		end
-	else
-		for gatetype, gatefuncs in pairs(WireGatesSorted) do
-
-			local Actions = {
-				Label = gatetype.." Gates",
-				MenuButton = "0",
-				Height = 100,
-				Options = {}
-			}
-
-			for k,v in pairs(gatefuncs) do
-				Actions.Options[v.name or "No Name"] = { wire_gates_action = k }
-			end
-
-			panel:AddControl("ListBox", Actions)
-			
-		end
+		node.ChildNodes:SortByMember( "myname", false )
 	end
+
 end
 
 TOOL:CreateConVars()

@@ -29,9 +29,17 @@ end
 ---------------------------------------------------------*/
 function ENT:DrawTranslucent()
 	
+	self.BaseClass.DrawTranslucent( self )
+	
+	// No glow if we're not switched on!
+	if ( !self:GetOn() ) then return end
+	
 	local LightNrm = self.Entity:GetAngles():Up()
-	local ViewDot = EyeVector():Dot( LightNrm )
-	local r, g, b, a = self.Entity:GetColor()
+	local ViewNormal = self.Entity:GetPos() - EyePos()
+	local Distance = ViewNormal:Length()
+	ViewNormal:Normalize()
+	local ViewDot = ViewNormal:Dot( LightNrm )
+	local r, g, b, a = self:GetColor()
 	local LightPos = self.Entity:GetPos() + LightNrm * -6
 	
 	// glow sprite
@@ -47,14 +55,22 @@ function ENT:DrawTranslucent()
 	render.EndBeam()
 	*/
 
-	if ( ViewDot < 0 ) then return end
+	if ( ViewDot >= 0 ) then
 	
-	render.SetMaterial( matLight )
-	local Visibile	= util.PixelVisible( LightPos, 16, self.PixVis )	
-	local Size = math.Clamp( 512 * (1 - Visibile*ViewDot),128, 512 )
-	
-	local Col = Color( r, g, b, 200*Visibile*ViewDot )
-	
-	render.DrawSprite( LightPos, Size, Size, Col, Visibile * ViewDot )
+		render.SetMaterial( matLight )
+		local Visibile	= util.PixelVisible( LightPos, 16, self.PixVis )	
+		
+		if (!Visibile) then return end
+		
+		local Size = math.Clamp( Distance * Visibile * ViewDot * 2, 64, 512 )
+		
+		Distance = math.Clamp( Distance, 32, 800 )
+		local Alpha = math.Clamp( (1000 - Distance) * Visibile * ViewDot, 0, 100 )
+		local Col = Color( r, g, b, Alpha )
+		
+		render.DrawSprite( LightPos, Size, Size, Col, Visibile * ViewDot )
+		render.DrawSprite( LightPos, Size*0.4, Size*0.4, Color(255, 255, 255, Alpha), Visibile * ViewDot )
+		
+	end
 	
 end
