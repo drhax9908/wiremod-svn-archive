@@ -90,10 +90,10 @@ function TOOL:RightClick( trace )
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_value" ) then
 	    local i = 0
 		for k,v in pairs(trace.Entity.value) do
-			self:GetOwner():ConCommand("wire_value_value"..k.." "..v)
+			RunConsoleCommand("wire_value_value"..k.." "..v)
 			i = i + 1
 		end
-		self:GetOwner():ConCommand("wire_value_numvalues "..i)
+		RunConsoleCommand("wire_value_numvalues "..i)
 		return true
 	end
 end

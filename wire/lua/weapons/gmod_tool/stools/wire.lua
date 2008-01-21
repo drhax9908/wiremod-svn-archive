@@ -1,3 +1,15 @@
+if VERSION < 34 then
+	TOOL.Mode			= "wire"
+	TOOL.Category		= "Wire - Tools"
+	TOOL.Name			= "Wire"
+	TOOL.Command		= nil
+	TOOL.ConfigName		= ""
+	function TOOL.BuildCPanel(panel)
+		panel:AddControl( "Label", { Text = "Avast!\nYer GMOD be too farrgin' ole ye scurvy sea dog!\nYaaarrr!" })
+	end
+	return
+end
+
 TOOL = nil
 
 --load our other stools first
@@ -306,32 +318,6 @@ function TOOL.BuildCPanel(panel)
 		Max = "5",
 		Command = "wire_width"
 	})
-	
-	/*panel:AddControl("MaterialGallery", {
-		Label = "#WireTool_material",
-		Height = 64,
-		Width = 24,
-		Rows = 1,
-		Stretch = 1,
-
-		Options = {
-			["Wire"] = { Material = "cable/rope_icon", wire_material = "cable/rope" },
-			["Cable 2"] = { Material = "cable/cable_icon", wire_material = "cable/cable2" },
-			["XBeam"] = { Material = "cable/xbeam", wire_material = "cable/xbeam" },
-			["Red Laser"] = { Material = "cable/redlaser", wire_material = "cable/redlaser" },
-			["Blue Electric"] = { Material = "cable/blue_elec", wire_material = "cable/blue_elec" },
-			["Physics Beam"] = { Material = "cable/physbeam", wire_material = "cable/physbeam" },
-			["Hydra"] = { Material = "cable/hydra", wire_material = "cable/hydra" },
-		
-		//new wire materials by Acegikmo
-			["Arrowire"] = { Material = "arrowire/arrowire", wire_material = "arrowire/arrowire" },
-			["Arrowire2"] = { Material = "arrowire/arrowire2", wire_material = "arrowire/arrowire2" },
-		},
-
-		CVars = {
-			[0] = "wire_material"
-		}
-	})*/
 	
 	panel:AddControl( "MatSelect", { 
 			Height = "1", 

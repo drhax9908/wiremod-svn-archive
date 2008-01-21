@@ -27,9 +27,9 @@ function SWEP:Message(Text)
 end
 
 function SWEP:PrimaryAttack()
-    Msg("Fire\n")
+    --Msg("Fire\n")
 	self.Pointing = !self.Pointing
-	Msg("self.Pointing = " .. tostring(self.Pointing) .. "\n")
+	--Msg("self.Pointing = " .. tostring(self.Pointing) .. "\n")
 	self.Weapon:SetNWBool("Active", self.Pointing)
 	//self:Message("Pointing on = "..tostring(self.Pointing))
 	if(self.Pointing && self.Receiver && self.Receiver:IsValid())then
@@ -40,7 +40,7 @@ end
 end
 
 function SWEP:SecondaryAttack()
-	Msg("Secondary\n")
+	--Msg("Secondary\n")
     local pos = self.Owner:GetShootPos()
     local tracedata = {}
 	    tracedata.start = pos
