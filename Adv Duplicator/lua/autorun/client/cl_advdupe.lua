@@ -340,74 +340,74 @@ usermessage.Hook("AdvDupeSetPasting", SetPasting)
 
 
 
-	//HUD progress bar stuff
-	//kinda based on wired HUD indicators (TheApathic), but most everything was replaced to make it work as a single centered progress bar
-	//TODO: this is a mess, needs clean up
-	AdvDupeClient.Factor = 0
-	surface.SetFont("Default")
-	local pwidth, pheight = surface.GetTextSize("NoColliding: 100%")
-	pheight = pheight + 16
-	local halfpwidth = pwidth / 2
-	local halfpheight = pheight / 2
-	local bw1 = halfpwidth + 6
-	local bw2 = pwidth + 12
-	local fh1 = 3
-	local fh2 = pheight - 6
-	local bcolor = Color(150, 150, 255, 190)
-	local fcolor = Color(150, 255, 150, 240)
-	local txtcolor = Color(0, 0, 0, 255)
-	
-	local function DrawProgressBar()
-		if (AdvDupeClient.Done) and (AdvDupeClient.Done > -1) then
-			local w1 = AdvDupeClient.hudx - math.floor(AdvDupeClient.Factor * halfpwidth) - 4
-			local w2 = math.floor(AdvDupeClient.Factor * pwidth) + 8
-			draw.RoundedBox(6, (AdvDupeClient.hudx - bw1), AdvDupeClient.hudy, bw2, pheight, bcolor)
-			draw.RoundedBox(4, w1, (AdvDupeClient.hudy + fh1), w2, fh2, fcolor)
-			local txt
-			if ( AdvDupeClient.PercentText == "Copying..." ) then
-				txt = AdvDupeClient.PercentText
-			else
-				txt = AdvDupeClient.PercentText..": "..AdvDupeClient.Done.."%"
-			end
-			draw.SimpleText(txt, "Default", AdvDupeClient.hudx, (AdvDupeClient.hudy + halfpheight), txtcolor, 1, 1)
+//HUD progress bar stuff
+//kinda based on wired HUD indicators (TheApathic), but most everything was replaced to make it work as a single centered progress bar
+//TODO: this is a mess, needs clean up
+AdvDupeClient.Factor = 0
+surface.SetFont("Default")
+local pwidth, pheight = surface.GetTextSize("NoColliding: 100%")
+pheight = pheight + 16
+local halfpwidth = pwidth / 2
+local halfpheight = pheight / 2
+local bw1 = halfpwidth + 6
+local bw2 = pwidth + 12
+local fh1 = 3
+local fh2 = pheight - 6
+local bcolor = Color(150, 150, 255, 190)
+local fcolor = Color(150, 255, 150, 240)
+local txtcolor = Color(0, 0, 0, 255)
+
+local function DrawProgressBar()
+	if (AdvDupeClient.Done) and (AdvDupeClient.Done > -1) then
+		local w1 = AdvDupeClient.hudx - math.floor(AdvDupeClient.Factor * halfpwidth) - 4
+		local w2 = math.floor(AdvDupeClient.Factor * pwidth) + 8
+		draw.RoundedBox(6, (AdvDupeClient.hudx - bw1), AdvDupeClient.hudy, bw2, pheight, bcolor)
+		draw.RoundedBox(4, w1, (AdvDupeClient.hudy + fh1), w2, fh2, fcolor)
+		local txt
+		if ( AdvDupeClient.PercentText == "Copying..." ) then
+			txt = AdvDupeClient.PercentText
+		else
+			txt = AdvDupeClient.PercentText..": "..AdvDupeClient.Done.."%"
 		end
+		draw.SimpleText(txt, "Default", AdvDupeClient.hudx, (AdvDupeClient.hudy + halfpheight), txtcolor, 1, 1)
 	end
-	hook.Add("HUDPaint", "AdvDupeProgressBar", DrawProgressBar)
+end
+hook.Add("HUDPaint", "AdvDupeProgressBar", DrawProgressBar)
+
+
+function AdvDupeClient.UpdatePercent( Percent )
+	AdvDupeClient.Done = Percent
+	AdvDupeClient.Factor = AdvDupeClient.Done / 100
+end
+
+local function UpdatePercent( um )
+	AdvDupeClient.UpdatePercent( um:ReadShort() )
+end
+usermessage.Hook("AdvDupe_Update_Percent", UpdatePercent)
+
+function AdvDupeClient.SetPercentText( PercentText )
+	AdvDupeClient.PercentText = PercentText
+	AdvDupeClient.Done = 0
+	AdvDupeClient.Factor = 0
 	
+	AdvDupeClient.hudx = ScrW() / 2
+	AdvDupeClient.hudy = ScrH() / 1.8
 	
-	function AdvDupeClient.UpdatePercent( Percent )
-		AdvDupeClient.Done = Percent
-		AdvDupeClient.Factor = AdvDupeClient.Done / 100
-	end
-	
-	local function UpdatePercent( um )
-		AdvDupeClient.UpdatePercent( um:ReadShort() )
-	end
-	usermessage.Hook("AdvDupe_Update_Percent", UpdatePercent)
-	
-	function AdvDupeClient.SetPercentText( PercentText )
-		AdvDupeClient.PercentText = PercentText
-		AdvDupeClient.Done = 0
-		AdvDupeClient.Factor = 0
-		
-		AdvDupeClient.hudx = ScrW() / 2
-		AdvDupeClient.hudy = ScrH() / 1.8
-		
-		surface.SetFont("Default")
-		pwidth, pheight = surface.GetTextSize(AdvDupeClient.PercentText..": 100%")
-		pheight = pheight + 16
-		halfpwidth = pwidth / 2
-		halfpheight = pheight / 2
-		bw1 = halfpwidth + 6
-		bw2 = pwidth + 12
-		fh2 = pheight - 6
-	end
-	
-	local function StartPercent( um ) 
-		AdvDupeClient.SetPercentText( um:ReadString() )
-	end
-	usermessage.Hook("AdvDupe_Start_Percent", StartPercent)
-	
+	surface.SetFont("Default")
+	pwidth, pheight = surface.GetTextSize(AdvDupeClient.PercentText..": 100%")
+	pheight = pheight + 16
+	halfpwidth = pwidth / 2
+	halfpheight = pheight / 2
+	bw1 = halfpwidth + 6
+	bw2 = pwidth + 12
+	fh2 = pheight - 6
+end
+
+local function StartPercent( um ) 
+	AdvDupeClient.SetPercentText( um:ReadString() )
+end
+usermessage.Hook("AdvDupe_Start_Percent", StartPercent)
+
 
 
 
@@ -462,7 +462,7 @@ AdvDupeClient.gui = {}
 function AdvDupeClient.SaveGUI( pl, command, args )
 	if (!AdvDupeClient.Copied) then return end
 	
-	LocalPlayer():ConCommand("adv_duplicator_hideghost 1")
+	RunConsoleCommand("adv_duplicator_hideghost", 1)
 	
 	if !AdvDupeClient.gui.save or !AdvDupeClient.gui.save.frame then
 		AdvDupeClient.gui.save = {}
@@ -486,29 +486,26 @@ function AdvDupeClient.SaveGUI( pl, command, args )
 		AdvDupeClient.gui.save.btnSave:SetPos(184,110)
 		AdvDupeClient.gui.save.btnSave:SetSize(110,20)
 		AdvDupeClient.gui.save.btnSave:SetText("Save")
+		function AdvDupeClient.gui.save.btnSave:DoClick()
+			local filename	= AdvDupeClient.gui.save.txtFile:GetValue()
+			local desc		= AdvDupeClient.gui.save.txtDesc:GetValue()
+			
+			RunConsoleCommand("adv_duplicator_save", "\""..filename.."\"", "\""..desc.."\"")
+			
+			AdvDupeClient.gui.save.frame:Close()
+		end
 		
 		AdvDupeClient.gui.save.txtFile = vgui.Create("DTextEntry",AdvDupeClient.gui.save.frame,"txtFile")
 		AdvDupeClient.gui.save.txtFile:SetPos(6,45)
 		AdvDupeClient.gui.save.txtFile:SetWide(290)
 		
-		
 		AdvDupeClient.gui.save.txtDesc = vgui.Create("DTextEntry",AdvDupeClient.gui.save.frame,"txtDesc")
 		AdvDupeClient.gui.save.txtDesc:SetPos(6,85)
 		AdvDupeClient.gui.save.txtDesc:SetWide(290)
 		
-		function AdvDupeClient.gui.save.btnSave:DoClick()
-			local filename	= AdvDupeClient.gui.save.txtFile:GetValue()
-			local desc		= AdvDupeClient.gui.save.txtDesc:GetValue()
-			
-			LocalPlayer():ConCommand("adv_duplicator_save \""..filename.."\" \""..desc.."\"")
-			
-			AdvDupeClient.gui.save.frame:Close()
-		end
-		
 		function AdvDupeClient.gui.save.txtFile:OnEnter()
 			AdvDupeClient.gui.save.btnSave:DoClick()
 		end
-		
 	end
 	
 	AdvDupeClient.gui.save.txtFile:SetText("")
@@ -529,39 +526,18 @@ function AdvDupeClient.MakeDir( pl, command, args )
 	
 	if !AdvDupeClient.gui.makedir or !AdvDupeClient.gui.makedir.frame then
 		AdvDupeClient.gui.makedir = {}
-		AdvDupeClient.gui.makedir.frame = vgui.Create( "Frame" )
-		AdvDupeClient.gui.makedir.frame:SetName( "basic" )
-		AdvDupeClient.gui.makedir.frame:LoadControlsFromString(AdvDupeClient.res.gengui("Make Dir"))
-		AdvDupeClient.gui.makedir.frame:SetName("AdvDuplicatorMakeDirSS")
+		AdvDupeClient.gui.makedir.frame = vgui.Create( "DFrame" )
+		AdvDupeClient.gui.makedir.frame:SetTitle("Make Folder:")
+		AdvDupeClient.gui.makedir.frame:SetDeleteOnClose(false)
 		AdvDupeClient.gui.makedir.frame:SetSize(320,135)
-		AdvDupeClient.gui.makedir.frame:SetPos(400,250)
+		AdvDupeClient.gui.makedir.frame:Center()
 		
-		AdvDupeClient.gui.makedir.btnMakeDir = vgui.Create("Button",AdvDupeClient.gui.makedir.frame,"btnMakeDir")
+		AdvDupeClient.gui.makedir.btnMakeDir = vgui.Create("DButton",AdvDupeClient.gui.makedir.frame,"btnMakeDir")
 		AdvDupeClient.gui.makedir.btnMakeDir:SetPos(184,110)
 		AdvDupeClient.gui.makedir.btnMakeDir:SetSize(110,20)
 		AdvDupeClient.gui.makedir.btnMakeDir:SetText("Make Folder")
-		
-		AdvDupeClient.gui.makedir.lblDir = vgui.Create("Label",AdvDupeClient.gui.makedir.frame,"lblDir")
-		AdvDupeClient.gui.makedir.lblDir:SetPos(6,25)
-		AdvDupeClient.gui.makedir.lblDir:SetSize(185,25)
-		
-		AdvDupeClient.gui.makedir.txtDir = vgui.Create("TextEntry",AdvDupeClient.gui.makedir.frame,"txtDir")
-		AdvDupeClient.gui.makedir.txtDir:SetPos(6,45)
-		AdvDupeClient.gui.makedir.txtDir:SetSize(289,20)
-		
-		if (dupeshare.UsePWSys) and (!SinglePlayer()) then 
-			AdvDupeClient.gui.makedir.lblPass = vgui.Create("Label",AdvDupeClient.gui.makedir.frame,"lblPass")
-			AdvDupeClient.gui.makedir.lblPass:SetPos(6,65)
-			AdvDupeClient.gui.makedir.lblPass:SetSize(185,25)
-			AdvDupeClient.gui.makedir.lblPass:SetText("Password:")
-			
-			AdvDupeClient.gui.makedir.txtPass = vgui.Create("TextEntry",AdvDupeClient.gui.makedir.frame,"txtPass")
-			AdvDupeClient.gui.makedir.txtPass:SetPos(6,85)
-			AdvDupeClient.gui.makedir.txtPass:SetSize(189,20)
-		end
-		
-		function AdvDupeClient.gui.makedir.frame:ActionSignal(key,value)
-			if key == "MakeDirServer" then
+		function AdvDupeClient.gui.makedir.btnMakeDir:DoClick()
+			if AdvDupeClient.gui.makedir.key == "MakeDirServer" then
 				local dir = tostring(AdvDupeClient.gui.makedir.txtDir:GetValue())
 				
 				if (dupeshare.UsePWSys) and (!SinglePlayer()) then
@@ -572,7 +548,7 @@ function AdvDupeClient.MakeDir( pl, command, args )
 				end
 				
 				AdvDupeClient.gui.makedir.frame:SetVisible(false)
-			elseif key == "MakeDirClient" then
+			elseif AdvDupeClient.gui.makedir.key == "MakeDirClient" then
 				local newdir = dupeshare.ReplaceBadChar( AdvDupeClient.gui.makedir.txtDir:GetValue() )
 				local dir	= AdvDupeClient.CLcdir
 				
@@ -580,22 +556,33 @@ function AdvDupeClient.MakeDir( pl, command, args )
 				
 				AdvDupeClient.gui.makedir.frame:SetVisible(false)
 			end
+			
+			AdvDupeClient.gui.makedir.frame:Close()
+		end
+		
+		AdvDupeClient.gui.makedir.lblDir = vgui.Create("Label",AdvDupeClient.gui.makedir.frame,"lblDir")
+		AdvDupeClient.gui.makedir.lblDir:SetPos(6,65)
+		AdvDupeClient.gui.makedir.lblDir:SetSize(185,25)
+		
+		AdvDupeClient.gui.makedir.txtDir = vgui.Create("DTextEntry",AdvDupeClient.gui.makedir.frame,"txtDir")
+		AdvDupeClient.gui.makedir.txtDir:SetPos(6,45)
+		AdvDupeClient.gui.makedir.txtDir:SetWide(290)
+		function AdvDupeClient.gui.makedir.txtDir:OnEnter()
+			AdvDupeClient.gui.makedir.btnMakeDir:DoClick()
 		end
 	end
 	
 	AdvDupeClient.gui.makedir.txtDir:SetText("")
-	if (dupeshare.UsePWSys) and (!SinglePlayer()) then 
-		AdvDupeClient.gui.makedir.txtPass:SetText("")
-	end
 	
 	if args[1] == "client" then
-		AdvDupeClient.gui.makedir.btnMakeDir:SetCommand("MakeDirClient")
+		AdvDupeClient.gui.makedir.key = "MakeDirClient"
 		AdvDupeClient.gui.makedir.lblDir:SetText("Name for new folder in \""..string.gsub(AdvDupeClient.CLcdir, dupeshare.BaseDir, "").."\"")
 	else
-		AdvDupeClient.gui.makedir.btnMakeDir:SetCommand("MakeDirServer")
+		AdvDupeClient.gui.makedir.key = "MakeDirServer"
 		AdvDupeClient.gui.makedir.lblDir:SetText("Name for new folder in \""..string.gsub(AdvDupeClient.SScdir, dupeshare.BaseDir, "").."\"")
 	end
 	
+	AdvDupeClient.gui.makedir.frame:MakePopup()
 	AdvDupeClient.gui.makedir.frame:SetKeyBoardInputEnabled( true )
 	AdvDupeClient.gui.makedir.frame:SetMouseInputEnabled( true )
 	AdvDupeClient.gui.makedir.frame:SetVisible( true )
@@ -609,35 +596,25 @@ function AdvDupeClient.RenameFile( pl, cmd, args )
 	
 	if !AdvDupeClient.gui.rename or !AdvDupeClient.gui.rename.frame then
 		AdvDupeClient.gui.rename = {}
-		AdvDupeClient.gui.rename.frame = vgui.Create( "Frame" )
-		AdvDupeClient.gui.rename.frame:SetName( "basic" )
-		AdvDupeClient.gui.rename.frame:LoadControlsFromString(AdvDupeClient.res.gengui("Rename File"))
-		AdvDupeClient.gui.rename.frame:SetName("AdvDuplicatorRename")
+		AdvDupeClient.gui.rename.frame = vgui.Create( "DFrame" )
+		AdvDupeClient.gui.rename.frame:SetTitle("Rename File:")
+		AdvDupeClient.gui.rename.frame:SetDeleteOnClose(false)
 		AdvDupeClient.gui.rename.frame:SetSize(320,135)
-		AdvDupeClient.gui.rename.frame:SetPos(400,250)
+		AdvDupeClient.gui.rename.frame:Center()
 		
-		AdvDupeClient.gui.rename.btnRename = vgui.Create("Button",AdvDupeClient.gui.rename.frame,"btnRename")
+		AdvDupeClient.gui.rename.btnRename = vgui.Create("DButton",AdvDupeClient.gui.rename.frame,"btnRename")
 		AdvDupeClient.gui.rename.btnRename:SetPos(184,110)
 		AdvDupeClient.gui.rename.btnRename:SetSize(110,20)
 		AdvDupeClient.gui.rename.btnRename:SetText("Rename")
-		
-		AdvDupeClient.gui.rename.lblNewName = vgui.Create("Label",AdvDupeClient.gui.rename.frame,"lblNewName")
-		AdvDupeClient.gui.rename.lblNewName:SetPos(6,25)
-		AdvDupeClient.gui.rename.lblNewName:SetSize(185,25)
-		
-		AdvDupeClient.gui.rename.txtNewName = vgui.Create("TextEntry",AdvDupeClient.gui.rename.frame,"txtNewName")
-		AdvDupeClient.gui.rename.txtNewName:SetPos(6,45)
-		AdvDupeClient.gui.rename.txtNewName:SetSize(289,20)
-		
-		function AdvDupeClient.gui.rename.frame:ActionSignal(key,value)
-			if key == "RenameServer" then
+		function AdvDupeClient.gui.rename.btnRename:DoClick()
+			if AdvDupeClient.gui.rename.key == "RenameServer" then
 				local newname = AdvDupeClient.gui.rename.txtNewName:GetValue()
 				Msg("newname= "..newname.."\n")
 				
 				LocalPlayer():ConCommand("adv_duplicator_fileoptsrename \""..newname.."\"")
 				
 				AdvDupeClient.gui.rename.frame:SetVisible(false)
-			elseif key == "RenameClient" then
+			elseif AdvDupeClient.gui.rename.key == "RenameClient" then
 				local newname	= dupeshare.ReplaceBadChar(dupeshare.GetFileFromFilename(AdvDupeClient.gui.rename.txtNewName:GetValue()))..".txt"
 				local filename = dupeshare.GetFileFromFilename(pl:GetInfo( "adv_duplicator_load_filename_cl" ))..".txt"
 				local dir	= AdvDupeClient.CLcdir
@@ -646,27 +623,40 @@ function AdvDupeClient.RenameFile( pl, cmd, args )
 				
 				AdvDupeClient.gui.rename.frame:SetVisible(false)
 			end
+			
+			AdvDupeClient.gui.rename.frame:Close()
+		end
+		
+		AdvDupeClient.gui.rename.lblNewName = vgui.Create("Label",AdvDupeClient.gui.rename.frame,"lblNewName")
+		AdvDupeClient.gui.rename.lblNewName:SetPos(6,65)
+		AdvDupeClient.gui.rename.lblNewName:SetSize(185,25)
+		
+		AdvDupeClient.gui.rename.txtNewName = vgui.Create("DTextEntry",AdvDupeClient.gui.rename.frame,"txtNewName")
+		AdvDupeClient.gui.rename.txtNewName:SetPos(6,45)
+		AdvDupeClient.gui.rename.txtNewName:SetWide(290)
+		function AdvDupeClient.gui.rename.txtNewName:OnEnter()
+			AdvDupeClient.gui.rename.btnRename:DoClick()
 		end
 	end
 	
 	if args[1] == "client" then
-		AdvDupeClient.gui.rename.btnRename:SetCommand("RenameClient")
+		AdvDupeClient.gui.rename.key = "RenameClient"
 		
 		local oldfilename = dupeshare.GetFileFromFilename(pl:GetInfo( "adv_duplicator_load_filename_cl" ))
 		AdvDupeClient.gui.rename.lblNewName:SetText("New name for \""..oldfilename..".txt\" in \""..string.gsub(AdvDupeClient.CLcdir, dupeshare.BaseDir, "").."/ ")
 		AdvDupeClient.gui.rename.txtNewName:SetText(oldfilename)
 	else
-		AdvDupeClient.gui.rename.btnRename:SetCommand("RenameServer")
+		AdvDupeClient.gui.rename.key = "RenameServer"
 		
 		local oldfilename = dupeshare.GetFileFromFilename(pl:GetInfo( "adv_duplicator_load_filename" ))
 		AdvDupeClient.gui.rename.lblNewName:SetText("New name for \""..oldfilename..".txt\" in \""..string.gsub(AdvDupeClient.SScdir, dupeshare.BaseDir, "").."/ ")
 		AdvDupeClient.gui.rename.txtNewName:SetText(oldfilename)
 	end
 	
+	AdvDupeClient.gui.rename.frame:MakePopup()
 	AdvDupeClient.gui.rename.frame:SetKeyBoardInputEnabled( true )
 	AdvDupeClient.gui.rename.frame:SetMouseInputEnabled( true )
 	AdvDupeClient.gui.rename.frame:SetVisible( true )
-	
 end
 concommand.Add( "adv_duplicator_renamefile_gui", AdvDupeClient.RenameFile )
 
@@ -677,33 +667,21 @@ function AdvDupeClient.ConfirmDelete( pl, cmd, args )
 	
 	if !AdvDupeClient.gui.delete or !AdvDupeClient.gui.delete.frame then
 		AdvDupeClient.gui.delete = {}
-		AdvDupeClient.gui.delete.frame = vgui.Create( "Frame" )
-		AdvDupeClient.gui.delete.frame:SetName( "basic" )
-		AdvDupeClient.gui.delete.frame:LoadControlsFromString(AdvDupeClient.res.gengui("Delete File?"))
-		AdvDupeClient.gui.delete.frame:SetName("AdvDuplicatorDelete")
+		AdvDupeClient.gui.delete.frame = vgui.Create( "DFrame" )
+		AdvDupeClient.gui.delete.frame:SetTitle("Delete File?")
+		AdvDupeClient.gui.delete.frame:SetDeleteOnClose(false)
 		AdvDupeClient.gui.delete.frame:SetSize(320,135)
-		AdvDupeClient.gui.delete.frame:SetPos(400,250)
+		AdvDupeClient.gui.delete.frame:Center()
 		
-		AdvDupeClient.gui.delete.btnDelete = vgui.Create("Button",AdvDupeClient.gui.delete.frame,"btnDelete")
+		AdvDupeClient.gui.delete.btnDelete = vgui.Create("DButton",AdvDupeClient.gui.delete.frame,"btnDelete")
 		AdvDupeClient.gui.delete.btnDelete:SetPos(20,110)
 		AdvDupeClient.gui.delete.btnDelete:SetSize(110,20)
 		AdvDupeClient.gui.delete.btnDelete:SetText("Delete!")
-		
-		AdvDupeClient.gui.delete.btnCancel = vgui.Create("Button",AdvDupeClient.gui.delete.frame,"btnCancel")
-		AdvDupeClient.gui.delete.btnCancel:SetPos(184,110)
-		AdvDupeClient.gui.delete.btnCancel:SetSize(110,20)
-		AdvDupeClient.gui.delete.btnCancel:SetText("Cancel")
-		AdvDupeClient.gui.delete.btnCancel:SetCommand("Cancel")
-		
-		AdvDupeClient.gui.delete.lblFileName = vgui.Create("Label",AdvDupeClient.gui.delete.frame,"lblFileName")
-		AdvDupeClient.gui.delete.lblFileName:SetPos(6,25)
-		AdvDupeClient.gui.delete.lblFileName:SetSize(185,25)
-		
-		function AdvDupeClient.gui.delete.frame:ActionSignal(key,value)
-			if key == "DeleteServer" then
+		function AdvDupeClient.gui.delete.btnDelete:DoClick()
+			if AdvDupeClient.gui.delete.key == "DeleteServer" then
 				LocalPlayer():ConCommand("adv_duplicator_fileopts delete")
 				AdvDupeClient.gui.delete.frame:SetVisible(false)
-			elseif key == "DeleteClient" then
+			elseif AdvDupeClient.gui.delete.key == "DeleteClient" then
 				local filename = pl:GetInfo( "adv_duplicator_open_cl" )
 				local dir	= AdvDupeClient.CLcdir
 				AdvDupeClient.FileOpts("delete", filename, dir)
@@ -711,21 +689,36 @@ function AdvDupeClient.ConfirmDelete( pl, cmd, args )
 			elseif key == "Cancel" then
 				AdvDupeClient.gui.delete.frame:SetVisible(false)
 			end
+			AdvDupeClient.gui.delete.frame:Close()
 		end
+		
+		AdvDupeClient.gui.delete.btnCancel = vgui.Create("DButton",AdvDupeClient.gui.delete.frame,"btnCancel")
+		AdvDupeClient.gui.delete.btnCancel:SetPos(184,110)
+		AdvDupeClient.gui.delete.btnCancel:SetSize(110,20)
+		AdvDupeClient.gui.delete.btnCancel:SetText("Cancel")
+		AdvDupeClient.gui.delete.btnCancel:SetCommand("Cancel")
+		function AdvDupeClient.gui.delete.btnCancel:DoClick()
+			AdvDupeClient.gui.delete.frame:Close()
+		end
+		
+		AdvDupeClient.gui.delete.lblFileName = vgui.Create("Label",AdvDupeClient.gui.delete.frame,"lblFileName")
+		AdvDupeClient.gui.delete.lblFileName:SetPos(6,25)
+		AdvDupeClient.gui.delete.lblFileName:SetSize(185,25)
 	end
 	
 	if args[1] == "client" then
-		AdvDupeClient.gui.delete.btnDelete:SetCommand("DeleteClient")
+		AdvDupeClient.gui.delete.key = "DeleteClient"
 		
 		local oldfilename = dupeshare.GetFileFromFilename(pl:GetInfo( "adv_duplicator_load_filename_cl" ))
 		AdvDupeClient.gui.delete.lblFileName:SetText("Delete this file \""..oldfilename..".txt\" from \""..string.gsub(AdvDupeClient.CLcdir, dupeshare.BaseDir, "").."/ ?")
 	else
-		AdvDupeClient.gui.delete.btnDelete:SetCommand("DeleteServer")
+		AdvDupeClient.gui.delete.key = "DeleteServer"
 		
 		local oldfilename = dupeshare.GetFileFromFilename(pl:GetInfo( "adv_duplicator_load_filename" ))
 		AdvDupeClient.gui.delete.lblFileName:SetText("Delete this file \""..oldfilename..".txt\" from \""..string.gsub(AdvDupeClient.SScdir, dupeshare.BaseDir, "").."/ ?")
 	end
 	
+	AdvDupeClient.gui.delete.frame:MakePopup()
 	AdvDupeClient.gui.delete.frame:SetKeyBoardInputEnabled( true )
 	AdvDupeClient.gui.delete.frame:SetMouseInputEnabled( true )
 	AdvDupeClient.gui.delete.frame:SetVisible( true )
