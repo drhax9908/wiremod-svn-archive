@@ -490,7 +490,7 @@ function AdvDupeClient.SaveGUI( pl, command, args )
 			local filename	= AdvDupeClient.gui.save.txtFile:GetValue()
 			local desc		= AdvDupeClient.gui.save.txtDesc:GetValue()
 			
-			RunConsoleCommand("adv_duplicator_save", "\""..filename.."\"", "\""..desc.."\"")
+			LocalPlayer():ConCommand("adv_duplicator_save \""..filename.."\" \""..desc.."\"")
 			
 			AdvDupeClient.gui.save.frame:Close()
 		end
