@@ -28,13 +28,6 @@ function ENT:Initialize()
 
 end
 
-function ENT:OnRemove()
-	if (self.Entity) then
-		LocalPlayer():SetNetworkedInt(self.Entity:EntIndex().."click",nil)
-	end
-end
-
-
 function ENT:Draw()
 	self.Entity:DrawModel()
 
