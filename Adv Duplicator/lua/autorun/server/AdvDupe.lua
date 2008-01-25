@@ -112,7 +112,7 @@ function AdvDupe.LoadDupeTableFromFile( pl, filepath )
 			local function Load2NewFile(pl, filepath, tool, HeaderTbl, ExtraHeaderTbl, Data)
 				if ( HeaderTbl.Type ) and ( HeaderTbl.Type == "AdvDupe File" ) then
 					
-					Msg("AdvDupe:Loaded new file "..filepath.."  version: "..ExtraHeaderTbl.FileVersion.."\n")
+					MsgN("AdvDupe:Loaded new file ",filepath,"  version: ",ExtraHeaderTbl.FileVersion)
 					
 					ExtraHeaderTbl.FileVersion = tonumber(ExtraHeaderTbl.FileVersion)
 					
@@ -177,7 +177,7 @@ function AdvDupe.LoadDupeTableFromFile( pl, filepath )
 					
 				elseif ( HeaderTbl.Type ) and ( HeaderTbl.Type == "Contraption Saver File" ) then
 					
-					Msg("AdvDupe:Loaded Contraption Saver file "..filepath.."  version: "..ExtraHeaderTbl.Version.."\n")
+					MsgN("AdvDupe:Loaded Contraption Saver file ",filepath,"  version: ",ExtraHeaderTbl.Version)
 					
 					/*for k,v in pairs(Data.Entities) do
 						v.LocalPos.z = v.LocalPos.z + Data.Height + 8
@@ -209,7 +209,7 @@ function AdvDupe.LoadDupeTableFromFile( pl, filepath )
 					)
 					
 				elseif (Data.Information) then
-					Msg("AdvDupe:Loaded old Contraption Saver file version "..Data.Information.Version.."\n")
+					MsgN("AdvDupe:Loaded old Contraption Saver file version ",Data.Information.Version)
 					
 					//find the lowest and use that as the head
 					local head,low
@@ -288,7 +288,7 @@ function AdvDupe.LoadDupeTableFromFile( pl, filepath )
 		local function Load3(pl, filepath, tool, temp)
 			//check the file was loaded and we understand it's version then load the data in to the tables
 			if (temp) and (temp["VersionInfo"]) and (temp["VersionInfo"]["FileVersion"] >= 0.6) then
-				Msg("AdvDupe:Loaded old file "..filepath.."  version: "..temp.VersionInfo.FileVersion.."\n")
+				MsgN("AdvDupe:Loaded old file ",filepath,"  version: ",temp.VersionInfo.FileVersion)
 				
 				tool:LoadFileCallBack( filepath,
 					temp.EntTables, temp.ConstraintTables, {},{}, 
@@ -305,7 +305,7 @@ function AdvDupe.LoadDupeTableFromFile( pl, filepath )
 				
 			//Legacy versions, there are no version 0.5 files
 			elseif (temp) and (temp["VersionInfo"]) and (temp["VersionInfo"]["FileVersion"] <= 0.4) then
-				Msg("AdvDupe:Loaded old legacy file "..filepath.."  version: "..temp.VersionInfo.FileVersion.."\n")
+				MsgN("AdvDupe:Loaded old legacy file ",filepath,"  version: ",temp.VersionInfo.FileVersion)
 				
 				if (temp["VersionInfo"]["FileVersion"] <= 0.2) then
 					temp.DupeInfo = {}
@@ -360,7 +360,7 @@ function AdvDupe.LoadDupeTableFromFile( pl, filepath )
 				
 				
 			else
-				Msg("AdvDupeERROR:FILE FAILED TO LOAD! something is wrong with this file:  "..filepath.."\n")
+				MsgN("AdvDupeERROR:FILE FAILED TO LOAD! something is wrong with this file:  ",filepath)
 				AdvDupe.SendClientError( pl, "Failed loading file" )
 				AdvDupe.SetPercent( pl, -1 )
 			end
@@ -685,13 +685,14 @@ function AdvDupe.GetSaveableConst( ConstraintEntity, Offset )
 		
 	else
 		for i=1, 6 do
-			if ( ConstTable[ "Ent"..i ] && ( ConstTable[ "Ent"..i ]:IsWorld() || ConstTable[ "Ent"..i ]:IsValid() ) ) then
+			local entn = "Ent"..i
+			if ( ConstTable[ entn ] && ( ConstTable[ entn ]:IsWorld() || ConstTable[ entn ]:IsValid() ) ) then
 				SaveableConst.Entity[ i ] = {}
-				SaveableConst.Entity[ i ].Index	 	= ConstTable[ "Ent"..i ]:EntIndex()
+				SaveableConst.Entity[ i ].Index	 	= ConstTable[ entn ]:EntIndex()
 				SaveableConst.Entity[ i ].Bone 		= ConstTable[ "Bone"..i ]
 				SaveableConst.Entity[ i ].WPos 		= ConstTable[ "WPos"..i ]
 				SaveableConst.Entity[ i ].Length 	= ConstTable[ "Length"..i ]
-				if ConstTable[ "Ent"..i ]:IsWorld() then
+				if ConstTable[ entn ]:IsWorld() then
 					SaveableConst.Entity[ i ].World = true
 					if ( ConstTable[ "LPos"..i ] ) then
 						SaveableConst.Entity[ i ].LPos = ConstTable[ "LPos"..i ] - Offset
@@ -701,7 +702,7 @@ function AdvDupe.GetSaveableConst( ConstraintEntity, Offset )
 				else
 					SaveableConst.Entity[ i ].LPos = ConstTable[ "LPos"..i ]
 				end
-				table.insert( ents, ConstTable[ "Ent"..i ] )
+				table.insert( ents, ConstTable[ entn ] )
 			end
 		end
 	end
@@ -757,8 +758,9 @@ function AdvDupe.GetEntitysConstrainedEntitiesAndConstraints( ent )
 			local ConstTable = ConstraintEntity:GetTable()
 			table.insert( Consts, ConstraintEntity )
 			for i=1, 6 do
-				if ( ConstTable[ "Ent"..i ] && ( ConstTable[ "Ent"..i ]:IsWorld() || ConstTable[ "Ent"..i ]:IsValid() ) ) then
-					local ent = ConstTable[ "Ent"..i ]
+				local entn = "Ent"..i
+				if ( ConstTable[ entn ] && ( ConstTable[ entn ]:IsWorld() || ConstTable[ entn ]:IsValid() ) ) then
+					local ent = ConstTable[ entn ]
 					Ents[ ent:EntIndex() ] = ent
 				end
 			end
@@ -917,7 +919,7 @@ local function FileOptsRenameCommand(pl, cmd, args)
 	local dir	= AdvDupe[pl].cdir
 	local newname = string.Implode(" ", args)
 	newname = dupeshare.ReplaceBadChar(dupeshare.GetFileFromFilename(newname))..".txt"
-	Msg("s-newname= "..newname.."\n")
+	MsgN("s-newname= ",newname)
 	AdvDupe.FileOpts(pl, "rename", filename, dir, newname)
 	
 end
@@ -927,7 +929,7 @@ function AdvDupe.FileOpts(pl, action, filename, dir, dir2)
 	if not filename or not dir then return end
 	
 	local file1 = dir.."/"..filename
-	Msg("action= "..action.."  filename= "..filename.."  dir= "..dir.."  dir2= "..(dir2 or "none").."\n")
+	MsgN("action= ",action,"  filename= ",filename,"  dir= ",dir,"  dir2= ",(dir2 or "none"))
 	
 	if (!AdvDupe.CheckPerms(pl, "", dir, "access")) then return end
 	
@@ -1022,8 +1024,7 @@ end
 //todo: make enum error codes
 function AdvDupe.SendClientError(pl, errormsg, NoSound)
 	if ( !pl or !pl:IsValid() or !pl:IsPlayer() or !errormsg ) then return end
-	//pl:SendLua( "dvdupeclient.Error( \""..errormsg.."\" )" )
-	Msg("AdvDupe: Sending this ErrorMsg to "..tostring(pl).."\nAdvDupe-ERROR: \""..tostring(errormsg).."\"\n")
+	MsgN("AdvDupe: Sending this ErrorMsg to ",tostring(pl),"\nAdvDupe-ERROR: \"",tostring(errormsg).."\"")
 	umsg.Start("AdvDupeCLError", pl)
 		umsg.String(errormsg)
 		umsg.Bool(NoSound)
@@ -1031,8 +1032,7 @@ function AdvDupe.SendClientError(pl, errormsg, NoSound)
 end
 function AdvDupe.SendClientInfoMsg(pl, msg, NoSound)
 	if ( !pl or !pl:IsValid() or !pl:IsPlayer() or !msg ) then return end
-	//pl:SendLua( "dvdupeclient.Error( \""..errormsg.."\" )" )
-	Msg("AdvDupe, Sending This InfoMsg to "..tostring(pl).."\nAdvDupe: \""..tostring(msg).."\"\n")
+	MsgN("AdvDupe, Sending This InfoMsg to ",tostring(pl),"\nAdvDupe: \"",tostring(msg).."\"")
 	umsg.Start("AdvDupeCLInfo", pl)
 		umsg.String(msg)
 		umsg.Bool(NoSound)
@@ -1340,10 +1340,10 @@ hook.Add( "PlayerInitialSpawn", "AdvDupePlayerJoinSettings", AdvDupe.AdminSettin
 function AdvDupe.RecieveFileContentStart( pl, cmd, args )
 	if ( !pl:IsValid() or !pl:IsPlayer() ) then return end
 	
-	Msg("AdvDupe: Ready to recieve file: \""..args[2].."\" from player: "..(pl:GetName() or "unknown").."\n")
+	MsgN("AdvDupe: Ready to recieve file: \"",args[2],"\" from player: ",(pl:GetName() or "unknown"))
 	
 	if ( !CanUpload( pl ) ) then
-		Msg("player \""..tostring(pl).."\" not allowed to upload\n")
+		MsgN("player \"",tostring(pl),"\" not allowed to upload")
 		return
 	end
 	
@@ -1352,7 +1352,7 @@ function AdvDupe.RecieveFileContentStart( pl, cmd, args )
 	AdvDupe[pl].templast		= tonumber(args[1])
 	AdvDupe[pl].tempfile		= nil
 	if ( GetMaxUpload(pl) > 0 and (AdvDupe[pl].templast - 1) * MaxUploadLength > GetMaxUpload(pl) ) then
-		Msg("player \""..tostring(pl).."\" is trying to upload over "..(AdvDupe[pl].templast - 1) * MaxUploadLength.." then limit is "..MaxUploadSize.."\n")
+		MsgN("player \"",tostring(pl),"\" is trying to upload over ",(AdvDupe[pl].templast - 1) * MaxUploadLength," then limit is ",MaxUploadSize)
 		SendMaxUploadSize( pl ) --tell the player what the max is
 		AdvDupe.AdminSettings.HaltUpload( pl )
 		return
@@ -1386,7 +1386,7 @@ function AdvDupe.RecieveFileContentFinish( pl, cmd, args )
 	
 	//local filepath = dupeshare.FileNoOverWriteCheck( AdvDupe.GetPlayersFolder(pl), AdvDupe[pl].tempfilename )
 	local filepath = dupeshare.FileNoOverWriteCheck( AdvDupe[pl].tempdir, AdvDupe[pl].tempfilename )
-	Msg("AdvDupe: Saving "..(pl:GetName() or "unknown").."'s recieved file to "..filepath.."\n")
+	MsgN("AdvDupe: Saving ",(pl:GetName() or "unknown"),"'s recieved file to ",filepath)
 	timer.Simple( .5, AdvDupe.RecieveFileContentSave, pl, filepath )
 end
 concommand.Add("DupeRecieveFileContentFinish", AdvDupe.RecieveFileContentFinish)
@@ -1406,14 +1406,14 @@ function AdvDupe.RecieveFileContentSave( pl, filepath )
 				txt = txt .. i .. ", "
 			end
 		end
-		Msg(txt.."\n")
+		MsgN(txt)
 		
 		AdvDupe.SendClientError(pl, "ERROR: \""..FileName.."\", failed uploading", true)
 		AdvDupe.SendClientError(pl, "Server expected "..expected.." pieces but got "..got)
 		AdvDupe.SendClientInfoMsg(pl, "Try resending it.", true)
 		
 		pl:PrintMessage(HUD_PRINTCONSOLE, "AdvDupeERROR: Your file, \""..FileName.."\", was not recieved properly\nAdvDupe: server expected "..expected.." pieces but got "..got)
-		Msg("AdvDupe: This file, \""..filepath.."\", was not recieved properly\nAdvDupe: expected: "..expected.." pieces but got: "..got.."\n")
+		MsgN("AdvDupe: This file, \"",filepath,"\", was not recieved properly\nAdvDupe: expected: ",expected," pieces but got: ",got)
 		
 		umsg.Start("AdvDupeClientSendFinishedFailed", pl)
 		umsg.End()
@@ -1431,7 +1431,7 @@ function AdvDupe.RecieveFileContentSave( pl, filepath )
 	AdvDupe.SendClientInfoMsg(pl, "Your file: \""..FileName.."\" was uploaded to the server")
 	pl:PrintMessage(HUD_PRINTCONSOLE, "Your file: \""..FileName.."\" was uploaded to the server")
 	
-	Msg("player: \""..(pl:GetName() or "unknown").."\" uploaded file: \""..filepath.."\"\n")
+	MsgN("player: \"",(pl:GetName() or "unknown"),"\" uploaded file: \"",filepath,"\"")
 	
 	AdvDupe.UpdateList(pl)
 	
@@ -1462,7 +1462,7 @@ function AdvDupe.SendSaveToClient( pl, filename )
 	
 	if !file.Exists(filepath) then //if filepath was just a file name then try to find the file, for sending from list
 		if !file.Exists(dir.."/"..filename) && !file.Exists(ndir.."/"..filename) then
-			Msg("AdvDupe: File not found: \""..filepath.."\"\n")
+			MsgN("AdvDupe: File not found: \"",filepath,"\"")
 			return
 		end
 		if ( file.Exists(ndir.."/"..filename) ) then filepath = ndir.."/"..filename end
@@ -1483,11 +1483,11 @@ function AdvDupe.SendSaveToClient( pl, filename )
 		umsg.String(filename)
 		//umsg.String(ndir)
 	umsg.End()
-	Msg("AdvDupe: sending file \""..filename..".txt\" in "..tostring(last).." pieces. len: "..tostring(len).."\n")
+	MsgN("AdvDupe: sending file \"",filename,".txt\" in ",tostring(last)," pieces. len: ",tostring(len))
 	//AdvDupe.SetPercentText( pl, "Downloading" )
 	
 	//AdvDupe.SendSaveToClientData(pl, 1, last)
-	Msg("send rate: "..PlayerSettings[pl].DownloadSendInterval.."\n")
+	MsgN("send rate: ",PlayerSettings[pl].DownloadSendInterval)
 	timer.Simple( PlayerSettings[pl].DownloadSendInterval, AdvDupe.SendSaveToClientData, pl, 1, last )
 end
 
@@ -1754,7 +1754,7 @@ local function AdvDupeThink()
 					
 					local NoFail, Result = pcall( AdvDupe.NormPasteFromTable, TimedPasteData[TimedPasteDataCurrent] )
 					if ( !NoFail ) then
-						Msg("AdvDupeERROR: NormPaste Failed, Error: "..tostring(Result).."\n")
+						MsgN("AdvDupeERROR: NormPaste Failed, Error: ",tostring(Result))
 					end
 					
 					AdvDupe.FinishPasting( TimedPasteData, TimedPasteDataCurrent )
@@ -1765,7 +1765,7 @@ local function AdvDupeThink()
 					
 					local NoFail, Result = pcall( AdvDupe.OverTimePasteProcessFromTable )
 					if ( !NoFail ) then
-						Msg("AdvDupeERROR: OverTimePaste Failed in stage "..(TimedPasteData[TimedPasteDataCurrent].Stage or "BadStage")..", Error: "..tostring(Result).."\n")
+						MsgN("AdvDupeERROR: OverTimePaste Failed in stage ",(TimedPasteData[TimedPasteDataCurrent].Stage or "BadStage"),", Error: ",tostring(Result))
 						TimedPasteData[TimedPasteDataCurrent].Stage = 5
 					end
 					
@@ -1814,11 +1814,11 @@ local function AdvDupeThink()
 		if ( value.Finish <= CurTime() ) then
 			local b, e = pcall( value.Func, unpack( value.FuncArgs ) )
 			if ( !b ) then
-				Msg("AdvDupe Timer Error: "..tostring(e).."\n")
+				MsgN("AdvDupe Timer Error: ",tostring(e))
 				if ( value.OnFailFunc ) then
 					local b, e = pcall( value.OnFailFunc, unpack( value.OnFailArgs ) )
 					if ( !b ) then
-						Msg("AdvDupe Timer Error: OnFailFunc Error: "..tostring(e).."\n")
+						MsgN("AdvDupe Timer Error: OnFailFunc Error: ",tostring(e))
 					end
 				end
 			end
@@ -2044,7 +2044,7 @@ function AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offse
 		//AdvDupe.AfterPasteApply( Player, Ent, CreatedEntities )
 		local NoFail, Result = pcall( AdvDupe.AfterPasteApply, Player, Ent, CreatedEntities )
 		if ( !NoFail ) then
-			Msg("AdvDupeERROR: AfterPasteApply, Error: "..tostring(Result).."\n")
+			MsgN("AdvDupeERROR: AfterPasteApply, Error: ",tostring(Result))
 		end
 		
 	end
@@ -2064,7 +2064,7 @@ function AdvDupe.Paste( Player, EntityList, ConstraintList, HeadEntityIdx, Offse
 				if ( Entity && Entity:IsValid() ) then
 					table.insert( CreatedConstraints, Entity )
 				else
-					Msg("AdvDupeERROR:Could not make constraint type: "..(Constraint.Type or "NIL").."\n")
+					MsgN("AdvDupeERROR:Could not make constraint type: ",(Constraint.Type or "NIL"))
 				end
 			end
 			
@@ -2242,7 +2242,7 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 				if (Ent != nil) then
 					local NoFail, Result = pcall( AdvDupe.AfterPasteApply, Player, Ent, CreatedEntities )
 					if ( !NoFail ) then
-						Msg("AdvDupeERROR: AfterPasteApply, Error: "..tostring(Result).."\n")
+						MsgN("AdvDupeERROR: AfterPasteApply, Error: ",tostring(Result))
 					end
 				end
 				
@@ -2280,7 +2280,7 @@ function AdvDupe.OverTimePasteProcess( Player, EntityList, ConstraintList, HeadE
 						end
 						
 					else
-						Msg("AdvDupeERROR:Created Constraint Bad! Type= "..(Constraint.Type or "NIL").."\n")
+						MsgN("AdvDupeERROR:Created Constraint Bad! Type= ",(Constraint.Type or "NIL"))
 						Entity = nil
 					end
 				end
@@ -2445,12 +2445,12 @@ function AdvDupe.PasteEntity( Player, EntTable, EntID, Offset, HoldAngle )
 		
 		local Success, Result = pcall( duplicator.ApplyEntityModifiers, Player, Ent )
 		if ( !Success ) then
-			Msg("AdvDupeERROR: ApplyEntityModifiers, Error: "..tostring(Result).."\n")
+			MsgN("AdvDupeERROR: ApplyEntityModifiers, Error: ",tostring(Result))
 		end
 		
 		local Success, Result = pcall( duplicator.ApplyBoneModifiers, Player, Ent )
 		if ( !Success ) then
-			Msg("AdvDupeERROR: ApplyBoneModifiers Error: "..tostring(Result).."\n")
+			MsgN("AdvDupeERROR: ApplyBoneModifiers Error: ",tostring(Result))
 		end
 		
 		if ( EntTable.Skin ) then Ent:SetSkin( EntTable.Skin ) end
@@ -2459,7 +2459,7 @@ function AdvDupe.PasteEntity( Player, EntTable, EntID, Offset, HoldAngle )
 		
 	else
 		
-		Msg("AdvDupeERROR:Created Entity Bad! Class: "..(EntTable.Class or "NIL").." Ent: "..EntID.."\n")
+		MsgN("AdvDupeERROR:Created Entity Bad! Class: ",(EntTable.Class or "NIL")," Ent: ",EntID)
 		if (Ent and Ent:IsValid()) then Ent:Remove() end
 		return
 		
@@ -2478,7 +2478,7 @@ function AdvDupe.GenericDuplicatorFunction( Player, data, ID )
 	
 	local Entity = ents.Create( data.Class )
 	if (!Entity:IsValid()) then
-		Msg("AdvDupeError: Unknown class \""..data.Class.."\", making hallow prop instead for ent: "..ID.."\n")
+		MsgN("AdvDupeError: Unknown class \"",data.Class,"\", making hallow prop instead for ent: ",ID)
 		Entity = ents.Create( "prop_physics" )
 		Entity:SetCollisionGroup( COLLISION_GROUP_WORLD )
 	end
@@ -2570,7 +2570,7 @@ function AdvDupe.CreateEntityFromTable( Player, EntTable, ID, Offset, HoldAngle 
 		NoFail, Result = pcall( EntityClass.Func, Player, unpack(EntTable.arglist) )
 	end
 	if ( !NoFail ) then
-		Msg("AdvDupeERROR: CreateEntity failed to make \""..(EntTable.Class or "NIL" ).."\", Error: "..tostring(Result).."\n")
+		MsgN("AdvDupeERROR: CreateEntity failed to make \"",(EntTable.Class or "NIL" ),"\", Error: ",tostring(Result))
 		AdvDupe.SendClientError( Player, "Failed to make \""..(EntTable.Class or "NIL").."\"" )
 		return
 	else
@@ -2603,7 +2603,7 @@ function AdvDupe.CreateConstraintFromTable( Player, Constraint, EntityList, Offs
 					else
 						Val = EntityList[ Constraint.Entity[ i ].Index ] 
 						if (!Val) or (!Val:IsValid()) then
-							Msg("AdvDupeERROR: Problem with = "..(Constraint.Type or "NIL").." Constraint. Could not find Ent: "..Constraint.Entity[ i ].Index.."\n")
+							MsgN("AdvDupeERROR: Problem with = ",(Constraint.Type or "NIL")," Constraint. Could not find Ent: ",Constraint.Entity[ i ].Index)
 							return
 						end
 					end
@@ -2646,7 +2646,7 @@ function AdvDupe.CreateConstraintFromTable( Player, Constraint, EntityList, Offs
 	
 	local NoFail, Result = pcall( Factory.Func, unpack(Args) )
 	if ( !NoFail ) then
-		Msg("AdvDupeERROR: CreateConstraint failed to make \""..(Constraint.Type or "NIL").."\", Error: "..tostring(Result).."\n")
+		MsgN("AdvDupeERROR: CreateConstraint failed to make \"",(Constraint.Type or "NIL"),"\", Error: ",tostring(Result))
 		AdvDupe.SendClientError( Player, "Failed to make \""..(Constraint.Type or "NIL").."\"" )
 		return
 	else
@@ -2759,22 +2759,22 @@ end
 local CheckFunctions = {}
 function AdvDupe.CheckOkEnt( Player, EntTable )
 	EntTable.Class = EntTable.Class or ""
-	
+	MsgN("EntCheck on Class: ",EntTable.Class)
 	for HookName, TheHook in pairs (CheckFunctions) do
 		
 		local Success, Result = pcall( TheHook.Func, Player, EntTable.Class, EntTable )
 		if ( !Success ) then
-			Error("AdvDupeERROR: Entity check hook \""..HookName.."\" failed, removing.\nHook Error: \""..tostring(Result).."\"\n")
+			ErrorNoHalt("AdvDupeERROR: Entity check hook \"",HookName,"\" failed, removing.\nHook Error: \"",tostring(Result),"\"\n")
 			
 			local OnFailCallBack = TheHook.OnFailCallBack
 			
 			CheckFunctions[ HookName ] = nil
 			
 			if ( OnFailCallBack ) then
-				Msg("OnFailCallBack\n")
+				MsgN("OnFailCallBack")
 				local Success, Result = pcall( OnFailCallBack, HookName )
 				if ( !Success ) then
-					Error("AdvDupeERROR: WTF! \""..HookName.."\" OnFailCallBack failed too! Tell who ever make that hook that they're doing it wrong. Error: \""..tostring(Result).."\"\n")
+					ErrorNoHalt("AdvDupeERROR: WTF! \"",HookName,"\" OnFailCallBack failed too! Tell who ever make that hook that they're doing it wrong. Error: \"",tostring(Result),"\"\n")
 				end
 			end
 			
@@ -2792,7 +2792,7 @@ function AdvDupe.CheckOkEnt( Player, EntTable )
 		return true
 	elseif ( test and test.t and test.t.AdminSpawnable and !test.t.Spawnable ) then
 		AdvDupe.SendClientError(Player, "Sorry, you can't cheat like that")
-		Msg("AdvDupeERROR: "..tostring(Player).." tried to paste admin only prop "..(EntTable.Class or "NIL").." Ent: "..EntID.."\n")
+		MsgN("AdvDupeERROR: ",tostring(Player)," tried to paste admin only prop ",(EntTable.Class or "NIL")," : ",EntID)
 		return false
 	else
 		return true
@@ -2806,10 +2806,12 @@ function AdvDupe.AdminSettings.AddEntCheckHook( HookName, Func, OnFailCallBack )
 	CheckFunctions[ HookName ] = {}
 	CheckFunctions[ HookName ].Func = Func
 	CheckFunctions[ HookName ].OnFailCallBack = OnFailCallBack
+	MsgN("Added EntCheckHook: ",HookName)
 end
 function AdvDupe.AdminSettings.RemoveEntCheckHook( HookName )
 	if ( CheckFunctions[ HookName ] ) then
 		CheckFunctions[ HookName ] = nil
+		MsgN("Removed EntCheckHook: ",HookName)
 		return true
 	end
 end
@@ -2822,7 +2824,8 @@ if (!SinglePlayer()) then
 		if string.find(Class, "^weapon_.*")
 		or string.find(Class, "^item_.*")
 		or string.find(Class, "^npc_.*") then
-			Msg("AdvDupe: disalowing "..tostring(Player).." pasting item "..Class.." (NoItems Rule)\n")
+			MsgN("AdvDupe: disalowing ",tostring(Player)," pasting item ",Class," (NoItems Rule)")
+			AdvDupe.SendClientInfoMsg(Player, "Not allowed to paste Weapons or NPCs", true)
 			return false
 		else
 			return true
@@ -2831,17 +2834,38 @@ if (!SinglePlayer()) then
 	local function AddNoItems()
 		AdvDupe.AdminSettings.AddEntCheckHook("AdvDupe_NoItems", NoItems, AddNoItems)
 	end
-	AddNoItems()
+	
+	local b_NoItems = CreateConVar( "AdvDupe_NoItems", 1, {FCVAR_ARCHIVE} )
+	if b_NoItems:GetBool() then
+		AddNoItems()
+	end
+	
+	--this doesn't work yet, cvars.AddChangeCallback is bugged
+	local function OnChange( name, oldvalue, newvalue )
+		MsgN("changed: ",name)
+		if ( newvalue != "0" ) then
+			AddNoItems()
+		else
+			AdvDupe.AdminSettings.RemoveEntCheckHook("AdvDupe_NoItems")
+		end
+		
+	end
+	cvars.AddChangeCallback( "AdvDupe_NoItems", OnChange )
+	
 	
 	local function DisallowedClassesCheck(Player, ClassName, EntTable)
 		if DisallowedClasses[ClassName] then
 			if (DisallowedClasses[ClassName] == 2) then return false
-			elseif ( DisallowedClasses[ClassName] == 1 and !Player:IsAdmin( ) and !Player:IsSuperAdmin() ) then return false end
+			elseif ( DisallowedClasses[ClassName] == 1 and !Player:IsAdmin( ) and !Player:IsSuperAdmin() ) then
+				MsgN("AdvDupe: disalowing ",tostring(Player)," pasting item ",Class," (DisallowedClass Rule)")
+				AdvDupe.SendClientInfoMsg(Player, "Not allowed to paste "..Class, true)
+				return false
+			end
 		end
 		return true
 	end
 	local function AddDisallowedClassesCheck()
-		AdvDupe.AdminSettings.AddEntCheckHook("AdvDupe_NoItems", DisallowedClassesCheck, AddDisallowedClassesCheck)
+		AdvDupe.AdminSettings.AddEntCheckHook("AdvDupe_DisallowedClasses", DisallowedClassesCheck, AddDisallowedClassesCheck)
 	end
 	AddDisallowedClassesCheck()
 end
@@ -2886,7 +2910,7 @@ function AdvDupe.OldPaste( ply, Ents, Constraints, DupeInfo, DORInfo, HeadEntity
 			end
 			
 		elseif (EntClass) then
-			Msg("Duplicator paste: Unknown ent class " .. (EntClass or "NIL") .. "\n")
+			MsgN("Duplicator paste: Unknown ent class " , (EntClass or "NIL") )
 		end
 		
 		if Ent and Ent:IsValid() then
@@ -2926,7 +2950,7 @@ function AdvDupe.OldPaste( ply, Ents, Constraints, DupeInfo, DORInfo, HeadEntity
 			end
 			
 		elseif (Constraint.Type) then
-			Msg("Duplicator paste: Unknown constraint " .. (Constraint.Type or "NIL") .. "\n")
+			MsgN("Duplicator paste: Unknown constraint " , (Constraint.Type or "NIL") )
 		end
 	end
 	
@@ -3091,7 +3115,7 @@ function AdvDupe.PasteApplyEntMods( ply, Ent, EntTable )
 	
 	for ModifierType, Modifier in pairs(AdvDupe.OldEntityModifiers) do
 		if EntTable[ModifierType] then
-			Msg("Applying Mod Type: "..ModifierType.."\n")
+			MsgN("Applying Mod Type: ",ModifierType)
 			local args = {}
 			
 			for n,arg in pairs(Modifier.Args) do
@@ -3551,4 +3575,4 @@ end
 
 
 
-Msg("==== Advanced Duplicator v."..AdvDupe.Version.." server module installed! ====\n")
+MsgN("==== Advanced Duplicator v.",AdvDupe.Version," server module installed! ====")
