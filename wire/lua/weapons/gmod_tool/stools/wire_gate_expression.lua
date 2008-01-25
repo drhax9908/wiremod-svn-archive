@@ -288,7 +288,7 @@ if CLIENT then
 		wire_gate_expression_foldmap = foldmap
 	end
 
-	function WireGateExpressionPanelParent(player, command, args)
+	function WireGateExpressionPanelFoldUp(player, command, args)
 		local lasthit
 		local pos = 1
 		while pos <= string.len(wire_gate_expression_folder) do
@@ -306,7 +306,7 @@ if CLIENT then
 		WireGateExpressionRebuildCPanel()
 	end
 
-	concommand.Add("wire_gate_expression_parent_cl", WireGateExpressionPanelParent)
+	concommand.Add("wire_gate_expression_foldup_cl", WireGateExpressionPanelFoldUp)
 
 	function WireGateExpressionPanelFolder(player, command, args)
 		wire_gate_expression_folder = wire_gate_expression_foldmap[tonumber(args[1])]
@@ -629,7 +629,7 @@ if CLIENT then
 			panel:AddControl("Button", {
 				Text = "Parent Directory",
 				Name = "Parent Directory",
-				Command = "wire_gate_expression_parent_cl"
+				Command = "wire_gate_expression_foldup_cl"
 			})
 			
 			panel:AddControl("ListBox", {
