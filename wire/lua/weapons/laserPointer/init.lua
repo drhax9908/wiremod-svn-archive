@@ -1,5 +1,7 @@
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
+resource.AddFile("materials/VGUI/entities/laserPointer.vmt")
+resource.AddFile("materials/VGUI/entities/laserPointer.vtf")
 include('shared.lua')
 
 SWEP.Weight = 8
