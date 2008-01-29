@@ -8,7 +8,7 @@ ENT.WireDebugName = "Lamp"
 
 local MODEL = Model( "models/props_wasteland/prison_lamp001c.mdl" )
 
-AccessorFunc( ENT, "m_strFlashlightTexture", "FlashlightTexture" )
+AccessorFunc( ENT, "Texture", "FlashlightTexture" )
 
 ENT:SetFlashlightTexture( "effects/flashlight001" )
 
@@ -71,12 +71,12 @@ end
 ---------------------------------------------------------*/
 function ENT:SetFlashlightTexture( tex )
 
-	self.m_strFlashlightTexture = tex
+	self.Texture = tex
 	
 	if ( self.flashlight ) then
 		self.flashlight:Input( "SpotlightTexture", NULL, NULL, self:GetFlashlightTexture() )
 	end
-
+	
 end
 
 /*---------------------------------------------------------

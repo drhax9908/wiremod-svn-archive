@@ -163,7 +163,6 @@ function WireToolMakeLamp( self, trace, ply )
 		trace.Entity.lightr = r
 		trace.Entity.lightg = g
 		trace.Entity.lightb = b
-		trace.Entity.Texture = texture
 		trace.Entity:SetFlashlightTexture( texture )
 		return true
 	end
