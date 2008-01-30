@@ -90,10 +90,10 @@ function TOOL:RightClick( trace )
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_value" ) then
 	    local i = 0
 		for k,v in pairs(trace.Entity.value) do
-			RunConsoleCommand("wire_value_value"..k.." "..v)
+			ply:ConCommand("wire_value_value"..k.." "..v)
 			i = i + 1
 		end
-		RunConsoleCommand("wire_value_numvalues "..i)
+		ply:ConCommand("wire_value_numvalues "..i)
 		return true
 	end
 end
