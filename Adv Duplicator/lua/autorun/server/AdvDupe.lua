@@ -573,9 +573,9 @@ function AdvDupe.GetSaveableEntity( Ent, Offset )
 		Tab.EntityMods.CollisionGroupMod = Tab.CollisionGroup
 	end
 	
-	//fix for saving key on camera (Conna)
+	//fix for saving key on camera
 	if (Ent:GetClass() == "gmod_cameraprop") then
-		Tab.key = Ent:GetNetworkedInt(0)
+		Tab.key = Ent:GetNetworkedInt("key")
 	end
 	
 	//Saveablity
