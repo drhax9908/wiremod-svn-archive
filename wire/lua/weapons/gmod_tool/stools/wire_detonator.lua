@@ -20,8 +20,8 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar = {
-	"damage" = 1,
-	"model" = "models/props_combine/breenclock.mdl"
+	damage = 1,
+	model = "models/props_combine/breenclock.mdl"
 }
 
 cleanup.Register("gmod_wire_detonator")
