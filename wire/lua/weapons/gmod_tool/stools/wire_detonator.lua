@@ -9,7 +9,9 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_detonator_0", "Primary: Create/Update Detonator" )
     language.Add( "WireDetonatorTool_model", "Model:" )
  	language.Add( "sboxlimit_wire_detonators", "You've hit Detonators limit!" )
-	language.Add( "undone_wiredetonator", "Undone Wire Detonator" )
+	language.Add( "undone_gmod_wire_detonator", "Undone Wire Detonator" )
+	language.Add( "cleanup_gmod_wire_detonator", "Wire Detonator" )
+	language.Add( "cleaned_gmod_wire_detonator", "Cleaned Up Wire Detonator" )
 end
 
 if (SERVER) then
@@ -17,45 +19,48 @@ if (SERVER) then
 	ModelPlug_Register("detonator")
 end
 
-TOOL.ClientConVar[ "damage" ] = "1"
-TOOL.ClientConVar[ "model" ] = "models/props_combine/breenclock.mdl"
+TOOL.ClientConVar = {
+	"damage" = 1,
+	"model" = "models/props_combine/breenclock.mdl"
+}
 
-cleanup.Register( "wire_detonators" )
+cleanup.Register("gmod_wire_detonator")
 
 function TOOL:LeftClick( trace )
-	if trace.Entity && trace.Entity:IsPlayer() then return false end
-	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-	if (CLIENT) then return true end
-	
+	if trace.Entity and (trace.Entity:IsPlayer() or !trace.Entity:IsValid()) then return false end
+	if SERVER and !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) then return false end
+	if CLIENT then return true end
+
 	local ply = self:GetOwner()
-	local damage = self:GetClientNumber( "damage" )
-	local model = self:GetClientInfo( "model" )
-	
-	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_detonator" && trace.Entity:GetTable().pl == ply ) then
+	local damage = self:GetClientNumber("damage")
+	local model = self:GetClientInfo("model")
+
+	if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_detonator" && trace.Entity:GetTable().pl == ply) then
 		trace.Entity:Setup(damage)
 		trace.Entity.damage = damage
 		return true
 	end
-	
-	if ( !self:GetSWEP():CheckLimit( "wire_detonators" ) ) then return false end
 
-	if (not util.IsValidModel(model)) then return false end
-	if (not util.IsValidProp(model)) then return false end		// Allow ragdolls to be used?
+	if !self:GetSWEP():CheckLimit( "wire_detonators" ) then return false end
+	if !util.IsValidModel(model) or !util.IsValidProp(model) then return false end
 
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
-	
+
+	local wire_detonator = MakeWireDetonator(ply, model, Ang, trace.HitPos, damage)
+	wire_detonator:GetTable().target = trace.Entity
+
+	local min = wire_detonator:OBBMins()
+	wire_detonator:SetPos(trace.HitPos - trace.HitNormal * min.z)
+
 	local const = WireLib.Weld(wire_detonator, trace.Entity, trace.PhysicsBone, true)
-	
-	undo.Create("WireDetonator")
-		undo.AddEntity( wire_detonator )
-		undo.AddEntity( const )
-		undo.SetPlayer( ply )
+
+	undo.Create("gmod_wire_detonator")
+		undo.AddEntity(wire_detonator)
+		undo.AddEntity(const)
+		undo.SetPlayer(ply)
 	undo.Finish()
-		
-	ply:AddCleanup( "wire_detonators", wire_detonator )
-	ply:AddCleanup( "wire_detonators", const )
-	
+
 	return true
 end
 
@@ -66,30 +71,34 @@ if (SERVER) then
 	// It's done this way because MakeWireDetonator() cannot distinguish whether
 	// detonator was made by the STool or the duplicator; the duplicator-made
 	// detonator tries to reference a non-existent target (TheApathetic)
-	function MakeWireDetonator( pl, Model, Ang, Pos, damage, nocollide, Vel, aVel, frozen )
-		if ( !pl:CheckLimit( "wire_detonators" ) ) then return false end
-	
-		local wire_detonator = ents.Create( "gmod_wire_detonator" )
-		if (!wire_detonator:IsValid()) then return false end
+	function MakeWireDetonator(pl, Model, Ang, Pos, damage, nocollide, Vel, aVel, frozen)
+		if !pl:CheckLimit( "wire_detonators" ) then return false end
 
-		wire_detonator:SetAngles( Ang )
-		wire_detonator:SetPos( Pos )
-		wire_detonator:SetModel(Model)
+		local wire_detonator = ents.Create("gmod_wire_detonator")
+		if !wire_detonator:IsValid() then return false end
+			wire_detonator:SetAngles(Ang)
+			wire_detonator:SetPos(Pos)
+			wire_detonator:SetModel(Model)
 		wire_detonator:Spawn()
 
 		wire_detonator:Setup(damage)
 		wire_detonator:SetPlayer(pl)
 
-		if ( nocollide == true ) then wire_detonator:GetPhysicsObject():EnableCollisions( false ) end
+		if nocollide == true then wire_detonator:GetPhysicsObject():EnableCollisions(false) end
+		if wire_detonator:GetPhysicsObject():IsValid() then
+			local Phys = wire_detonator:GetPhysicsObject()
+			Phys:EnableMotion(!frozen)
+		end
 
 		local ttable = {
 			pl	= pl,
 			damage = damage,
 			nocollide = nocollide
 		}
-		table.Merge(wire_detonator:GetTable(), ttable )
+		table.Merge(wire_detonator:GetTable(), ttable)
 
-		pl:AddCount( "wire_detonators", wire_detonator )
+		pl:AddCount("wire_detonators", wire_detonator)
+		pl:AddCleanup("gmod_wire_detonator", wire_detonator)
 
 		return wire_detonator
 	end
