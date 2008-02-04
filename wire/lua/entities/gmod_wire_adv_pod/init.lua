@@ -13,6 +13,7 @@ function ENT:Initialize()
 	self.lockvar = 0
 	self.disablevar = false
 	self.crossvar = 0
+	self.Entity:SetColor( 255, 0, 0, 255 )
 	-- Output keys. Format: self.keys["name"] = IN_*
 	self.keys = { }
 	self.keys["Mouse1"] = IN_ATTACK
@@ -23,10 +24,9 @@ function ENT:Initialize()
 	self.keys["D"] = IN_MOVERIGHT
 	self.keys["R"] = IN_RELOAD
 	self.keys["Space"] = IN_JUMP
-	self.keys["Ctrl"] = IN_DUCK
 	self.keys["Shift"] = IN_SPEED
 	self.keys["Zoom"] = IN_ZOOM
-	self.keys["Alt(walk)"] = IN_WALK
+	self.keys["Alt"] = IN_WALK
 	self.keys["TurnLeltKey"] = IN_LEFT
 	self.keys["TurnRightKey"] = IN_RIGHT
 
@@ -39,14 +39,13 @@ function ENT:Initialize()
 	outputs[6] = "Mouse2"
 	outputs[7] = "R"
 	outputs[8] = "Space"
-	outputs[9] = "Ctrl"
-	outputs[10] = "Shift"
-	outputs[11] = "Zoom"
-	outputs[12] = "Alt(walk)"
-	outputs[13] = "TurnLeltKey"
-	outputs[14] = "TurnRightKey"
+	outputs[9] = "Shift"
+	outputs[10] = "Zoom"
+	outputs[11] = "Alt"
+	outputs[12] = "TurnLeltKey"
+	outputs[13] = "TurnRightKey"
 	
-	local n = 15
+	local n = 14
 	
 	--aim
 	outputs[n] = "X"
@@ -80,7 +79,7 @@ function ENT:Initialize()
 	self.VPos = Vector(0, 0, 0)
 	
 	self.Outputs = Wire_CreateOutputs( self.Entity, outputs )
-	self.Inputs = Wire_CreateInputs( self.Entity, { "Lock", "Terminate", "Strip weapons", "Eject", "Disable", "Crosshairs", "Brake", "Allow Buttons", "Relitive"} )
+	self.Inputs = Wire_CreateInputs( self.Entity, { "Lock", "Terminate", "Strip weapons", "Eject", "Disable", "Crosshairs", "Brake", "Allow Buttons", "Relative", "Damage Health", "Damage Armor"} )
 	self:SetOverlayText( "Adv. Pod Controller" )
 	
 	self.pushbuttons = false
@@ -95,7 +94,7 @@ end
 function ENT:TriggerInput(iname, value)
 		if (iname == "Lock") then
 			if !(self.Pod && self.Pod:IsValid()) then return end
-			if (value >= 1) then
+			if (value > 0) then
 				if (self.lockvar == 0) then
 					self.Pod:Fire("Lock", "1", 0)
 					self.lockvar = 1
@@ -126,7 +125,7 @@ function ENT:TriggerInput(iname, value)
 		elseif (iname == "Disable") then
 			self.disablevar = (value >= 1)
 		elseif (iname == "Crosshairs") then
-			if (value >= 1) then
+			if (value > 0) then
 				if self.Ply and self.Ply:IsValid() then
 					if (self.crossvar == 0) then
 						self.Ply:CrosshairEnable()
@@ -138,25 +137,45 @@ function ENT:TriggerInput(iname, value)
 				end
 			end
 		elseif (iname == "Brake") then
-			if value >= 1 then
+			if value > 0 then
 				self.Pod:Fire("TurnOff", "1", 0)
 				self.Pod:Fire("HandBrakeOn", "1", 0)
 			else
 				self.Pod:Fire("TurnOn", "1", 0)
 				self.Pod:Fire("HandBrakeOff", "1", 0)
 			end
+		elseif (iname == "Damage Health") then
+			if self.Ply and self.Ply:IsValid() then
+				if value > 0 then
+					if value > 100 then value = 100 end
+					self.Ply:TakeDamage(value)
+				end
+			end
+		elseif (iname == "Damage Armor") then
+			if self.Ply and self.Ply:IsValid() then
+				if value > 0 then
+					if value > 100 then value = 100 end
+					local armordam = self.Ply:Armor() - value
+					if armordam < 0 then armordam = 0 end
+					self.Ply:SetArmor(armordam)
+				end
+			end
 		elseif (iname == "Allow Buttons") then
-			self.pushbuttons = (value >= 1)
-		elseif (iname == "Relitive") then
-			self.BE_rel = (value >= 1)
+			if value > 0 then
+				self.pushbuttons = true
+			else
+				self.pushbuttons = false
+			end
+		elseif (iname == "Relative") then
+			if value > 0 then
+				self.BE_rel = true
+			else
+				self.BE_rel = false
+			end
 		end
 end
 
 function ENT:ShowOutput(value)
-	if (value ~= self.PrevOutput) then
-		self:SetOverlayText( "Pod Controller" )
-		self.PrevOutput = value
-	end
 end
 
 function ENT:OnRestore()
@@ -169,9 +188,11 @@ function ENT:OnRestore()
 	self.keys["D"] = IN_MOVERIGHT
 	self.keys["R"] = IN_RELOAD
 	self.keys["Space"] = IN_JUMP
-	self.keys["Ctrl"] = IN_DUCK
 	self.keys["Shift"] = IN_SPEED
 	self.keys["Zoom"] = IN_ZOOM
+	self.keys["Alt"] = IN_WALK
+	self.keys["TurnLeltKey"] = IN_LEFT
+	self.keys["TurnRightKey"] = IN_RIGHT
     self.BaseClass.OnRestore(self)
 end
 
@@ -187,7 +208,7 @@ function ENT:Think()
 		if Ply and Ply:IsValid() then
 			if self.Ply == nil then self.junkBE = CurTime() + 2 end
 			self.Ply = Ply
-			
+			self.Entity:SetColor( 0, 255, 0, 255 )
 			Wire_TriggerOutput( self.Entity, "Active", 1)
 			
 			if not self.disablevar then
@@ -247,6 +268,7 @@ function ENT:Think()
 		else
 			if self.Ply then --clear outputs
 				Wire_TriggerOutput( self.Entity, "Active", 0) 
+				self.Entity:SetColor( 255, 0, 0, 255 )
 				for k, _ in pairs( self.keys )  do
 					Wire_TriggerOutput( self.Entity, k, 0 )
 				end
