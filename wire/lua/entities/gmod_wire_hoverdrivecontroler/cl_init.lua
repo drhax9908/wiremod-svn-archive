@@ -1,8 +1,9 @@
 
 ENT.RenderGroup 		= RENDERGROUP_BOTH
 
-CreateConVar( "cl_drawhoverballs", "1" )
-
+language.Add( "Cleanup_hoverdrivecontrolers", "Hoverdrive Controlers" )
+language.Add( "Cleaned_hoverdrivecontrolers", "Cleaned up Hoverdrive Controlers" )
+	
 include('shared.lua')
 
 /*---------------------------------------------------------

@@ -106,16 +106,10 @@ function ENT:GetOverlayText()
 		txt = txt .. "XY Local, Z World"
 	end
 	
-	
 	if (not SinglePlayer()) then
 		local PlayerName = self:GetPlayerName()
 		txt = txt .. "\n(" .. PlayerName .. ")"
 	end
-	if(name and name ~= "") then
-	    if (txt == "") then
-	        return "- "..name.." -"
-	    end
-	    return "- "..name.." -\n"..txt
-	end
+	
 	return txt
 end
