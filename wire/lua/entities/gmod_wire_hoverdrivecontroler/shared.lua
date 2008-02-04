@@ -12,6 +12,8 @@ ENT.Instructions	= ""
 ENT.Spawnable			= true
 ENT.AdminSpawnable		= false
 
+cleanup.Register("hoverdrivecontrolers")
+
 function ENT:GetTargetZ()
 	return self.Entity:GetNetworkedInt( 0 )
 end

@@ -59,21 +59,36 @@ function ENT:Initialize()
 	self:ShowOutput()
 end
 
-function ENT:SpawnFunction( ply, tr )
+CreateConVar('sbox_maxwire_hoverdrives', 2)
+local function MakeWireHoverDriveCtrl(pl, Data)
+	if !pl:CheckLimit("wire_hoverdrives") then return nil end
+
+	local ent = ents.Create("gmod_wire_hoverdrivecontroler")
+		if !ent:IsValid() then return end
+		duplicator.DoGeneric(ent, Data)
+		ent:SetPlayer(pl)
+	ent:Spawn()
+	ent:Activate()
+
+	duplicator.DoGenericPhysics(ent, pl, Data)
+
+	ent:SetSpeed(1)
+	ent:SetAirResistance(0)
+	ent:SetStrength(10)
+
+	pl:AddCount("wire_hoverdrives", ent)
+	pl:AddCleanup("hoverdrivecontrolers", ent)
+	return ent
+end
+duplicator.RegisterEntityClass("gmod_wire_hoverdrivecontroler", MakeWireHoverDriveCtrl, "Data")
+
+function ENT:SpawnFunction( pl, tr )
 
 	if ( !tr.Hit ) then return end
 
 	local SpawnPos = tr.HitPos + tr.HitNormal * 16
 
-	local ent = ents.Create( "gmod_wire_hoverdrivecontroler" )
-	ent:SetPos( SpawnPos )
-	ent:SetPlayer( ply )
-	ent:Spawn()
-	ent:Activate()
-	
-	ent:SetSpeed( 1 )
-	ent:SetAirResistance( 1 )
-	ent:SetStrength( 1 )
+	local ent = MakeWireHoverDriveCtrl( pl, {Pos = SpawnPos} )
 	
 	return ent
 end
