@@ -62,7 +62,7 @@ function ENT:TriggerInput(iname, value)
 		  Wire_TriggerOutput(self.Entity,"On",1)
 		end
 	elseif(iname == "Zoom")then
-	   self.ZoomAmount = math.Clamp(value,1,self.OrginialFOV)
+	   self.ZoomAmount = math.Clamp(value,1,self.OriginalFOV)
 	   if(self.Active == 1)then
 	       self.CamPlayer:SetFOV(self.ZoomAmount,0.01)
 	   end
