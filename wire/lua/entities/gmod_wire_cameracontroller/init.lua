@@ -10,11 +10,13 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-	self.Inputs = Wire_CreateInputs(self.Entity, {"Activated","X","Y","Z","Pitch","Yaw","Roll"})
+	self.Inputs = Wire_CreateInputs(self.Entity, {"Activated","Zoom","X","Y","Z","Pitch","Yaw","Roll"})
 	self.Outputs = Wire_CreateOutputs(self.Entity, {"On"})
     self.Active = false
     self.CamEnt = nil
     self.CamPlayer = nil
+    self.ZoomAmount = 0
+    self.OriginalFOV = 0
     
     local cam = ents.Create("gmod_wire_cam")
     if (!cam:IsValid()) then return false end
@@ -31,6 +33,7 @@ end
 function ENT:Setup(Player)
     if(Player && Player:IsValid() && Player:IsPlayer())then
         self.CamPlayer = Player
+        self.OriginalFOV = self.CamPlayer:GetFOV()
     end
 end
 
@@ -49,13 +52,20 @@ function ENT:TriggerInput(iname, value)
 	if (iname == "Activated") then
 		if (value == 0) then
 		  self.CamPlayer:SetViewEntity(self.CamPlayer)
+		  self.CamPlayer:SetFOV(self.OrginialFOV,0.01)
 		  self.Active = 0
 		  Wire_TriggerOutput(self.Entity,"On",0)
 		else
 		  self.CamPlayer:SetViewEntity(self.CamEnt)
+		  self.CamPlayer:SetFOV(self.ZoomAmount,0.01)
 		  self.Active = 1
 		  Wire_TriggerOutput(self.Entity,"On",1)
 		end
+	elseif(iname == "Zoom")then
+	   self.ZoomAmount = math.Clamp(value,1,self.OrginialFOV)
+	   if(self.Active == 1)then
+	       self.CamPlayer:SetFOV(self.ZoomAmount,0.01)
+	   end
     elseif(iname == "X")then
         local camPos = self.CamEnt:GetPos()
         camPos.x = value
@@ -87,6 +97,7 @@ function ENT:Use( activator, caller )
 	if ( !activator:IsPlayer() ) then return end
 	
 	self.CamPlayer = activator
+	self.OriginalFOV = self.CamPlayer:GetFOV()
 end
 
 function ENT:ShowOutput()
