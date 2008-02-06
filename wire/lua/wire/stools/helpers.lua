@@ -1,7 +1,7 @@
 AddCSLuaFile( "helpers.lua" )
 
 
-function ModelPlug_AddToCPanel(panel, category, toolname, label, type, textbox_label, height)
+function ModelPlug_AddToCPanel(panel, category, toolname, label, _, textbox_label, height)
 	
 	local list = list.Get( "Wire_"..category.."_Models" )
 	
@@ -17,11 +17,7 @@ function ModelPlug_AddToCPanel(panel, category, toolname, label, type, textbox_l
 	end
 	
 	if (textbox_label) and (GetConVarNumber("cl_showmodeltextbox") > 0) then
-		panel:AddControl("TextBox", {
-			Label = textbox_label,
-			Command = toolname .. "_model",
-			MaxLength = "200"
-		})
+		panel:TextEntry(textbox_label, toolname .. "_model")
 	end
 end
 
@@ -33,15 +29,15 @@ local function NoGhostOn(self, trace)
 end
 
 function WireToolHelpers.LeftClick( self, trace )
-	if ( not trace.HitPos or trace.Entity:IsPlayer() or trace.Entity:IsNPC() ) then return false end
-	if ( self.NoLeftOnClass and trace.HitNonWorld and (trace.Entity:GetClass() == self.WireClass or NoGhostOn(self, trace)) ) then return false end
-	if (CLIENT) then return true end
+	if not trace.HitPos or trace.Entity:IsPlayer() or trace.Entity:IsNPC() then return false end
+	if self.NoLeftOnClass and trace.HitNonWorld and (trace.Entity:GetClass() == self.WireClass or NoGhostOn(self, trace)) then return false end
+	if CLIENT then return true end
 
 	local ply = self:GetOwner()
 
 	local ent = self:ToolMakeEnt( trace, ply )
-	if ( ent == true ) then return true end
-	if ( ent == nil or ent == false or not ent:IsValid() ) then return false end
+	if ent == true then return true end
+	if ent == nil or ent == false or not ent:IsValid() then return false end
 
 	local const = WireLib.Weld( ent, trace.Entity, trace.PhysicsBone, true )
 
@@ -103,12 +99,48 @@ function WireToolHelpers.Think( self )
 	self:UpdateGhost( self.GhostEntity )
 end
 
+if CLIENT then
+	function WireToolHelpers.MakePresetControl(panel, mode, folder)
+		if !mode or !panel then return end
+		local TOOL
+		for k,v in ipairs(LocalPlayer():GetWeapons()) do
+			if v.ClassName == "gmod_tool" then
+				TOOL = v.Tool[mode]
+				break
+			end
+		end
+		if !TOOL then return end
+		local ctrl = vgui.Create( "ControlPresets", panel )
+		ctrl:SetPreset(folder or mode)
+		if TOOL.ClientConVar then
+			local options = {}
+			for k, v in pairs(TOOL.ClientConVar) do
+				if k != "id" then
+					k = mode.."_"..k
+					options[k] = v
+					ctrl:AddConVar(k)
+				end
+			end
+			ctrl:AddOption("#Default", options)
+		end
+		panel:AddPanel( ctrl )
+	end
+end
+
+function WireToolHelpers.BaseLang( pluralname )
+	if CLIENT then
+		language.Add( "undone_"..TOOL.WireClass, "Undone Wire "..TOOL.Name )
+		language.Add( "Cleanup_"..TOOL.WireClass, "Wire "..pluralname )
+		language.Add( "Cleaned_"..TOOL.WireClass, "Cleaned Up Wire "..pluralname )
+	end
+	cleanup.Register(TOOL.WireClass)
+end
+
 
 WireToolSetup = {}
 
 function WireToolSetup.open( s_mode, s_cat, s_name, s_class, f_toolmakeent )
 	if (TOOL) then WireToolSetup.close() end
-	--Msg( "WireToolSetup.open ",s_mode,"\n")
 	
 	TOOL				= ToolObj:Create()
 	TOOL.Command		= nil
@@ -125,13 +157,7 @@ function WireToolSetup.open( s_mode, s_cat, s_name, s_class, f_toolmakeent )
 end
 
 function WireToolSetup.close()
-	--Msg( "WireToolSetup.close ",TOOL.Mode,"\n")
 	TOOL:CreateConVars()
 	SWEP.Tool[ TOOL.Mode ] = TOOL
 	TOOL = nil
 end
-
-base_tool = nil
-
---WireToolSetup.open( s_mode, s_cat, s_name, s_class, f_toolmakeent )
---WireToolSetup.close()

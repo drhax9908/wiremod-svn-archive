@@ -8,7 +8,7 @@ WireAddon = 1
 if file.Exists("../lua/wire/.svn/entries") then
 	WireVersion = tonumber( string.Explode( "\n", file.Read( "../lua/wire/.svn/entries" ) )[ 4 ] ) --get svn revision, stolen from ULX
 else
-	WireVersion = 552	--change this value to the current revision number when making a general release
+	WireVersion = 0	--change this value to the current revision number when making a general release
 end
 local function initplayer(ply)
 	umsg.Start( "wire_initplayer", ply )

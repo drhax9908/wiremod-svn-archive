@@ -17,7 +17,7 @@ function ENT:Initialize()
 	self.arrayindex = 0;
 	
 	self.Inputs = Wire_CreateInputs(self.Entity, { "Store/Save Pos", "Next", "Remove Save Position"})
-	self.Outputs = Wire_CreateOutputs(self.Entity, { "X", "Y", "Z", "Recall X", "Recall Y", "Recall Z", "Current Memory"})
+	self.Outputs = WireLib.CreateSpecialOutputs( self.Entity, { "X", "Y", "Z", "Vector", "Recall X", "Recall Y", "Recall Z", "Recall Vector", "Current Memory"}, { "NORMAL", "NORMAL", "NORMAL", "VECTOR", "NORMAL", "NORMAL", "NORMAL", "VECTOR", "NORMAL"})
 end
 
 function ENT:Setup()
@@ -28,9 +28,11 @@ function ENT:Setup()
 	Wire_TriggerOutput(self.Entity, "X", 0)
 	Wire_TriggerOutput(self.Entity, "Y", 0)
 	Wire_TriggerOutput(self.Entity, "Z", 0)
+	Wire_TriggerOutput(self.Entity, "Vector", Vector(0,0,0))
 	Wire_TriggerOutput(self.Entity, "Recall X", 0)
 	Wire_TriggerOutput(self.Entity, "Recall Y", 0)
 	Wire_TriggerOutput(self.Entity, "Recall Z", 0)
+	Wire_TriggerOutput(self.Entity, "Recall Vector", Vector(0,0,0))
 	Wire_TriggerOutput(self.Entity, "Current Memory", 0)
 end
 
@@ -41,15 +43,18 @@ function ENT:Think()
 	Wire_TriggerOutput(self.Entity, "X", pos.x)
 	Wire_TriggerOutput(self.Entity, "Y", pos.y)
 	Wire_TriggerOutput(self.Entity, "Z", pos.z)
+	Wire_TriggerOutput(self.Entity, "Vector", pos)
 	Wire_TriggerOutput(self.Entity, "Current Memory", self.arrayindex)
 	if self.arrayindex > 0 then
 		Wire_TriggerOutput(self.Entity, "Recall X", self.storedpositions[self.arrayindex].x)
 		Wire_TriggerOutput(self.Entity, "Recall Y", self.storedpositions[self.arrayindex].y)
 		Wire_TriggerOutput(self.Entity, "Recall Z", self.storedpositions[self.arrayindex].z)
+		Wire_TriggerOutput(self.Entity, "Recall Vector", self.storedpositions[self.arrayindex])
 	else
 		Wire_TriggerOutput(self.Entity, "Recall X", 0)
 		Wire_TriggerOutput(self.Entity, "Recall Y", 0)
 		Wire_TriggerOutput(self.Entity, "Recall Z", 0)
+		Wire_TriggerOutput(self.Entity, "Recall Vector", Vector(0,0,0))
 	end
 	
 	self.Entity:NextThink(CurTime()+0.04)

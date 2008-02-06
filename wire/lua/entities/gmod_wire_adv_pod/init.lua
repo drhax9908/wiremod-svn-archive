@@ -6,7 +6,7 @@ ENT.WireDebugName = "Advanced Pod Controller"
 local MODEL = Model("models/jaanus/wiretool/wiretool_siren.mdl")
 
 function ENT:Initialize()
-	self.Entity:SetModel( MODEL )
+	--self.Entity:SetModel( MODEL )
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
@@ -321,20 +321,26 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 end
 
 
-function MakeWireAdvPod(pl, Pos, Ang)
+function MakeWireAdvPod(pl, Pos, Ang, Model, frozen)
 	if not pl:CheckLimit("wire_pods") then return false end
 	
 	local wire_pod = ents.Create("gmod_wire_adv_pod")
 	if not wire_pod:IsValid() then return false end
-	
+	wire_pod:SetModel( Model or MODEL )
 	wire_pod:SetAngles(Ang)
 	wire_pod:SetPos(Pos)
 	wire_pod:Spawn()
+
+	if wire_pod:GetPhysicsObject():IsValid() then
+		wire_pod:GetPhysicsObject():EnableMotion(!frozen)
+	end
+
 	wire_pod:SetPlayer(pl)
 	wire_pod.pl = pl
 	
 	pl:AddCount("wire_pods", wire_pod)
+	pl:AddCleanup( "gmod_wire_adv_pod", wire_pod )
 	
 	return wire_pod
 end
-duplicator.RegisterEntityClass("gmod_wire_adv_pod", MakeWireAdvPod, "Pos", "Ang", "Vel", "aVel", "frozen")
+duplicator.RegisterEntityClass("gmod_wire_adv_pod", MakeWireAdvPod, "Pos", "Ang", "Model", "frozen")

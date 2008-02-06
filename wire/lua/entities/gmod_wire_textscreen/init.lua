@@ -22,9 +22,9 @@ function ENT:Initialize()
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 end
 
-function ENT:Setup(textTable, chrPl, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
-	self.textTable = textTable	--table of text lines
-	self.textTable[0] = ""
+function ENT:Setup(TextList, chrPl, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
+	self.TextList = TextList	--table of text lines
+	self.TextList[0] = ""
 	
 	self.maxLineLen = math.abs(chrPl)
 	self.maxLines = math.abs(chrPl) / 2
@@ -91,7 +91,7 @@ function ENT:UpdateScreen()
 		local compstring = ""
 		local outString = ""
 		local intoText = false
-		local basestring = self.textTable[self.currentTextnum]
+		local basestring = self.TextList[self.currentTextnum]
 		if (!basestring) then return false end
 		
 		for k,inp in ipairs(self.Val) do
@@ -146,7 +146,7 @@ function ENT:UpdateScreen()
 end
 
 
-function MakeWireTextScreen( pl, Ang, Pos, Smodel, TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
+function MakeWireTextScreen( pl, Ang, Pos, Smodel, TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs, defaultOn, frozen)
 	if ( !pl:CheckLimit( "wire_textscreens" ) ) then return false end
 	local wire_textscreen = ents.Create( "gmod_wire_textscreen" )
 	if (!wire_textscreen:IsValid()) then return false end
@@ -155,23 +155,16 @@ function MakeWireTextScreen( pl, Ang, Pos, Smodel, TextList, chrPerLine, textJus
 	wire_textscreen:SetAngles( Ang )
 	wire_textscreen:SetPos( Pos )
 	wire_textscreen:Spawn()
+
+	if wire_textscreen:GetPhysicsObject():IsValid() then
+		local Phys = wire_textscreen:GetPhysicsObject()
+		Phys:EnableMotion(!frozen)
+	end
+
 	wire_textscreen:SetPlayer(pl)
-		
-	local ttable = {
-		pl = pl,
-		Smodel = Smodel,
-		TextList = TextList,
-		chrPerLine = chrPerLine,
-		textJust = textJust,
-		tRed = tRed,
-		tGreen = tGreen,
-		tBlue = tBlue,
-		numInputs = numInputs,
-		defaultOn = defaultOn
-	}
-	table.Merge(wire_textscreen:GetTable(), ttable )
-	
+	wire_textscreen.pl = pl
+
 	pl:AddCount( "wire_textscreens", wire_textscreen )
 	return wire_textscreen
 end
-duplicator.RegisterEntityClass("gmod_wire_textscreen", MakeWireTextScreen, "Ang", "Pos", "Smodel", "TextList", "chrPerLine", "textJust", "tRed", "tGreen", "tBlue", "numInputs", "defaultOn")
+duplicator.RegisterEntityClass("gmod_wire_textscreen", MakeWireTextScreen, "Ang", "Pos", "Model", "TextList", "chrPerLine", "textJust", "tRed", "tGreen", "tBlue", "numInputs", "defaultOn", "frozen")

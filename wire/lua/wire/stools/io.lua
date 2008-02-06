@@ -4,7 +4,7 @@ AddCSLuaFile( "io.lua" )
 --wire_adv_input
 WireToolSetup.open( "adv_input", "I/O", "Adv. Input", "gmod_wire_adv_input", WireToolMakeAdvInput )
 
-if ( CLIENT ) then
+if CLIENT then
     language.Add( "Tool_wire_adv_input_name", "Adv. Input Tool (Wire)" )
     language.Add( "Tool_wire_adv_input_desc", "Spawns a adv. input for use with the wire system." )
     language.Add( "Tool_wire_adv_input_0", "Primary: Create/Update Adv. Input" )
@@ -16,14 +16,10 @@ if ( CLIENT ) then
 	language.Add( "WireAdvInputTool_value_start", "Start at:" )
 	language.Add( "WireAdvInputTool_speed", "Change per second:" )
 	language.Add( "sboxlimit_wire_adv_inputs", "You've hit wired adv input limit!" )
-	language.Add( "undone_gmod_wire_adv_input", "Undone Wire Adv. Input" )
-	language.Add( "Cleanup_gmod_wire_adv_input", "Wire Adv. Inputs" )
-	language.Add( "Cleaned_gmod_wire_adv_input", "Cleaned Up Wire Adv. Inputs" )
 end
+WireToolHelpers.BaseLang("Adv. Inputs")
 
-cleanup.Register( "gmod_wire_adv_input" )
-
-if (SERVER) then
+if SERVER then
   CreateConVar('sbox_maxwire_adv_inputs',20)
 end
 
@@ -39,46 +35,13 @@ TOOL.ClientConVar = {
 }
 
 function TOOL.BuildCPanel( CPanel )
-	CPanel:AddControl( "Header", { Text = "#Tool_wire_adv_input_name", Description	= "#Tool_wire_adv_input_desc" }  )
-	CPanel:AddControl( "Numpad",  { Label	= "#WireAdvInputTool_keymore",
-		Command = "wire_adv_input_keymore",
-		ButtonSize = 22	}
-	)
-	CPanel:AddControl( "Numpad",  { Label	= "#WireAdvInputTool_keyless",
-		Command = "wire_adv_input_keyless",
-		ButtonSize = 22	}
-	)
-	CPanel:AddControl( "CheckBox",  { Label	= "#WireAdvInputTool_toggle",
-		Command = "wire_adv_input_toggle" }
-	)
-	CPanel:AddControl( "Slider",  { Label	= "#WireAdvInputTool_value_min",
-		Type = "Float",
-		Min = -50,
-		Max = 50,
-		Command = "wire_adv_input_value_min"
-		}
-	)
-	CPanel:AddControl( "Slider",  { Label	= "#WireAdvInputTool_value_max",
-		Type = "Float",
-		Min = -50,
-		Max = 50,
-		Command = "wire_adv_input_value_max"
-		}
-	)
-	CPanel:AddControl( "Slider",  { Label	= "#WireAdvInputTool_value_start",
-		Type = "Float",
-		Min = -50,
-		Max = 50,
-		Command = "wire_adv_input_value_start"
-		}
-	)
-	CPanel:AddControl( "Slider",  { Label	= "#WireAdvInputTool_speed",
-		Type = "Float",
-		Min = 0.1,
-		Max = 50,
-		Command = "wire_adv_input_speed"
-		}
-	)
+	CPanel:AddControl( "Numpad", {Label = "#WireAdvInputTool_keymore", Command = "wire_adv_input_keymore"})
+	CPanel:AddControl( "Numpad", {Label = "#WireAdvInputTool_keyless", Command = "wire_adv_input_keyless"})
+	CPanel:CheckBox("#WireAdvInputTool_toggle", "wire_adv_input_toggle")
+	CPanel:NumSlider("#WireAdvInputTool_value_min", "wire_adv_input_value_min", -50, 50, 0)
+	CPanel:NumSlider("#WireAdvInputTool_value_max", "wire_adv_input_value_max", -50, 50, 0)
+	CPanel:NumSlider("#WireAdvInputTool_value_start", "wire_adv_input_value_start", -50, 50, 0)
+	CPanel:NumSlider("#WireAdvInputTool_speed", "wire_adv_input_speed", 0.1, 50, 1)
 end
 
 
@@ -92,15 +55,15 @@ if CLIENT then
 	language.Add("Tool_wire_adv_pod_desc", "Spawn/link a Wire Advanced Pod controller.")
 	language.Add("Tool_wire_adv_pod_0", "Primary: Create Advanced Pod controller. Secondary: Link Advanced controller.")
 	language.Add("Tool_wire_adv_pod_1", "Now select the pod to link to.")
-	language.Add("undone_gmod_wire_adv_pod", "Undone Wire Advanced Pod Controller")
-	language.Add("Cleanup_gmod_wire_adv_pod", "Wire Advanced Pod Controllers")
-	language.Add("Cleaned_gmod_wire_adv_pod", "Cleaned Up Wire Advanced Pod Controllers")
+end
+WireToolHelpers.BaseLang("Adv. Pod Controllers")
+
+if SERVER then
+	ModelPlug_Register("podctrlr")
 end
 
-cleanup.Register("gmod_wire_adv_pod")
-
-TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
 TOOL.NoLeftOnClass = true
+TOOL.ClientConVar = {model	= "models/jaanus/wiretool/wiretool_siren.mdl"}
 
 function TOOL:RightClick(trace)
 	if (self:GetStage() == 0) and trace.Entity:GetClass() == "gmod_wire_adv_pod" then
@@ -123,7 +86,7 @@ function TOOL:Reload(trace)
 end
 
 function TOOL.BuildCPanel(panel)
-	panel:AddControl("Header", { Text = "#Tool_wire_pod_name", Description = "#Tool_wire_pod_desc" })
+	ModelPlug_AddToCPanel(panel, "podctrlr", "wire_adv_pod", "#ToolWireIndicator_Model")
 end
 
 
@@ -132,7 +95,7 @@ end
 --wire_button
 WireToolSetup.open( "button", "I/O", "Button", "gmod_wire_button", WireToolMakeButton )
 
-if ( CLIENT ) then
+if CLIENT then
     language.Add( "Tool_wire_button_name", "Button Tool (Wire)" )
     language.Add( "Tool_wire_button_desc", "Spawns a button for use with the wire system." )
     language.Add( "Tool_wire_button_0", "Primary: Create/Update Button" )
@@ -140,14 +103,10 @@ if ( CLIENT ) then
     language.Add( "WireButtonTool_value_on", "Value On:" )
     language.Add( "WireButtonTool_value_off", "Value Off:" )
 	language.Add( "sboxlimit_wire_buttons", "You've hit wired buttons limit!" )
-	language.Add( "undone_gmod_wire_button", "Undone Wire Button" )
-	language.Add( "Cleanup_gmod_wire_button", "Wire Buttons" )
-	language.Add( "Cleaned_gmod_wire_button", "Cleaned Up Wire Buttons" )
 end
+WireToolHelpers.BaseLang("gmod_wire_button", "Buttons")
 
-cleanup.Register( "gmod_wire_button" )
-
-if (SERVER) then
+if SERVER then
 	CreateConVar('sbox_maxwire_buttons', 20)
 	ModelPlug_Register("button")
 end
@@ -161,52 +120,107 @@ TOOL.ClientConVar = {
 }
 
 function TOOL.BuildCPanel(panel)
-	panel:AddControl("Header", { Text = "#Tool_wire_button_name", Description = "#Tool_wire_button_desc" })
-
-	panel:AddControl("ComboBox", {
-		Label = "#Presets",
-		MenuButton = "1",
-		Folder = "wire_button",
-
-		Options = {
-			Default = {
-				wire_button_toggle = "0",
-				wire_button_value_on = "1",
-				wire_button_value_off = "0"
-			}
-		},
-
-		CVars = {
-			[0] = "wire_button_toggle",
-			[1] = "wire_button_value_on",
-			[2] = "wire_button_value_off"
-		}
-	})
-
+	WireToolHelpers.MakePresetControl(panel, "wire_button")
 	ModelPlug_AddToCPanel(panel, "button", "wire_button", "#Button_Model", nil, "#Button_Model", 6)
-
-	panel:AddControl("CheckBox", {
-		Label = "#WireButtonTool_toggle",
-		Command = "wire_button_toggle"
-	})
-
-	panel:AddControl("Slider", {
-		Label = "#WireButtonTool_value_on",
-		Type = "Float",
-		Min = "-10",
-		Max = "10",
-		Command = "wire_button_value_on"
-	})
-	panel:AddControl("Slider", {
-		Label = "#WireButtonTool_value_off",
-		Type = "Float",
-		Min = "-10",
-		Max = "10",
-		Command = "wire_button_value_off"
-	})
+	panel:CheckBox("#WireButtonTool_toggle", "wire_button_toggle")
+	panel:NumSlider("#WireButtonTool_value_on", "wire_button_value_on", -10, 10, 1)
+	panel:NumSlider("#WireButtonTool_value_off", "wire_button_value_off", -10, 10, 1)
 end
 
 
 
 
+--wire_adv_input
+WireToolSetup.open( "dual_input", "I/O", "Dual Input", "gmod_wire_dual_input", WireToolMakeDualInput )
+
+if CLIENT then
+    language.Add( "Tool_wire_dual_input_name", "Dual Input Tool (Wire)" )
+    language.Add( "Tool_wire_dual_input_desc", "Spawns a daul input for use with the wire system." )
+    language.Add( "Tool_wire_dual_input_0", "Primary: Create/Update Input" )
+    language.Add( "WireDualInputTool_keygroup", "Key 1:" )
+    language.Add( "WireDualInputTool_keygroup2", "Key 2:" )
+    language.Add( "WireDualInputTool_toggle", "Toggle:" )
+    language.Add( "WireDualInputTool_value_on", "Value 1 On:" )
+    language.Add( "WireDualInputTool_value_on2", "Value 2 On:" )
+    language.Add( "WireDualInputTool_value_off", "Value Off:" )
+	language.Add( "sboxlimit_wire_dual_inputs", "You've hit inputs limit!" )
+	language.Add( "undone_gmod_wire_dual_input", "Undone Wire Dual Input" )
+	language.Add( "Cleanup_gmod_wire_dual_input", "Wire Dual Inputs" )
+	language.Add( "Cleaned_gmod_wire_dual_input", "Cleaned Up Wire Dual Inputs" )
+end
+WireToolHelpers.BaseLang("Dual Inputs")
+
+if SERVER then
+	CreateConVar('sbox_maxwire_dual_inputs', 20)
+end
+
+TOOL.Model = "models/jaanus/wiretool/wiretool_input.mdl"
+TOOL.ClientConVar = {
+	keygroup = 7,
+	keygroup2 = 4,
+	toggle = 0,
+	value_off = 0,
+	value_on = 1,
+	value_on2 = -1
+}
+
+function TOOL.BuildCPanel(panel)
+	WireToolHelpers.MakePresetControl(panel, "wire_dual_input")
+	
+	panel:AddControl("Numpad", {
+		Label = "#WireDualInputTool_keygroup",
+		Command = "wire_dual_input_keygroup"
+	})
+	
+	panel:AddControl("Numpad", {
+		Label = "#WireDualInputTool_keygroup2",
+		Command = "wire_dual_input_keygroup2"
+	})
+	
+	panel:CheckBox("#WireDualInputTool_toggle", "wire_dual_input_toggle")
+	panel:NumSlider("#WireDualInputTool_value_on", "wire_dual_input_value_on", -10, 10, 1)
+	panel:NumSlider("#WireDualInputTool_value_off", "wire_dual_input_value_off", -10, 10, 1)
+	panel:NumSlider("#WireDualInputTool_value_on2", "wire_dual_input_value_on2", -10, 10, 1)
+end
+
+
+
+
+--wire_input
+WireToolSetup.open( "input", "I/O", "Numpad Input", "gmod_wire_input", WireToolMakeInput )
+
+if CLIENT then
+    language.Add( "Tool_wire_input_name", "Input Tool (Wire)" )
+    language.Add( "Tool_wire_input_desc", "Spawns a input for use with the wire system." )
+    language.Add( "Tool_wire_input_0", "Primary: Create/Update Input" )
+    language.Add( "WireInputTool_keygroup", "Key:" )
+    language.Add( "WireInputTool_toggle", "Toggle:" )
+    language.Add( "WireInputTool_value_on", "Value On:" )
+    language.Add( "WireInputTool_value_off", "Value Off:" )
+	language.Add( "sboxlimit_wire_inputs", "You've hit inputs limit!" )
+end
+WireToolHelpers.BaseLang("Inputs")
+
+if SERVER then
+	CreateConVar('sbox_maxwire_inputs', 20)
+end
+
+TOOL.Model = "models/jaanus/wiretool/wiretool_input.mdl"
+TOOL.ClientConVar = {
+	keygroup = 7,
+	toggle = 0,
+	value_off = 0,
+	value_on = 1
+}
+
+function TOOL.BuildCPanel(panel)
+	WireToolHelpers.MakePresetControl(panel, "wire_input")
+	panel:AddControl("Numpad", {
+		Label = "#WireInputTool_keygroup",
+		Command = "wire_input_keygroup"
+	})
+	panel:CheckBox("#WireInputTool_toggle", "wire_input_toggle")
+	panel:NumSlider("#WireInputTool_value_on", "wire_input_value_on", -10, 10, 1)
+	panel:NumSlider("#WireInputTool_value_off", "wire_input_value_off", -10, 10, 1)
+end
 

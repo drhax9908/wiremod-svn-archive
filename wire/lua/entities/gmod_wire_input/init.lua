@@ -27,7 +27,7 @@ end
 
 function ENT:Setup(keygroup, toggle, value_off, value_on)
 	self.keygroup = keygroup
-	self.Toggle = (toggle == 1)
+	self.toggle = (toggle == 1)
 	self.toggle = toggle
 	self.value_off = value_off
 	self.value_on = value_on
@@ -48,7 +48,7 @@ function ENT:Setup(keygroup, toggle, value_off, value_on)
 end
 
 function ENT:InputActivate( mul )
-	if ( self.Toggle ) then
+	if ( self.toggle ) then
 		return self:Switch( !self.On, mul )
 	end
 
@@ -56,7 +56,7 @@ function ENT:InputActivate( mul )
 end
 
 function ENT:InputDeactivate( mul )
-	if ( self.Toggle ) then return true end
+	if ( self.toggle ) then return true end
 	
 	return self:Switch( false, mul )
 end
@@ -95,3 +95,31 @@ end
 
 numpad.Register( "WireInput_On", On )
 numpad.Register( "WireInput_Off", Off )
+
+
+
+function MakeWireInput( pl, Pos, Ang, keygroup, toggle, value_off, value_on, Vel, aVel, frozen )
+	if ( !pl:CheckLimit( "wire_inputs" ) ) then return false end
+
+	local wire_input = ents.Create( "gmod_wire_input" )
+	if (!wire_input:IsValid()) then return false end
+
+	wire_input:SetAngles( Ang )
+	wire_input:SetPos( Pos )
+	wire_input:SetModel( Model("models/jaanus/wiretool/wiretool_input.mdl") )
+	wire_input:Spawn()
+
+	if wire_input:GetPhysicsObject():IsValid() then
+		wire_input:GetPhysicsObject():EnableMotion(!frozen)
+	end
+
+	wire_input:SetPlayer( pl )
+	wire_input:Setup( keygroup, toggle, value_off, value_on )
+	wire_input.pl = pl
+	
+	pl:AddCount( "wire_inputs", wire_input )
+	pl:AddCleanup( "gmod_wire_input", wire_input )
+
+	return wire_input
+end
+duplicator.RegisterEntityClass("gmod_wire_input", MakeWireInput, "Pos", "Ang", "keygroup", "toggle", "value_off", "value_on", "Vel", "aVel", "frozen")

@@ -103,7 +103,7 @@
 
 	"Siren"
 	{
-		"categories"    "pixel,indicator"
+		"categories"    "pixel,indicator,podctrlr"
 		"model"         "models/jaanus/wiretool/wiretool_siren.mdl"
 	}
 
@@ -159,5 +159,11 @@
 	{
 		"categories"    "indicator"
 		"model"         "models/props_trainstation/trainstation_clock001.mdl"
+	}
+	
+	"Ranger"
+	{
+		"categories"    "ranger,podctrlr"
+		"model"         "models/jaanus/wiretool/wiretool_range.mdl"
 	}
 }

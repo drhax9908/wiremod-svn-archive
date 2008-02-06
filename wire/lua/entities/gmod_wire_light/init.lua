@@ -98,10 +98,10 @@ function ENT:TriggerInput(iname, value)
 end
 
 function ENT:Setup(directional, radiant)
-	self.Directional = directional
-	self.Radiant = radiant
+	self.directional = directional
+	self.radiant = radiant
 	self.RadiantState = 0
-	if (self.Directional) then
+	if (self.directional) then
 		if (!self.DirectionalComponent) then
 			self:DirectionalOn()
 		end
@@ -110,7 +110,7 @@ function ENT:Setup(directional, radiant)
 			self:DirectionalOff()
 		end
 	end
-	if (self.Radiant) then
+	if (self.radiant) then
 		if (self.RadiantState == 0) then
 			self:RadiantOn()
 		end
@@ -125,13 +125,13 @@ end
 function ENT:ShowOutput( R, G, B )
 	if ( R ~= self.R or G ~= self.G or B ~= self.B ) then
 		if (((R + G) + B) != 0) then
-			if (self.Directional) then
+			if (self.directional) then
 				if (!self.DirectionalComponent) then
 					self:DirectionalOn()
 				end
 				self.DirectionalComponent:SetColor( R, G, B, 255 )
 			end
-			if (self.Radiant) then
+			if (self.radiant) then
 				if (self.RadiantState == 0) then
 					self:RadiantOn()
 				end
@@ -161,12 +161,16 @@ function MakeWireLight( pl, Ang, Pos, directional, radiant, nocollide, Vel, aVel
 	wire_light:GetTable():Setup(directional, radiant)
 	wire_light:GetTable():SetPlayer(pl)
 
-	if ( nocollide == true ) then wire_light:GetPhysicsObject():EnableCollisions( false ) end
+	if wire_light:GetPhysicsObject():IsValid() then
+		local Phys = wire_light:GetPhysicsObject()
+		if nocollide == true then 
+			Phys:EnableCollisions(false)
+		end
+		Phys:EnableMotion(!frozen)
+	end
 
 	local ttable = {
 		pl	= pl,
-		directional = directional,
-		radiant = radiant,
 		nocollide = nocollide
 	}
 	table.Merge(wire_light:GetTable(), ttable )

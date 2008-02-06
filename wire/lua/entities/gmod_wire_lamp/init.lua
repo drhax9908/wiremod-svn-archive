@@ -28,9 +28,9 @@ function ENT:Initialize()
 		phys:Wake()
 	end
 	
-	self.r = 255
-	self.g = 255
-	self.b = 255
+	self.lightr = 255
+	self.lightg = 255
+	self.lightb = 255
 	
 	self.Inputs = Wire_CreateInputs(self.Entity, { "Red", "Green", "Blue", "On" })
 	self:TurnOn()
@@ -41,9 +41,9 @@ end
 ---------------------------------------------------------*/
 function ENT:SetLightColor( r, g, b )
 	
-	self.r = r
-	self.g = g
-	self.b = b
+	self.lightr = r
+	self.lightg = g
+	self.lightb = b
 	
 	self:SetVar( "lightr", r )
 	self:SetVar( "lightg", g )
@@ -92,11 +92,11 @@ end
 ---------------------------------------------------------*/
 function ENT:TriggerInput(iname, value)
 	if (iname == "Red") then
-		self:SetLightColor( value, self.g, self.b )
+		self:SetLightColor( value, self.lightg, self.lightb )
 	elseif (iname == "Green") then
-	    self:SetLightColor( self.r, value, self.b )
+	    self:SetLightColor( self.lightr, value, self.lightb )
 	elseif (iname == "Blue") then
-		self:SetLightColor( self.r, self.g, value )
+		self:SetLightColor( self.lightr, self.lightg, value )
 	elseif (iname == "On") then
 		if value > 0 then
 			self:TurnOn()
@@ -167,11 +167,7 @@ function MakeWireLamp( pl, r, g, b, Texture, Data )
 	duplicator.DoGenericPhysics( wire_lamp, pl, Data )
 	
 	wire_lamp:SetPlayer( pl )
-	
-	wire_lamp.lightr = r
-	wire_lamp.lightg = g
-	wire_lamp.lightb = b
-	wire_lamp.Texture = Texture or "effects/flashlight001"
+	wire_lamp.pl = pl
 	
 	pl:AddCount( "wire_lamps", wire_lamp )
 	pl:AddCleanup( "wire_lamp", wire_lamp )

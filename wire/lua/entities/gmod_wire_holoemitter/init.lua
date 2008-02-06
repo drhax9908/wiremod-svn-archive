@@ -31,7 +31,7 @@ function ENT:Initialize( )
 	self.Entity:SetNetworkedEntity( "grid", self.Entity );
 
 	// create inputs.
-	self.Inputs = Wire_CreateInputs( self.Entity, { "X", "Y", "Z", "Active", "FadeRate", "Clear" } );
+	self.Inputs = WireLib.CreateSpecialInputs( self.Entity, { "X", "Y", "Z", "Vector", "Active", "FadeRate", "Clear" }, { "NORMAL", "NORMAL", "NORMAL", "VECTOR", "NORMAL", "NORMAL", "NORMAL" } );
 end
 
 // link to grid
@@ -46,12 +46,16 @@ function ENT:TriggerInput( inputname, value, iter )
 	if (inputname == "Clear" and value != 0)  then
 		self.LastClear = self.LastClear + 1
 		self.Entity:SetNetworkedInt( "Clear", self.LastClear );
-	end
-
-	if( inputname == "Active" ) then
+		
+	elseif ( inputname == "Active" ) then
 		self.Entity:SetNetworkedBool( "Active", value > 0 );
 		
 	// store float values.
+	elseif ( inputname == "Vector" ) and ( type(value) == "Vector" ) then
+		self.Entity:SetNetworkedFloat( X, value.x );
+		self.Entity:SetNetworkedFloat( Y, value.y );
+		self.Entity:SetNetworkedFloat( Z, value.z );
+		
 	else
 		self.Entity:SetNetworkedFloat( inputname, value );
 		
@@ -59,7 +63,7 @@ function ENT:TriggerInput( inputname, value, iter )
 end
 
 
-function MakeWireHoloemitter( pl, pos, ang, r, g, b, a, showbeams, size )
+function MakeWireHoloemitter( pl, pos, ang, r, g, b, a, showbeams, size, frozen )
 	// check the players limit
 	if( !pl:CheckLimit( "wire_holoemitters" ) ) then return; end
 	
@@ -70,6 +74,11 @@ function MakeWireHoloemitter( pl, pos, ang, r, g, b, a, showbeams, size )
 	emitter:Spawn();
 	emitter:Activate();
 	
+	if emitter:GetPhysicsObject():IsValid() then
+		local Phys = emitter:GetPhysicsObject()
+		Phys:EnableMotion(!frozen)
+	end
+
 	// setup the emitter.
 	emitter:SetColor( r, g, b, a );
 	emitter:SetPlayer( pl );
@@ -101,6 +110,7 @@ duplicator.RegisterEntityClass(
 	MakeWireHoloemitter,
 	"Ang",
 	"Pos",
-	"r", "g", "b", "a"
+	"r", "g", "b", "a",
+	"frozen"
 );
 

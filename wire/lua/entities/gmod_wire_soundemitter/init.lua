@@ -68,12 +68,18 @@ function MakeWireEmitter( pl, Model, Ang, Pos, sound, nocollide, frozen )
 	wire_emitter:SetAngles( Ang )
 	wire_emitter:SetPos( Pos )
 	wire_emitter:Spawn()
-	
+
+	if wire_emitter:GetPhysicsObject():IsValid() then
+		local Phys = wire_emitter:GetPhysicsObject()
+		Phys:EnableMotion(!frozen)
+	end
+
 	wire_emitter:SetSound( Sound(sound) )
 	wire_emitter:SetPlayer( pl )
 
 	local etable = {
 		pl	= pl,
+		sound = sound,
 		nocollide = nocollide
 	}
 	table.Merge(wire_emitter:GetTable(), etable )
@@ -83,5 +89,4 @@ function MakeWireEmitter( pl, Model, Ang, Pos, sound, nocollide, frozen )
 	return wire_emitter
 	
 end
-
 duplicator.RegisterEntityClass("gmod_wire_soundemitter", MakeWireEmitter, "Model", "Ang", "Pos", "sound", "nocollide", "frozen")

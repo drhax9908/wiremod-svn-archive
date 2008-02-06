@@ -1,6 +1,6 @@
 AddCSLuaFile( "gates.lua" )
 
-if ( CLIENT ) then
+if CLIENT then
     language.Add( "Tool_wire_gate_arithmetic_name", "Arithmetic Gate Tool (Wire)" )
     language.Add( "Tool_wire_gate_arithmetic_desc", "Spawns an arithmetic gate for use with the wire system." )
     language.Add( "Tool_wire_gate_arithmetic_0", "Primary: Create/Update Arithmetic Gate" )
@@ -46,7 +46,7 @@ if ( CLIENT ) then
 	language.Add( "Cleaned_gmod_wire_gate", "Cleaned up wire gates" )
 end
 
-if (SERVER) then
+if SERVER then
 	CreateConVar('sbox_maxwire_gates', 30)
 	CreateConVar('sbox_maxwire_gate_comparisons', 30)
 	CreateConVar('sbox_maxwire_gate_duplexer', 16)
@@ -58,7 +58,7 @@ if (SERVER) then
 	ModelPlug_Register("gate")
 end
 
-cleanup.Register( "wire_gates" )
+cleanup.Register("wire_gates")
 
 local base_tool = {
 	Category		= "Wire - Control",
@@ -77,7 +77,7 @@ local base_tool = {
 
 local function openTOOL()
 	TOOL = ToolObj:Create()
-	table.Merge( TOOL, base_tool )
+	table.Merge(TOOL, base_tool)
 end
 
 local function buildTOOL( s_name, s_def )
@@ -85,13 +85,9 @@ local function buildTOOL( s_name, s_def )
 	TOOL.Mode			= s_mode
 	TOOL.Name			= "Gate - "..s_name
 	TOOL.ClientConVar[ "action" ] = s_def
-	if (CLIENT) then
+	if CLIENT then
 		TOOL.BuildCPanel = function(panel)
-			panel:AddControl("Header", { Text = "#Tool_"..s_mode.."_name", Description = "#Tool_"..s_mode.."_desc" })
-			panel:AddControl("CheckBox", {
-				Label = "#WireGatesTool_noclip",
-				Command = s_mode.."_noclip"
-			})
+			panel:CheckBox("#WireGatesTool_noclip", s_mode.."_noclip")
 			local Actions = {
 				Label = "#WireGateTool_action",
 				MenuButton = "0",
@@ -121,7 +117,7 @@ buildTOOL( "Comparison", "<" )
 
 
 openTOOL()
-buildTOOL( "Table", "table_8merge" )
+buildTOOL( "Table", "table_8duplexer" )
 
 
 openTOOL()
@@ -133,7 +129,7 @@ buildTOOL( "Memory", "latch" )
 
 
 openTOOL()
-buildTOOL( "Selection", "sin" )
+buildTOOL( "Selection", "min" )
 
 
 openTOOL()
@@ -151,14 +147,9 @@ TOOL.Name			= "Gate"
 TOOL.ClientConVar[ "action" ] = "+"
 
 function TOOL.BuildCPanel(panel)
-	panel:AddControl("Header", { Text = "#Tool_wire_gates_name", Description = "#Tool_wire_gates_desc" })
-
 	ModelPlug_AddToCPanel(panel, "gate", "wire_gates", "#WireGatesTool_model", nil, "#WireGatesTool_model")
 
-	panel:AddControl("CheckBox", {
-		Label = "#WireGatesTool_noclip",
-		Command = "wire_gates_noclip"
-	})
+	panel:CheckBox("#WireGatesTool_noclip", "wire_gates_noclip")
 
 	local tree = vgui.Create( "DTree" )
 	tree:SetTall( 400 )
@@ -181,8 +172,6 @@ function TOOL.BuildCPanel(panel)
 
 end
 
-TOOL:CreateConVars()
-SWEP.Tool[ TOOL.Mode ] = TOOL
-TOOL = nil
+WireToolSetup.close()
 
 base_tool = nil

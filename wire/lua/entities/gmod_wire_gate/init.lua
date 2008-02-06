@@ -196,7 +196,7 @@ end
 
 
 
-function MakeWireGate(pl, Pos, Ang, Model, action, noclip, Vel, aVel, frozen, nocollide)
+function MakeWireGate(pl, Pos, Ang, Model, action, noclip, frozen, nocollide)
 	if ( !pl:CheckLimit( "wire_gates" ) ) then return nil end
 
 	local wire_gate = ents.Create( "gmod_wire_gate" )
@@ -209,15 +209,20 @@ function MakeWireGate(pl, Pos, Ang, Model, action, noclip, Vel, aVel, frozen, no
 	wire_gate:Setup( GateActions[action], noclip )
 	wire_gate:SetPlayer( pl )
 
-	if (nocollide) then wire_gate:SetCollisionGroup(COLLISION_GROUP_WORLD) end
+	if wire_gate:GetPhysicsObject():IsValid() then
+		local Phys = wire_gate:GetPhysicsObject()
+		if nocollide or noclip then 
+			Phys:SetCollisionGroup(COLLISION_GROUP_WORLD)
+		end
+		Phys:EnableMotion(!frozen)
+	end
 
 	local ttable =
 	{
-		action      = action,
 		pl			= pl,
-		nocollide	= nocollide,
+		action      = action,
 		noclip		= noclip,
-		description = description
+		nocollide	= nocollide
 	}
 
 	table.Merge( wire_gate:GetTable(), ttable )
@@ -226,5 +231,4 @@ function MakeWireGate(pl, Pos, Ang, Model, action, noclip, Vel, aVel, frozen, no
 
 	return wire_gate
 end
-
-duplicator.RegisterEntityClass("gmod_wire_gate", MakeWireGate, "Pos", "Ang", "Model", "action", "noclip", "Vel", "aVel", "frozen")
+duplicator.RegisterEntityClass("gmod_wire_gate", MakeWireGate, "Pos", "Ang", "Model", "action", "noclip", "frozen", "nocollide")

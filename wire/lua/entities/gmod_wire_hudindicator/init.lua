@@ -157,7 +157,7 @@ function ENT:RegisterPlayer(ply, hookhidehud, podonly)
 	
 	umsg.Start("HUDIndicatorRegister", ply)
 		umsg.Short(eindex)
-		umsg.String(self.HUDDesc)
+		umsg.String(self.HUDDesc or "")
 		umsg.Short(self.HUDShowValue)
 		umsg.Short(self.HUDStyle)
 	umsg.End()
