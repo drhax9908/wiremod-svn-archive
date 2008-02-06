@@ -13,7 +13,7 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 
-	self.Outputs = Wire_CreateOutputs(self.Entity, { "Out", "MPH" })
+	self.Outputs = Wire_CreateOutputs(self.Entity, { "Out", "MPH", "KPH" })
 end
 
 function ENT:Setup( xyz_mode, AngVel )
@@ -25,7 +25,7 @@ function ENT:Setup( xyz_mode, AngVel )
 	if (xyz_mode) then
 		outs = { "X", "Y", "Z" }
 	else
-		outs = { "Out", "MPH" }
+		outs = { "Out", "MPH", "KPH" }
 	end
 	if (AngVel) then
 		table.Add(outs, {"AngVel_P", "AngVel_Y", "AngVel_R" } )
@@ -44,7 +44,8 @@ function ENT:Think()
 	else
 	    local vel = self.Entity:GetVelocity():Length()
 		Wire_TriggerOutput(self.Entity, "Out", vel)
-		Wire_TriggerOutput(self.Entity, "MPH", vel / 17) --what is it for KPH?
+		Wire_TriggerOutput(self.Entity, "MPH", vel / 17.6)
+		Wire_TriggerOutput(self.Entity, "KPH", vel * 0.09144)
 	end
 	
 	if (self.XYZMode) then
