@@ -2,29 +2,19 @@
 function WireToolMake7Seg( self, trace, ply )
 	
 	local model			= self:GetClientInfo( "model" )
-	local ar			= math.min(self:GetClientNumber("ar"), 255)
-	local ag			= math.min(self:GetClientNumber("ag"), 255)
-	local ab			= math.min(self:GetClientNumber("ab"), 255)
-	local aa			= math.min(self:GetClientNumber("aa"), 255)
-	local br			= math.min(self:GetClientNumber("br"), 255)
-	local bg			= math.min(self:GetClientNumber("bg"), 255)
-	local bb			= math.min(self:GetClientNumber("bb"), 255)
-	local ba			= math.min(self:GetClientNumber("ba"), 255)
+	local ar			= math.Clamp(self:GetClientNumber("ar"),0,255)
+	local ag			= math.Clamp(self:GetClientNumber("ag"),0,255)
+	local ab			= math.Clamp(self:GetClientNumber("ab"),0,255)
+	local aa			= math.Clamp(self:GetClientNumber("aa"),0,255)
+	local br			= math.Clamp(self:GetClientNumber("br"),0,255)
+	local bg			= math.Clamp(self:GetClientNumber("bg"),0,255)
+	local bb			= math.Clamp(self:GetClientNumber("bb"),0,255)
+	local ba			= math.Clamp(self:GetClientNumber("ba"),0,255)
 	local worldweld		= self:GetClientNumber("worldweld") == 1
 
 	-- If we shot a wire_indicator change its force
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_indicator" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup(0, ar, ag, ab, aa, 1, br, bg, bb, ba)
-		trace.Entity.a	= 0
-		trace.Entity.ar	= ar
-		trace.Entity.ag	= ag
-		trace.Entity.ab	= ab
-		trace.Entity.aa	= aa
-		trace.Entity.b	= 1
-		trace.Entity.br	= br
-		trace.Entity.bg	= bg
-		trace.Entity.bb	= bb
-		trace.Entity.ba	= ba
 		return true
 	end
 	
@@ -61,30 +51,20 @@ function WireToolMakeIndicator( self, trace, ply )
 	local noclip		= self:GetClientNumber( "noclip" ) == 1
 	local model			= self:GetClientInfo( "model" )
 	local a				= self:GetClientNumber("a")
-	local ar			= math.min(self:GetClientNumber("ar"), 255)
-	local ag			= math.min(self:GetClientNumber("ag"), 255)
-	local ab			= math.min(self:GetClientNumber("ab"), 255)
-	local aa			= math.min(self:GetClientNumber("aa"), 255)
+	local ar			= math.Clamp(self:GetClientNumber("ar"),0,255)
+	local ag			= math.Clamp(self:GetClientNumber("ag"),0,255)
+	local ab			= math.Clamp(self:GetClientNumber("ab"),0,255)
+	local aa			= math.Clamp(self:GetClientNumber("aa"),0,255)
 	local b				= self:GetClientNumber("b")
-	local br			= math.min(self:GetClientNumber("br"), 255)
-	local bg			= math.min(self:GetClientNumber("bg"), 255)
-	local bb			= math.min(self:GetClientNumber("bb"), 255)
-	local ba			= math.min(self:GetClientNumber("ba"), 255)
+	local br			= math.Clamp(self:GetClientNumber("br"),0,255)
+	local bg			= math.Clamp(self:GetClientNumber("bg"),0,255)
+	local bb			= math.Clamp(self:GetClientNumber("bb"),0,255)
+	local ba			= math.Clamp(self:GetClientNumber("ba"),0,255)
 	local material		= self:GetClientInfo( "material" )
 	
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_indicator" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup(a, ar, ag, ab, aa, b, br, bg, bb, ba)
 		trace.Entity:SetMaterial( material )
-		trace.Entity.a	= a
-		trace.Entity.ar	= ar
-		trace.Entity.ag	= ag
-		trace.Entity.ab	= ab
-		trace.Entity.aa	= aa
-		trace.Entity.b	= b
-		trace.Entity.br	= br
-		trace.Entity.bg	= bg
-		trace.Entity.bb	= bb
-		trace.Entity.ba	= ba
 		return true
 	end
 	
@@ -152,7 +132,7 @@ function WireToolMakeLamp( self, trace, ply )
 	local r 	= math.Clamp( self:GetClientNumber( "r" ), 0, 255 )
 	local g 	= math.Clamp( self:GetClientNumber( "g" ), 0, 255 )
 	local b 	= math.Clamp( self:GetClientNumber( "b" ), 0, 255 )
-	local const = self:GetClientInfo( "const" )
+	local const		= self:GetClientInfo( "const" )
 	local texture 	= self:GetClientInfo( "texture" )
 	
 	if	trace.Entity:IsValid() and 
@@ -160,9 +140,6 @@ function WireToolMakeLamp( self, trace, ply )
 		trace.Entity:GetPlayer() == ply
 	then
 		trace.Entity:SetLightColor( r, g, b )
-		trace.Entity.lightr = r
-		trace.Entity.lightg = g
-		trace.Entity.lightb = b
 		trace.Entity:SetFlashlightTexture( texture )
 		return true
 	end
@@ -229,8 +206,6 @@ function WireToolMakeLight( self, trace, ply )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_light" && trace.Entity.pl == ply ) then
 		trace.Entity:Setup(directional, radiant)
-		trace.Entity.directional = directional
-		trace.Entity.radiant = radiant
 		return true
 	end
 
@@ -276,7 +251,7 @@ function WireToolMakePanel( self, trace, ply )
 	if (not util.IsValidModel(model)) then return false end
 	if (not util.IsValidProp(model)) then return false end
 	
-	local Ang			= trace.HitNormal:Angle()
+	local Ang = trace.HitNormal:Angle()
 	if (CreateFlat == 0) then --Weld panel flat to surface shot instead of perpendicular to it? (TheApathetic)
 		Ang.pitch = Ang.pitch + 90
 	end
@@ -334,13 +309,6 @@ function WireToolMakeScreen( self, trace, ply )
 
 	if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_screen" && trace.Entity.pl == ply) then
 		trace.Entity:Setup(SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor)
-		
-		trace.Entity.SingleValue	= SingleValue
-		trace.Entity.SingleBigFont	= SingleBigFont
-		trace.Entity.TextA			= TextA
-		trace.Entity.TextB 			= TextB
-		trace.Entity.LeftAlign 		= LeftAlign
-		trace.Entity.Floor	 		= Floor
 		return true
 	end
 
@@ -366,7 +334,7 @@ function WireToolMakeSoundEmitter( self, trace, ply )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_soundemitter" && trace.Entity.pl == ply ) then
 		trace.Entity:SetSound( Sound(sound) )
-		trace.Entity.sound	= sound
+		trace.Entity.sound = sound
 		return true
 	end
 	
@@ -411,14 +379,6 @@ function WireToolMakeTextScreen( self, trace, ply )
 
 	if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_textscreen" && trace.Entity.pl == ply) then
 		trace.Entity:Setup(TextList, chrPerLine, textJust, tRed, tGreen, tBlue, numInputs, defaultOn)
-		trace.Entity.TextList	= TextList
-		trace.Entity.chrPerLine	= chrPerLine
-		trace.Entity.textJust	= textJust
-		trace.Entity.tRed		= tRed
-		trace.Entity.tGreen		= tGreen
-		trace.Entity.tBlue		= tBlue
-		trace.Entity.numInputs	= numInputs
-		trace.Entity.defaultOn	= defaultOn
 		return true
 	end
 

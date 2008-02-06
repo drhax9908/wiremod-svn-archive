@@ -42,6 +42,14 @@ function ENT:TriggerInput(iname, value)
 end
 
 function ENT:Setup(SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor)
+	--for duplication
+	self.SingleValue	= SingleValue
+	self.SingleBigFont	= SingleBigFont
+	self.TextA			= TextA
+	self.TextB 			= TextB
+	self.LeftAlign 		= LeftAlign
+	self.Floor	 		= Floor
+	
 	-- Extra stuff for Wire Screen (TheApathetic)
 	self:SetTextA(TextA)
 	self:SetTextB(TextB)
@@ -56,7 +64,7 @@ function ENT:Setup(SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor)
 	self:SetSingleValue(SingleValue)
 end
 
-function MakeWireScreen( pl, Ang, Pos, Smodel, SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor )
+function MakeWireScreen( pl, Ang, Pos, Smodel, SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor, frozen )
 	
 	if ( !pl:CheckLimit( "wire_screens" ) ) then return false end
 	
@@ -67,27 +75,20 @@ function MakeWireScreen( pl, Ang, Pos, Smodel, SingleValue, SingleBigFont, TextA
 	wire_screen:SetPos( Pos )
 	wire_screen:Spawn()
 	
+	if wire_screen:GetPhysicsObject():IsValid() then
+		local Phys = wire_screen:GetPhysicsObject()
+		Phys:EnableMotion(!frozen)
+	end
+	
 	wire_screen:Setup(SingleValue, SingleBigFont, TextA, TextB, LeftAlign, Floor)
 	
 	wire_screen:SetPlayer(pl)
-		
-	local ttable = {
-		pl				= pl,
-		Smodel			= Smodel,
-		SingleValue		= SingleValue,
-		SingleBigFont	= SingleBigFont,
-		TextA			= TextA,
-		TextB			= TextB,
-		LeftAlign		= LeftAlign,
-		Floor			= Floor
-	}
-	table.Merge(wire_screen:GetTable(), ttable )
+	wire_screen.pl = pl
 	
 	pl:AddCount( "wire_screens", wire_screen )
 	
 	return wire_screen
 	
 end
-
-duplicator.RegisterEntityClass("gmod_wire_screen", MakeWireScreen, "Ang", "Pos", "Smodel", "SingleValue", "SingleBigFont", "TextA", "TextB", "LeftAlign", "Floor")
+duplicator.RegisterEntityClass("gmod_wire_screen", MakeWireScreen, "Ang", "Pos", "Model", "SingleValue", "SingleBigFont", "TextA", "TextB", "LeftAlign", "Floor", "frozen")
 	

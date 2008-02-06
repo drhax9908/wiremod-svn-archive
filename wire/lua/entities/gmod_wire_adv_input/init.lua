@@ -18,14 +18,14 @@ function ENT:Initialize()
 end
 
 function ENT:Setup(key_more,key_less,toggle,value_min,value_max,value_start,speed)
-	self.KeyMore = key_more
-	self.KeyLess = key_less
-	self.Toggle = (toggle == 1)
-	self.ValueMin = value_min
-	self.ValueMax = value_max	
+	self.keymore = key_more
+	self.keyless = key_less
+	self.toggle = (toggle == 1)
+	self.value_min = value_min
+	self.value_max = value_max	
 	self.Value = value_start
-	self.Value_Start = value_start
-	self.Speed = speed
+	self.value_start = value_start
+	self.speed = speed
 	self:ShowOutput()
 	Wire_TriggerOutput(self.Entity,"Out",self.Value)
 end
@@ -33,7 +33,7 @@ end
 function ENT:TriggerInput(iname, value)
     if(iname == "Reset")then
         if(value != 0)then
-            self.Value = self.Value_Start
+            self.Value = self.value_start
             self:ShowOutput()
 	        Wire_TriggerOutput(self.Entity,"Out",self.Value)
 	    end
@@ -41,14 +41,14 @@ function ENT:TriggerInput(iname, value)
 end
 
 function ENT:InputActivate(mul)
-	if (self.Toggle) then
+	if (self.toggle) then
 		return self:Switch( !self.On, mul )
 	end
 	return self:Switch( true, mul )
 end
 
 function ENT:InputDeactivate( mul )
-	if (self.Toggle) then return true end
+	if (self.toggle) then return true end
 	return self:Switch( false, mul )
 end
 
@@ -68,11 +68,11 @@ function ENT:Think()
 	local timediff = CurTime()-(self.LastThink or 0)
 	self.LastThink = (self.LastThink or 0)+timediff
 	if (self.On == true) then
-		self.Value = self.Value+self.Speed*timediff*self.dir
-		if (self.Value < self.ValueMin) then
-			self.Value = self.ValueMin
-		elseif (self.Value > self.ValueMax) then
-			self.Value = self.ValueMax
+		self.Value = self.Value + self.speed * timediff * self.dir
+		if (self.Value < self.value_min) then
+			self.Value = self.value_min
+		elseif (self.Value > self.value_max) then
+			self.Value = self.value_max
 		end
 		self:ShowOutput()
 		Wire_TriggerOutput(self.Entity,"Out",self.Value)
@@ -82,7 +82,7 @@ function ENT:Think()
 end
 
 function ENT:ShowOutput()
-	self:SetOverlayText("(" .. self.ValueMin .. " - " .. self.ValueMax .. ") = " .. self.Value)
+	self:SetOverlayText("(" .. self.value_min .. " - " .. self.value_max .. ") = " .. self.Value)
 end
 
 local function On( pl, ent, mul )
@@ -99,7 +99,6 @@ numpad.Register( "WireAdvInput_Off",Off)
 
 
 function MakeWireAdvInput( pl, Pos, Ang, keymore, keyless, toggle, value_min, value_max, value_start, speed, Vel, aVel, frozen )
-
 	if ( !pl:CheckLimit( "wire_adv_inputs" ) ) then return false end
 
 	local wire_adv_input = ents.Create( "gmod_wire_adv_input" )
@@ -110,8 +109,14 @@ function MakeWireAdvInput( pl, Pos, Ang, keymore, keyless, toggle, value_min, va
 	wire_adv_input:SetModel( Model("models/jaanus/wiretool/wiretool_input.mdl") )
 	wire_adv_input:Spawn()
 
+	if wire_adv_input:GetPhysicsObject():IsValid() then
+		local Phys = wire_adv_input:GetPhysicsObject()
+		Phys:EnableMotion(!frozen)
+	end
+
 	wire_adv_input:Setup( keymore, keyless, toggle, value_min, value_max, value_start, speed )
-	wire_adv_input:SetPlayer( pl )
+	wire_adv_input:SetPlayer(pl)
+	wire_adv_input.	pl = pl
 
 	numpad.OnDown( pl, keymore, "WireAdvInput_On", wire_adv_input, 1 )
 	numpad.OnUp( pl, keymore, "WireAdvInput_Off", wire_adv_input, 1 )
@@ -119,18 +124,6 @@ function MakeWireAdvInput( pl, Pos, Ang, keymore, keyless, toggle, value_min, va
 	numpad.OnDown( pl, keyless, "WireAdvInput_On", wire_adv_input, -1 )
 	numpad.OnUp( pl, keyless, "WireAdvInput_Off", wire_adv_input, -1 )
 
-	local ttable = {
-		keymore			= keymore,
-		keyless			= keyless,
-		toggle			= toggle,
-		value_min		= value_min,
-		value_max		= value_max,
-		value_start		= value_start,
-		speed			= speed,
-		pl              = pl
-	}
-	table.Merge(wire_adv_input:GetTable(), ttable )
-	
 	pl:AddCount( "wire_adv_inputs", wire_adv_input )
 	
 	return wire_adv_input

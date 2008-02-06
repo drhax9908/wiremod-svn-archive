@@ -20,7 +20,7 @@ function ENT:Use(ply)
 	if (self.PrevUser) and (self.PrevUser:IsValid()) then return end
 
 	if (self:IsOn()) then
-		if (self.Toggle) then self:Switch(false) end
+		if (self.toggle) then self:Switch(false) end
 		
 		return
 	end
@@ -37,7 +37,7 @@ function ENT:Think()
 		or (not self.PrevUser:IsValid())
 		or (not self.podpress and not self.PrevUser:KeyDown(IN_USE))
 		or (self.podpress and not self.PrevUser:KeyDown( IN_ATTACK )) then
-		    if (not self.Toggle) then
+		    if (not self.toggle) then
 				self:Switch(false)
 			end
 			
@@ -51,14 +51,14 @@ function ENT:Think()
 end
 
 function ENT:Setup(toggle, value_off, value_on)
-	self.Toggle = toggle
-	self.ValueOff = value_off
-	self.ValueOn = value_on
+	self.toggle = toggle
+	self.value_off = value_off
+	self.value_on = value_on
 	self.Value = value_off
 	self:SetOn( false )
 
-	self:ShowOutput(self.ValueOff)
-	Wire_TriggerOutput(self.Entity, "Out", self.ValueOff)
+	self:ShowOutput(self.value_off)
+	Wire_TriggerOutput(self.Entity, "Out", self.value_off)
 end
 
 function ENT:Switch(on)
@@ -67,11 +67,11 @@ function ENT:Switch(on)
 	self:SetOn( on )
 
 	if (on) then
-		self:ShowOutput(self.ValueOn)
-		self.Value = self.ValueOn
+		self:ShowOutput(self.value_on)
+		self.Value = self.value_on
 	else
-		self:ShowOutput(self.ValueOff)
-		self.Value = self.ValueOff
+		self:ShowOutput(self.value_off)
+		self.Value = self.value_off
 	end
 
 	Wire_TriggerOutput(self.Entity, "Out", self.Value)
@@ -80,7 +80,7 @@ function ENT:Switch(on)
 end
 
 function ENT:ShowOutput(value)
-	self:SetOverlayText( "(" .. self.ValueOff .. " - " .. self.ValueOn .. ") = " .. value )
+	self:SetOverlayText( "(" .. self.value_off .. " - " .. self.value_on .. ") = " .. value )
 end
 
 
@@ -90,21 +90,19 @@ function MakeWireButton( pl, Model, Pos, Ang, toggle, value_off, value_on, descr
 	local wire_button = ents.Create( "gmod_wire_button" )
 	if (!wire_button:IsValid()) then return false end
 
-	wire_button:SetModel( Model )
-	wire_button:SetAngles( Ang )
-	wire_button:SetPos( Pos )
+	wire_button:SetModel(Model)
+	wire_button:SetAngles(Ang)
+	wire_button:SetPos(Pos)
 	wire_button:Spawn()
 
-	wire_button:Setup(toggle, value_off, value_on )
-	wire_button:SetPlayer( pl )
+	if wire_button:GetPhysicsObject():IsValid() then
+		local Phys = wire_button:GetPhysicsObject()
+		Phys:EnableMotion(!frozen)
+	end
 
-	local ttable = {
-		toggle			= toggle,
-		value_off		= value_off,
-		value_on		= value_on,
-		pl              = pl
-	}
-	table.Merge(wire_button:GetTable(), ttable )
+	wire_button:Setup(toggle, value_off, value_on )
+	wire_button:SetPlayer(pl)
+	wire_button.pl = pl
 	
 	pl:AddCount( "wire_buttons", wire_button )
 

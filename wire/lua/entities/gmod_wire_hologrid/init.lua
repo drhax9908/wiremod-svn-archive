@@ -58,7 +58,7 @@ function ENT:AcceptInput(name,activator,caller)
 end
 
 
-function MakeWireHologrid( pl, pos, ang )
+function MakeWireHologrid( pl, pos, ang, frozen )
 	// check the players limit
 	if( !pl:CheckLimit( "wire_hologrids" ) ) then return; end
 	
@@ -69,9 +69,13 @@ function MakeWireHologrid( pl, pos, ang )
 	emitter:Spawn();
 	emitter:Activate();
 	
+	if emitter:GetPhysicsObject():IsValid() then
+		local Phys = emitter:GetPhysicsObject()
+		Phys:EnableMotion(!frozen)
+	end
+
 	// setup the emitter.
 	emitter:SetPlayer( pl );
-	
 	
 	// add to the players count
 	pl:AddCount( "wire_hologrids", emitter );
@@ -85,6 +89,7 @@ duplicator.RegisterEntityClass(
 	"gmod_wire_hologrid",
 	MakeWireHologrid,
 	"Ang",
-	"Pos"
+	"Pos",
+	"frozen"
 );
 

@@ -11,45 +11,45 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 
-	self.A = 0
-	self.AR = 0
-	self.AG = 0
-	self.AB = 0
-	self.AA = 0
-	self.B = 0
-	self.BR = 0
-	self.BG = 0
-	self.BB = 0
-	self.BA = 0
+	self.a = 0
+	self.ar = 0
+	self.ag = 0
+	self.ab = 0
+	self.aa = 0
+	self.b = 0
+	self.br = 0
+	self.bg = 0
+	self.bb = 0
+	self.ba = 0
 
 	self.Inputs = Wire_CreateInputs(self.Entity, { "A" })
 end
 
 function ENT:Setup(a, ar, ag, ab, aa, b, br, bg, bb, ba)
-	self.A = a or 0
-	self.AR = ar or 255
-	self.AG = ag or 0
-	self.AB = ab or 0
-	self.AA = aa or 255
-	self.B = b or 1
-	self.BR = br or 0
-	self.BG = bg or 255
-	self.BB = bb or 0
-	self.BA = ba or 255
+	self.a = a or 0
+	self.ar = ar or 255
+	self.ag = ag or 0
+	self.ab = ab or 0
+	self.aa = aa or 255
+	self.b = b or 1
+	self.br = br or 0
+	self.bg = bg or 255
+	self.bb = bb or 0
+	self.ba = ba or 255
 
-	local factor = math.max(0, math.min(self.Inputs.A.Value-self.A/(self.B-self.A), 1))
+	local factor = math.max(0, math.min(self.Inputs.A.Value-self.a/(self.b-self.a), 1))
 	self:TriggerInput("A", 0)
 end
 
 function ENT:TriggerInput(iname, value)
 	if (iname == "A") then
-		local factor = math.Clamp((value-self.A)/(self.B-self.A), 0, 1)
+		local factor = math.Clamp((value-self.a)/(self.b-self.a), 0, 1)
 		self:ShowOutput(factor)
 
-		local r = math.Clamp((self.BR-self.AR)*factor+self.AR, 0, 255)
-		local g = math.Clamp((self.BG-self.AG)*factor+self.AG, 0, 255)
-		local b = math.Clamp((self.BB-self.AB)*factor+self.AB, 0, 255)
-		local a = math.Clamp((self.BA-self.AA)*factor+self.AA, 0, 255)
+		local r = math.Clamp((self.br-self.ar)*factor+self.ar, 0, 255)
+		local g = math.Clamp((self.bg-self.ag)*factor+self.ag, 0, 255)
+		local b = math.Clamp((self.bb-self.ab)*factor+self.ab, 0, 255)
+		local a = math.Clamp((self.ba-self.aa)*factor+self.aa, 0, 255)
 		self.Entity:SetColor(r, g, b, a)
 	end
 end
@@ -76,20 +76,16 @@ function MakeWireIndicator( pl, Model, Ang, Pos, a, ar, ag, ab, aa, b, br, bg, b
 	
 	wire_indicator:Setup(a, ar, ag, ab, aa, b, br, bg, bb, ba)
 	wire_indicator:SetPlayer(pl)
-	
-	if ( nocollide == true ) then wire_indicator:SetCollisionGroup(COLLISION_GROUP_WORLD) end
-	
+
+	if wire_indicator:GetPhysicsObject():IsValid() then
+		local Phys = wire_indicator:GetPhysicsObject()
+		if nocollide == true then 
+			Phys:SetCollisionGroup(COLLISION_GROUP_WORLD)
+		end
+		Phys:EnableMotion(!frozen)
+	end
+
 	local ttable = {
-		a	= a,
-		ar	= ar,
-		ag	= ag,
-		ab	= ab,
-		aa	= aa,
-		b	= b,
-		br	= br,
-		bg	= bg,
-		bb	= bb,
-		ba	= ba,
 		material = material,
 		pl	= pl,
 		nocollide = nocollide
@@ -125,16 +121,6 @@ function MakeWire7Seg( pl, Model, Ang, Pos, Norm, a, ar, ag, ab, aa, b, br, bg, 
 	wire_indicators[1]:SetPos( Pos + Ang:Up() )
 	
 	local ttable = {
-		a	= a,
-		ar	= ar,
-		ag	= ag,
-		ab	= ab,
-		aa	= aa,
-		b	= b,
-		br	= br,
-		bg	= bg,
-		bb	= bb,
-		ba	= ba,
 		pl	= pl,
 		nocollide = nocollide
 	}
@@ -156,7 +142,13 @@ function MakeWire7Seg( pl, Model, Ang, Pos, Norm, a, ar, ag, ab, aa, b, br, bg, 
 		wire_indicators[x]:Setup(cmin, ar, ag, ab, aa, cmax, br, bg, bb, ba)
 		wire_indicators[x]:SetPlayer(pl)
 		wire_indicators[x]:SetNetworkedString("WireName", segname[x-1])
-		if ( nocollide == true ) then wire_indicators[x]:GetPhysicsObject():EnableCollisions( false ) end
+		if wire_indicators[x]:GetPhysicsObject():IsValid() then
+			local Phys = wire_indicators[x]:GetPhysicsObject()
+			if nocollide == true then 
+				Phys:SetCollisionGroup(COLLISION_GROUP_WORLD)
+			end
+			Phys:EnableMotion(!frozen)
+		end
 		table.Merge(wire_indicators[x]:GetTable(), ttable )
 		pl:AddCount( "wire_indicators", wire_indicators[x] )
 		

@@ -19,21 +19,21 @@ function ENT:Initialize()
 end
 
 function ENT:Setup(keygroup, keygroup2, toggle, value_off, value_on, value_on2)
-	self.KeyGroup = keygroup
-	self.KeyGroup2 = keygroup2
-	self.Toggle = (toggle == 1)
-	self.ValueOff = value_off
-	self.ValueOn = value_on
-	self.ValueOn2 = value_on2
+	self.keygroup = keygroup
+	self.keygroup2 = keygroup2
+	self.toggle = (toggle == 1)
+	self.value_off = value_off
+	self.value_on = value_on
+	self.value_on2 = value_on2
 	self.Value = value_off
 	self.Select = 0
 	
-	self:ShowOutput(self.ValueOff)
-	Wire_TriggerOutput(self.Entity, "Out", self.ValueOff)
+	self:ShowOutput(self.value_off)
+	Wire_TriggerOutput(self.Entity, "Out", self.value_off)
 end
 
 function ENT:InputActivate( mul )
-	if ( self.Toggle && self.Select == mul ) then
+	if ( self.toggle && self.Select == mul ) then
 		return self:Switch( !self.On, mul )
 	end
 	
@@ -41,7 +41,7 @@ function ENT:InputActivate( mul )
 end
 
 function ENT:InputDeactivate( mul )
-	if ( self.Toggle ) then return true end
+	if ( self.toggle ) then return true end
 	
 	return self:Switch( false, mul )
 end
@@ -53,14 +53,14 @@ function ENT:Switch( on, mul )
 	self.Select = mul
 	
 	if (on && mul == 1) then
-		self:ShowOutput(self.ValueOn)
-		self.Value = self.ValueOn
+		self:ShowOutput(self.value_on)
+		self.Value = self.value_on
 	elseif (on && mul == -1) then
-		self:ShowOutput(self.ValueOn2)
-		self.Value = self.ValueOn2
+		self:ShowOutput(self.value_on2)
+		self.Value = self.value_on2
 	else
-		self:ShowOutput(self.ValueOff)
-		self.Value = self.ValueOff
+		self:ShowOutput(self.value_off)
+		self.Value = self.value_off
 	end
 	
 	Wire_TriggerOutput(self.Entity, "Out", self.Value)
@@ -69,7 +69,7 @@ function ENT:Switch( on, mul )
 end
 
 function ENT:ShowOutput(value)
-	self:SetOverlayText( "(" .. self.ValueOn2 .. " - " .. self.ValueOff .. " - " .. self.ValueOn .. ") = " .. value )
+	self:SetOverlayText( "(" .. self.value_on2 .. " - " .. self.value_off .. " - " .. self.value_on .. ") = " .. value )
 end
 
 local function On( pl, ent, mul )
@@ -84,3 +84,37 @@ end
 
 numpad.Register( "WireDualInput_On", On )
 numpad.Register( "WireDualInput_Off", Off )
+
+
+function MakeWireDualInput( pl, Pos, Ang, keygroup, keygroup2, toggle, value_off, value_on, value_on2, Vel, aVel, frozen )
+	if ( !pl:CheckLimit( "wire_dual_inputs" ) ) then return false end
+
+	local wire_dual_input = ents.Create( "gmod_wire_dual_input" )
+	if (!wire_dual_input:IsValid()) then return false end
+
+	wire_dual_input:SetAngles( Ang )
+	wire_dual_input:SetPos( Pos )
+	wire_dual_input:SetModel( Model("models/jaanus/wiretool/wiretool_input.mdl") )
+	wire_dual_input:Spawn()
+
+	if wire_dual_input:GetPhysicsObject():IsValid() then
+		local Phys = wire_dual_input:GetPhysicsObject()
+		Phys:EnableMotion(!frozen)
+	end
+
+	wire_dual_input:Setup( keygroup, keygroup2, toggle, value_off, value_on, value_on2 )
+	wire_dual_input:SetPlayer( pl )
+	wire_dual_input.pl = pl
+
+	numpad.OnDown( pl, keygroup, "WireDualInput_On", wire_dual_input, 1 )
+	numpad.OnUp( pl, keygroup, "WireDualInput_Off", wire_dual_input, 1 )
+
+	numpad.OnDown( pl, keygroup2, "WireDualInput_On", wire_dual_input, -1 )
+	numpad.OnUp( pl, keygroup2, "WireDualInput_Off", wire_dual_input, -1 )
+	
+	pl:AddCount( "wire_dual_inputs", wire_dual_input )
+
+	return wire_dual_input
+end
+
+duplicator.RegisterEntityClass("gmod_wire_dual_input", MakeWireDualInput, "Pos", "Ang", "keygroup", "keygroup2", "toggle", "value_off", "value_on", "value_on2", "Vel", "aVel", "frozen")
