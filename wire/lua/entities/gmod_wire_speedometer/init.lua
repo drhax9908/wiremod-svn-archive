@@ -25,7 +25,7 @@ function ENT:Setup( xyz_mode, AngVel )
 	if (xyz_mode) then
 		outs = { "X", "Y", "Z" }
 	else
-		outs = { "Out", "MPH", "KPH" }
+		outs = { "Out", "MPH",  "KPH", }
 	end
 	if (AngVel) then
 		table.Add(outs, {"AngVel_P", "AngVel_Y", "AngVel_R" } )
@@ -48,7 +48,7 @@ function ENT:Think()
 		Wire_TriggerOutput(self.Entity, "KPH", vel * 0.09144)
 	end
 	
-	if (self.XYZMode) then
+	if (self.AngVel) then
 		local ang = self.Entity:GetPhysicsObject():GetAngleVelocity()
 		Wire_TriggerOutput(self.Entity, "AngVel_P", ang.y)
 		Wire_TriggerOutput(self.Entity, "AngVel_Y", ang.z)
