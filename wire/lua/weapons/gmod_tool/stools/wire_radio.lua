@@ -9,6 +9,8 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_radio_0", "Primary: Create/Update Radio" )
     language.Add( "WireRadioTool_channel", "Channel:" )
 	language.Add( "WireRadioTool_model", "Model:" );
+	language.Add( "WireRadioTool_values", "Values:" );
+	language.Add( "WireRadioTool_secure", "Secure:" );
 	language.Add( "sboxlimit_wire_radios", "You've hit the radio limit!" )
 	language.Add( "undone_wireradio", "Undone Wire Radio" )
 end
@@ -19,6 +21,8 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "channel" ] = 1
+TOOL.ClientConVar["values"] = 4
+TOOL.ClientConVar["secure"] = 0
 TOOL.ClientConVar[ "model" ] = "models/props_lab/binderblue.mdl"
 
 TOOL.Model = "models/props_lab/binderblue.mdl"
@@ -32,11 +36,13 @@ function TOOL:LeftClick( trace )
 	
 	local ply = self:GetOwner()
 	
-	local _channel			= self:GetClientInfo( "channel" )
-	local model             = self:GetClientInfo( "model" )
+	local _channel	= self:GetClientInfo( "channel" )
+	local model			= self:GetClientInfo( "model" )
+	local values		= self:GetClientNumber("values")
+	local secure		= (self:GetClientNumber("secure") ~= 0)
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_radio" && trace.Entity.pl == ply ) then
-		trace.Entity:Setup( _channel )
+		trace.Entity:Setup( _channel,values,secure)
 		trace.Entity.channel = _channel
 		return true
 	end
@@ -46,7 +52,7 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_radio = MakeWireRadio( ply, model, trace.HitPos, Ang, _channel )
+	local wire_radio = MakeWireRadio( ply, model, trace.HitPos, Ang, _channel,values,secure)
 	
 	local min = wire_radio:OBBMins()
 	wire_radio:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -66,7 +72,7 @@ end
 
 if SERVER then
 
-	function MakeWireRadio(pl, Model, Pos, Ang, channel, Vel, aVel, frozen )
+	function MakeWireRadio(pl, Model, Pos, Ang, channel,values, secure, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_radioes" ) ) then return nil end
 
 		local wire_radio = ents.Create( "gmod_wire_radio" )
@@ -76,22 +82,24 @@ if SERVER then
 		wire_radio:Spawn()
 		wire_radio:Activate()
 		
-		wire_radio:Setup( channel )
-		wire_radio:SetPlayer( pl )
-
 		local ttable = {
 			channel      = channel,
+			values = values,
+			secure = secure,
 			pl			= pl,
 			nocollide	= nocollide,
 		}
 		table.Merge( wire_radio:GetTable(), ttable )
+		
+		wire_radio:Setup( channel ,values ,secure )
+		wire_radio:SetPlayer( pl )
 
 		pl:AddCount( "wire_radioes", wire_radio )
 		
 		return wire_radio
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_radio", MakeWireRadio, "Model", "Pos", "Ang", "channel", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_radio", MakeWireRadio, "Model", "Pos", "Ang", "channel","values","secure", "Vel", "aVel", "frozen")
 
 end
 
@@ -154,4 +162,18 @@ function TOOL.BuildCPanel(panel)
 	})
 
 	ModelPlug_AddToCPanel(panel, "radio", "wire_radio", "#WireRadioTool_model", nil, "#WireRadioTool_model")
+	
+	panel:AddControl("Slider", {
+		Label = "#WireRadioTool_values",
+		Type = "Integer",
+		Min = "1",
+		Max = "20",
+		Command = "wire_radio_values"
+	})
+	
+	panel:AddControl("CheckBox", {
+		Label = "#WireRadioTool_secure",
+		Command = "wire_radio_secure"
+	})
+	
 end

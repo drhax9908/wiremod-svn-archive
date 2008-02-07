@@ -13,8 +13,8 @@ function ENT:Initialize()
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
 
-	self.Inputs = Wire_CreateInputs(self.Entity, { "A", "B", "C", "D",	"Channel"})
-	self.Outputs = Wire_CreateOutputs(self.Entity, { "A", "B", "C", "D" })
+	self.Inputs = Wire_CreateInputs(self, { "Channel"})
+	self.Outputs = Wire_CreateOutputs(self, { "ERRORS!!!" })
 	
 	self.Channel = 1
 	self.Transmitting = 0
@@ -22,40 +22,98 @@ function ENT:Initialize()
 	Radio_Register(self)
 end
 
-function ENT:Setup(channel)
-	channel = math.floor(channel)
+function ENT:Setup(channel,values,secure)
+	channel = math.floor(tonumber(channel) or 0)
 	self.Channel = channel
-	self.PrevOutput = nil
-
-	self:ShowOutput(Radio_Receive(channel))
+	self.Secure = secure
+	self.Old = false
+	if (tonumber(values) == nil) then
+		values = 4
+		self.Old = true
+	else
+		values = math.Round(values)
+		if (values > 20) then
+			values = 20
+		end
+		if (values < 1) then
+			values = 1
+		end
+	end
+	self.Values = values
+	local onames = {}
+	if (self.Old == false) then
+		for i = 1,self.Values do
+			onames[i] = tostring(i) //without tostring() you kill the debugger.
+		end
+	else
+		onames = {"A","B","C","D"}
+	end
+	
+	Wire_AdjustOutputs(self,onames)
+	table.insert(onames,"Channel")
+	Wire_AdjustInputs(self,onames)
+	
+	self:ReceiveRadio(Radio_Receive(self,self.Channel))
 end
 
 function ENT:TriggerInput(iname, value)
-	if (iname == "A" || iname == "B" || iname == "C" || iname == "D") then
-		self.Inputs[iname].Value = value
-    	Radio_Transmit(self.Channel, self.Inputs.A.Value or 0,self.Inputs.B.Value or 0,self.Inputs.C.Value or 0,self.Inputs.D.Value or 0)
-		self:ShowOutput(self.Outputs.A.Value or 0,self.Outputs.B.Value or 0,self.Outputs.C.Value or 0,self.Outputs.D.Value or 0)
-	end
 	if (iname == "Channel") then
 		self.Channel = math.floor(value)
-		self:ShowOutput(Radio_Receive(self.Channel))
+		self:ReceiveRadio(Radio_Receive(self,self.Channel))
+	elseif (iname != nil && value != nil) then
+		self.Inputs[iname].Value = value
+	    self:Transmit(self.Channel,iname,value)
 	end
+	self:ShowOutput()
 end
 
-function ENT:ReceiveRadio(A,B,C,D)
-	self:ShowOutput(A,B,C,D)
+function ENT:Transmit(channel,k,v)
+	Radio_Transmit(self,self.Channel,k,v)
 end
 
-function ENT:ShowOutput(A,B,C,D)
-	Wire_TriggerOutput(self.Entity,"A",A)
-	Wire_TriggerOutput(self.Entity,"B",B)
-	Wire_TriggerOutput(self.Entity,"C",C)
-	Wire_TriggerOutput(self.Entity,"D",D)
-	self:SetOverlayText( "(Channel " .. self.Channel .. ") Transmit A: " .. (self.Inputs.A.Value or 0) .. " B: " .. (self.Inputs.B.Value or 0) ..  " C: " .. (self.Inputs.C.Value or 0) ..  " D: " .. (self.Inputs.D.Value or 0) .. "\nReceive A: " .. (self.Outputs.A.Value or 0) .. " B: " .. (self.Outputs.B.Value or 0) ..  " C: " .. (self.Outputs.C.Value or 0) ..  " D: " .. (self.Outputs.D.Value or 0) )
+function ENT:ReceiveRadio(values)
+	if (values == nil) then return end
+	local i = 1
+	for k,o in pairs(values) do
+		Wire_TriggerOutput(self,k,o)
+		if (i >= self.Values) then self:ShowOutput() return end
+		i = i + 1
+	end
+	self:ShowOutput()
+end
+function ENT:SReceiveRadio(k,v)
+	if (k == nil || v == nil) then return end
+	Wire_TriggerOutput(self,k,v)
+	self:ShowOutput()
+end
+function ENT:ShowOutput()
+	if (self.Old == true) then
+		self:SetOverlayText( "(Channel " .. self.Channel .. ") Transmit A: " .. (self.Inputs.A.Value or 0) .. " B: " .. (self.Inputs.B.Value or 0) ..  " C: " .. (self.Inputs.C.Value or 0) ..  " D: " .. (self.Inputs.D.Value or 0) .. "\nReceive A: " .. (self.Outputs.A.Value or 0) .. " B: " .. (self.Outputs.B.Value or 0) ..  " C: " .. (self.Outputs.C.Value or 0) ..  " D: " .. (self.Outputs.D.Value or 0) )
+	else
+		local overlay = "(Channel " .. self.Channel .. ") Transmit"
+		for i=1,self.Values do
+			if (k!= "Channel") then if (self.Outputs[tostring(i)] != nil) then overlay = overlay .. " " .. (tostring(i) or "Error") .. ":" .. math.Round((self.Inputs[tostring(i)].Value or 0)*1000)/1000 end end
+		end
+		overlay = overlay .. "\nReceive"
+		for i=1,self.Values do
+			if (self.Outputs[tostring(i)] != nil) then overlay = overlay .. " " .. (tostring(i) or "Error") .. ":" .. math.Round((self.Outputs[tostring(i)].Value or 0)*1000)/1000 end
+		end
+		if (self.Secure == true) then overlay = overlay .. "\nSecured" end
+		self:SetOverlayText( overlay )
+	end
 end
 
 function ENT:OnRestore()
     self.BaseClass.OnRestore(self)
 
 	Radio_Register(self)
+end
+
+function ENT:OnRemove()
+	if (!self.Channel) then return end
+	for k,v in pairs(self.Inputs) do
+		if (v.Value != 0) then
+			self:Transmit(self.Channel,tostring(k),0)
+		end
+	end
 end
