@@ -94,7 +94,7 @@ function TOOL:LeftClick( trace )
 	
 	if (string.len(parsetext) == 1) then parsetext = parsetext .. parsetext end
 	
-	if (string.len(parsetext) > 2) then self:GetOwner():SendLua( "GAMEMODE:AddNotify('WTF ARE YOU DOING!!!', NOTIFY_GENERIC, 7);" ) return false end
+	if (string.len(parsetext) > 2) then self:GetOwner():SendLua( "GAMEMODE:AddNotify('Parse text cannot be more than 2 characters!', NOTIFY_GENERIC, 7);" ) return false end
 	
 	if (table.Count(lines)==0) then return false end
 	
