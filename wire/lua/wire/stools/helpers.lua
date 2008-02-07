@@ -100,8 +100,7 @@ function WireToolHelpers.Think( self )
 end
 
 if CLIENT then
-	function WireToolHelpers.MakePresetControl(panel, mode, folder)
-		if !mode or !panel then return end
+	local function GetTOOL(mode)
 		local TOOL
 		for k,v in ipairs(LocalPlayer():GetWeapons()) do
 			if v.ClassName == "gmod_tool" then
@@ -109,6 +108,11 @@ if CLIENT then
 				break
 			end
 		end
+		return TOOL
+	end
+	function WireToolHelpers.MakePresetControl(panel, mode, folder)
+		if !mode or !panel then return end
+		local TOOL = GetTOOL(mode)
 		if !TOOL then return end
 		local ctrl = vgui.Create( "ControlPresets", panel )
 		ctrl:SetPreset(folder or mode)
@@ -124,6 +128,12 @@ if CLIENT then
 			ctrl:AddOption("#Default", options)
 		end
 		panel:AddPanel( ctrl )
+	end
+	
+	function WireToolHelpers.MakeModelSel(panel, mode)
+		local TOOL = GetTOOL(mode)
+		if !TOOL then return end
+		ModelPlug_AddToCPanel(panel, TOOL.short_name, TOOL.Mode, "#ToolWireIndicator_Model")
 	end
 end
 
@@ -150,6 +160,7 @@ function WireToolSetup.open( s_mode, s_cat, s_name, s_class, f_toolmakeent )
 	TOOL.Think			= WireToolHelpers.Think
 	
 	TOOL.Mode			= "wire_"..s_mode
+	TOOL.short_name		= s_mode
 	TOOL.Category		= "Wire - "..s_cat
 	TOOL.Name			= s_name
 	TOOL.WireClass		= s_class --should begin with gmod_wire_
