@@ -205,30 +205,28 @@ function MakeWireGate(pl, Pos, Ang, Model, action, noclip, frozen, nocollide)
 	wire_gate:SetModel( Model )
 	wire_gate:Spawn()
 	wire_gate:Activate()
-	
+
 	wire_gate:Setup( GateActions[action], noclip )
 	wire_gate:SetPlayer( pl )
 
 	if wire_gate:GetPhysicsObject():IsValid() then
-		local Phys = wire_gate:GetPhysicsObject()
-		if nocollide or noclip then 
-			Phys:SetCollisionGroup(COLLISION_GROUP_WORLD)
-		end
-		Phys:EnableMotion(!frozen)
+		wire_gate:GetPhysicsObject():EnableMotion(!frozen)
+	end
+	if nocollide == true or noclip ==true then 
+		wire_gate:SetCollisionGroup(COLLISION_GROUP_WORLD)
 	end
 
-	local ttable =
-	{
+	local ttable = {
 		pl			= pl,
 		action      = action,
 		noclip		= noclip,
 		nocollide	= nocollide
 	}
-
 	table.Merge( wire_gate:GetTable(), ttable )
 
 	pl:AddCount( "wire_gates", wire_gate )
-
+	pl:AddCleanup( "gmod_wire_gate", wire_gate )
+	
 	return wire_gate
 end
 duplicator.RegisterEntityClass("gmod_wire_gate", MakeWireGate, "Pos", "Ang", "Model", "action", "noclip", "frozen", "nocollide")
