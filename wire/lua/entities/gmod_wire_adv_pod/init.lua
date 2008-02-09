@@ -27,7 +27,7 @@ function ENT:Initialize()
 	self.keys["Shift"] = IN_SPEED
 	self.keys["Zoom"] = IN_ZOOM
 	self.keys["Alt"] = IN_WALK
-	self.keys["TurnLeltKey"] = IN_LEFT
+	self.keys["TurnLeftKey"] = IN_LEFT
 	self.keys["TurnRightKey"] = IN_RIGHT
 
 	local outputs = { }
@@ -42,7 +42,7 @@ function ENT:Initialize()
 	outputs[9] = "Shift"
 	outputs[10] = "Zoom"
 	outputs[11] = "Alt"
-	outputs[12] = "TurnLeltKey"
+	outputs[12] = "TurnLeftKey"
 	outputs[13] = "TurnRightKey"
 	
 	local n = 14
@@ -191,7 +191,7 @@ function ENT:OnRestore()
 	self.keys["Shift"] = IN_SPEED
 	self.keys["Zoom"] = IN_ZOOM
 	self.keys["Alt"] = IN_WALK
-	self.keys["TurnLeltKey"] = IN_LEFT
+	self.keys["TurnLeftKey"] = IN_LEFT
 	self.keys["TurnRightKey"] = IN_RIGHT
     self.BaseClass.OnRestore(self)
 end
