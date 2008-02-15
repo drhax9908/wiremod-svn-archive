@@ -78,11 +78,10 @@ function MakeWireIndicator( pl, Model, Ang, Pos, a, ar, ag, ab, aa, b, br, bg, b
 	wire_indicator:SetPlayer(pl)
 
 	if wire_indicator:GetPhysicsObject():IsValid() then
-		local Phys = wire_indicator:GetPhysicsObject()
-		if nocollide == true then 
-			Phys:SetCollisionGroup(COLLISION_GROUP_WORLD)
-		end
-		Phys:EnableMotion(!frozen)
+		wire_indicator:GetPhysicsObject():EnableMotion(!frozen)
+	end
+	if nocollide == true then 
+		wire_indicator:SetCollisionGroup(COLLISION_GROUP_WORLD)
 	end
 
 	local ttable = {
@@ -120,6 +119,13 @@ function MakeWire7Seg( pl, Model, Ang, Pos, Norm, a, ar, ag, ab, aa, b, br, bg, 
 	Pos = Pos - Norm * min.x //correct Pos for thichness of segment
 	wire_indicators[1]:SetPos( Pos + Ang:Up() )
 	
+	if wire_indicators[1]:GetPhysicsObject():IsValid() then
+		wire_indicators[1]:GetPhysicsObject():EnableMotion(!frozen)
+	end
+	if nocollide == true then 
+		wire_indicators[1]:SetCollisionGroup(COLLISION_GROUP_WORLD)
+	end
+		
 	local ttable = {
 		pl	= pl,
 		nocollide = nocollide
@@ -143,11 +149,10 @@ function MakeWire7Seg( pl, Model, Ang, Pos, Norm, a, ar, ag, ab, aa, b, br, bg, 
 		wire_indicators[x]:SetPlayer(pl)
 		wire_indicators[x]:SetNetworkedString("WireName", segname[x-1])
 		if wire_indicators[x]:GetPhysicsObject():IsValid() then
-			local Phys = wire_indicators[x]:GetPhysicsObject()
-			if nocollide == true then 
-				Phys:SetCollisionGroup(COLLISION_GROUP_WORLD)
-			end
-			Phys:EnableMotion(!frozen)
+			wire_indicators[x]:GetPhysicsObject():EnableMotion(!frozen)
+		end
+		if nocollide == true then 
+			wire_indicators[x]:SetCollisionGroup(COLLISION_GROUP_WORLD)
 		end
 		table.Merge(wire_indicators[x]:GetTable(), ttable )
 		pl:AddCount( "wire_indicators", wire_indicators[x] )
