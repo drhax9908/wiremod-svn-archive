@@ -148,8 +148,11 @@ end
 
 
 WireToolSetup = {}
+function WireToolSetup.setCategory( s_cat )
+	WireToolSetup.cat = "Wire - "..s_cat
+end
 
-function WireToolSetup.open( s_mode, s_cat, s_name, s_class, f_toolmakeent )
+function WireToolSetup.open( s_mode, s_name, s_class, f_toolmakeent )
 	if (TOOL) then WireToolSetup.close() end
 	
 	TOOL				= ToolObj:Create()
@@ -161,7 +164,7 @@ function WireToolSetup.open( s_mode, s_cat, s_name, s_class, f_toolmakeent )
 	
 	TOOL.Mode			= "wire_"..s_mode
 	TOOL.short_name		= s_mode
-	TOOL.Category		= "Wire - "..s_cat
+	TOOL.Category		= WireToolSetup.cat
 	TOOL.Name			= s_name
 	TOOL.WireClass		= s_class --should begin with gmod_wire_
 	TOOL.ToolMakeEnt	= f_toolmakeent

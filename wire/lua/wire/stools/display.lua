@@ -1,4 +1,5 @@
 AddCSLuaFile( "display.lua" )
+WireToolSetup.setCategory( "Display" )
 
 local function GetScreenAngle( self, Ang )
 	if (self:GetClientNumber("createflat") == 1) then
@@ -9,7 +10,7 @@ end
 
 
 --wire_indicator
-WireToolSetup.open( "indicator", "Display", "Indicator", "gmod_wire_indicator", WireToolMakeIndicator )
+WireToolSetup.open( "indicator", "Indicator", "gmod_wire_indicator", WireToolMakeIndicator )
 
 if CLIENT then
     language.Add( "Tool_wire_indicator_name", "Indicator Tool (Wire)" )
@@ -117,7 +118,7 @@ end
 
 
 --wire_7seg
-WireToolSetup.open( "7seg", "Display", "7 Segment Display", "gmod_wire_indicator", WireToolMake7Seg )
+WireToolSetup.open( "7seg", "7 Segment Display", "gmod_wire_indicator", WireToolMake7Seg )
 
 TOOL.GhostAngle = Angle(90, 0, 0)
 TOOL.GhostMin = "x"
@@ -187,7 +188,7 @@ end
 
 
 --wire_consolescreen
-WireToolSetup.open( "consolescreen", "Display", "Console Screen", "gmod_wire_consolescreen", WireToolMakeConsoleScreen )
+WireToolSetup.open( "consolescreen", "Console Screen", "gmod_wire_consolescreen", WireToolMakeConsoleScreen )
 
 if CLIENT then
     language.Add( "Tool_wire_consolescreen_name", "Console Screen Tool (Wire)" )
@@ -221,7 +222,7 @@ end
 
 
 --wire_digitalscreen
-WireToolSetup.open( "digitalscreen", "Display", "Digital Screen", "gmod_wire_digitalscreen", WireToolMakeDigitalScreen )
+WireToolSetup.open( "digitalscreen", "Digital Screen", "gmod_wire_digitalscreen", WireToolMakeDigitalScreen )
 
 if CLIENT then
     language.Add( "Tool_wire_digitalscreen_name", "Digital Screen Tool (Wire)" )
@@ -255,7 +256,7 @@ end
 
 
 --wire_lamp
-WireToolSetup.open( "lamp", "Display", "Lamp", "gmod_wire_lamp", WireToolMakeLamp )
+WireToolSetup.open( "lamp", "Lamp", "gmod_wire_lamp", WireToolMakeLamp )
 
 if CLIENT then
     language.Add( "Tool_wire_lamp_name", "Wire Lamps" )
@@ -318,7 +319,7 @@ end
 
 
 --wire_light
-WireToolSetup.open( "light", "Display", "Light", "gmod_wire_light", WireToolMakeLight )
+WireToolSetup.open( "light", "Light", "gmod_wire_light", WireToolMakeLight )
 
 if CLIENT then
     language.Add( "Tool_wire_light_name", "Light Tool (Wire)" )
@@ -349,7 +350,7 @@ end
 
 
 --wire_oscilloscope
-WireToolSetup.open( "oscilloscope", "Display", "Oscilloscope", "gmod_wire_oscilloscope", WireToolMakeOscilloscope )
+WireToolSetup.open( "oscilloscope", "Oscilloscope", "gmod_wire_oscilloscope", WireToolMakeOscilloscope )
 
 if CLIENT then
     language.Add( "Tool_wire_oscilloscope_name", "Oscilloscope Tool (Wire)" )
@@ -383,7 +384,7 @@ end
 
 
 --wire_panel
-WireToolSetup.open( "panel", "Display", "Control Panel", "gmod_wire_panel", WireToolMakePanel )
+WireToolSetup.open( "panel", "Control Panel", "gmod_wire_panel", WireToolMakePanel )
 
 if CLIENT then
     language.Add( "Tool_wire_panel_name", "Control Panel Tool (Wire)" )
@@ -434,7 +435,7 @@ end
 
 
 --wire_pixel
-WireToolSetup.open( "pixel", "Display", "Pixel", "gmod_wire_panel", WireToolMakePixel )
+WireToolSetup.open( "pixel", "Pixel", "gmod_wire_panel", WireToolMakePixel )
 
 if CLIENT then
     language.Add( "Tool_wire_pixel_name", "Pixel Tool (Wire)" )
@@ -464,7 +465,7 @@ end
 
 
 --wire_screen
-WireToolSetup.open( "screen", "Display", "Screen", "gmod_wire_screen", WireToolMakeScreen )
+WireToolSetup.open( "screen", "Screen", "gmod_wire_screen", WireToolMakeScreen )
 
 if CLIENT then
     language.Add( "Tool_wire_screen_name", "Screen Tool (Wire)" )
@@ -533,7 +534,7 @@ end
 
 
 --wire_soundemitter
-WireToolSetup.open( "soundemitter", "Display", "Sound Emitter", "gmod_wire_soundemitter", WireToolMakeSoundEmitter )
+WireToolSetup.open( "soundemitter", "Sound Emitter", "gmod_wire_soundemitter", WireToolMakeSoundEmitter )
 
 if CLIENT then
     language.Add( "Tool_wire_soundemitter_name", "Sound Emitter Tool (Wire)" )
@@ -576,7 +577,7 @@ end
 --Wire text screen by greenarrow
 --http://gmodreviews.googlepages.com/
 --http://forums.facepunchstudios.com/greenarrow
-WireToolSetup.open( "textscreen", "Display", "Text Screen", "gmod_wire_textscreen", WireToolMakeTextScreen )
+WireToolSetup.open( "textscreen", "Text Screen", "gmod_wire_textscreen", WireToolMakeTextScreen )
 
 TOOL.Model = "models/kobilica/wiremonitorbig.mdl"
 
@@ -644,9 +645,10 @@ end
 
 
 -- Holography--
+WireToolSetup.setCategory( "Holography" )
 
 --wire_holoemitter
-WireToolSetup.open( "holoemitter", "Holography", "HoloEmitter", "gmod_wire_holoemitter", WireToolMakeEmitter )
+WireToolSetup.open( "holoemitter", "HoloEmitter", "gmod_wire_holoemitter", WireToolMakeEmitter )
 
 if CLIENT then
 	language.Add( "Tool_wire_holoemitter_name", "Holographic Emitter Tool (Wire)" )
@@ -710,7 +712,7 @@ end
 
 
 --wire_hologrid
-WireToolSetup.open( "hologrid", "Holography", "HoloGrid", "gmod_wire_hologrid", WireToolMakeHoloGrid )
+WireToolSetup.open( "hologrid", "HoloGrid", "gmod_wire_hologrid", WireToolMakeHoloGrid )
 
 if CLIENT then
 	language.Add( "Tool_wire_hologrid_name", "Holographic Grid Tool (Wire)" )

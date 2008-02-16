@@ -125,3 +125,39 @@ function ENT:ShowOutput( )
 	end
 	self:SetOverlayText(txt)
 end
+
+
+function MakeWireSimpleExplosive(pl, Pos, Ang, key, damage, model, removeafter, doblastdamage, radius, nocollide, frozen )
+	if ( !pl:CheckLimit( "wire_simple_explosive" ) ) then return nil end
+	
+	damage = math.Min(damage, 1500)
+	radius = math.Min(radius, 10000)
+	
+	local explosive = ents.Create( "gmod_wire_simple_explosive" )
+	
+	explosive:SetModel( model )
+	explosive:SetPos( Pos )	
+	explosive:SetAngles( Ang )
+	explosive:Spawn()
+	explosive:Activate()
+	
+	explosive:Setup( damage, delaytime, removeafter, doblastdamage, radius, nocollide )
+	explosive:SetPlayer( pl )
+	
+	local ttable = {
+		pl	= pl,
+		nocollide = nocollide,
+		key = key, 
+		damage = damage, 
+		removeafter = removeafter, 
+		doblastdamage = doblastdamage, 
+		radius = radius
+	}
+	table.Merge( explosive:GetTable(), ttable )
+	
+	pl:AddCount( "wire_simple_explosive", explosive )
+	pl:AddCleanup( "gmod_wire_simple_explosive", explosive )
+	
+	return explosive
+end
+duplicator.RegisterEntityClass( "gmod_wire_simple_explosive", MakeWireSimpleExplosive, "Pos", "Ang", "key", "damage", "Model", "removeafter", "doblastdamage", "radius", "nocollide", "frozen" )

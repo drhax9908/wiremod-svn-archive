@@ -17,6 +17,7 @@ function ENT:Initialize()
 end
 
 function ENT:Setup( xyz_mode, AngVel )
+	self.z_only = xyz_mode --was renamed but kept for dupesaves
 	self.XYZMode = xyz_mode
 	self.AngVel = AngVel
 	self:SetModes( xyz_mode,AngVel )
@@ -58,3 +59,30 @@ function ENT:Think()
 	self.Entity:NextThink(CurTime()+0.04)
 	return true
 end
+
+
+function MakeWireSpeedometer( pl, Ang, Pos, xyz_mode, AngVel, nocollide, frozen )
+	if !pl:CheckLimit( "wire_speedometers" ) then return false end
+	
+	local wire_speedometer = ents.Create("gmod_wire_speedometer")
+	if !wire_speedometer:IsValid() then return false end
+		wire_speedometer:SetAngles(Ang)
+		wire_speedometer:SetPos(Pos)
+		wire_speedometer:SetModel(MODEL)
+	wire_speedometer:Spawn()
+	
+	wire_speedometer:Setup(xyz_mode, AngVel)
+	wire_speedometer:SetPlayer(pl)
+	wire_speedometer.pl = pl
+	
+	if wire_speedometer:GetPhysicsObject():IsValid() then
+		wire_speedometer:GetPhysicsObject():EnableMotion(!frozen)
+		if nocollide == true then wire_speedometer:GetPhysicsObject():EnableCollisions(false) end
+	end
+	
+	pl:AddCount( "wire_speedometers", wire_speedometer )
+	pl:AddCleanup( "gmod_wire_speedometer", wire_speedometer )
+	
+	return wire_speedometer	
+end
+duplicator.RegisterEntityClass("gmod_wire_speedometer", MakeWireSpeedometer, "Ang", "Pos", "z_only", "AngVel", "nocollide", "frozen")

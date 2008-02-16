@@ -166,4 +166,16 @@
 		"categories"    "ranger,podctrlr"
 		"model"         "models/jaanus/wiretool/wiretool_range.mdl"
 	}
+	
+	"Weight"
+	{
+		"categories"    "weight"
+		"model"         "models/props_interiors/pot01a.mdl"
+	}
+	
+	"Huladoll"
+	{
+		"categories"    "weight"
+		"model"         "models/props_lab/huladoll.mdl"
+	}
 }
