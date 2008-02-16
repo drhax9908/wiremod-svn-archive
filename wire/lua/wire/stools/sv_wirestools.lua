@@ -42,6 +42,7 @@ function WireToolMakeGate( self, trace, ply )
 end
 
 
+include( "sv_detection.lua" )
 include( "sv_display.lua" )
 include( "sv_io.lua" )
 include( "sv_physics.lua" )

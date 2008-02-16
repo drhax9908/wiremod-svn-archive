@@ -1,8 +1,8 @@
 AddCSLuaFile( "io.lua" )
-
+WireToolSetup.setCategory( "I/O" )
 
 --wire_adv_input
-WireToolSetup.open( "adv_input", "I/O", "Adv. Input", "gmod_wire_adv_input", WireToolMakeAdvInput )
+WireToolSetup.open( "adv_input", "Adv. Input", "gmod_wire_adv_input", WireToolMakeAdvInput )
 
 if CLIENT then
     language.Add( "Tool_wire_adv_input_name", "Adv. Input Tool (Wire)" )
@@ -48,7 +48,7 @@ end
 
 
 --wire_adv_pod
-WireToolSetup.open( "adv_pod", "I/O", "Advanced Pod Controller", "gmod_wire_adv_pod", WireToolMakeAdvPod )
+WireToolSetup.open( "adv_pod", "Advanced Pod Controller", "gmod_wire_adv_pod", WireToolMakeAdvPod )
 
 if CLIENT then
 	language.Add("Tool_wire_adv_pod_name", "Advanced Pod Controller Tool (Wire)")
@@ -93,7 +93,7 @@ end
 
 
 --wire_button
-WireToolSetup.open( "button", "I/O", "Button", "gmod_wire_button", WireToolMakeButton )
+WireToolSetup.open( "button", "Button", "gmod_wire_button", WireToolMakeButton )
 
 if CLIENT then
     language.Add( "Tool_wire_button_name", "Button Tool (Wire)" )
@@ -131,7 +131,7 @@ end
 
 
 --wire_adv_input
-WireToolSetup.open( "dual_input", "I/O", "Dual Input", "gmod_wire_dual_input", WireToolMakeDualInput )
+WireToolSetup.open( "dual_input", "Dual Input", "gmod_wire_dual_input", WireToolMakeDualInput )
 
 if CLIENT then
     language.Add( "Tool_wire_dual_input_name", "Dual Input Tool (Wire)" )
@@ -187,7 +187,7 @@ end
 
 
 --wire_input
-WireToolSetup.open( "input", "I/O", "Numpad Input", "gmod_wire_input", WireToolMakeInput )
+WireToolSetup.open( "input", "Numpad Input", "gmod_wire_input", WireToolMakeInput )
 
 if CLIENT then
     language.Add( "Tool_wire_input_name", "Input Tool (Wire)" )
