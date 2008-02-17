@@ -37,7 +37,7 @@ function ENT:Setup(value)
 	for k,v in pairs(value) do
 		//line break after 4 values
 		//if (k == 5) or (k == 9) then txt = txt.."\n" end
-		txt = txt .. "1: " .. v
+		txt = txt .. k .. ": " .. v
 		if (k < #value) then txt = txt .. "\n" end
 		Wire_TriggerOutput(self.Entity, adjoutputs[k], tonumber(v))
 	end
