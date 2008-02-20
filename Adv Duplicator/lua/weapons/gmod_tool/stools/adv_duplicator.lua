@@ -18,24 +18,26 @@ if ( CLIENT ) then
 end
 
 
-TOOL.ClientConVar[ "save_filename" ]	= ""
-TOOL.ClientConVar[ "load_filename" ]	= ""
-TOOL.ClientConVar[ "load_filename2" ]	= ""
-TOOL.ClientConVar[ "load_filename_cl" ]	= ""
-TOOL.ClientConVar[ "file_desc" ]		= ""
-TOOL.ClientConVar[ "delay" ]			= 0
-TOOL.ClientConVar[ "undo_delay" ]		= 0
-TOOL.ClientConVar[ "range" ]			= "1500"
-TOOL.ClientConVar[ "show_beam" ]		= "1"
-TOOL.ClientConVar[ "debugsave" ]		= "0"
-TOOL.ClientConVar[ "LimitedGhost" ]		= "0"
-TOOL.ClientConVar[ "pasterkey" ]		= -1
-TOOL.ClientConVar[ "pasterundo_key" ]	= -1
-TOOL.ClientConVar[ "height" ]			= 0
-TOOL.ClientConVar[ "angle" ]			= 0
-TOOL.ClientConVar[ "worldOrigin" ]		= 0
-TOOL.ClientConVar[ "pastefrozen" ]		= 0
-TOOL.ClientConVar[ "pastewoconst" ]		= 0
+TOOL.ClientConVar = {
+	save_filename		= "",
+	load_filename		= "",
+	load_filename2		= "",
+	load_filename_cl	= "",
+	file_desc			= "",
+	delay				= 0,
+	undo_delay			= 0,
+	range				= 1500,
+	show_beam			= 1,
+	debugsave			= 0,
+	LimitedGhost		= 0,
+	pasterkey			= -1,
+	pasterundo_key		= -1,
+	height				= 0,
+	angle				= 0,
+	worldOrigin			= 0,
+	pastefrozen			= 0,
+	pastewoconst		= 0
+}
 
 cleanup.Register( "duplicates" )
 
@@ -273,26 +275,20 @@ end
 //
 function TOOL:MakeGhostFromTable( EntTable, pParent, HoldAngle, HoldPos )
 	if ( !EntTable ) then return end
+	if !util.IsValidModel(EntTable.Model) then return end
 	
 	local GhostEntity = nil
 	
 	if ( EntTable.Model:sub( 1, 1 ) == "*" ) then
 		GhostEntity = ents.Create( "func_physbox" )
 	else
-		GhostEntity = ents.Create( "prop_physics" )
+		GhostEntity = ents.Create( "gmod_ghost" )
 	end
 	
 	// If there are too many entities we might not spawn..
 	if ( !GhostEntity || GhostEntity == NULL ) then return end
 	
-	// If we're a ragdoll set our model  as a watermelon
-	/*if ( EntTable.Class == "prop_ragdoll" ) then
-		GhostEntity:SetModel( "models/props_junk/watermelon01.mdl" )
-	else
-		end*/
-		
-	GhostEntity:SetModel( EntTable.Model )
-	if ( EntTable.Skin ) then GhostEntity:SetSkin( EntTable.Skin ) end
+	duplicator.DoGeneric( GhostEntity, EntTable )
 	
 	GhostEntity:SetPos( EntTable.LocalPos + HoldPos )
 	GhostEntity:SetAngles( EntTable.LocalAngle )
@@ -344,6 +340,8 @@ function TOOL:StartGhostEntities( EntityTable, Head, HoldPos, HoldAngle )
 	
 	// Make the head entity first
 	self.GhostEntities[ Head ] = self:MakeGhostFromTable( EntityTable[ Head ], self.GhostEntities[ Head ], HoldAngle, HoldPos )
+	
+	if !(self.GhostEntities[ Head ] and self.GhostEntities[ Head ]:IsValid()) then return self:SetPercent(-1) end
 	
 	// Set NW vars for clientside
 	self.Weapon:SetNetworkedEntity( "GhostEntity", self.GhostEntities[ Head ] )
