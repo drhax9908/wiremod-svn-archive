@@ -1,11 +1,11 @@
 //////////////////////////////////////////////////////////////
-//			Table (De)Serialiser Module			//
-//	Turns a table in to a file with a header			//
-//	Module and common string pooling by: TAD2020		//
-//	(De)Serialise functions by the awesome DEADBEEF	//
+//			Table (De)Serialiser Module				//
+//	Turns a table in to a file with a header				//
+//	Module and common string pooling by: TAD2020			//
+//	(De)Serialise functions by the awesome DEADBEEF		//
 //////////////////////////////////////////////////////////////
 
-local ThisVersion = 1.3
+local ThisVersion = 1.4
 if (Serialiser) and (Serialiser.Version) and (Serialiser.Version > ThisVersion) then
 	Msg("======== A Newer Version of Table (De)Serialiser Module Detected ========\n"..
 		"======== This ver: "..ThisVersion.." || Detected ver: "..Serialiser.Version.." || Skipping\n")
@@ -22,6 +22,9 @@ end
 
 Serialiser = {}
 Serialiser.Version = ThisVersion
+
+Serialiser.SaveCompressed = CreateConVar( "Serialiser_SaveCompressed", 0, {FCVAR_ARCHIVE} )
+
 
 // String pooling (TAD2020)
 local function MakeStringCommon( str, StrTbl, dontpoolstrings )
@@ -217,6 +220,15 @@ function Serialiser.DeserialiseWithHeaders( InData, CallBack, pl, filepath, tool
 	
 	local Header, ExtraHeader, DataBlock, DictBlock
 	
+	if ( InData:sub(1,10) == "[zlib_b64]" ) then
+		if !dupeshare.ZLib_Installed then
+			ErrorNoHalt("zlib_b64 not installed, cannot open compressed file: ",filepath)
+			return
+		end
+		MsgN("Serialiser open compressed file")
+		InData = dupeshare.DeCompress(InData:sub(11), false, true)
+	end
+	
 	if ( InData:sub(1,13) == "[Information]" ) then
 		Header, ExtraHeader, DataBlock = InData:match("%[Information%]\n(.+)\n%[More Information%]\n(.+)\n%[Save%]\n(.+)")
 	elseif ( InData:sub(1,6) == "[Info]" ) then
@@ -391,20 +403,31 @@ function Serialiser.SaveTablesToFile( pl, FileName, Header, ExtraHeader, NumOfEn
 				
 				local function save4( pl, FileName, Header, ExtraHeader, EntsStr, ConstsStr, DictStr )
 					Msg("save4\n")
-					file.Write( FileName, table.concat(
-							{
-								"[Info]",
-								table.concat( Header, "\n" ),
-								"[More Information]",
-								table.concat( ExtraHeader, "\n" ),
-								"[Save]",
-								"Entities:"..EntsStr,
-								"Constraints:"..ConstsStr,
-								"[Dict]",
-								DictStr
-							}, "\n"
-						)
+					local output = table.concat(
+						{
+							"[Info]",
+							table.concat( Header, "\n" ),
+							"[More Information]",
+							table.concat( ExtraHeader, "\n" ),
+							"[Save]",
+							"Entities:"..EntsStr,
+							"Constraints:"..ConstsStr,
+							"[Dict]",
+							DictStr
+						}, "\n"
 					)
+					
+					if Serialiser.SaveCompressed:GetBool() then
+						if !dupeshare.ZLib_Installed then
+							ErrorNoHalt("zlib_b64 not installed, cannot compresse file: ",filepath)
+						else
+							MsgN("Serialiser save compressed file")
+							output = "[zlib_b64]"..dupeshare.Compress(output, false, true)
+						end
+					end
+					
+					file.Write( FileName, output )
+					
 					AdvDupe.UpdateList(pl)
 					AdvDupe.SetPercent(pl, 100)
 					timer.Simple(.1, AdvDupe.SetPercent, pl, -1) //hide progress bar

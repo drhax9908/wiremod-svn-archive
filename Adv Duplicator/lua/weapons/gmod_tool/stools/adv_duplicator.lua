@@ -441,7 +441,7 @@ function TOOL:UpdateGhostEntities()
 		PhysObj:SetPos( TargetPos + trace.HitPos )
 		
 		if ( !self.Weapon:GetNetworkedBool( "worldOrigin" ) ) then
-			PhysObj:SetAngle( GhostEnt.Angle + angle )
+			PhysObj:SetAngle( (GhostEnt.Angle or Angle(0,0,0)) + angle )
 		else
 			PhysObj:SetAngle( self.Weapon:GetNetworkedAngle( "HoldAngle" ) )
 		end

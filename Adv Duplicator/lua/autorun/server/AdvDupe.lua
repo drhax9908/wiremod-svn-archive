@@ -14,9 +14,9 @@ AdvDupe = {}
 
 if (CLIENT) then return end
 
-AdvDupe.Version = 1.836
-AdvDupe.ToolVersion = 1.812
-AdvDupe.FileVersion = 0.83
+AdvDupe.Version = 1.84
+AdvDupe.ToolVersion = 1.813
+AdvDupe.FileVersion = 0.84
 
 CreateConVar( "sv_AdvDupeEnablePublicFolder", 1, {FCVAR_ARCHIVE} )
 
@@ -75,14 +75,6 @@ function AdvDupe.SaveDupeTablesToFile( pl, EntTables, ConstraintTables, HeadEnti
 	ExtraHeader[11] = "StartPos:"				..string.format( "%g,%g,%g", StartPos.x, StartPos.y, StartPos.z )
 	
 	Serialiser.SaveTablesToFile( pl, filename, Header, ExtraHeader, NumOfEnts, EntTables, NumOfConst, ConstsTable, debugsave )
-	
-	//prepare the table and save it to file
-	/*local StrTbl = {}
-	temp, StrTbl = dupeshare.PrepareTableToSave(temp)
-	temp["strtbl"] = StrTbl
-	
-	temp = util.TableToKeyValues(temp)
-	file.Write(filename, temp)*/
 	
 	return filename, Creator, desc , NumOfEnts, NumOfConst, AdvDupe.FileVersion //for sending to client after saving
 end
@@ -1361,7 +1353,11 @@ function AdvDupe.RecieveFileContentStart( pl, cmd, args )
 	AdvDupe[pl].tempfilename	= args[2]
 	AdvDupe[pl].tempnum			= 0
 	AdvDupe[pl].tempfile		= {}
+	AdvDupe[pl].compress		= (pl:GetInfo("ZLib_Installed") == "1") and dupeshare.ZLib_Installed
+	MsgN("compress = ",AdvDupe[pl].compress)
 	
+	umsg.Start("AdvDupeClientSendOK", pl)
+	umsg.End()
 end
 concommand.Add("DupeRecieveFileContentStart", AdvDupe.RecieveFileContentStart)
 
@@ -1423,9 +1419,21 @@ function AdvDupe.RecieveFileContentSave( pl, filepath )
 	
 	//reassemble the pieces
 	local temp = table.concat(AdvDupe[pl].tempfile)
-	temp = dupeshare.DeCompress(temp, true)
+	
+	if Serialiser.SaveCompressed:GetBool() and dupeshare.ZLib_Installed then
+		MsgN("AdvDupe, RecieveFileContentSave: save compressed file")
+		if AdvDupe[pl].compress then
+			temp = "[zlib_b64]"..temp
+		else
+			temp = "[zlib_b64]"..dupeshare.Compress(temp, false, true)
+		end
+	else
+		temp = dupeshare.DeCompress(temp, true, AdvDupe[pl].compress)
+	end
+	
 	file.Write(filepath, temp)
-	AdvDupe[pl].tempfile	 = nil
+	
+	AdvDupe[pl].tempfile = nil
 	
 	//pl:PrintMessage(HUD_PRINTTALK, "Your file: \""..filepath.."\" was uploaded to the server")
 	AdvDupe.SendClientInfoMsg(pl, "Your file: \""..FileName.."\" was uploaded to the server")
@@ -1473,7 +1481,12 @@ function AdvDupe.SendSaveToClient( pl, filename )
 	
 	AdvDupe.SendBuffer[pl] = file.Read(filepath)
 	
-	AdvDupe.SendBuffer[pl] = dupeshare.Compress(AdvDupe.SendBuffer[pl], false)
+	local compress = (pl:GetInfo("ZLib_Installed") == "1") and dupeshare.ZLib_Installed
+	MsgN("Compress = ",compress)
+	
+	AdvDupe.SendBuffer[pl] = dupeshare.Compress(AdvDupe.SendBuffer[pl], false, compress)
+	
+	if AdvDupe.SendBuffer[pl] == nil then return end
 	
 	local len = string.len(AdvDupe.SendBuffer[pl])
 	local last = math.ceil(len / MaxDownloadLength)
@@ -1481,6 +1494,7 @@ function AdvDupe.SendSaveToClient( pl, filename )
 	umsg.Start("AdvDupeRecieveSaveStart", pl)
 		umsg.Short(last)
 		umsg.String(filename)
+		umsg.Bool(compress)
 		//umsg.String(ndir)
 	umsg.End()
 	MsgN("AdvDupe: sending file \"",filename,".txt\" in ",tostring(last)," pieces. len: ",tostring(len))
@@ -1718,7 +1732,7 @@ function AdvDupe.AdminSettings.ChangeDisallowedClass( ClassName, DisallowPlayers
 	elseif (DisallowAdminsToo) then DisallowedClasses[ClassName] = 2
 	else DisallowedClasses[ClassName] = 1 end
 end
-
+AdvDupe.AdminSettings.ChangeDisallowedClass( "sky_camera", true, true )
 
 
 //	=============
@@ -2759,7 +2773,7 @@ end
 local CheckFunctions = {}
 function AdvDupe.CheckOkEnt( Player, EntTable )
 	EntTable.Class = EntTable.Class or ""
-	MsgN("EntCheck on Class: ",EntTable.Class)
+	--MsgN("EntCheck on Class: ",EntTable.Class)
 	for HookName, TheHook in pairs (CheckFunctions) do
 		
 		local Success, Result = pcall( TheHook.Func, Player, EntTable.Class, EntTable )
@@ -2819,12 +2833,12 @@ end
 
 
 if (!SinglePlayer()) then
-	local function NoItems(Player, Class, EntTable)
+	local function NoItems(Player, ClassName, EntTable)
 		if ( Player:IsAdmin( ) or Player:IsSuperAdmin() ) then return true end
-		if string.find(Class, "^weapon_.*")
-		or string.find(Class, "^item_.*")
-		or string.find(Class, "^npc_.*") then
-			MsgN("AdvDupe: disalowing ",tostring(Player)," pasting item ",Class," (NoItems Rule)")
+		if string.find(ClassName, "^weapon_.*")
+		or string.find(ClassName, "^item_.*")
+		or string.find(ClassName, "^npc_.*") then
+			MsgN("AdvDupe: disalowing ",tostring(Player)," pasting item ",ClassName," (NoItems Rule)")
 			AdvDupe.SendClientInfoMsg(Player, "Not allowed to paste Weapons or NPCs", true)
 			return false
 		else
@@ -2857,8 +2871,8 @@ if (!SinglePlayer()) then
 		if DisallowedClasses[ClassName] then
 			if (DisallowedClasses[ClassName] == 2) then return false
 			elseif ( DisallowedClasses[ClassName] == 1 and !Player:IsAdmin( ) and !Player:IsSuperAdmin() ) then
-				MsgN("AdvDupe: disalowing ",tostring(Player)," pasting item ",Class," (DisallowedClass Rule)")
-				AdvDupe.SendClientInfoMsg(Player, "Not allowed to paste "..Class, true)
+				MsgN("AdvDupe: disalowing ",tostring(Player)," pasting item ",ClassName," (DisallowedClass Rule)")
+				AdvDupe.SendClientInfoMsg(Player, "Not allowed to paste "..ClassName, true)
 				return false
 			end
 		end
@@ -2868,6 +2882,20 @@ if (!SinglePlayer()) then
 		AdvDupe.AdminSettings.AddEntCheckHook("AdvDupe_DisallowedClasses", DisallowedClassesCheck, AddDisallowedClassesCheck)
 	end
 	AddDisallowedClassesCheck()
+	
+	
+	local function ModelCheck(Player, ClassName, EntTable)
+		if EntTable.Model and !util.IsValidModel(EntTable.Model) then
+			MsgN("AdvDupe: ",tostring(Player),": invalid model ",tostring(EntTable.Model)," on ",ClassName," (ModelCheck)")
+			AdvDupe.SendClientInfoMsg(Player, "Invalid (missing?) model "..EntTable.Model.." for "..ClassName, true)
+			return false
+		end
+		return true
+	end
+	local function AddModelCheck()
+		AdvDupe.AdminSettings.AddEntCheckHook("AdvDupe_ModelCheck", ModelCheck, AddModelCheck)
+	end
+	AddModelCheck()
 end
 
 
