@@ -6,9 +6,30 @@ dupeshare.BaseDir		= "adv_duplicator"
 dupeshare.PublicDirs	= { "=Public Folder=" }
 
 //TODO
-dupeshare.UsePWSys = false //server admins, set this to ture to use the folder password system
+dupeshare.UsePWSys = false //don't change this
 
-dupeshare.UseFileDictionary = false
+require("zlib_b64")
+dupeshare.ZLib_Installed = (zlib != nil)
+if CLIENT then
+	local i
+	if dupeshare.ZLib_Installed then i = "1" else i = "0" end
+	CreateClientConVar("ZLib_Installed", i, false, true)
+	RunConsoleCommand("ZLib_Installed",i)
+	
+	local function initplayer(um)
+		dupeshare.ZLib_Installed_SV = um:ReadBool()
+		MsgN("AdvDupeShared: Server Compression: ",dupeshare.ZLib_Installed_SV)
+	end
+	usermessage.Hook( "adsh_initplayer", initplayer )
+elseif SERVER then
+	local function initplayer(ply)
+		umsg.Start( "adsh_initplayer", ply )
+			umsg.Bool(dupeshare.ZLib_Installed)
+		umsg.End()
+	end
+	hook.Add( "PlayerInitialSpawn", "AdvDupeShPlayerInitSpawn", initplayer )
+end
+
 
 //this is only usfull for old saves, it doesn't do much for new ones.
 dupeshare.DictionaryStart = 71
@@ -132,48 +153,75 @@ dupeshare.Dictionary = {
 	[116]	= {"|N", "name"},
 }
 
-function dupeshare.Compress(str, ForConCommand)
+
+function dupeshare.Compress(str, ForConCommand, usezlib)
 	
 	local beforelen = string.len(str)
 	
-	if ( string.Left(str, 5) == "\"Out\"") then
-		for k = dupeshare.DictionaryStart,dupeshare.DictionarySize do
-			local entry = dupeshare.Dictionary[k]
-			str = string.gsub(str, entry[2], entry[1])
+	if usezlib and dupeshare.ZLib_Installed then
+		
+		if ( str:sub(1,10) == "[zlib_b64]" ) then
+			MsgN("dupeshare.Compress file compressed already")
+			str = str:sub(11)
+		else
+			str = zlib.Compress(str, 9):Encode()
+		end
+		
+	else
+		if ( str:sub(1,10) == "[zlib_b64]" ) then
+			if !dupeshare.ZLib_Installed then
+				ErrorNoHalt("zlib_b64 not installed, cannot uncompresse file\n")
+				return
+			end
+			MsgN("dupeshare.Compress uncompressed file")
+			str = dupeshare.DeCompress(str:sub(11), false, true)
+		end
+		
+		if ( string.Left(str, 5) == "\"Out\"") then
+			for k = dupeshare.DictionaryStart,dupeshare.DictionarySize do
+				local entry = dupeshare.Dictionary[k]
+				str = string.gsub(str, entry[2], entry[1])
+			end
+		end
+		
+		if (ForConCommand) then //„…ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ ¡¢£¤¦§¨©ª unused special chars
+			str = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(str,"ƒ","|ƒ"),"†","|†"),"¥","|¥"),"‡","|‡"),"¤","|¤") //incase it has any of these...
+			--str = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(str,"\n","ƒ"),"\t","†"),"\"","¥"),"bind","‡"),"exec","¤")
+			str = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(str,"\n","ƒ"),"\t","†"),"\"","¥"),"\"","‡"),"'","¤")
 		end
 	end
 	
-	if (ForConCommand) then //„…ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ ¡¢£¤¦§¨©ª unused special chars
-		str = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(str,"ƒ","|ƒ"),"†","|†"),"¥","|¥"),"‡","|‡"),"¤","|¤") //incase it has any of these...
-		str = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(str,"\n","ƒ"),"\t","†"),"\"","¥"),"bind","‡"),"exec","¤")
-	end
-	
 	local afterlen = string.len(str)
-	Msg("String Compressed: "..afterlen.." / "..beforelen.." ratio: "..(afterlen / beforelen).."%\n")
+	MsgN("String Compressed: ",afterlen," / ",beforelen," ( ",(math.Round((afterlen / beforelen) * 10000) / 100),"% )")
 	
 	return str
-	
 end
 
-function dupeshare.DeCompress(str, FormConCommand)
+function dupeshare.DeCompress(str, FormConCommand, usezlib)
 	
 	local afterlen = string.len(str)
 	
-	for k=dupeshare.DictionarySize,dupeshare.DictionaryStart,-1 do
-		local entry = dupeshare.Dictionary[k]
-		str = string.gsub(str, entry[1], entry[2])
-	end
-	
-	if (FormConCommand) then
-		str = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(str,"|ƒ","ƒ"),"|†","†"),"|¥","¥"),"|‡","‡"),"|¤","¤")
-		str = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(str,"ƒ","\n"),"†","\t"),"¥","\""),"‡","bind"),"¤","exec")
+	if usezlib and dupeshare.ZLib_Installed then
+		
+		str = b64.Decode(str):Decompress()
+		
+	else	
+		for k=dupeshare.DictionarySize,dupeshare.DictionaryStart,-1 do
+			local entry = dupeshare.Dictionary[k]
+			str = string.gsub(str, entry[1], entry[2])
+		end
+		
+		if (FormConCommand) then
+			str = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(str,"|ƒ","ƒ"),"|†","†"),"|¥","¥"),"|‡","‡"),"|¤","¤")
+			--str = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(str,"ƒ","\n"),"†","\t"),"¥","\""),"‡","bind"),"¤","exec")
+			str = string.gsub(string.gsub(string.gsub(string.gsub(string.gsub(str,"ƒ","\n"),"†","\t"),"¥","\""),"‡","\""),"¤","'")
+		end
 	end
 	
 	local beforelen = string.len(str)
-	Msg("String Decompressed: "..afterlen.." / "..beforelen.." ratio: "..(afterlen / beforelen).."%\n")
+	MsgN("String Decompressed: ",afterlen," / ",beforelen," ( ",(math.Round((afterlen / beforelen) * 10000) / 100),"% )")
 	
 	return str
-	
 end
 
 
@@ -219,92 +267,6 @@ end
 /*---------------------------------------------------------
 	table util functions
 ---------------------------------------------------------*/
-/*---------------------------------------------------------
-Name: dupeshare.PrepareTableToSave( table )
-Desc: Converts a table in to a lot tables to protect 
-	vectors, angles, bools, numbers, and indexes
-	from being horribly raped by TableToKeyValues
----------------------------------------------------------*/
-function dupeshare.PrepareTableToSave_Old( t, done)
-	
-	local done = done or {}
-	local tbl = {}
-	
-	for k, v in pairs ( t ) do
-		if ( type( v ) == "table" and !done[ v ] ) then
-			done[ v ] = true
-			tbl[ k ] = dupeshare.PrepareTableToSave_Old ( v, done )
-			tbl[k].__name = k
-		else
-			if ( type(v) == "Vector" ) then
-				local x, y, z = v.x, v.y, v.z
-				if y == 0 then y = nil end
-				if z == 0 then z = nil end
-				tbl[k] = { __type = "Vector", x = x, y = y, z = z, __name = k }
-			elseif ( type(v) == "Angle" ) then
-				local p,y,r = v.pitch, v.yaw, v.roll
-				if p == 0 then p = nil end
-				if y == 0 then y = nil end
-				if r == 0 then r = nil end
-				tbl[k] = { __type = "Angle", p = p, y = y, r = r, __name = k }
-			elseif ( type(v) == "boolean" ) then
-				tbl[k] = { __type = "Bool", v = tostring( v ), __name = k }
-			elseif ( type(v) == "number" ) then
-				tbl[k] = { __type = "Number", v = tostring( v ), __name = k }
-			else
-				tbl[k] = { __type = "String", v = tostring( v ), __name = k }
-			end
-		end
-	end
-	
-	return tbl
-end
-function dupeshare.PrepareTableToSave( t, done, StrTbl, StrIdxTbl, StrNum, Saved)
-	
-	local DontPoolFirst = not done
-	local done = done or {}
-	local tbl = {}
-	local StrTbl = StrTbl or {}
-	local StrIdxTbl = StrIdxTbl or {}
-	local StrNum = StrNum or 0
-	local Saved = Saved or 0
-	
-	for k, v in pairs ( t ) do
-		local VType = type( v )
-		local CaseKey
-		CaseKey, StrTbl, StrIdxTbl, StrNum, Saved = dupeshare.ProtectCase(k, StrTbl, StrIdxTbl, StrNum, Saved, DontPoolFirst)
-		if ( VType == "table" and !done[ v ] ) then
-			done[ v ] = true
-			if (CaseKey == "^Version^Info") then
-				tbl[ CaseKey ], StrTbl, StrIdxTbl, StrNum, Saved = dupeshare.PrepareTableToSave( v, nil, StrTbl, StrIdxTbl, StrNum, Saved )
-			else
-				tbl[ CaseKey ], StrTbl, StrIdxTbl, StrNum, Saved = dupeshare.PrepareTableToSave( v, done, StrTbl, StrIdxTbl, StrNum, Saved )
-			end
-		else
-			if ( VType == "Vector" ) then
-				tbl[ CaseKey ] = "V"..tostring(v.x).." "..tostring(v.y).." "..tostring(v.z)
-			elseif ( VType == "Angle" ) then
-				tbl[ CaseKey ] = "A"..tostring(v.pitch).." "..tostring(v.yaw).." "..tostring(v.roll)
-			elseif ( VType == "boolean" ) then
-				if v then
-					tbl[ CaseKey ] = "T"
-				else
-					tbl[ CaseKey ] = "F"
-				end
-			elseif ( VType == "number" ) then
-				tbl[ CaseKey ] = "N"..tostring( v )
-			elseif ( VType == "string" ) then
-				if (dupeshare.UseFileDictionary) and (!DontPoolFirst) and (string.len(v) > 3) then //pool comon strngs
-					tbl[ CaseKey ], StrTbl, StrIdxTbl, StrNum, Saved = dupeshare.MakeStringCommon(v, StrTbl, StrIdxTbl, StrNum, Saved)
-				else
-					tbl[ CaseKey ] = "S"..v
-				end
-			end
-		end
-	end
-	--Msg("=Saved = "..Saved.." =\n")
-	return tbl, StrTbl, StrIdxTbl, StrNum, Saved
-end
 
 /*---------------------------------------------------------
    Name: dupeshare.RebuildTableFromLoad( table )
@@ -390,29 +352,6 @@ function dupeshare.RebuildTableFromLoad( t, done, StrTbl )
 	
 end
 
-//used by above functions to protect case from evil KeyValuesToTable
-function dupeshare.ProtectCase(str, StrTbl, StrIdxTbl, StrNum, Saved, DontPoolFirst)
-	local str2 = ""
-	
-	//mark numeric index and return
-	if type(str) == "number" then
-		str2 = "#"..tostring(str)
-	elseif (dupeshare.UseFileDictionary) and (!DontPoolFirst) and (string.len(str) > 3) then //pool comon strngs
-		//local StrIndx
-		str2, StrTbl, StrIdxTbl, StrNum, Saved = dupeshare.MakeStringCommon(str, StrTbl, StrIdxTbl, StrNum, Saved, DontPoolFirst)
-		//str2 = StrIndx
-	else
-		//puts a carrot in front of capatials
-		for i = 1, string.len(str) do
-			local chr = string.sub(str, i, i)
-			if (chr != string.lower(chr)) then chr = "^"..chr end
-			str2 = str2..chr
-		end
-		--Msg("  str= "..str.." > "..str2)
-	end
-	return str2, StrTbl, StrIdxTbl, StrNum, Saved
-end
-
 function dupeshare.UnprotectCase(str, StrTbl)
 	local str2 = ""
 	
@@ -436,29 +375,11 @@ function dupeshare.UnprotectCase(str, StrTbl)
 	return str2
 end
 
-function dupeshare.MakeStringCommon(str, StrTbl, StrIdxTbl, StrNum, Saved)
-	local StrIndx
-	if dupeshare.StringIdxDictionary[ str ] then
-		StrIndx = "&" .. tostring( dupeshare.StringIdxDictionary[ str ] )
-		Saved = Saved + 1
-	elseif StrIdxTbl[ str ] then
-		StrIndx = "*" .. tostring( StrIdxTbl[ str ] )
-		Saved = Saved + 1
-	else
-		StrNum = StrNum + 1
-		--Msg("StrNum= "..StrNum.."\n")
-		StrIdxTbl[ str ] = StrNum
-		StrTbl[ StrNum ] = str
-		StrIndx = "*"..StrNum
-	end
-	return StrIndx, StrTbl, StrIdxTbl, StrNum, Saved
-end
-
 
 
 //from http://lua-users.org/wiki/StringRecipes
 function dupeshare.split(str, pat)
-   local t = {}  -- NOTE: use {n = 0} in Lua-5.0
+   local t = {}
    local fpat = "(.-)" .. pat
    local last_end = 1
    local s, e, cap = str:find(fpat, 1)
@@ -475,7 +396,6 @@ function dupeshare.split(str, pat)
    end
    return t
 end
-
 
 
 /*---------------------------------------------------------
@@ -544,48 +464,6 @@ function dupeshare.UpDir(path)
 	return "" //if path/.. is root
 end
 
-
-
-//
-//	Common Strings Dictionary
-//
-dupeshare.StringDictionary = {}
-dupeshare.StringIdxDictionary = {}
-/*for k,s in ipairs(dupeshare.StringDictionary) do
-	dupeshare.StringIdxDictionary[ s ] = k
-end*/
-
-
-
-//
-// base255 conversion: based off the python module
-//
-//	the idea sounds good, but it can't handel negitive or float numbers
-//
-function dupeshare.number_to_base255(number)
-	-- least significant "byte" will be first in result
-	local list = {}
-	-- take it apart as a series of numbers
-	local str = ""
-	while number != 0 do
-		local n = math.fmod(number, 255)+1
-		table.insert(list, n)
-		Msg("====n = "..n.."\n")
-		str = str .. string.char(math.floor(n))
-		number = number / 255
-	end
-	-- reassemble it as a string and return it
-	return str //string.char(unpack(list))
-end
-
-function dupeshare.base255_to_number(base255)
-	local temp = String.byte(base255, 1, string.len(base255))
-	local number = 0
-	for _,byte in pairs(temp) do
-		number = number * 255 + byte
-	end
-	return number
-end
 
 
 Msg("==== Advanced Duplicator v."..dupeshare.Version.." shared module installed! ====\n")

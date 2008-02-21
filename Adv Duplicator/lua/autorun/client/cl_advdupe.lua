@@ -49,7 +49,6 @@ local function SendSaveDataToServer(offset, last)
 	
 	for i = 1,UploadPiecesPerSend do
 		if (offset <= last) then
-			--Msg("sending piece: "..offset.." / "..last.."\n")
 			if ( AdvDupeClient.PercentText == "Uploading" ) then
 				AdvDupeClient.UpdatePercent( math.ceil( offset / last * 100 ) )
 			end
@@ -58,28 +57,22 @@ local function SendSaveDataToServer(offset, last)
 			
 			local str = ""
 			if (offset == last) then
-				//local pos = (len - ((last - 1) * MaxUploadLength))
-				//str = string.Right(AdvDupeClient.temp2, pos)
-				
 				str = AdvDupeClient.temp2:sub( SubStrStart )
 				
-				Msg("sending last string\n") //len: "..tostring(string.len(str)).."\n")
+				Msg("sending last string\n")
 				AdvDupeClient.UpdatePercent( 100 )
 				timer.Simple(.2, AdvDupeClient.UpdatePercent, -1)
-				
 			else
-				//str = string.Right(string.Left(AdvDupeClient.temp2, (offset * MaxUploadLength)),MaxUploadLength)
-				
 				str = AdvDupeClient.temp2:sub( SubStrStart, SubStrStart + MaxUploadLength - 1 )
-				
 			end
-			LocalPlayer():ConCommand("_DFC "..tostring(offset).." \""..str.."\"")
+			
+			RunConsoleCommand("_DFC", tostring(offset), str)
 		end
 		offset = offset + 1
 	end
 	
 	if (offset > last) then
-		timer.Simple( 1, function() LocalPlayer():ConCommand("DupeRecieveFileContentFinish") end )
+		timer.Simple( 1, function() RunConsoleCommand("DupeRecieveFileContentFinish") end )
 	else
 		timer.Simple( UploadSendDelay, SendSaveDataToServer, offset, last )
 	end
@@ -101,9 +94,11 @@ function AdvDupeClient.UpLoadFile( pl, filepath )
 	local filename = dupeshare.GetFileFromFilename(filepath)
 	
 	//load from file
-	local temp = file.Read(filepath)
+	AdvDupeClient.temp2 = file.Read(filepath)
 	
-	AdvDupeClient.temp2 = dupeshare.Compress(temp, true)
+	local compress = dupeshare.ZLib_Installed_SV and dupeshare.ZLib_Installed
+	
+	AdvDupeClient.temp2 = dupeshare.Compress(AdvDupeClient.temp2, true, compress)	
 	
 	//this is where we send the data to the serer
 	local len = string.len(AdvDupeClient.temp2)
@@ -114,19 +109,27 @@ function AdvDupeClient.UpLoadFile( pl, filepath )
 		AdvDupeClient.temp2 = nil
 		return
 	end
+	AdvDupeClient.temp2last = last
 	
-	pl:ConCommand("DupeRecieveFileContentStart "..tostring(last).." \""..string.gsub(filename,".txt","").."\"")
+	--pl:ConCommand("DupeRecieveFileContentStart "..tostring(last).." \""..string.gsub(filename,".txt","").."\"")
+	RunConsoleCommand("DupeRecieveFileContentStart", tostring(last), string.gsub(filename,".txt",""))
+end
 	
+	
+local function SendOK(um)
 	AdvDupeClient.SetPercentText( "Uploading" )
 	
-	timer.Simple( 0.2, SendSaveDataToServer, 1, last ) --TODO: wait from server ok to start uploading
+	timer.Simple( 0.2, SendSaveDataToServer, 1, AdvDupeClient.temp2last ) --TODO: wait from server ok to start uploading
 	
 	AdvDupeClient.sending = true
 	AdvDuplicator_UpdateControlPanel()
 end
+usermessage.Hook("AdvDupeClientSendOK", SendOK)
+
 
 local function SendFinished( um )
 	AdvDupeClient.temp2 = nil
+	AdvDupeClient.temp2last = nil
 	AdvDupeClient.sending = false
 	AdvDuplicator_UpdateControlPanel()
 end
@@ -162,6 +165,7 @@ local function ClientRecieveSaveStart( um )
 	
 	RecieveBuffer.numofpieces	= um:ReadShort()
 	RecieveBuffer.filename		= um:ReadString()
+	RecieveBuffer.compress		= um:ReadBool()
 	RecieveBuffer.dir			= AdvDupeClient.CLcdir
 	
 	RecieveBuffer.recievedpieces = 0
@@ -187,7 +191,7 @@ local function ClientRecieveSaveData( um )
 	RecieveBuffer.pieces[piece] = temp
 	
 	if (RecieveBuffer.recievedpieces >= RecieveBuffer.numofpieces) then
-		Msg("recieved last piece\n")
+		MsgN("recieved last piece")
 		AdvDupeClient.UpdatePercent( 100 )
 		timer.Simple(.5, AdvDupeClient.UpdatePercent, -1)
 		AdvDupeClient.ClientSaveRecievedFile()
@@ -202,14 +206,23 @@ function AdvDupeClient.ClientSaveRecievedFile()
 	//reassemble the pieces
 	local temp = table.concat(RecieveBuffer.pieces)
 	
-	temp = dupeshare.DeCompress(temp, false)
+	if Serialiser.SaveCompressed:GetBool() and dupeshare.ZLib_Installed then
+		MsgN("AdvDupe, ClientSaveRecievedFile: save compressed file")
+		if RecieveBuffer.compress then
+			temp = "[zlib_b64]"..temp
+		else
+			temp = "[zlib_b64]"..dupeshare.Compress(temp, false, true)
+		end
+	else
+		temp = dupeshare.DeCompress(temp, false, RecieveBuffer.compress)
+	end
 	
 	file.Write(filepath, temp)
 	
 	AdvDupeClient.Error( "Your file: \""..filepath.."\" was downloaded form the server", false, true )
-	Msg("Your file: \""..filepath.."\" was downloaded form the server\n")
+	MsgN("Your file: \""..filepath.."\" was downloaded form the server")
 	
-	LocalPlayer():ConCommand("adv_duplicator_updatelist")
+	RunConsoleCommand("adv_duplicator_updatelist")
 	
 end
 
