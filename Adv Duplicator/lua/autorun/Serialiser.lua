@@ -22,6 +22,7 @@ end
 
 Serialiser = {}
 Serialiser.Version = ThisVersion
+AddCSLuaFile("Serialiser.lua")
 
 Serialiser.SaveCompressed = CreateConVar( "Serialiser_SaveCompressed", 0, {FCVAR_ARCHIVE} )
 
