@@ -32,9 +32,3 @@ function ENT:GetChannelValue( int )
 	if (int == 7) then	return self.Entity:GetNetworkedFloat( "cVal7" ) end
 	if (int == 8) then	return self.Entity:GetNetworkedFloat( "cVal8" ) end
 end
-
-function ENT:OnRemove()
-	if CLIENT then
-		self.screen:Remove()
-	end
-end
