@@ -36,23 +36,23 @@ end
 
 function ENT:SetSound(sound)
 	self:StopSounds()
-	if ( sound ) then
-		util.PrecacheSound( sound )
+	if (sound) then
+		util.PrecacheSound(sound)
 		self.sound = (sound or ""):gsub("[/\\]+","/")
-		self.SND = CreateSound( self.Entity, Sound(self.sound) )
 		self:SetOverlayText( "Sound: " .. self.sound .. "\nOff" )
 	end
 end
 
 function ENT:StartSounds()
-	if (self.SND) then
-		self.SND:Play()
-	end
+	self:StopSounds(); -- Stop old sounds before
+	self.SND = CreateSound(self.Entity,Sound(self.sound)); -- Create new CSoundPatch (Must be created everytime again, or some people do not hear it)
+	self.SND:Play();
 end
 
 function ENT:StopSounds()
 	if (self.SND) then
 		self.SND:Stop()
+		self.SND = nil;
 	end
 end
 
