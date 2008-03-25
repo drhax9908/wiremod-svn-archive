@@ -113,7 +113,7 @@ function ENT:Think()
 		trace.endpos = trace.start + beam_x + beam_y + beam_z
 	end
 	trace.filter = { self.Entity }
-	if (self.trace_water) then trace.mask = MASK_ALL end
+	if (self.trace_water) then trace.mask = -1 end
 	trace = util.TraceLine(trace)
 
 	local dist = 0
