@@ -33,7 +33,6 @@ function WireToolMakeAdvPod( self, trace, ply )
 	if not self:GetSWEP():CheckLimit("wire_pods") then return false end
 	
 	local Model = self:GetClientInfo( "model" )
-	
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 

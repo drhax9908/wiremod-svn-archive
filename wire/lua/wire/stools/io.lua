@@ -63,7 +63,9 @@ if SERVER then
 end
 
 TOOL.NoLeftOnClass = true
-TOOL.ClientConVar = {model	= "models/jaanus/wiretool/wiretool_siren.mdl"}
+TOOL.ClientConVar = {
+	model = "models/jaanus/wiretool/wiretool_siren.mdl"
+	}
 
 function TOOL:RightClick(trace)
 	if (self:GetStage() == 0) and trace.Entity:GetClass() == "gmod_wire_adv_pod" then
@@ -71,7 +73,12 @@ function TOOL:RightClick(trace)
 		self:SetStage(1)
 		return true
 	elseif self:GetStage() == 1 and trace.Entity.GetPassenger then
-		self.PodCont:Setup(trace.Entity)
+		local owner = self:GetOwner()
+		if self.PodCont:Link(trace.Entity,false) then
+			owner:PrintMessage(HUD_PRINTTALK,"Adv. Pod linked!")
+		else
+			owner:PrintMessage(HUD_PRINTTALK,"Link failed!")
+		end
 		self:SetStage(0)
 		self.PodCont = nil
 		return true
@@ -88,9 +95,6 @@ end
 function TOOL.BuildCPanel(panel)
 	ModelPlug_AddToCPanel(panel, "podctrlr", "wire_adv_pod", "#ToolWireIndicator_Model")
 end
-
-
-
 
 --wire_button
 WireToolSetup.open( "button", "Button", "gmod_wire_button", WireToolMakeButton )

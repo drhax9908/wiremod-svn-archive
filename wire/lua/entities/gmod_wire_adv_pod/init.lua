@@ -87,12 +87,22 @@ function ENT:Initialize()
 	self.BE_rel = false
 end
 
-function ENT:Setup(pod)
+function ENT:Link(pod,RC)
+	if !pod then return false end
 	self.Pod = pod
+	self.RC = RC
+	return true
+end
+
+local function RCEject(Ply)
+	Ply.Active = false
+	Ply:SetMoveType(2)
+	Ply:DrawViewModel(true)
 end
 
 function ENT:TriggerInput(iname, value)
 		if (iname == "Lock") then
+			if self.RC then return end
 			if !(self.Pod && self.Pod:IsValid()) then return end
 			if (value > 0) then
 				if (self.lockvar == 0) then
@@ -106,12 +116,21 @@ function ENT:TriggerInput(iname, value)
 		elseif (iname == "Terminate") then
 			if self.Ply and self.Ply:IsValid() then
 				if (value > 0) then
+					if self.RC then
+						RCEject(self.Ply)
+						self.Ply.Linked = false
+					end
 					self.Ply:Kill()
 				end
 			end
 		elseif (iname == "Strip weapons") then
 			if self.Ply and self.Ply:IsValid() then
 				if (value > 0) then
+					if self.RC then
+						RCEject(self.Ply)
+						self.Ply.Linked = false
+						self.Ply:PrintMessage(HUD_PRINTTALK,"Your control has been terminated, and your weapons stripped!\n")
+					end
 					self.Ply:StripWeapons( )
 					self.Ply:PrintMessage(HUD_PRINTTALK,"Your weapons have been stripped!\n")
 				end
@@ -119,7 +138,11 @@ function ENT:TriggerInput(iname, value)
 		elseif (iname == "Eject") then
 			if self.Ply and self.Ply:IsValid() then
 				if (value > 0) then
-					self.Ply:ExitVehicle( )
+					if self.RC then
+						RCEject(self.Ply)
+					else
+						self.Ply:ExitVehicle( )
+					end
 				end
 			end
 		elseif (iname == "Disable") then
@@ -137,6 +160,7 @@ function ENT:TriggerInput(iname, value)
 				end
 			end
 		elseif (iname == "Brake") then
+			if self.RC then return end
 			if value > 0 then
 				self.Pod:Fire("TurnOff", "1", 0)
 				self.Pod:Fire("HandBrakeOn", "1", 0)
@@ -175,9 +199,6 @@ function ENT:TriggerInput(iname, value)
 		end
 end
 
-function ENT:ShowOutput(value)
-end
-
 function ENT:OnRestore()
 	self.keys = { }
 	self.keys["Mouse1"] = IN_ATTACK
@@ -203,11 +224,28 @@ local function fixupangle(angle)
 end
 
 function ENT:Think()
-	if self.Pod then
-		local Ply = self.Pod:GetPassenger()
+	if self.Pod and self.Pod:IsValid() then
+		local Ply = nil
+		if self.RC then
+			if !self.Pod:Alive() then self.Pod.Active = false end
+			if self.Pod.Active then
+				Ply = self.Pod
+			end
+		else
+			Ply = self.Pod:GetPassenger()
+		end
 		if Ply and Ply:IsValid() then
-			if self.Ply == nil then self.junkBE = CurTime() + 2 end
+			local temp = false
+			if self.Ply == nil then
+				if !self.RC then
+					self.junkBE = CurTime() + 2
+				else
+					self.junkBE = nil
+					temp = true
+				end
+			end
 			self.Ply = Ply
+			if temp then self.Ply.Initial = self.Ply:GetAimVector():Angle() end
 			self.Entity:SetColor( 0, 255, 0, 255 )
 			Wire_TriggerOutput( self.Entity, "Active", 1)
 			
@@ -241,12 +279,21 @@ function ENT:Think()
 				Wire_TriggerOutput( self.Entity, "Z", EyeTrace.HitPos.z )
 				
 				local AimVectorAngle = self.Ply:GetAimVector():Angle()
-				local PodAngle = self.Pod:GetAngles()
+				
 				if self.BE_rel then
-					Wire_TriggerOutput(self.Entity, "Bearing", fixupangle(AimVectorAngle.y - PodAngle.y))
-					Wire_TriggerOutput(self.Entity, "Elevation", fixupangle(AimVectorAngle.p - PodAngle.p))
+					local PodAngle
+					if !self.RC then
+						PodAngle = self.Pod:GetAngles()
+						if self.Pod:GetClass() != "prop_vehicle_prisoner_pod" then
+							PodAngle.y = PodAngle.y + 90
+						end
+					else
+						PodAngle = self.Ply.Initial
+					end
+					Wire_TriggerOutput(self.Entity, "Bearing", fixupangle((AimVectorAngle.y - PodAngle.y)))
+					Wire_TriggerOutput(self.Entity, "Elevation", fixupangle(-(AimVectorAngle.p - PodAngle.p)))
 				else
-					Wire_TriggerOutput(self.Entity, "Bearing", -(fixupangle(AimVectorAngle.y) + 90))
+					Wire_TriggerOutput(self.Entity, "Bearing", fixupangle((AimVectorAngle.y)))
 					Wire_TriggerOutput(self.Entity, "Elevation", fixupangle(-AimVectorAngle.p))
 				end
 				
@@ -272,6 +319,7 @@ function ENT:Think()
 				for k, _ in pairs( self.keys )  do
 					Wire_TriggerOutput( self.Entity, k, 0 )
 				end
+				self.Pod.Initial = nil
 				Wire_TriggerOutput( self.Entity, "Team", 0)
 				Wire_TriggerOutput( self.Entity, "Health", 0)
 				Wire_TriggerOutput( self.Entity, "Armor", 0)
@@ -281,6 +329,7 @@ function ENT:Think()
 				Wire_TriggerOutput( self.Entity, "Z", 0)
 				Wire_TriggerOutput(self.Entity, "Bearing", 0)
 				Wire_TriggerOutput(self.Entity, "Elevation", 0)
+				self.Ply.Initial = nil
 			end
 			self.Ply = nil
 		end
@@ -304,7 +353,7 @@ end
 --Duplicator support to save pod link (TAD2020)
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
-	if (self.Pod) and (self.Pod:IsValid()) then
+	if (self.Pod) and (self.Pod:IsValid()) and (!self.RC) then
 	    info.pod = self.Pod:EntIndex()
 	end
 	return info
