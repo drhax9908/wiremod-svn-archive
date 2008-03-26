@@ -87,20 +87,6 @@ function SWEP:OwnerChanged()
 end
 
 function SWEP:SecondaryAttack()
-	-- all this is debugging shit, remove
-	local tracedata = {}
-	tracedata.start = self.Owner:GetShootPos()
-	tracedata.endpos = self.Owner:GetShootPos()+(self.Owner:GetAimVector()*80)
-	tracedata.filter = self.Owner
-	local trace = util.TraceLine(tracedata)
-	if trace.HitNonWorld and trace.Entity:GetClass() == "gmod_wire_adv_pod" then
-		if trace.Entity.Pod then
-			self.Owner:PrintMessage(HUD_PRINTTALK,trace.Entity.Pod:GetClass())
-		else
-			self.Owner:PrintMessage(HUD_PRINTTALK,"nil")
-		end
-		self.Owner:PrintMessage(HUD_PRINTTALK,trace.Entity.RC)
-	end
 end
 
 function SWEP:Initialize()
