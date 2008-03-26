@@ -17,7 +17,7 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_grabbers', 20)
-	CreateConVar('sbox_wire_grabbers_onlyOwnersProps', 0)
+	CreateConVar('sbox_wire_grabbers_onlyOwnersProps', 1)
 end
 
 TOOL.ClientConVar[ "Model" ] = "models/jaanus/wiretool/wiretool_range.mdl"
