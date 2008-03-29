@@ -366,6 +366,8 @@ function WireLib.AdjustSpecialInputs(ent, names, types, desc)
 	end
 
 	WireLib.SetPathNames(ent, names)
+	
+	return inputs
 end
 
 
@@ -417,6 +419,8 @@ function WireLib.AdjustSpecialOutputs(ent, names, types, desc)
 	end
 	
 	ent.Outputs = outputs -- Just to be sure
+	
+	return outputs
 end
 
 
