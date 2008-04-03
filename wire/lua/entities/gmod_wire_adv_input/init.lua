@@ -20,7 +20,7 @@ end
 function ENT:Setup(key_more,key_less,toggle,value_min,value_max,value_start,speed)
 	self.keymore = key_more
 	self.keyless = key_less
-	self.toggle = (toggle == 1)
+	self.toggle = (toggle == 1 || toggle == true)
 	self.value_min = value_min
 	self.value_max = value_max	
 	self.Value = value_start
