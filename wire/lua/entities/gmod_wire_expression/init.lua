@@ -275,8 +275,8 @@ ENT._log10_1 =   function (self, n)    return math.log10(n) end
 ENT._mod_2 =     function (self, x, y) return math.fmod(x, y) end
 ENT._sgn_1 =     function (self, n)    if n > 0 then return 1 elseif n < 0 then return -1 else return 0 end end
 ENT._sqrt_1 =    function (self, n)    return math.sqrt(n) end
-ENT._cbrt_1 =    function (self, n)    return 10 ^ ((1 / 3) * math.log10(n ^ 3)) end
-ENT._root_1 =    function (self, n, k) return 10 ^ ((1 / k) * math.log10(n ^ k)) end
+ENT._cbrt_1 =    function (self, n)    if n > 0 then return n ^ (1 / 3) else return math.abs(n) ^ (1 / 3) end end
+ENT._root_1 =    function (self, n, k) if n > 0 || k % 2 == 0 then return n ^ (1 / k) else return math.abs(n) ^ (1 / k) end end
 ENT._round_1 =   function (self, n)    return math.Round(n) end
 ENT._round_2 =   function (self, n, d) return math.Round(n * 10 ^ d) / 10 ^ d end
 ENT._e_0 =       function (self)       return math.exp(1) end
