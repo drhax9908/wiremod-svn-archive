@@ -388,7 +388,7 @@ end
 
 --[[ 2 : exp4 , exp4->exp3; ]]
 function WireGateExpressionParser:expr2()
-	if self.symtok and self.symtok == "fun" and self.symarg == "concommand" then
+	if self.symtok and self.symtok == "fun" and (self.symarg == "concommand" or self.symarg == "concmd") then
 		self:NextSymbol()
 		self:Expect("lpa")
 		local arg = self.symarg
