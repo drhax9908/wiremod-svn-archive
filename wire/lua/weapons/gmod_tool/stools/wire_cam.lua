@@ -6,7 +6,7 @@ TOOL.ConfigName		= ""
 if ( CLIENT ) then
     language.Add( "Tool_wire_cam_name", "Cam Controller Tool (Wire)" )
     language.Add( "Tool_wire_cam_desc", "Spawns a constant Cam Controller prop for use with the wire system." )
-    language.Add( "Tool_wire_cam_0", "Primary: Create/Update Cam Controller" )
+    language.Add( "Tool_wire_cam_0", "Primary: Create/Update Cam Controller Secondary: Link a cam controller to a Pod." )
     language.Add( "WirecamTool_cam", "Camera Controller:" )
 	language.Add( "sboxlimit_wire_cams", "You've hit Cam Controller limit!" )
 	language.Add( "undone_Wire cam", "Undone Wire Cam Controller" )
@@ -53,6 +53,23 @@ function TOOL:LeftClick( trace )
 	ply:AddCleanup( "wire_cams", wire_cam )
 
 	return true
+end
+
+function TOOL:RightClick( trace )
+	if (!trace.HitPos) then return false end
+    if ( CLIENT ) then return true end
+    if!(trace.Entity)then return false end
+    if!(trace.Entity:IsValid())then return false end
+    if (self.Oldent && trace.Entity:IsVehicle()) then
+        self.Oldent.CamPod = trace.Entity;
+        self.Oldent = nil;
+        return true
+    else
+        if (trace.Entity:GetClass() == "gmod_wire_cameracontroller") then
+            self.Oldent = trace.Entity;
+            return true
+        end
+    end
 end
 
 if (SERVER) then
