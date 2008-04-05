@@ -47,6 +47,8 @@ local function CompileProgram_Timer(firstpass)
 	if (!firstpass && cpu_tool.SecondPassDone) then return end
 	if (!cpu_tool:GetOwner()) then return end
 
+	if (!cpu_tool.LineNumber) then return end
+
 	local SendLinesMax = cpu_tool.LineNumber + cpu_tool:GetOwner():GetInfo("wire_cpu_compile_bandwidth")	
 	if (SendLinesMax > table.Count(SourceCode)) then SendLinesMax = table.Count(SourceCode) end
 	local Rate = 0
