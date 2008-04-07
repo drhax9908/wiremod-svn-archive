@@ -240,6 +240,7 @@ function ENT:Explode( )
 	if (!self.exploding) then return end //why are we exploding if we shouldn't be
 	
 	ply = self:GetPlayer() or self.Entity
+	if(not ValidEntity(ply)) then ply = self.Entity end;
 	
 	if (self.InvisibleAtZero) then
 		ply:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
