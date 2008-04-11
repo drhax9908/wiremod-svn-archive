@@ -47,3 +47,7 @@ end
 function ENT:GetBeamRange()
 	return self.Entity:GetNetworkedFloat("BeamLength") or 0
 end
+
+function ENT:GetBeamLength()
+	return self.Entity:GetNetworkedFloat("BeamLength") or 0
+end
