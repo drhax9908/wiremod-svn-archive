@@ -33,7 +33,7 @@ function ENT:Initialize()
 	
 	if ( RES_DISTRIB == 2 ) then
 	    RD_AddResource(self, "energy", 0)
-	    LS_RegisterEnt(self, "Generator")
+	    if(LS_RegisterEnt) then LS_RegisterEnt(self, "Generator") end; -- Not everyone uses LifeSupport if he has Resource Distribution installed
 	end
 	
 	//self.Entity:StartMotionController()
