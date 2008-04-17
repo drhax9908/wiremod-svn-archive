@@ -329,7 +329,8 @@ function ENT:Think()
 				Wire_TriggerOutput( self.Entity, "Z", 0)
 				Wire_TriggerOutput(self.Entity, "Bearing", 0)
 				Wire_TriggerOutput(self.Entity, "Elevation", 0)
-				self.Ply.Initial = nil
+				-- How the HECK shall this work? You are checking for "if Ply and Ply:IsValid() then" and now we are in the "else". So the player is invalid.
+				--self.Ply.Initial = nil
 			end
 			self.Ply = nil
 		end
