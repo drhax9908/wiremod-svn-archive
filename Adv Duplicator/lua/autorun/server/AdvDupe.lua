@@ -812,19 +812,11 @@ end
 duplicator.RegisterEntityModifier( "CollisionGroupMod", CollisionGroupModifier )
 
 local function SetMassMod( Player, Entity, Data )
-
-	if ( Data and Data.Mass ) then
-		if (Data.Mass > 0) then
-			Entity:GetPhysicsObject():SetMass(Data.Mass)
-			duplicator.StoreEntityModifier( Entity, "MassMod", Data )
-		else 
-			self:GetOwner():ConCommand("weight_set 1");
-			self:GetOwner():SendLua("ZMass()");
-		end
-		
-		return true
+	if Data and Data.Mass and Data.Mass > 0 then
+		Entity:GetPhysicsObject():SetMass(Data.Mass)
+		duplicator.StoreEntityModifier( Entity, "MassMod", Data )
 	end
-	
+	return true
 end
 duplicator.RegisterEntityModifier( "MassMod", SetMassMod )
 
