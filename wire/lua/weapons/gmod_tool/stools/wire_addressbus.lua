@@ -33,16 +33,26 @@ function TOOL:LeftClick( trace )
 
 	local ply = self:GetOwner()
 
-	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_addressbus" && trace.Entity.pl == ply ) then
-		trace.Entity.MemStart[1] = self:GetClientInfo( "addrspace1st" ) + 1 - 1 //Dont laugh, without it
-		trace.Entity.MemStart[2] = self:GetClientInfo( "addrspace2st" ) + 1 - 1 //it wont work!!!
-		trace.Entity.MemStart[3] = self:GetClientInfo( "addrspace3st" ) + 1 - 1
-		trace.Entity.MemStart[4] = self:GetClientInfo( "addrspace4st" ) + 1 - 1
-		trace.Entity.MemEnd[1] = trace.Entity.MemStart[1] + self:GetClientInfo( "addrspace1sz" ) - 1
-		trace.Entity.MemEnd[2] = trace.Entity.MemStart[2] + self:GetClientInfo( "addrspace2sz" ) - 1
-		trace.Entity.MemEnd[3] = trace.Entity.MemStart[3] + self:GetClientInfo( "addrspace3sz" ) - 1
-		trace.Entity.MemEnd[4] = trace.Entity.MemStart[4] + self:GetClientInfo( "addrspace4sz" ) - 1
-		--TODO: update vars used by duplicator
+	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_addressbus" && trace.Entity.ply == ply ) then
+		trace.Entity.MemStart[1] = tonumber(self:GetClientInfo( "addrspace1st" ))
+		trace.Entity.MemStart[2] = tonumber(self:GetClientInfo( "addrspace2st" ))
+		trace.Entity.MemStart[3] = tonumber(self:GetClientInfo( "addrspace3st" ))
+		trace.Entity.MemStart[4] = tonumber(self:GetClientInfo( "addrspace4st" ))
+		trace.Entity.MemEnd[1] = trace.Entity.MemStart[1] + tonumber(self:GetClientInfo( "addrspace1sz" )) - 1
+		trace.Entity.MemEnd[2] = trace.Entity.MemStart[2] + tonumber(self:GetClientInfo( "addrspace2sz" )) - 1
+		trace.Entity.MemEnd[3] = trace.Entity.MemStart[3] + tonumber(self:GetClientInfo( "addrspace3sz" )) - 1
+		trace.Entity.MemEnd[4] = trace.Entity.MemStart[4] + tonumber(self:GetClientInfo( "addrspace4sz" )) - 1
+		local ttable = {
+			Mem1st = self:GetClientInfo( "addrspace1st" ),
+			Mem2st = self:GetClientInfo( "addrspace2st" ),
+			Mem3st = self:GetClientInfo( "addrspace3st" ),
+			Mem4st = self:GetClientInfo( "addrspace4st" ),
+			Mem1sz = self:GetClientInfo( "addrspace1sz" ),
+			Mem2sz = self:GetClientInfo( "addrspace2sz" ),
+			Mem3sz = self:GetClientInfo( "addrspace3sz" ),
+			Mem4sz = self:GetClientInfo( "addrspace4sz" )
+		}
+		table.Merge(trace.Entity:GetTable(), ttable )
 		return true
 	end
 
@@ -56,25 +66,16 @@ function TOOL:LeftClick( trace )
 	local Smodel = self:GetClientInfo( "model" )
 	Ang.pitch = Ang.pitch + 90
 	
-	wire_addressbus = MakeWireAddressBus( ply, Ang, self:GetClientInfo( "addrspace1st" ), 
+	wire_addressbus = MakeWireAddressBus( ply, trace.HitPos, Ang, self:GetClientInfo( "addrspace1st" ), 
 							self:GetClientInfo( "addrspace2st" ), 
 							self:GetClientInfo( "addrspace3st" ), 
 							self:GetClientInfo( "addrspace4st" ),
 							self:GetClientInfo( "addrspace1sz" ), 
 							self:GetClientInfo( "addrspace2sz" ), 
 							self:GetClientInfo( "addrspace3sz" ), 
-							self:GetClientInfo( "addrspace4sz" ), trace.HitPos, Smodel )
+							self:GetClientInfo( "addrspace4sz" ), Smodel )
 	local min = wire_addressbus:OBBMins()
 	wire_addressbus:SetPos( trace.HitPos - trace.HitNormal * min.z )
-
-	wire_addressbus.MemStart[1] = self:GetClientInfo( "addrspace1st" ) + 1 - 1 //Dont laugh, without it
-	wire_addressbus.MemStart[2] = self:GetClientInfo( "addrspace2st" ) + 1 - 1 //it wont work!!!
-	wire_addressbus.MemStart[3] = self:GetClientInfo( "addrspace3st" ) + 1 - 1
-	wire_addressbus.MemStart[4] = self:GetClientInfo( "addrspace4st" ) + 1 - 1
-	wire_addressbus.MemEnd[1] = wire_addressbus.MemStart[1] + self:GetClientInfo( "addrspace1sz" ) - 1
-	wire_addressbus.MemEnd[2] = wire_addressbus.MemStart[2] + self:GetClientInfo( "addrspace2sz" ) - 1
-	wire_addressbus.MemEnd[3] = wire_addressbus.MemStart[3] + self:GetClientInfo( "addrspace3sz" ) - 1
-	wire_addressbus.MemEnd[4] = wire_addressbus.MemStart[4] + self:GetClientInfo( "addrspace4sz" ) - 1
 
 	local const = WireLib.Weld(wire_addressbus, trace.Entity, trace.PhysicsBone, true)
 
@@ -90,9 +91,9 @@ end
 
 if (SERVER) then
 
-	function MakeWireAddressBus( pl, Ang, Mem1st, Mem2st, Mem3st, Mem4st, Mem1sz, Mem2sz, Mem3sz, Mem4sz, Pos, Smodel )
+	function MakeWireAddressBus( ply, Pos, Ang, Mem1st, Mem2st, Mem3st, Mem4st, Mem1sz, Mem2sz, Mem3sz, Mem4sz, Smodel )
 		
-		if ( !pl:CheckLimit( "wire_addressbuss" ) ) then return false end
+		if ( !ply:CheckLimit( "wire_addressbuss" ) ) then return false end
 		
 		local wire_addressbus = ents.Create( "gmod_wire_addressbus" )
 		if (!wire_addressbus:IsValid()) then return false end
@@ -102,22 +103,30 @@ if (SERVER) then
 		wire_addressbus:SetPos( Pos )
 		wire_addressbus:Spawn()
 		
-		//FIXME: I cant do anything with it right now
-//		wire_addressbus.MemStart[1] = Mem1st + 1 - 1
-//		wire_addressbus.MemStart[2] = Mem2st + 1 - 1
-//		wire_addressbus.MemStart[3] = Mem3st + 1 - 1
-//		wire_addressbus.MemStart[4] = Mem4st + 1 - 1
-//		wire_addressbus.MemEnd[1] = Mem1st + Mem1sz - 1
-//		wire_addressbus.MemEnd[2] = Mem2st + Mem2sz - 1
-//		wire_addressbus.MemEnd[3] = Mem3st + Mem3sz - 1
-//		wire_addressbus.MemEnd[4] = Mem4st + Mem4sz - 1
+		if (!Mem1st or Mem1st == "") then Mem1st = "0" end
+		if (!Mem2st or Mem2st == "") then Mem2st = "0" end
+		if (!Mem3st or Mem3st == "") then Mem3st = "0" end
+		if (!Mem4st or Mem4st == "") then Mem4st = "0" end
+		if (!Mem1sz or Mem1sz == "") then Mem1sz = "0" end
+		if (!Mem2sz or Mem2sz == "") then Mem2sz = "0" end
+		if (!Mem3sz or Mem3sz == "") then Mem3sz = "0" end
+		if (!Mem4sz or Mem4sz == "") then Mem4sz = "0" end
+		
+		wire_addressbus.MemStart[1] = tonumber(Mem1st)
+		wire_addressbus.MemStart[2] = tonumber(Mem2st)
+		wire_addressbus.MemStart[3] = tonumber(Mem3st)
+		wire_addressbus.MemStart[4] = tonumber(Mem4st)
+		wire_addressbus.MemEnd[1] = wire_addressbus.MemStart[1] + tonumber(Mem1sz) - 1
+		wire_addressbus.MemEnd[2] = wire_addressbus.MemStart[2] + tonumber(Mem2sz) - 1
+		wire_addressbus.MemEnd[3] = wire_addressbus.MemStart[3] + tonumber(Mem3sz) - 1
+		wire_addressbus.MemEnd[4] = wire_addressbus.MemStart[4] + tonumber(Mem4sz) - 1
 
-		wire_addressbus:SetPlayer(pl)
+		wire_addressbus:SetPlayer(ply)
 			
 		//KTNX TAD!
 
 		local ttable = {
-			pl = pl,
+			ply = ply,
 			Smodel = Smodel,
 			Mem1st = Mem1st,
 			Mem2st = Mem2st,
@@ -130,13 +139,13 @@ if (SERVER) then
 		}
 		table.Merge(wire_addressbus:GetTable(), ttable )
 		
-		pl:AddCount( "wire_addressbuss", wire_addressbus )
+		ply:AddCount( "wire_addressbuss", wire_addressbus )
 		
 		return wire_addressbus
 		
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_addressbus", MakeWireAddressBus, "Ang", "Mem1st", "Mem2st", "Mem3st", "Mem4st", "Mem1sz", "Mem2sz", "Mem3sz", "Mem4sz", "Pos", "Smodel")
+	duplicator.RegisterEntityClass("gmod_wire_addressbus", MakeWireAddressBus, "Pos", "Ang", "Mem1st", "Mem2st", "Mem3st", "Mem4st", "Mem1sz", "Mem2sz", "Mem3sz", "Mem4sz", "Smodel")
 
 end
 
@@ -210,7 +219,7 @@ function TOOL.BuildCPanel(panel)
 		Label = "Address space 1 offset",
 		Type = "Integer",
 		Min = "0",
-		Max = "256",
+		Max = "16777216",
 		Command = "wire_addressbus_addrspace1st"
 	})
 
@@ -218,7 +227,7 @@ function TOOL.BuildCPanel(panel)
 		Label = "Address space 1 size",
 		Type = "Integer",
 		Min = "0",
-		Max = "256",
+		Max = "16777216",
 		Command = "wire_addressbus_addrspace1sz"
 	})
 
@@ -226,7 +235,7 @@ function TOOL.BuildCPanel(panel)
 		Label = "Address space 2 offset",
 		Type = "Integer",
 		Min = "0",
-		Max = "256",
+		Max = "16777216",
 		Command = "wire_addressbus_addrspace2st"
 	})
 
@@ -234,7 +243,7 @@ function TOOL.BuildCPanel(panel)
 		Label = "Address space 2 size",
 		Type = "Integer",
 		Min = "0",
-		Max = "256",
+		Max = "16777216",
 		Command = "wire_addressbus_addrspace2sz"
 	})
 
@@ -242,7 +251,7 @@ function TOOL.BuildCPanel(panel)
 		Label = "Address space 3 offset",
 		Type = "Integer",
 		Min = "0",
-		Max = "256",
+		Max = "16777216",
 		Command = "wire_addressbus_addrspace3st"
 	})
 
@@ -250,7 +259,7 @@ function TOOL.BuildCPanel(panel)
 		Label = "Address space 3 size",
 		Type = "Integer",
 		Min = "0",
-		Max = "256",
+		Max = "16777216",
 		Command = "wire_addressbus_addrspace3sz"
 	})
 
@@ -258,7 +267,7 @@ function TOOL.BuildCPanel(panel)
 		Label = "Address space 4 offset",
 		Type = "Integer",
 		Min = "0",
-		Max = "256",
+		Max = "16777216",
 		Command = "wire_addressbus_addrspace4st"
 	})
 
@@ -266,7 +275,7 @@ function TOOL.BuildCPanel(panel)
 		Label = "Address space 4 size",
 		Type = "Integer",
 		Min = "0",
-		Max = "256",
+		Max = "16777216",
 		Command = "wire_addressbus_addrspace4sz"
 	})
 end
