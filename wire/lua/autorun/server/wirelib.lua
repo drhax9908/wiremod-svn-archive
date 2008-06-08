@@ -1039,8 +1039,12 @@ concommand.Add( "Wire_UseOldGateOutputLables", WireUseOldGateOutputLables )*/
 
 
 local function PrintWireVersion(pl,cmd,args)
-	pl:SendLua("Msg(\"===============================\n===  Wire  "..WireVersion.."   Installed  ===\n===============================\n\")")
+	if (WireVersion) then
+		pl:SendLua("Msg(\"===============================\n===  Wire  "..WireVersion.."   Installed  ===\n===============================\n\")")
+	end
 end
 concommand.Add( "Wire_PrintVersion", PrintWireVersion )
 
-Msg("===============================\n===  Wire  "..WireVersion.."   Installed  ===\n===============================\n")
+if (WireVersion) then
+	Msg("===============================\n===  Wire  "..WireVersion.."   Installed  ===\n===============================\n")
+end
