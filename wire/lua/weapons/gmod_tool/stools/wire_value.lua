@@ -184,6 +184,12 @@ function TOOL.BuildCPanel(panel)
 		}
 	})
 	
+	panel:AddControl("Button", {
+		Text = "Reset values to zero",
+		Name = "Reset",
+		Command = "wire_value_value1 0;wire_value_value2 0;wire_value_value3 0;wire_value_value4 0;wire_value_value5 0;wire_value_value6 0;wire_value_value7 0;wire_value_value8 0;wire_value_value9 0;wire_value_value10 0;wire_value_value11 0;wire_value_value12 0;"
+	})
+	
 	panel:AddControl("Slider", {
 		Label = "Num of Values",
 		Type = "Integer",
