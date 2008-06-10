@@ -39,6 +39,9 @@ function ENT:SetSound(sound)
 	if (sound) then
 		util.PrecacheSound(sound)
 		self.sound = (sound or ""):gsub("[/\\]+","/")
+		while (string.find(self.sound,"%s") && (string.find(self.sound,"%s") == 1)) do
+			self.sound = string.Right(self.sound,1)
+		end
 		self:SetOverlayText( "Sound: " .. self.sound .. "\nOff" )
 	end
 end
