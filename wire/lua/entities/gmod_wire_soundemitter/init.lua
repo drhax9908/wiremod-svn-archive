@@ -37,11 +37,13 @@ end
 function ENT:SetSound(sound)
 	self:StopSounds()
 	if (sound) then
-		util.PrecacheSound(sound)
-		self.sound = (sound or ""):gsub("[/\\]+","/")
-		while (string.find(self.sound,"%s") && (string.find(self.sound,"%s") == 1)) do
-			self.sound = string.Right(self.sound,1)
+		local parsedsound = sound
+		while (string.find(parsedsound,"%s") && (string.find(parsedsound,"%s") == 1)) do
+			parsedsound = string.sub(parsedsound,2,string.len(parsedsound))
 		end
+		util.PrecacheSound(parsedsound)
+
+		self.sound = (parsedsound or ""):gsub("[/\\]+","/")
 		self:SetOverlayText( "Sound: " .. self.sound .. "\nOff" )
 	end
 end
