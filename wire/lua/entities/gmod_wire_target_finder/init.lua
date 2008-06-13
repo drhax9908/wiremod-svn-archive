@@ -20,8 +20,8 @@ function ENT:Initialize()
 end
 
 function ENT:Setup(maxrange, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel, vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity, notownersstuff, steamname, colorcheck, colortarget, pcolR, pcolG, pcolB, pcolA, checkbuddylist, onbuddylist )
- 	self.MaxRange			= maxrange
-	self.MinRange			= minrange or 1
+ 	self.MaxRange			= math.Clamp(maxrange,0,16383)
+	self.MinRange			= math.Clamp(minrange,0,16383) or 1
 	self.TargetPlayer		= players
 	self.NoTargetOwner		= notargetowner
 	self.NoTargetOwnersStuff = notownersstuff
