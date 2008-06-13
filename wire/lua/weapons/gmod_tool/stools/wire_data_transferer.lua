@@ -11,8 +11,9 @@ if ( CLIENT ) then
     language.Add( "WireDataTransfererTool_Range", "Max Range:" )
     language.Add( "WireDataTransfererTool_DefaultZero","Default To Zero:")
     language.Add( "WireDataTransfererTool_Model", "Choose a Model:")
-	language.Add( "sboxlimit_wire_data_transferers", "You've hit data transferers limit!" )
-	language.Add( "undone_Wire Data Transferer", "Undone Wire data transferer" )
+    language.Add( "sboxlimit_wire_data_transferers", "You've hit data transferers limit!" )
+    language.Add( "undone_Wire Data Transferer", "Undone Wire data transferer" )
+    language.Add( "Cleanup_wire_data_transferers", "Wire Data Transferers" )
 end
 
 if (SERVER) then

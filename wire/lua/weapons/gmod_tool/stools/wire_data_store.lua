@@ -8,8 +8,9 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_data_store_desc", "Spawns a data store." )
     language.Add( "Tool_wire_data_store_0", "Primary: Create/Update data store" )
     language.Add( "WireDataStoreTool_data_store", "Data Store:" )
-	language.Add( "sboxlimit_wire_data_stores", "You've hit data stores limit!" )
-	language.Add( "undone_Wire Data Store", "Undone Wire data store" )
+    language.Add( "sboxlimit_wire_data_stores", "You've hit data stores limit!" )
+    language.Add( "undone_Wire Data Store", "Undone Wire data store" )
+    language.Add( "Cleanup_wire_data_stores", "Wire Data Stores" )
 end
 
 if (SERVER) then

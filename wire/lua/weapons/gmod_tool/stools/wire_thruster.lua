@@ -19,6 +19,8 @@ if ( CLIENT ) then
     language.Add( "WireThrusterTool_uwater", "Works under water:" )
 	language.Add( "sboxlimit_wire_thrusters", "You've hit thrusters limit!" )
 	language.Add( "undone_wirethruster", "Undone Wire Thruster" )
+
+    language.Add( "Cleanup_wire_thrusters", "Wire Thrusters" )
 end
 
 if (SERVER) then

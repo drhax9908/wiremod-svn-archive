@@ -31,11 +31,11 @@ if ( CLIENT ) then
 	language.Add( "Tool_wire_turret_sound", "Shoot Sound" )
 	language.Add( "Tool_wire_turret_tracernum", "Tracer Every x Bullets:" )
 	
-	language.Add( "Undone_wire_turret", "Undone Turret" )
+	language.Add( "Undone_wire_turret", "Undone Wire Turret" )
 	
-	language.Add( "Cleanup_wire_turrets", "Turret" )
-	language.Add( "Cleaned_wire_turrets", "Cleaned up all Turrets" )
-	language.Add( "SBoxLimit_wire_turrets", "You've reached the Turret limit!" )
+	language.Add( "Cleanup_wire_turrets", "Wire Turrets" )
+	language.Add( "Cleaned_wire_turrets", "Cleaned up all Wire Turrets" )
+	language.Add( "SBoxLimit_wire_turrets", "You've reached the Wire Turret limit!" )
 end
 
 if (SERVER) then

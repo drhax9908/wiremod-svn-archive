@@ -10,8 +10,9 @@ if ( CLIENT ) then
     language.Add( "WireNumpadTool_toggle", "Toggle:" )
     language.Add( "WireNumpadTool_value_on", "Value On:" )
     language.Add( "WireNumpadTool_value_off", "Value Off:" )
-	language.Add( "sboxlimit_wire_numpad", "You've hit wired numpads limit!" )
-	language.Add( "undone_wirenumpad", "Undone Wire Numpad" )
+    language.Add( "sboxlimit_wire_numpad", "You've hit wired numpads limit!" )
+    language.Add( "undone_wirenumpad", "Undone Wire Numpad" )
+    language.Add( "Cleanup_wire_numpads", "Wire Numpads" )
 end
 
 if (SERVER) then

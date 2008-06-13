@@ -7,8 +7,9 @@ if ( CLIENT ) then
 	language.Add( "Tool_wire_cpu_name", "CPU Tool (Wire)" )
 	language.Add( "Tool_wire_cpu_desc", "Spawns a Central Processor Unit (Programmable gate)" )
 	language.Add( "Tool_wire_cpu_0", "Primary: Create empty CPU / Upload current program to it" )
-	language.Add( "sboxlimit_wire_cpu", "You've hit CPU limit!" )
+    	language.Add( "sboxlimit_wire_cpu", "You've hit CPU limit!" )
 	language.Add( "undone_wirecpu", "Undone Wire CPU" )
+	language.Add( "Cleanup_wire_cpus", "Wire CPU's" )
 end
 
 if (SERVER) then

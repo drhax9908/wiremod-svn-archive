@@ -9,7 +9,8 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_adv_0", "Primary: Attach to selected input.\nSecondary: Next input.\nReload: Unlink selected input." )
     language.Add( "Tool_wire_adv_1", "Primary: Attach to output.\nSecondary: Attach but continue.\nReload: Cancel." )
     language.Add( "Tool_wire_adv_2", "Primary: Confirm attach to output.\nSecondary: Next output.\nReload: Cancel." )
-	language.Add( "WireTool_scrollwithoutmod", "Scroll without modifier key:" )
+    language.Add( "WireTool_scrollwithoutmod", "Scroll without modifier key:" )
+    language.Add( "Cleanup_wireconstraints", "Wire constraints" )
 end
 
 TOOL.ClientConVar[ "width" ] = "2"
