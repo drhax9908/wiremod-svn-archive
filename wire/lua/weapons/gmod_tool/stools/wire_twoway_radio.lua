@@ -11,6 +11,8 @@ if ( CLIENT ) then
 	language.Add( "WireRadioTwoWayTool_model", "Model:" );
 	language.Add( "sboxlimit_wire_twoway_radios", "You've hit the two-way radio limit!" )
 	language.Add( "undone_wiretwowayradio", "Undone Wire Two-way Radio" )
+
+    language.Add( "Cleanup_wire_twoway_radioes", "Wire Two-way Radios" )
 end
 
 if (SERVER) then

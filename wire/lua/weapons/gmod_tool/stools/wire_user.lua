@@ -12,6 +12,7 @@ if ( CLIENT ) then
     language.Add( "WireUserTool_Model", "Choose a Model:")
 	language.Add( "sboxlimit_wire_users", "You've hit Users limit!" )
 	language.Add( "undone_Wire User", "Undone Wire User" )
+    language.Add( "Cleanup_wire_users", "Wire Users" )
 end
 
 if (SERVER) then

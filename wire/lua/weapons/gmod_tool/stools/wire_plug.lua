@@ -8,10 +8,12 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_plug_desc", "Spawns plugs and sockets for use with the wire system." )
     language.Add( "Tool_wire_plug_0", "Primary: Create/Update Socket    Secondary: Create/Update Plug" )
     language.Add( "WirePlugTool_colour", "Colour:" )
-	language.Add( "sboxlimit_wire_plugs", "You've hit plugs limit!" )
-	language.Add( "sboxlimit_wire_sockets", "You've hit sockets limit!" )
-	language.Add( "undone_wireplug", "Undone Wire Plug" )
-	language.Add( "undone_wiresocket", "Undone Wire Socket" )
+    language.Add( "sboxlimit_wire_plugs", "You've hit plugs limit!" )
+    language.Add( "sboxlimit_wire_sockets", "You've hit sockets limit!" )
+    language.Add( "undone_wireplug", "Undone Wire Plug" )
+    language.Add( "undone_wiresocket", "Undone Wire Socket" )
+    language.Add( "Cleanup_wire_plugs", "Wire Plugs" )
+    language.Add( "Cleanup_wire_sockets", "Wire Sockets" )
 end
 
 if (SERVER) then
@@ -29,6 +31,7 @@ TOOL.PlugModel = "models/props_lab/tpplug.mdl"
 TOOL.SocketModel = "models/props_lab/tpplugholder_single.mdl"
 
 cleanup.Register( "wire_plugs" )
+cleanup.Register( "wire_sockets" )
 
 // Create socket
 function TOOL:LeftClick( trace )

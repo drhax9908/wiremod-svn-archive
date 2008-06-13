@@ -73,8 +73,9 @@ if CLIENT then
     language.Add("Tool_wire_gate_expression_name", "Expression Gate Tool (Wire)")
     language.Add("Tool_wire_gate_expression_desc", "Spawns an expression gate for use with the wire system.")
     language.Add("Tool_wire_gate_expression_0",    "Primary: Create/Update Expression Gate, Secondary: Load Expression Gate, Reload: Reset Variables")
-	language.Add("sboxlimit_wire_gate_expression", "You've hit expression gates limit!")
-	language.Add("undone_wiregateexpression",      "Undone Wire Expression Gate")
+    language.Add("sboxlimit_wire_gate_expression", "You've hit expression gates limit!")
+    language.Add("undone_wiregateexpression",      "Undone Wire Expression Gate")
+    language.Add("Cleanup_wire_gate_expressions",    "Wire Expression Gates" )
 end
 
 if SERVER then

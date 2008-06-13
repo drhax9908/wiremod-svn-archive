@@ -11,8 +11,9 @@ if ( CLIENT ) then
     language.Add( "WireColorerTool_outColor", "Output Color:" )
     language.Add( "WireColorerTool_Range", "Max Range:" )
     language.Add( "WireColorerTool_Model", "Choose a Model:")
-	language.Add( "sboxlimit_wire_colorers", "You've hit Colorers limit!" )
-	language.Add( "undone_Wire Colorer", "Undone Wire Colorer" )
+    language.Add( "sboxlimit_wire_colorers", "You've hit Colorers limit!" )
+    language.Add( "undone_Wire Colorer", "Undone Wire Colorer" )
+    language.Add( "Cleanup_wire_colorers", "Wire Colorers" )
 end
 
 if (SERVER) then

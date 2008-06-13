@@ -32,7 +32,7 @@ if ( CLIENT ) then
     language.Add( "WireTool_width", "Width:" )
     language.Add( "WireTool_material", "Material:" )
     language.Add( "WireTool_colour", "Material:" )
-	language.Add( "undone_wire", "Undone Wire" )
+    language.Add( "undone_wire", "Undone Wire" )
 end
 
 TOOL.ClientConVar[ "width" ] = "2"

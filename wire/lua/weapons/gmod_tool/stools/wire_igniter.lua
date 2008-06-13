@@ -11,8 +11,9 @@ if ( CLIENT ) then
     language.Add( "WireIgniterTool_trgply", "Allow Player Igniting:" )
     language.Add( "WireIgniterTool_Range", "Max Range:" )
     language.Add( "WireIgniterTool_Model", "Choose a Model:")
-	language.Add( "sboxlimit_wire_igniters", "You've hit igniters limit!" )
-	language.Add( "undone_Wire Igniter", "Undone Wire Igniter" )
+    language.Add( "sboxlimit_wire_igniters", "You've hit igniters limit!" )
+    language.Add( "undone_Wire Igniter", "Undone Wire Igniter" )
+    language.Add( "Cleanup_wire_igniters", "Wire Igniters" )
 end
 
 if (SERVER) then

@@ -7,8 +7,9 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_locator_name", "Locator Beacon Tool (Wire)" )
     language.Add( "Tool_wire_locator_desc", "Spawns a locator beacon for use with the wire system." )
     language.Add( "Tool_wire_locator_0", "Primary: Create/Update Locator Beacon" )
-	language.Add( "sboxlimit_wire_locators", "You've hit locator beacons limit!" )
-	language.Add( "undone_wirelocator", "Undone Wire Locator Beacon" )
+    language.Add( "sboxlimit_wire_locators", "You've hit locator beacons limit!" )
+    language.Add( "undone_wirelocator", "Undone Wire Locator Beacon" )
+    language.Add( "Cleanup_wire_locators", "Wire Locator Beacons" )
 end
 
 if (SERVER) then

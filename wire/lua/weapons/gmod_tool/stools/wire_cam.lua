@@ -8,8 +8,9 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_cam_desc", "Spawns a constant Cam Controller prop for use with the wire system." )
     language.Add( "Tool_wire_cam_0", "Primary: Create/Update Cam Controller Secondary: Link a cam controller to a Pod." )
     language.Add( "WirecamTool_cam", "Camera Controller:" )
-	language.Add( "sboxlimit_wire_cams", "You've hit Cam Controller limit!" )
-	language.Add( "undone_Wire cam", "Undone Wire Cam Controller" )
+    language.Add( "sboxlimit_wire_cams", "You've hit Cam Controller limit!" )
+    language.Add( "undone_Wire cam", "Undone Wire Cam Controller" )
+    language.Add( "Cleanup_wire_cams", "Wire Cam Controllers" )
 end
 
 if (SERVER) then

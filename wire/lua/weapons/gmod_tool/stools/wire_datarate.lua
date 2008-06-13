@@ -7,8 +7,9 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_datarate_name", "Data transferrer tool (Wire)" )
     language.Add( "Tool_wire_datarate_desc", "Spawns data transferrer. Data transferrer acts like identity gate for hi-speed and regular links, but also provides data rate of data going through it" )
     language.Add( "Tool_wire_datarate_0", "Primary: Create/Update data trasnferrer" )
-	language.Add( "sboxlimit_wire_datarates", "You've hit data trasnferrers limit!" )
-	language.Add( "undone_wiredatarate", "Undone Data Transferrer" )
+    language.Add( "sboxlimit_wire_datarates", "You've hit data trasnferrers limit!" )
+    language.Add( "undone_wiredatarate", "Undone Data Transferrer" )
+    language.Add( "Cleanup_wire_datarates", "Wire Data Transferrers (Hi-Speed)" )
 end
 
 if (SERVER) then

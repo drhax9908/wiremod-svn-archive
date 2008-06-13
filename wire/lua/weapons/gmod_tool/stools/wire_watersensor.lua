@@ -10,6 +10,7 @@ if ( CLIENT ) then
     language.Add( "WireWatersensorTool_watersensor", "Water Sensor:" )
 	language.Add( "sboxlimit_wire_watersensors", "You've hit Water Sensors limit!" )
 	language.Add( "undone_Wire Water Sensor", "Undone Wire Water Sensor" )
+    language.Add( "Cleanup_wire_watersensors", "Wire Water Sensor" )
 end
 
 if (SERVER) then

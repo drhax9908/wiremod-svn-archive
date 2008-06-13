@@ -23,8 +23,8 @@ if ( CLIENT ) then
 	language.Add( "WireWheelTool_group_desc", "All these values need to be different." )
 	
 	language.Add( "undone_WireWheel", "Undone Wire Wheel" )
-	language.Add( "Cleanup_wire_wheels", "Wired Wheels" )
-	language.Add( "Cleaned_wire_wheels", "Cleaned up all Wired Wheels" )
+	language.Add( "Cleanup_wire_wheels", "Wire Wheels" )
+	language.Add( "Cleaned_wire_wheels", "Cleaned up all Wire Wheels" )
 	language.Add( "SBoxLimit_wire_wheels", "You've reached the wired wheels limit!" )
 end
 
