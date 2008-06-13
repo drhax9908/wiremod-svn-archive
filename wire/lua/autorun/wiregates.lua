@@ -1268,17 +1268,19 @@ GateActions["squarepulse"] = {
 	inputs = { "Run", "Reset", "PulseTime", "GapTime" },
 	timed = true,
 	output = function(gate, Run, Reset, PulseTime, GapTime)
-	    local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
-	    gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
-		if ( Reset > 0 ) then
+		local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
+		gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
+
+		if (Reset > 0) then
 			gate.Accum = 0
-		elseif ( Run > 0 ) then
+		elseif (Run > 0) then
 			gate.Accum = gate.Accum+DeltaTime
 			if (gate.Accum >= GapTime) then
 				return 1
 			end
 			if (gate.Accum >= PulseTime + GapTime) then
 				gate.Accum = gate.Accum - PulseTime - GapTime
+				return 0
 			end
 		end
 		return 0
