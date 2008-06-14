@@ -12,7 +12,6 @@ if ( CLIENT ) then
 	language.Add( "WireWaypointTool_alink", "Auto-link previous:" )
 	language.Add( "sboxlimit_wire_waypoints", "You've hit waypoint beacons limit!" )
 	language.Add( "undone_wirewaypoint", "Undone Wire Waypoint Beacon" )
-    language.Add( "Cleanup_wire_waypoints", "Wire Waypoints" )
 end
 
 if (SERVER) then

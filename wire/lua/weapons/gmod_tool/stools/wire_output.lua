@@ -10,7 +10,6 @@ if ( CLIENT ) then
 	language.Add( "WireOutput_keygroup", "Key:" )
 	language.Add( "sboxlimit_wire_outputs", "You've hit outputs limit!" )
 	language.Add( "undone_wireoutput", "Undone Wire Output" )
-	language.Add( "Cleanup_wire_outputs", "Wire Outputs" )
 end
 
 if (SERVER) then

@@ -8,10 +8,10 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_detonator_desc", "Spawns a Detonator for use with the wire system." )
     language.Add( "Tool_wire_detonator_0", "Primary: Create/Update Detonator" )
     language.Add( "WireDetonatorTool_model", "Model:" )
-    language.Add( "sboxlimit_wire_detonators", "You've hit Detonators limit!" )
-    language.Add( "undone_gmod_wire_detonator", "Undone Wire Detonator" )
-    language.Add( "cleanup_gmod_wire_detonator", "Wire Detonators" )
-    language.Add( "cleaned_gmod_wire_detonator", "Cleaned Up Wire Detonator" )
+ 	language.Add( "sboxlimit_wire_detonators", "You've hit Detonators limit!" )
+	language.Add( "undone_gmod_wire_detonator", "Undone Wire Detonator" )
+	language.Add( "cleanup_gmod_wire_detonator", "Wire Detonator" )
+	language.Add( "cleaned_gmod_wire_detonator", "Cleaned Up Wire Detonator" )
 end
 
 if (SERVER) then

@@ -45,8 +45,6 @@ if ( CLIENT ) then
 	
 	language.Add( "sboxlimit_wire_target_finders", "You've hit target finder beacons limit!" )
 	language.Add( "undone_wiretargetfinder", "Undone Wire Target Finder Beacon" )
-
-	language.Add( "Cleanup_wire_target_finders", "Wire Target Finder Bacons" )
 end
 
 if (SERVER) then

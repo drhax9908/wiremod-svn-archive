@@ -7,9 +7,8 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_keyboard_name", "Wired Keyboard Tool (Wire)" )
     language.Add( "Tool_wire_keyboard_desc", "Spawns a keyboard input for use with the hi-speed wire system." )
     language.Add( "Tool_wire_keyboard_0", "Primary: Create/Update Keyboard" )
-    language.Add( "sboxlimit_wire_keyboard", "You've hit wired keyboards limit!" )
-    language.Add( "undone_wirekeyboard", "Undone Wire Keyboard" )
-    language.Add( "Cleanup_wire_keyboards", "Wire Keyboards" )
+	language.Add( "sboxlimit_wire_keyboard", "You've hit wired keyboards limit!" )
+	language.Add( "undone_wirekeyboard", "Undone Wire Keyboard" )
 end
 
 if (SERVER) then

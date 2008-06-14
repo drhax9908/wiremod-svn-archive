@@ -9,9 +9,8 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_forcer_0", "Primary: Create/Update Forcer" )
     language.Add( "WireForcerTool_forcer", "Forcer:" )
     language.Add( "WireForcerTool_Model", "Choose a Model:")
-    language.Add( "sboxlimit_wire_forcers", "You've hit forcers limit!" )
-    language.Add( "undone_wireforcer", "Undone Wire Forcer" )
-    language.Add( "Cleanup_wire_forcers", "Wire Forcers" )
+	language.Add( "sboxlimit_wire_forcers", "You've hit forcers limit!" )
+	language.Add( "undone_wireforcer", "Undone Wire Forcer" )
 end
 
 if (SERVER) then

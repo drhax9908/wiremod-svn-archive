@@ -1265,29 +1265,20 @@ GateActions["pulser"] = {
 GateActions["squarepulse"] = {
 	group = "Time",
 	name = "Square Pulse",
-	inputs = { "Run", "Reset", "PulseTime", "GapTime", "Low", "High" },
+	inputs = { "Run", "Reset", "PulseTime", "GapTime" },
 	timed = true,
-	output = function(gate, Run, Reset, PulseTime, GapTime, Low, High)
-		local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
-		gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
-
-		local low = Low
-		local high = High
-		if ((High == 0) && (Low == 0)) then
-			low = 0
-			high = 1
-		end
-
-		if (Reset > 0) then
+	output = function(gate, Run, Reset, PulseTime, GapTime)
+	    local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
+	    gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
+		if ( Reset > 0 ) then
 			gate.Accum = 0
-		elseif (Run > 0) then
+		elseif ( Run > 0 ) then
 			gate.Accum = gate.Accum+DeltaTime
 			if (gate.Accum >= GapTime) then
-				return high
+				return 1
 			end
 			if (gate.Accum >= PulseTime + GapTime) then
 				gate.Accum = gate.Accum - PulseTime - GapTime
-				return low
 			end
 		end
 		return 0
@@ -1296,50 +1287,8 @@ GateActions["squarepulse"] = {
 	    gate.PrevTime = CurTime()
 	    gate.Accum = 0
 	end,
-	label = function(Out, Run, Reset, PulseTime, GapTime, Low, High)
+	label = function(Out, Run, Reset, PulseTime, GapTime)
 	    return "Run:"..Run.." Reset:"..Reset.." PulseTime:"..PulseTime.." GapTime:"..GapTime.." = "..Out
-	end
-}
-
-GateActions["trisawpulse"] = {
-	group = "Time",
-	name = "Tri/Saw Pulse",
-	inputs = { "Run", "Reset", "PitTime", "GapTime", "Low", "High" },
-	timed = true,
-	output = function(gate, Run, Reset, PitTime, GapTime, Low, High)
-		local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
-		gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
-
-		local low = Low
-		local high = High
-		if ((High == 0) && (Low == 0)) then
-			low = 0
-			high = 1
-		end
-
-		if (Reset > 0) then
-			gate.Accum = 0
-		elseif (Run > 0) then
-			gate.Accum = gate.Accum+DeltaTime
-			if (gate.Accum >= GapTime + PitTime) then
-				gate.Accum = gate.Accum - PitTime - GapTime
-			end
-
-			if ((gate.Accum >= 0) && (PitTime > 0)) then
-				return low + (high-low)*(gate.Accum/PitTime)
-			end
-			if ((gate.Accum >= PitTime) && (GapTime > 0)) then
-				return low + (high-low)*(1-((gate.Accum - PitTime)/GapTime))
-			end
-		end
-		return 0
-	end,
-	reset = function(gate)
-	    gate.PrevTime = CurTime()
-	    gate.Accum = 0
-	end,
-	label = function(Out, Run, Reset, PitTime, GapTime, Low, High)
-	    return "Run:"..Run.." Reset:"..Reset.." PitTime:"..PitTime.." GapTime:"..GapTime.." = "..Out
 	end
 }
 

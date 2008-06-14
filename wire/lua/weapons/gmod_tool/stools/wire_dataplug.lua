@@ -8,12 +8,10 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_dataplug_desc", "Spawns plugs and sockets for use with the hi-speed wire system." )
     language.Add( "Tool_wire_dataplug_0", "Primary: Create/Update Socket    Secondary: Create/Update Plug" )
     language.Add( "WirePlugTool_colour", "Colour:" )
-    language.Add( "sboxlimit_wire_dataplugs", "You've hit plugs limit!" )
-    language.Add( "sboxlimit_wire_datasockets", "You've hit sockets limit!" )
-    language.Add( "undone_wiredataplug", "Undone Wire Data Plug" )
-    language.Add( "undone_wiredatasocket", "Undone Wire Data Socket" )
-    language.Add( "Cleanup_wire_dataplugs", "Wire Data Plugs" )
-    language.Add( "Cleanup_wire_datasockets", "Wire Data Sockets" )
+	language.Add( "sboxlimit_wire_dataplugs", "You've hit plugs limit!" )
+	language.Add( "sboxlimit_wire_datasockets", "You've hit sockets limit!" )
+	language.Add( "undone_wiredataplug", "Undone Wire Data Plug" )
+	language.Add( "undone_wiredatasocket", "Undone Wire Data Socket" )
 end
 
 if (SERVER) then
@@ -31,7 +29,6 @@ TOOL.PlugModel = "models/hammy/pci_card.mdl"
 TOOL.SocketModel = "models/hammy/pci_slot.mdl"
 
 cleanup.Register( "wire_dataplugs" )
-cleanup.Register( "wire_datasockets" )
 
 // Create socket
 function TOOL:LeftClick( trace )

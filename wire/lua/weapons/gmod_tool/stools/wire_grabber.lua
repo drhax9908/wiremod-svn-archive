@@ -11,9 +11,8 @@ if ( CLIENT ) then
     language.Add( "WireGrabberTool_Range", "Max Range:" )
     language.Add( "WireGrabberTool_Gravity", "Disable Gravity:" )
     language.Add( "WireGrabberTool_Model", "Choose a Model:")
-    language.Add( "sboxlimit_wire_grabbers", "You've hit grabbers limit!" )
-    language.Add( "undone_Wire Grabber", "Undone Wire Grabber" )
-    language.Add( "Cleanup_wire_grabbers", "Wire Grabbers" )
+	language.Add( "sboxlimit_wire_grabbers", "You've hit grabbers limit!" )
+	language.Add( "undone_Wire Grabber", "Undone Wire Grabber" )
 end
 
 if (SERVER) then

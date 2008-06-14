@@ -8,12 +8,11 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_radio_desc", "Spawns a radio for use with the wire system." )
     language.Add( "Tool_wire_radio_0", "Primary: Create/Update Radio" )
     language.Add( "WireRadioTool_channel", "Channel:" )
-    language.Add( "WireRadioTool_model", "Model:" );
-    language.Add( "WireRadioTool_values", "Values:" );
-    language.Add( "WireRadioTool_secure", "Secure:" );
-    language.Add( "sboxlimit_wire_radios", "You've hit the radio limit!" )
-    language.Add( "undone_wireradio", "Undone Wire Radio" )
-    language.Add( "Cleanup_wire_radioes", "Wire Radios" )
+	language.Add( "WireRadioTool_model", "Model:" );
+	language.Add( "WireRadioTool_values", "Values:" );
+	language.Add( "WireRadioTool_secure", "Secure:" );
+	language.Add( "sboxlimit_wire_radios", "You've hit the radio limit!" )
+	language.Add( "undone_wireradio", "Undone Wire Radio" )
 end
 
 if (SERVER) then

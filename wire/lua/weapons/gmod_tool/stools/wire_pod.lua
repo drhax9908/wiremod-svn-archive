@@ -12,7 +12,6 @@ if CLIENT then
 	language.Add("WirePodTool_Keys", "Outputs:")
 	language.Add("sboxlimit_wire_pods", "You've hit your Pod Controller limit!")
 	language.Add("Undone_Wire Pod", "Undone Wire Pod Controller")
-	language.Add( "Cleanup_wire_pods", "Wire Pod Controllers" )
 end
 
 if SERVER then

@@ -11,7 +11,6 @@ if ( CLIENT ) then
     language.Add( "WireTrailTool_mat", "Material:" )
 	language.Add( "sboxlimit_wire_trails", "You've hit trails limit!" )
 	language.Add( "undone_Wire Data Transferer", "Undone Wire Trail" )
-    language.Add( "Cleanup_wire_trails", "Wire Trails" )
 end
 
 if (SERVER) then

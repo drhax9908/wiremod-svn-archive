@@ -8,9 +8,8 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_las_reciever_desc", "Spawns a constant laser receiver prop for use with the wire system." )
     language.Add( "Tool_wire_las_reciever_0", "Primary: Create/Update Laser Receiver" )
     language.Add( "WireILaserRecieverTool_ilas_reciever", "Laser Receiver:" )
-    language.Add( "sboxlimit_wire_las_recievers", "You've hit laser receivers limit!" )
-    language.Add( "undone_wireigniter", "Undone Wire Laser Receiver" )
-    language.Add( "Cleanup_wire_las_receivers", "Wire Laser Receivers" )
+	language.Add( "sboxlimit_wire_las_recievers", "You've hit laser receivers limit!" )
+	language.Add( "undone_wireigniter", "Undone Wire Laser Receiver" )
 end
 
 if (SERVER) then
