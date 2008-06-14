@@ -8,9 +8,8 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_data_satellitedish_desc", "Spawns a Satellite Dish." )
     language.Add( "Tool_wire_data_satellitedish_0", "Primary: Create/Update Satellite Dish, Secondary: Change model, Reload link satellite dish" )
     language.Add( "WireDataTransfererTool_data_satellitedish", "Satellite Dish:" )
-    language.Add( "sboxlimit_wire_data_satellitedishs", "You've hit Satellite Dishs limit!" )
-    language.Add( "undone_Wire Data Satellite Dish", "Undone Wire Satellite Dish" )
-    language.Add( "Cleanup_wire_data_satellitedishs", "Wire Satellite Dishes" )
+	language.Add( "sboxlimit_wire_data_satellitedishs", "You've hit Satellite Dishs limit!" )
+	language.Add( "undone_Wire Data Satellite Dish", "Undone Wire Satellite Dish" )
 end
 
 if (SERVER) then

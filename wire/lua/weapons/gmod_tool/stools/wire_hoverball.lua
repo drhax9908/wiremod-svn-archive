@@ -9,9 +9,8 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_hoverball_desc", "Spawns a hoverball for use with the wire system." )
     language.Add( "Tool_wire_hoverball_0", "Primary: Create/Update Hoverball" )
     language.Add( "WireHoverballTool_starton", "Create with hover mode on:" )
-    language.Add( "undone_wirehoverball", "Undone Wire Hoverball" )
-    language.Add( "sboxlimit_wire_hoverballs", "You've hit wired hover balls limit!" )
-    language.Add( "Cleanup_wire_hoverballs", "Wire Hoverballs" )
+	language.Add( "undone_wirehoverball", "Undone Wire Hoverball" )
+	language.Add( "sboxlimit_wire_hoverballs", "You've hit wired hover balls limit!" )
 end
 
 if (SERVER) then

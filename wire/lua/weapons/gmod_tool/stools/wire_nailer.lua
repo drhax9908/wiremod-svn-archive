@@ -9,9 +9,8 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_nailer_0", "Primary: Create/Update Nailer" )
     language.Add( "WireNailerTool_nailer", "Nailer:" )
     language.Add( "WireNailerTool_Model", "Choose a Model:")
-    language.Add( "sboxlimit_wire_nailers", "You've hit nailers limit!" )
-    language.Add( "undone_wirenailer", "Undone Wire Nailer" )
-    language.Add( "Cleanup_wire_nailers", "Wire Nailers" )
+	language.Add( "sboxlimit_wire_nailers", "You've hit nailers limit!" )
+	language.Add( "undone_wirenailer", "Undone Wire Nailer" )
 end
 
 if (SERVER) then

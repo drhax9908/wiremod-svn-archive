@@ -18,10 +18,8 @@ if ( CLIENT ) then
     language.Add( "WireRelayTool_normclose", 	"Normaly:" )
     language.Add( "WireRelayTool_poles", 		"Number of poles:" )
     language.Add( "WireRelayTool_throws", 		"Number of throws:" )
-    language.Add( "sboxlimit_wire_relays", 		"You've hit relays limit!" )
-    language.Add( "undone_wirerelay", 			"Undone Wire Relay" )
-
-    language.Add( "Cleanup_wire_relays", "Wire Relays" )
+	language.Add( "sboxlimit_wire_relays", 		"You've hit relays limit!" )
+	language.Add( "undone_wirerelay", 			"Undone Wire Relay" )
 end
 
 if (SERVER) then

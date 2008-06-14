@@ -33,10 +33,8 @@ if ( CLIENT ) then
 	language.Add("case_insensitive","Case Insensitive")
 	language.Add("anywhere_exact","Anywhere Exact")
 	language.Add("anywhere_case_insensitive","Anywhere Case Insensitive")
-	language.Add( "sboxlimit_wire_textreceivers", "You've hit Text Receiver limit!" )
-	language.Add( "Undone_TextReceiver", "Undone Wire Text Receiver" )
-
-	language.Add( "Cleanup_wire_textreceivers", "Wire Text Receivers" )
+	language.Add( "sboxlimit_wire_textreceivers", "You've hit TextReceiver limit!" )
+	language.Add( "Undone_TextReceiver", "Undone Wire TextReceiver" )
 end
 
 if (SERVER) then

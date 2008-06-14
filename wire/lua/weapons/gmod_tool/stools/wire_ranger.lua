@@ -18,14 +18,12 @@ if ( CLIENT ) then
     language.Add( "WireRangerTool_out_ang", "Output Angle:" )
     language.Add( "WireRangerTool_out_col", "Output Color:" )
     language.Add( "WireRangerTool_out_val", "Output Value:" )
-    language.Add( "WireRangerTool_out_sid", "Output SteamID(number):" )
-    language.Add( "WireRangerTool_out_uid", "Output UniqueID:" )
-    language.Add( "WireRangerTool_out_eid", "Output EntID:" )
-    language.Add( "WireRangerTool_hires", "High Resolution")
-    language.Add( "sboxlimit_wire_rangers", "You've hit rangers limit!" )
-    language.Add( "undone_wireranger", "Undone Wire Ranger" )
-
-    language.Add( "Cleanup_wire_rangers", "Wire Rangers" )
+	language.Add( "WireRangerTool_out_sid", "Output SteamID(number):" )
+	language.Add( "WireRangerTool_out_uid", "Output UniqueID:" )
+	language.Add( "WireRangerTool_out_eid", "Output EntID:" )
+	language.Add( "WireRangerTool_hires", "High Resolution")
+	language.Add( "sboxlimit_wire_rangers", "You've hit rangers limit!" )
+	language.Add( "undone_wireranger", "Undone Wire Ranger" )
 end
 
 if (SERVER) then

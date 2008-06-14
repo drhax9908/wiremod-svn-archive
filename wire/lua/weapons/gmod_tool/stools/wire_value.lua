@@ -11,7 +11,6 @@ if ( CLIENT ) then
     language.Add( "WireValueTool_model", "Model:" )
 	language.Add( "sboxlimit_wire_values", "You've hit values limit!" )
 	language.Add( "undone_wirevalue", "Undone Wire Value" )
-    language.Add( "Cleanup_wire_values", "Wire Values" )
 end
 
 if (SERVER) then
