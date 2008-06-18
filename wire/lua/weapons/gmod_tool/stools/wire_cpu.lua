@@ -27,6 +27,7 @@ TOOL.ClientConVar[ "packet_rate_sp" ] = 0.05
 TOOL.ClientConVar[ "packet_rate_mp" ] = 0.4
 TOOL.ClientConVar[ "compile_rate" ] = 0.05
 TOOL.ClientConVar[ "compile_bandwidth" ] = 100
+TOOL.ClientConVar[ "compile_add_debug_info" ] = 0
 
 cleanup.Register( "wire_cpus" )
 
@@ -53,6 +54,8 @@ local function CompileProgram_Timer(firstpass)
 	if (SendLinesMax > table.Count(SourceCode)) then SendLinesMax = table.Count(SourceCode) end
 	local Rate = 0
 
+	local debuginfo = cpu_tool:GetOwner():GetInfo("wire_cpu_compile_add_debug_info")
+
 	//WORKAROUND FOR LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG LINES
 	if SourceCode[tostring(cpu_tool.LineNumber)] then
 		if (string.len(SourceCode[tostring(cpu_tool.LineNumber)]) > 256) then
@@ -68,7 +71,7 @@ local function CompileProgram_Timer(firstpass)
 			if (string.len(line) > 254) then
 				cpu_tool:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Line "..cpu_tool.LineNumber.." too long! I compile it, but it may trigger infinite loop thing.\n")
 			end
-			cpu_ent:ParseProgram_ASM(cpu_tool:GetOwner(),line,cpu_tool.LineNumber,firstpass)
+			cpu_ent:ParseProgram_ASM(cpu_tool:GetOwner(),line,cpu_tool.LineNumber,firstpass,debuginfo)
 		end
 
 		cpu_tool.LineNumber = cpu_tool.LineNumber + 1
@@ -144,6 +147,22 @@ function TOOL:StartCompile(pl,ent)
 	ent.Labels["platform"] = 0
 	ent.Labels["true"] = 1
 	ent.Labels["false"] = 0
+	ent.Labels["initdebug"] = 1073741824
+
+	ent.Labels["trap2"]  = 1073741824
+	ent.Labels["trap3"]  = 1073741824
+	ent.Labels["trap4"]  = 1073741824
+	ent.Labels["trap5"]  = 1073741824
+	ent.Labels["trap6"]  = 1073741824
+	ent.Labels["trap7"]  = 1073741824
+	ent.Labels["trap8"]  = 1073741824
+	ent.Labels["trap9"]  = 1073741824
+	ent.Labels["trap10"] = 1073741824
+	ent.Labels["trap11"] = 1073741824
+	ent.Labels["trap12"] = 1073741824
+	ent.Labels["trap13"] = 1073741824
+	ent.Labels["trap31"] = 1073741824
+	ent.Labels["trap32"] = 1073741824
 
 	self.FirstPassDone = false
 	self.SecondPassDone = false
@@ -726,6 +745,11 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("CheckBox", {
 		Label = "Store in CPU ROM",
 		Command = "wire_cpu_userom"
+	})
+
+	panel:AddControl("CheckBox", {
+		Label = "Debug trap switch (don't use unless you know what this does)",
+		Command = "wire_cpu_compile_add_debug_info"
 	})
 
 	panel:AddControl("Button", {

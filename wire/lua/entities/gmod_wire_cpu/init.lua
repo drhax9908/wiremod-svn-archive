@@ -145,6 +145,7 @@ end
 //12.0	| Page error (wrong page id)		|
 //13.0	| General Protection Error		|
 //14.0	| Idiot error				|
+//31.0	| Debug trap				| OPCODE
 //----------------------------------------------------------------------
 
 function ENT:Interrupt( intnumber )
@@ -186,7 +187,8 @@ function ENT:Interrupt( intnumber )
 				   ( intnumber == 10) then
 					self:Push(self.LADD)
 				end
-				if ( intnumber == 4 ) then //If wrong opcode then store data
+				if ( intnumber == 4 ) ||
+				   ( intnumber == 31 ) then //If wrong opcode or debug trap, then store data
 					self:Push(self.ILTC)
 				end
 				if self:Push(self.IP) then //Store IRET

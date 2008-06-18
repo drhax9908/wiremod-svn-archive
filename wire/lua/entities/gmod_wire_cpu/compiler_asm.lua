@@ -133,7 +133,7 @@ function ENT:DecodeOpcode( opcode )
 		return 45
 //	elseif (opcode == "") then	//RESERVED			//2.00
 //		return 46
-	elseif (opcode == "RETF") then	//RETF : IP,CS <- STACK		//2.00
+	elseif (opcode == "retf") then	//RETF : IP,CS <- STACK		//2.00
 		return 47
 //	elseif (opcode == "") then	//RESERVED			//2.00
 //		return 48
@@ -369,7 +369,7 @@ function ENT:Error( pl, error )
 	pl:ConCommand("wire_cpu_editor_addlog \""..error.."\"")
 end
 
-function ENT:Compile_ASM( pl, line, linenumber, firstpass )
+function ENT:Compile_ASM( pl, line, linenumber, firstpass, debuginfo )
 	local opcodetable = self:Explode(" ", line or { } )
 	local dopcode = 0
 	local nextparams = false
@@ -771,6 +771,12 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 				self:Write( disp2 )
 			end
 
+			if (debuginfo) then
+				self:Write( 92 ) //INT 32
+				self:Write( 25 )
+				self:Write( 32 )
+			end
+
 			nextparams = false
 		else
 			if ( opcode == "alloc" ) then
@@ -845,7 +851,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass )
 	return true
 end
 
-function ENT:ParseProgram_ASM( pl, programtext, parsedline, firstpass )
+function ENT:ParseProgram_ASM( pl, programtext, parsedline, firstpass, debuginfo )
 	if (self.FatalError) then
 		return false
 	end
@@ -870,7 +876,7 @@ function ENT:ParseProgram_ASM( pl, programtext, parsedline, firstpass )
 	local linenumber = 0
 	for _,line in pairs(linestable) do
 		linenumber = linenumber + 1
-		if (not self:Compile_ASM( pl, self:Lowercase(line), parsedline, firstpass )) then
+		if (not self:Compile_ASM( pl, self:Lowercase(line), parsedline, firstpass, debuginfo )) then
 			self.FatalError = true
 			self.Memory[0] = 0	//FIXME
 		end
