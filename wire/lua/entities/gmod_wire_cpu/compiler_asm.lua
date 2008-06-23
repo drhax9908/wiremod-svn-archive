@@ -1,6 +1,6 @@
 function ENT:InitASMOpcodes()
 	self.OpcodeCount = {}
-	for i=1,199 do
+	for i=1,270 do
 		if ((i >= 1) && (i <= 9)) || (i == 69) then
 			self.OpcodeCount[i] = 1
 		elseif (i >= 10) && (i <= 19) then	
@@ -25,6 +25,22 @@ function ENT:InitASMOpcodes()
 			self.OpcodeCount[i] = 1
 		elseif (i >= 110) && (i <= 119) then
 			self.OpcodeCount[i] = 0
+
+		//GPU OPCODES
+		elseif (i >= 200) && (i <= 209) then
+			self.OpcodeCount[i] = 0
+		elseif (i >= 210) && (i <= 219) then
+			self.OpcodeCount[i] = 1
+		elseif (i >= 220) && (i <= 229) then
+			self.OpcodeCount[i] = 2
+		elseif (i >= 230) && (i <= 249) then
+			self.OpcodeCount[i] = 2
+		elseif (i >= 240) && (i <= 249) then
+			self.OpcodeCount[i] = 2
+		elseif (i >= 250) && (i <= 259) then
+			self.OpcodeCount[i] = 2
+		elseif (i >= 260) && (i <= 269) then
+			self.OpcodeCount[i] = 1
 		end
 	end
 end
@@ -260,6 +276,123 @@ function ENT:DecodeOpcode( opcode )
 	//------------------------------------------------------------
 	elseif (opcode == "nmiret") then //NMIRET X : NMIRESTORE;	//2.00
 		return 110
+	//------------------------------------------------------------
+	//   GPU OPCODES
+	//- Misc opcodes ---------------------------------------------
+	elseif (opcode == "drect_test") then	//DRECT_TEST		: Draw retarded stuff
+		return 200
+	elseif (opcode == "dexit") then		//DEXIT			: End current frame execution
+		return 201
+	elseif (opcode == "dclr") then		//DCLR			: Clear screen color to black
+		return 202
+	elseif (opcode == "dvxflush") then	//DVXFLUSH		: Flush current vertex data
+		return 203
+	elseif (opcode == "dclrtex") then	//DCLRTEX		: Clear background with texture
+		return 204
+	//- Pipe controls and one-operand opcodes --------------------
+	elseif (opcode == "dvxpipe") then	//DVXPIPE X		: Vertex pipe = X
+		return 210
+	elseif (opcode == "dcvxpipe") then	//DCVXPIPE X		: Coordinate vertex pipe = X
+		return 211
+	elseif (opcode == "denable") then	//DENABLE X		: Enable parameter X
+		return 212
+	elseif (opcode == "dclrscr") then	//DCLRSCR X		: Clear screen with color X
+		return 213
+	elseif (opcode == "dcolor") then	//DCOLOR X		: Set current color to X
+		return 214
+	elseif (opcode == "dtex") then		//DTEX X		: Set current texture to X
+		return 215
+	elseif (opcode == "dfnt") then		//DFNT X		: Set current hw font to X
+		return 216
+	elseif (opcode == "ddisable") then	//DDISABLE X		: Disable parameter X
+		return 217
+	elseif (opcode == "dtexslotclr") then	//DTEXSLOTCLR X		: Clear texslot X
+		return 218
+	elseif (opcode == "dstrslotclr") then	//DSTRSLOTCLR X		: Clear strslot X
+		return 219
+	//- Rendering opcodes ----------------------------------------
+	elseif (opcode == "drect") then		//DRECT X,Y		: Draw rectangle (XY1,XY2)
+		return 220
+	elseif (opcode == "dcircle") then	//DCIRCLE X,Y		: Draw circle (XY,R)
+		return 221
+	elseif (opcode == "dvxpoly") || (opcode == "dvxdata_2f") then 		//DVXPOLY X,Y	: Draw solid 2d polygon (OFFSET,NUMVALUES)
+		return 222
+	elseif (opcode == "dvxtexpoly") || (opcode == "dvxdata_2f_tex") then 	//DVXTEXPOLY X,Y: Draw textured 2d polygon (OFFSET,NUMVALUES)
+		return 223
+	elseif (opcode == "dvxdata_3f") then 	//DVXDATA_3F X,Y 	: Send array of 3d vertexes to vertex buffer
+		return 224
+	elseif (opcode == "dvxdata_3f_tex") then //DVXDATA_3F_TEX X,Y 	: Send array of 3d vertexes + UV coordinates to vertex buffer
+		return 225
+	elseif (opcode == "dwrite") then	//DWRITE X,Y		: Write X too coordinates Y (STRSLOT,2F)
+		return 226
+	elseif (opcode == "dtransform2f") then	//DTRANSFORM2F X,Y	: Transform Y, save to X
+		return 227
+	elseif (opcode == "dtransform3f") then	//DTRANSFORM3F X,Y	: Transform Y, save to X
+		return 228
+	elseif (opcode == "dwritef") then	//DWRITEF X,Y		: Write 1F X too coordinates Y (1F,2F)
+		return 229
+	//- Font & texture control opcodes ---------------------------
+	elseif (opcode == "dloadtex") then	//DLOADTEX X,Y		: Load texture named Y (STRSLOT) into texslot X
+		return 230
+	elseif (opcode == "dloadfnt") then	//DLOADFNT X,Y		: Load font by ID Y into hw slot X
+		return 231
+	elseif (opcode == "dstrslot") then	//DSTRSLOT X,Y		: Load null-pointed string Y into slot X
+		return 232
+	elseif (opcode == "dentrypoint") then	//DENTRYPOINT X,Y	: Set entry point X to address Y
+		return 233
+	elseif (opcode == "dscrmode") then	//DSCRMODE X,Y		: Set screen width and height to (X,Y); Valid for pipe 2 only
+		return 234
+	elseif (opcode == "dsetlight") then	//DSETLIGHT X,Y		: Set light X to Y (Y points to [pos,color])
+		return 235
+	//- Vector math ----------------------------------------------
+	elseif (opcode == "vadd") then //X,Y
+		return 240
+	elseif (opcode == "vsub") then
+		return 241
+	elseif (opcode == "vmul") then
+		return 242
+	elseif (opcode == "vdot") then
+		return 243
+	elseif (opcode == "vcross") then
+		return 244
+	elseif (opcode == "vmov") then
+		return 245
+	elseif (opcode == "vnorm") then
+		return 246
+	elseif (opcode == "vcolornorm") then //Normalize color
+		return 247
+	//- Matrix math ----------------------------------------------
+	elseif (opcode == "madd") then //X,Y
+		return 250
+	elseif (opcode == "msub") then //X,Y
+		return 251
+	elseif (opcode == "mmul") then //X,Y
+		return 252
+	elseif (opcode == "mrot") then	//X -> ROT(Y)
+		return 253
+	elseif (opcode == "mscale") then //X -> SCALE(Y)
+		return 254
+	elseif (opcode == "mperspective") then //X -> PERSP(Y)
+		return 255
+	elseif (opcode == "mtrans") then //X -> TRANS(Y)
+		return 256
+	elseif (opcode == "mlookat") then //X -> LOOKAT(Y)
+		return 257
+	//- Misc math ------------------------------------------------
+	elseif (opcode == "mident") then 	//MIDENT X		: Load identity matrix into X
+		return 260
+	elseif (opcode == "mload") then 	//MLOAD X		: Load matrix X into view matrix
+		return 261
+	elseif (opcode == "mread") then 	//MREAD X		: Write view matrix into matrix X
+		return 262
+	elseif (opcode == "dt") then 		//DT X			: X -> Frame DeltaTime
+		return 263
+	elseif (opcode == "ddframe") then 	//DDFRAME X		: Draw bordered frame*
+		return 264
+
+	//Bordered frames info:
+	//X points to array of 2f's:
+	//[PosX;PosY][Width;Height][HighlightPointer;ShadowPointer][FacePointer;BorderSize]
 	end
 	return -1
 end
@@ -406,16 +539,11 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass, debuginfo )
 				return false	
 			end
 		elseif (nextdb) then
-//			Msg("db explode:"..opcode..";\n")
 			local dbtable = self:Explode(",", opcode )
-//			PrintTable(dbtable)
-//			Msg("db start\n")
-//			for _,dbvalue in pairs(dbtable) do
 			for i=0,table.Count(dbtable) do
 				local dbvalue = dbtable[i]
 				if (dbvalue) && (dbvalue ~= "") then
 					dbvalue = string.Trim(dbvalue)
-//					Msg("dbvalue:"..dbvalue..";\n")
 					if self:ValidNumber(dbvalue) then
 						self:Write(dbvalue)
 					else
@@ -771,10 +899,10 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass, debuginfo )
 				self:Write( disp2 )
 			end
 
-			if (debuginfo) then
-				self:Write( 92 ) //INT 32
+			if (debuginfo == true) then
+				self:Write( 92 ) //INT 31
 				self:Write( 25 )
-				self:Write( 32 )
+				self:Write( 31 )
 			end
 
 			nextparams = false
@@ -860,12 +988,7 @@ function ENT:ParseProgram_ASM( pl, programtext, parsedline, firstpass, debuginfo
 		return
 	end
 	
-	//local programtext2 = string.gsub(programtext,"/*(.-)*/")
-	//Msg("!!: "..programtext2.."\n")
-	//local programtext2 = string.Implode(" ",tablenolines)
-	
 	local comment = string.find(programtext,"//")
-
 	local programtext2 = programtext
 
 	if (comment) then

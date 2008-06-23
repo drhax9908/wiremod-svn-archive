@@ -148,6 +148,7 @@ end
 //31.0	| Debug trap				| OPCODE
 //----------------------------------------------------------------------
 
+//FIXME: fix cascade interrupts!!!
 function ENT:Interrupt( intnumber )
 	if ( self.Compiling ) then
 		self.FatalError = true
@@ -171,7 +172,9 @@ function ENT:Interrupt( intnumber )
 	Wire_TriggerOutput(self.Entity, "Error", intnumber)
 	if (self.IF) then
 		if (self.PF == false) then
-			self.Clk = 0
+			if (intnumber ~= 31) then //Dont die on debug trap
+				self.Clk = 0
+			end
 			return
 		else
 			local intaddress = self.IDTR + intnumber*2
@@ -188,14 +191,17 @@ function ENT:Interrupt( intnumber )
 					self:Push(self.LADD)
 				end
 				if ( intnumber == 4 ) ||
-				   ( intnumber == 31 ) then //If wrong opcode or debug trap, then store data
+				   ( intnumber == 31 ) then //If wrong opcode or debug trap, then store
 					self:Push(self.ILTC)
 				end
 				if self:Push(self.IP) then //Store IRET
 					self:Push(self.XEIP)
 					self.IP = intoffset
 				end
+				self.CMPR = 0
 				self.INTR = true
+			else
+				self.CMPR = 1
 			end
 		end
 	end
@@ -673,6 +679,7 @@ function ENT:InitializeOpcodeTable()
 			self.IP = newIP
 		end
 		self.WriteBack = false
+		Wire_TriggerOutput(self.Entity, "Error", 0)
 	end
 	self.OpcodeTable[42] = function ()	//STI
 		self.IF = true
