@@ -7,8 +7,8 @@ if ( CLIENT ) then
 	language.Add( "Tool_wire_dataport_name", "Data port tool (Wire)" )
 	language.Add( "Tool_wire_dataport_desc", "Spawns data port consisting of 8 ports" )
 	language.Add( "Tool_wire_dataport_0", "Primary: Create/Update data ports unit" )
-	language.Add( "sboxlimit_wire_dataports", "You've hit data porns limit!" )
-	language.Add( "undone_wiredigitalscreen", "Undone Data Port" )
+	language.Add( "sboxlimit_wire_dataports", "You've hit data ports limit!" )
+	language.Add( "undone_wire_dataport", "Undone Data Port" )
 end
 
 if (SERVER) then
