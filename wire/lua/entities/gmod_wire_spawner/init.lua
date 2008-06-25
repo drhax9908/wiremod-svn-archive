@@ -63,6 +63,9 @@ function ENT:DoSpawn( pl, down )
 	prop:SetMaterial( ent:GetMaterial() )
 	local r,b,g,a = ent:GetColor() //junk alpha
 	prop:SetColor( r,g,b,255 )
+
+	local phys2 = prop:GetPhysicsObject()
+	phys2:SetMass( phys:GetMass() )
 	
 	local nocollide = constraint.NoCollide( prop, ent, 0, 0 )
 	if (nocollide:IsValid()) then prop:DeleteOnRemove( nocollide ) end
