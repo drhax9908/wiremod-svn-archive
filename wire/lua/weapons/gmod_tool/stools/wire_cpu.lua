@@ -26,7 +26,7 @@ TOOL.ClientConVar[ "packet_bandwidth" ] = 100
 TOOL.ClientConVar[ "packet_rate_sp" ] = 0.05
 TOOL.ClientConVar[ "packet_rate_mp" ] = 0.4
 TOOL.ClientConVar[ "compile_rate" ] = 0.05
-TOOL.ClientConVar[ "compile_bandwidth" ] = 100
+TOOL.ClientConVar[ "compile_bandwidth" ] = 25
 TOOL.ClientConVar[ "compile_add_debug_info" ] = 0
 
 cleanup.Register( "wire_cpus" )
@@ -38,7 +38,7 @@ local cpu_tool = nil
 local cpu_ent = nil
 
 local function CPUStool_Version()
-	local SVNString = "$Revision: 532 $"
+	local SVNString = "$Revision: 643 $"
 
 	return tonumber(string.sub(SVNString,12,14))
 end
@@ -56,14 +56,13 @@ local function CompileProgram_Timer(firstpass)
 
 	local debuginfo = cpu_tool:GetOwner():GetInfo("wire_cpu_compile_add_debug_info")
 
-	//WORKAROUND FOR LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOONG LINES
 	if SourceCode[tostring(cpu_tool.LineNumber)] then
 		if (string.len(SourceCode[tostring(cpu_tool.LineNumber)]) > 256) then
 			SendLinesMax = cpu_tool.LineNumber
 		end
 	end
 
-	while (cpu_tool.LineNumber <= SendLinesMax) do
+	while (cpu_tool.LineNumber <= SendLinesMax) and (cpu_ent) do
 		local line = SourceCode[tostring(cpu_tool.LineNumber)]
 		if (!line) then
 //			cpu_tool:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Bad Line ["..cpu_tool.LineNumber.."]\n")
@@ -71,7 +70,9 @@ local function CompileProgram_Timer(firstpass)
 			if (string.len(line) > 254) then
 				cpu_tool:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Line "..cpu_tool.LineNumber.." too long! I compile it, but it may trigger infinite loop thing.\n")
 			end
-			cpu_ent:ParseProgram_ASM(cpu_tool:GetOwner(),line,cpu_tool.LineNumber,firstpass,debuginfo)
+			if (cpu_ent.ParseProgram_ASM) then
+				cpu_ent:ParseProgram_ASM(cpu_tool:GetOwner(),line,cpu_tool.LineNumber,firstpass,debuginfo)
+			end
 		end
 
 		cpu_tool.LineNumber = cpu_tool.LineNumber + 1
@@ -82,7 +83,8 @@ local function CompileProgram_Timer(firstpass)
 	cpu_tool.PrevRate = (cpu_tool.PrevRate*1.5+TimeLeft*0.5) / 2
 	TimeLeft = math.floor(cpu_tool.PrevRate)
 
-	//TODO: FIX. NON FLOORD PERCENT, AND BAD RATE
+	//TODO: FIX. NON FLOORED PERCENT, AND BAD RATE
+	//TODO: FIX WHEN SEVERAL USERS UPLOAD AT ONCE
 
 	local TempPercent = ((cpu_tool.LineNumber-1)/table.Count(SourceCode))*100
 	if (firstpass) then
@@ -225,7 +227,9 @@ function TOOL:Compile_End()
 		local codedump = "Count: "..ent.WIP.."\n"
 		local pointerdump = "Count: "..table.Count(ent.Labels).."\n"
 		for i = 0,ent.WIP do
-			codedump = codedump.."["..i.."]".."="..ent.Memory[i].."\n"
+			if (ent.Memory[i]) then
+				codedump = codedump.."["..i.."]".."="..ent.Memory[i].."\n"
+			end
 		end
 		for k,v in pairs(ent.Labels) do
 			pointerdump = pointerdump.."#pointer "..k.." "..v.."\n"
