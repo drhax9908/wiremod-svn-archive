@@ -874,6 +874,8 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass, debuginfo )
 			if (segment2 ~= -1) then
 				dopcode = dopcode + 10000
 			end
+			local xeip = self.WIP
+
 			self:Write( dopcode )
 			self:Write( rm )
 			programsize = programsize + 2
@@ -899,10 +901,15 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass, debuginfo )
 				self:Write( disp2 )
 			end
 
+			self:Precompile(xeip)
+
 			if (debuginfo == true) then
+				xeip = self.WIP
 				self:Write( 92 ) //INT 31
 				self:Write( 25 )
 				self:Write( 31 )
+
+				self:Precompile(xeip)
 			end
 
 			nextparams = false
