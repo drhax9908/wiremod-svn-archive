@@ -841,9 +841,9 @@ function ENT:InitializeOpcodeTable()
 		if (Param1 == 0) then return end
 		for i = 1,math.Clamp(Param1,0,8192) do
 			local val
-			val = self:ReadCell(self.ESI+self[self.PrecompileData[self.XEIP].Segment1)
+			val = self:ReadCell(self.ESI+self[self.PrecompileData[self.XEIP].Segment1])
 			if (val == nil) then return end
-			if (self:WriteCell(self.EDI+self[self.PrecompileData[self.XEIP].Segment2,val) == false) then return end
+			if (self:WriteCell(self.EDI+self[self.PrecompileData[self.XEIP].Segment2],val) == false) then return end
 			self.EDI = self.EDI + 1
 			self.ESI = self.ESI + 1
 		end
@@ -852,10 +852,10 @@ function ENT:InitializeOpcodeTable()
 		if (Param1 == 0) then return end
 		for i = 1,math.Clamp(Param1,0,8192) do
 			local val
-			val1 = self:ReadCell(self.ESI+self.PrecompileData[self.XEIP].Segment1)
-			val2 = self:ReadCell(self.EDI+self.PrecompileData[self.XEIP].Segment2)
+			val1 = self:ReadCell(self.ESI+self[self.PrecompileData[self.XEIP].Segment1])
+			val2 = self:ReadCell(self.EDI+self[self.PrecompileData[self.XEIP].Segment2])
 			if (val1 == nil) || (val2 == nil) then return end
-			if (self:WriteCell(self.EDI+self[self.PrecompileData[self.XEIP].Segment2,val1) == false) || (self:WriteCell(self.ESI+self[self.PrecompileData[self.XEIP].Segment1,val2) == false) then return end
+			if (self:WriteCell(self.EDI+self[self.PrecompileData[self.XEIP].Segment2],val1) == false) || (self:WriteCell(self.ESI+self[self.PrecompileData[self.XEIP].Segment1],val2) == false) then return end
 			self.EDI = self.EDI + 1
 			self.ESI = self.ESI + 1
 		end
