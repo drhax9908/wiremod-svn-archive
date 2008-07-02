@@ -166,6 +166,13 @@ function TOOL:StartCompile(pl,ent)
 	ent.Labels["trap31"] = 1073741824
 	ent.Labels["trap32"] = 1073741824
 
+	ent.DebugLines = {}
+	ent.DebugData = {}
+
+	ent.Memory = {}
+	ent.ROMMemory = {}
+	ent.PrecompileData = {}
+
 	self.FirstPassDone = false
 	self.SecondPassDone = false
 
@@ -508,6 +515,11 @@ end
 		pl:ConCommand('wire_cpu_clearsrc')
 
 		local filedata = file.Read(fname)
+		if (!filedata) then
+			pl:PrintMessage(HUD_PRINTTALK,"CPU -> Sorry! File was found, but leprechauns prevented it from getting read!\n") //This message occurs rarely enough to put something fun here
+			return
+		end
+
 		SourceLines = string.Explode("\n", filedata )
 		SourceLinesSent = 0
 		SourceTotalChars = string.len(filedata)

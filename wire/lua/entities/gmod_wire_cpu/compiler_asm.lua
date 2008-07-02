@@ -43,10 +43,12 @@ function ENT:InitASMOpcodes()
 			self.OpcodeCount[i] = 1
 		end
 	end
+
+	self.OpcodeCount[70] = 1 //NMIINT
 end
 
 function ENT:Core_Version()
-	local SVNString = "$Revision: 532 $"
+	local SVNString = "$Revision: 644 $"
 
 	return tonumber(string.sub(SVNString,12,14))
 end
@@ -197,6 +199,8 @@ function ENT:DecodeOpcode( opcode )
 		return 68
 	elseif (opcode == "jmpf") then	//JMPF X,Y : CS = Y; IP = X	//2.00
 		return 69
+	elseif (opcode == "nmiint") then //NMIINT X : NMIINTERRUPT(X);	//4.00
+		return 70
 	//------------------------------------------------------------
 	elseif (opcode == "cne") || (opcode == "cnz") then	//CNE X  : CALL(X), IF CMPR ~= 0 //2.00
 		return 71
@@ -257,7 +261,7 @@ function ENT:DecodeOpcode( opcode )
 	elseif (opcode == "lidtr") then //LIDTR X : IDTR = X		//2.00
 		return 99
 	//------------------------------------------------------------
-	elseif (opcode == "jner") || (opcode == "jnzr") then	//JNE X   : IP = IP+X, IF CMPR ~= 0	//2.00
+	elseif (opcode == "jner") || (opcode == "jnzr") then	//JNE X  : IP = IP+X, IF CMPR ~= 0	//2.00
 		return 101
 	elseif (opcode == "jmpr") then				//JMP X  : IP = IP+X			//2.00
 		return 102
@@ -271,11 +275,13 @@ function ENT:DecodeOpcode( opcode )
 		return 106
 	elseif (opcode == "jer") || (opcode == "jzr") then	//JE X   : IP = IP+X, IF CMPR = 0	//2.00
 		return 107
-	elseif (opcode == "lneg") then	//LNEG X   : X = LOGNEGATE(X)	//3.00
+	elseif (opcode == "lneg") then				//LNEG X   : X = LOGNEGATE(X)		//3.00
 		return 108
 	//------------------------------------------------------------
-	elseif (opcode == "nmiret") then //NMIRET X : NMIRESTORE;	//2.00
+	elseif (opcode == "nmiret") then//NMIRET : NMIRESTORE;		//2.00
 		return 110
+	elseif (opcode == "idle") then 	//IDLE : FORCE_CPU_IDLE;	//4.00
+		return 111
 	//------------------------------------------------------------
 	//   GPU OPCODES
 	//- Misc opcodes ---------------------------------------------
@@ -515,6 +521,16 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass, debuginfo )
 	if (self.MakeDump) && (string.Trim(line) ~= "") && (not firstpass) then
 		self.Dump = self.Dump.."["..linenumber.."]"..self.WIP.." = "..line.."\n"
 	end
+	if (self.Debug) && (string.Trim(line) ~= "") && (not firstpass) then
+		print("added line "..linenumber.. "(addr "..self.WIP..") with content " .. line)
+		if (!self.DebugLines[linenumber]) then
+			self.DebugLines[linenumber] = "["..linenumber.."]"..line
+		else
+			self.DebugLines[linenumber] = self.DebugLines[linenumber] .. "; " ..line
+		end
+		self.DebugData[self.WIP] = linenumber
+	end
+
 	for _,opcode in pairs(opcodetable) do
 		opcode = string.Trim(opcode)
 		if (nextdefine) then
@@ -562,7 +578,7 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass, debuginfo )
 									self:Error(pl,"ZyeliosASM: Error (E450) at line "..linenumber..": Invalid parameter in DB macro\n")
 									return false
 								end
-								//self:Write(0)
+								self:Write(0) //<--- I've been searching for this bug for 3 hours
 							end
 						end
 					end
@@ -901,7 +917,9 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass, debuginfo )
 				self:Write( disp2 )
 			end
 
-			self:Precompile(xeip)
+			if (not firstpass) then
+				self:Precompile(xeip)
+			end
 
 			if (debuginfo == true) then
 				xeip = self.WIP
@@ -909,7 +927,9 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass, debuginfo )
 				self:Write( 25 )
 				self:Write( 31 )
 
-				self:Precompile(xeip)
+				if (not firstpass) then
+					self:Precompile(xeip)
+				end
 			end
 
 			nextparams = false
@@ -956,8 +976,12 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass, debuginfo )
 					if (self:OpcodeParamCount( dopcode ) > 0) then
 						nextparams = true
 					else
+						local xeip = self.WIP
 						self:Write( dopcode )
 						self:Write( 0 )
+						if (not firstpass) then
+							self:Precompile(xeip)
+						end
 						programsize = programsize + 2
 					end				
 				else
