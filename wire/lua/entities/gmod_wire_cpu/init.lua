@@ -2,6 +2,7 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include('shared.lua')
 include('compiler_asm.lua')
+include('bitwise.lua')
 
 ENT.WireDebugName = "CPU"
 
@@ -14,6 +15,8 @@ function ENT:Initialize()
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Error" }) 
 
 	self.Debug = false //GLOBAL DEBUG MODE SWITCH
+	self.DebugLines = {}
+	self.DebugData = {}
 
 	self.Memory = {}
 	self.ROMMemory = {}
@@ -89,8 +92,9 @@ function ENT:Reset()
 	self.FS = 0
 
 	self.IDTR = 0
-	self.IF = true
-	self.PF = false
+	self.IF = 1
+	self.NextIF = nil
+	self.PF = 0
 	
 	self.CMPR = 0
 	self.ILTC = 0
@@ -99,6 +103,8 @@ function ENT:Reset()
 	self.INTR = false
 	self.TMR = 0
 	self.TIMER = 0
+
+	self.Idle = false
 
 	self.Clk = self.InputClk
 
@@ -156,16 +162,28 @@ function ENT:Interrupt(intnumber)
 	end
 	self.INTR = true
 	if (intnumber <= 1) or (intnumber > 255) then
-		self:Reset()
-		self.EAX = 10
-		if (intnumber == 1) then
-			self.Clk = 0
+		local handlewrongint = false
+
+		if ((intnumber == 0) || (intnumber == 1)) && (self.PF == 1) then
+			local intaddress = self.IDTR + 1*2
+			local intprops = self.Memory[intaddress+1]
+			if (intprops == 96) then
+				handlewrongint = true
+			end
 		end
-		return
+
+		if (handlewrongint == false) then
+			self:Reset()
+			self.EAX = 10
+			if (intnumber == 1) then
+				self.Clk = 0
+			end
+			return
+		end
 	end
 	Wire_TriggerOutput(self.Entity, "Error", intnumber)
-	if (self.IF) then
-		if (self.PF == false) then
+	if (self.IF == 1) then
+		if (self.PF == 0) then
 			if (intnumber ~= 31) then //Dont die on debug trap
 				self.Clk = 0
 			end
@@ -176,7 +194,7 @@ function ENT:Interrupt(intnumber)
 			if (intaddress < 0) then intaddress = 0 end
 			local intoffset = self.Memory[intaddress]
 			local intprops = self.Memory[intaddress+1]
-			if (intprops ~= 0) then //Interrupt active, temp fix
+			if ((intprops == 32) || (intprops == 96)) then //Interrupt active, temp fix
 				if (self.Debug) then
 					DebugMessage("INTERRUPT: #"..intnumber.." HANDLED\nJumpOffset="..intoffset.."\n")
 				end
@@ -208,7 +226,7 @@ end
 function ENT:Write(value)
 	if (value) then
 		if (!tonumber(value)) then
-			self.Memory[self.WIP] = 0
+			self:WriteCell(self.WIP,0)
 			self.WIP = self.WIP + 1
 			return
 		end
@@ -221,8 +239,10 @@ function ENT:Write(value)
 		end
 
 		self:WriteCell(self.WIP,value)
-//		if (self.Debug) then Msg("-> ZyeliosASM: Wrote "..value.." at ["..self.WIP.."]\n") end
+		//if (self.Debug) && (value != 0) then Msg("-> ZyeliosASM: Wrote "..value.." at ["..self.WIP.."]\n") end
 
+		self.WIP = self.WIP + 1
+	else
 		self.WIP = self.WIP + 1
 	end
 end
@@ -675,19 +695,19 @@ function ENT:InitializeOpcodeTable()
 		Wire_TriggerOutput(self.Entity, "Error", 0)
 	end
 	self.OpcodeTable[42] = function (Param1,Param2)	//STI
-		self.IF = true
+		self.NextIF = 1
 	end
 	self.OpcodeTable[43] = function (Param1,Param2)	//CLI
-		self.IF = false
+		self.IF = 0
 	end
 	self.OpcodeTable[44] = function (Param1,Param2)	//STP
-		self.PF = true
+		self.PF = 1
 	end
 	self.OpcodeTable[45] = function (Param1,Param2)	//CLP
-		self.PF = false
+		self.PF = 0
 	end
 	self.OpcodeTable[46] = function (Param1,Param2)	//STD
-		//self.Debug = true
+		self.Debug = true
 	end
 	self.OpcodeTable[47] = function (Param1,Param2)	//RETF
 		local newIP = self:Pop()
@@ -749,45 +769,65 @@ function ENT:InitializeOpcodeTable()
 	end
 	//------------------------------------------------------------
 	self.OpcodeTable[60] = function (Param1,Param2)	//BIT
-		local temp = Param1
-		for i = 0,math.Clamp(Param2,0,7)-1 do
-			temp = math.floor(temp / 10)
-		end
-		self.CMPR = math.fmod(temp,10)
+		local bits = bit.tobits(math.floor(Param1))
+		self.CMPR = bits[math.Clamp(Param2,0,31)]
 	end
 	self.OpcodeTable[61] = function (Param1,Param2)	//SBIT
-		local temp = Param1
-		local temp2 = 0
-		local temp3 = 1
-		for i = 0,7 do
-			if (i == Param2) then
-				temp2 = temp2 + temp3*1
-			else
-				temp2 = temp2 + temp3*math.fmod(temp,10)
-			end
-			temp = math.floor(temp / 10)
-			temp3 = temp3*10
-		end
-		return temp2
+		local bits = bit.tobits(math.floor(Param1))
+		bits[math.Clamp(Param2,0,31)] = 1
+		return bit.tonumb(bits)
 	end
 	self.OpcodeTable[62] = function (Param1,Param2)	//CBIT
-		local temp = Param1
-		local temp2 = 0
-		local temp3 = 1
-		for i = 0,7 do
-			if (i == Param2) then
-				temp2 = temp2 + temp3*0
-			else
-				temp2 = temp2 + temp3*math.fmod(temp,10)
-			end
-			temp = math.floor(temp / 10)
-			temp3 = temp3*10
-		end
-		return temp2
+		local bits = bit.tobits(math.floor(Param1))
+		bits[math.Clamp(Param2,0,31)] = 0
+		return bit.tonumb(bits)
+	end
+	self.OpcodeTable[63] = function (Param1,Param2)	//TBIT
+		local bits = bit.tobits(math.floor(Param1))
+		bits[math.Clamp(Param2,0,31)] = 1-bits[math.Clamp(Param2,0,31)]
+		return bit.tonumb(bits)
+	end
+	self.OpcodeTable[64] = function(Param1,Param2) //BAND
+		return bit.band(Param1,Param2)
+	end
+	self.OpcodeTable[65] = function(Param1,Param2) //BOR
+		return bit.bor(Param1,Param2)
+	end
+	self.OpcodeTable[66] = function(Param1,Param2) //BXOR
+		return bit.bxor(Param1,Param2)
+	end
+	self.OpcodeTable[67] = function(Param1,Param2) //BSHL
+		return bit.blshift(Param1,Param2)
+	end
+	self.OpcodeTable[68] = function(Param1,Param2) //BSHR
+		return bit.blogic_rshift(Param1,Param2)
 	end
 	self.OpcodeTable[69] = function (Param1,Param2)	//JMPF
 		self.CS = Param2
 		self.IP = Param1
+	end
+	self.OpcodeTable[70] = function (Param1,Param2)	//NMIINT
+		if ((self.IF == 1) &&
+		    self:Push(self.ES) && 
+		    self:Push(self.GS) && 
+    		    self:Push(self.FS) && 
+    		    self:Push(self.DS) && 
+		    self:Push(self.SS) && 
+		    self:Push(self.CS) && 
+
+		    self:Push(self.EDI) && 
+		    self:Push(self.ESI) && 
+		    self:Push(self.ESP) && 
+		    self:Push(self.EBP) && 
+		    self:Push(self.EDX) && 
+		    self:Push(self.ECX) && 
+		    self:Push(self.EBX) && 
+		    self:Push(self.EAX) && 
+
+		    self:Push(self.CMPR) && 
+		    self:Push(self.IP)) then
+			self:Interrupt(math.floor(Param1))
+		end
 	end
 	//------------------------------------------------------------
 	self.OpcodeTable[71] = function (Param1,Param2)	//CNE
@@ -864,11 +904,9 @@ function ENT:InitializeOpcodeTable()
 	self.OpcodeTable[80] = function (Param1,Param2)	//FPWR
 		return Param1^Param2
 	end
-	self.OpcodeTable[81] = function (Param1,Param2)	//XCHG (FIXME: BUGGED UP)
-		local val1 = Param2
-		local val2 = Param1
-
-		return 0
+	self.OpcodeTable[81] = function (Param1,Param2)	//XCHG
+		self.PrecompileData[self.XEIP].WriteBack2(Param1)
+		return Param2
 	end
 	self.OpcodeTable[82] = function (Param1,Param2)	//FLOG
 		return math.log(Param2)
@@ -968,6 +1006,28 @@ function ENT:InitializeOpcodeTable()
 		self.IDTR = Param1
 	end
 	//------------------------------------------------------------
+	self.OpcodeTable[100] = function (Param1,Param2) 	//STATESTORE
+		self:WriteCell(Param1 + 00,self.IP)
+
+		self:WriteCell(Param1 + 01,self.EAX)
+		self:WriteCell(Param1 + 02,self.EBX)
+		self:WriteCell(Param1 + 03,self.ECX)
+		self:WriteCell(Param1 + 04,self.EDX)
+
+		self:WriteCell(Param1 + 05,self.ESI)
+		self:WriteCell(Param1 + 06,self.EDI)
+		self:WriteCell(Param1 + 07,self.ESP)
+		self:WriteCell(Param1 + 08,self.EBP)
+
+		self:WriteCell(Param1 + 09,self.CS)
+		self:WriteCell(Param1 + 10,self.SS)
+		self:WriteCell(Param1 + 11,self.DS)
+		self:WriteCell(Param1 + 12,self.ES)
+		self:WriteCell(Param1 + 13,self.GS)
+		self:WriteCell(Param1 + 14,self.FS)
+	
+		self:WriteCell(Param1 + 15,self.CMPR)
+	end
 	self.OpcodeTable[101] = function (Param1,Param2) 	//JNER
 		if (self.CMPR ~= 0) then
 			self.IP = self.IP + Param1
@@ -1004,9 +1064,37 @@ function ENT:InitializeOpcodeTable()
 	self.OpcodeTable[108] = function (Param1,Param2)	//LNEG
 		return 1-math.Clamp(Param1,0,1)
 	end
+	self.OpcodeTable[109] = function (Param1,Param2) 	//STATERESTORE
+		//self.IP = 	self:ReadCell(Param1 + 00)
+				self:ReadCell(Param1 + 00)
+
+		self.EAX = 	self:ReadCell(Param1 + 01)
+		self.EBX = 	self:ReadCell(Param1 + 02)
+		self.ECX = 	self:ReadCell(Param1 + 03)
+		self.EDX = 	self:ReadCell(Param1 + 04)
+
+		self.ESI = 	self:ReadCell(Param1 + 05)
+		self.EDI = 	self:ReadCell(Param1 + 06)
+		self.ESP = 	self:ReadCell(Param1 + 07)
+		self.EBP = 	self:ReadCell(Param1 + 08)
+
+		self.CS	= 	self:ReadCell(Param1 + 09)
+		self.SS = 	self:ReadCell(Param1 + 10)
+		self.DS = 	self:ReadCell(Param1 + 11)
+		self.ES = 	self:ReadCell(Param1 + 12)
+		self.GS = 	self:ReadCell(Param1 + 13)
+		self.FS = 	self:ReadCell(Param1 + 14)
+
+		self.CMPR = 	self:ReadCell(Param1 + 15)
+	end
 	//------------------------------------------------------------
 	self.OpcodeTable[110] = function (Param1,Param2)	//NMIRET
 		local newval
+
+		//Interrupt data:
+		newval = self:Pop() //XEIP
+		newval = self:Pop() //Interrupt return EIP (FIXME: this might change, use this IP instead?)
+
 		newval = self:Pop() if (newval) then self.IP = newval else return end
 		newval = self:Pop() if (newval) then self.CMPR = newval else return end
 
@@ -1025,6 +1113,9 @@ function ENT:InitializeOpcodeTable()
 		newval = self:Pop() if (newval) then self.FS = newval else return end
 		newval = self:Pop() if (newval) then self.GS = newval else return end
 		newval = self:Pop() if (newval) then self.ES = newval else return end
+	end
+	self.OpcodeTable[111] = function (Param1,Param2)	//IDLE
+		self.Idle = true
 	end
 	//------------------------------------------------------------
 end
@@ -1243,34 +1334,62 @@ function ENT:Precompile(IP)
 	WriteBackFunctions[12] = function(Result) self.ES = Result end
 	WriteBackFunctions[13] = function(Result) self.GS = Result end
 	WriteBackFunctions[14] = function(Result) self.FS = Result end
-	WriteBackFunctions[17] = function(Result) self:WriteCell(self.EAX + self[Segment1],Result) end
-	WriteBackFunctions[18] = function(Result) self:WriteCell(self.EBX + self[Segment1],Result) end
-	WriteBackFunctions[19] = function(Result) self:WriteCell(self.ECX + self[Segment1],Result) end
-	WriteBackFunctions[20] = function(Result) self:WriteCell(self.EDX + self[Segment1],Result) end
-	WriteBackFunctions[21] = function(Result) self:WriteCell(self.ESI + self[Segment1],Result) end
-	WriteBackFunctions[22] = function(Result) self:WriteCell(self.EDI + self[Segment1],Result) end
-	WriteBackFunctions[23] = function(Result) self:WriteCell(self.ESP + self[Segment1],Result) end
-	WriteBackFunctions[24] = function(Result) self:WriteCell(self.EBP + self[Segment1],Result) end
-	WriteBackFunctions[25] = function(Result) self:WriteCell(self.PrecompileData[self.XEIP].PeekByte1 + self[Segment1],Result) end
-	for i=1000,2024 do
-		WriteBackFunctions[i] = function(Result) self:WritePort(self.PrecompileData[self.XEIP].dRM1-1000,Result) end
+
+	if (self.OpcodeCount[Opcode] && (self.OpcodeCount[Opcode] > 0)) then
+		WriteBackFunctions[17] = function(Result) self:WriteCell(self.EAX + self[Segment1],Result) end
+		WriteBackFunctions[18] = function(Result) self:WriteCell(self.EBX + self[Segment1],Result) end
+		WriteBackFunctions[19] = function(Result) self:WriteCell(self.ECX + self[Segment1],Result) end
+		WriteBackFunctions[20] = function(Result) self:WriteCell(self.EDX + self[Segment1],Result) end
+		WriteBackFunctions[21] = function(Result) self:WriteCell(self.ESI + self[Segment1],Result) end
+		WriteBackFunctions[22] = function(Result) self:WriteCell(self.EDI + self[Segment1],Result) end
+		WriteBackFunctions[23] = function(Result) self:WriteCell(self.ESP + self[Segment1],Result) end
+		WriteBackFunctions[24] = function(Result) self:WriteCell(self.EBP + self[Segment1],Result) end
+		WriteBackFunctions[25] = function(Result) self:WriteCell(self.PrecompileData[self.XEIP].PeekByte1 + self[Segment1],Result) end
+		for i=1000,2024 do
+			WriteBackFunctions[i] = function(Result) self:WritePort(self.PrecompileData[self.XEIP].dRM1-1000,Result) end
+		end
+
+		self.PrecompileData[IP].WriteBack = WriteBackFunctions[dRM1]
+
+		if (self.PrecompileData[IP].WriteBack == nil) then
+			if (self.Debug) then Msg("Precompile failed (Writeback function invalid)\n") end
+			self.PrecompileData[IP].Valid = false
+			return	
+		end
 	end
 
-	self.PrecompileData[IP].WriteBack = WriteBackFunctions[dRM1]
+	//Second one
+	if (self.OpcodeCount[Opcode] && (self.OpcodeCount[Opcode] > 1)) then
+		WriteBackFunctions[17] = function(Result) self:WriteCell(self.EAX + self[Segment2],Result) end
+		WriteBackFunctions[18] = function(Result) self:WriteCell(self.EBX + self[Segment2],Result) end
+		WriteBackFunctions[19] = function(Result) self:WriteCell(self.ECX + self[Segment2],Result) end
+		WriteBackFunctions[20] = function(Result) self:WriteCell(self.EDX + self[Segment2],Result) end
+		WriteBackFunctions[21] = function(Result) self:WriteCell(self.ESI + self[Segment2],Result) end
+		WriteBackFunctions[22] = function(Result) self:WriteCell(self.EDI + self[Segment2],Result) end
+		WriteBackFunctions[23] = function(Result) self:WriteCell(self.ESP + self[Segment2],Result) end
+		WriteBackFunctions[24] = function(Result) self:WriteCell(self.EBP + self[Segment2],Result) end
+		WriteBackFunctions[25] = function(Result) self:WriteCell(self.PrecompileData[self.XEIP].PeekByte2 + self[Segment2],Result) end
+		for i=1000,2024 do
+			WriteBackFunctions[i] = function(Result) self:WritePort(self.PrecompileData[self.XEIP].dRM2-1000,Result) end
+		end
 
-	if (self.PrecompileData[IP].WriteBack == nil) then
-		if (self.Debug) then Msg("Precompile failed (Writeback function invalid)\n") end
-		self.PrecompileData[IP].Valid = false
-		return	
+		self.PrecompileData[IP].WriteBack2 = WriteBackFunctions[dRM2]
+
+
+		if (self.PrecompileData[IP].WriteBack2 == nil) then
+			if (self.Debug) then Msg("Precompile failed (Writeback2 function invalid)\n") end
+			self.PrecompileData[IP].Valid = false
+			return	
+		end
 	end
 
 	if (self.Debug) then Msg("Precompile successful\n") end
 end
 
 function ENT:PrintState()
-	Msg("TMR="..self.TMR.."  TIMER="..self.TIMER.."  EIP="..self.IP.."  CMPR="..self.CMPR.."\n")
+	Msg("TMR="..self.TMR.."  TIMER="..self.TIMER.."  XEIP="..self.XEIP.."  CMPR="..self.CMPR.."\n")
 	Msg("EAX="..self.EAX.."  EBX="..self.EBX.."  ECX="..self.ECX.."  EDX="..self.EDX.."\n")
-	Msg("ESI="..self.EAX.."  EDI="..self.EAX.."  ESP="..self.EAX.."  EBP="..self.EAX.."\n")
+	Msg("ESI="..self.ESI.."  EDI="..self.EDI.."  ESP="..self.ESP.."  EBP="..self.EBP.."\n")
 end
 
 function ENT:Execute()
@@ -1287,6 +1406,11 @@ function ENT:Execute()
 	end
 
 	self.XEIP = self.IP
+
+	if (self.NextIF) then
+		self.IF = self.NextIF
+		self.NextIF = nil
+	end
 
 	if (self.Debug) then
 		DebugMessage("CPU EXECUTION STEP")
@@ -1318,7 +1442,29 @@ function ENT:Execute()
 	end
 
 	if (self.Debug) then
+		if (!self.INTR) then
+			DebugMessage("")
+		end
 		self:PrintState()
+		if (self.DebugData[self.XEIP]) then
+			print("")
+			if (self.DebugLines[self.DebugData[self.XEIP]-2]) then
+				Msg(self.DebugLines[self.DebugData[self.XEIP]-2].."\n")
+			end
+			if (self.DebugLines[self.DebugData[self.XEIP]-1]) then
+				Msg(self.DebugLines[self.DebugData[self.XEIP]-1].."\n")
+			end
+			if (self.DebugLines[self.DebugData[self.XEIP]]) then
+				print(self.DebugLines[self.DebugData[self.XEIP]])
+			end
+			if (self.DebugLines[self.DebugData[self.XEIP]+1]) then
+				Msg(self.DebugLines[self.DebugData[self.XEIP]+1].."\n")
+			end
+			if (self.DebugLines[self.DebugData[self.XEIP]+2]) then
+				Msg(self.DebugLines[self.DebugData[self.XEIP]+2].."\n")
+			end
+			print("")
+		end
 	end
 
 	self.INTR = false
@@ -1329,9 +1475,13 @@ end
 
 function ENT:Think()
 	local Iterations = self.ThinkTime*0.5
-	while (Iterations > 0) && (self.Clk >= 1.0) do
+	while (Iterations > 0) && (self.Clk >= 1.0) && (!self.Idle) do
 		self:Execute()
 		Iterations = Iterations - 1
+	end
+
+	if (self.Idle) then
+		self.Idle = false
 	end
 
 	if (self.Clk >= 1.0) then
@@ -1364,8 +1514,8 @@ function ENT:TriggerInput(iname, value)
 	elseif (iname == "IOBus") then
 		self.IOBus = self.Inputs.IOBus.Src /////////////
 	elseif (iname == "NMI") then
-		if (value >= 32) then
-			if ((self.Clk >= 1.0) && (self.IF) &&
+		if (value >= 32) && (value < 256) then
+			if ((self.Clk >= 1.0) && (self.IF == 1) &&
 			    self:Push(self.ES) && 
 			    self:Push(self.GS) && 
     			    self:Push(self.FS) && 
@@ -1384,7 +1534,7 @@ function ENT:TriggerInput(iname, value)
 
 			    self:Push(self.CMPR) && 
 			    self:Push(self.IP)) then
-				self:Interrupt(math.floor(value));
+				self:Interrupt(math.floor(value))
 			end
 		end
 	end
