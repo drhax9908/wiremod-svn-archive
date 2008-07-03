@@ -21,6 +21,7 @@ function ENT:Initialize()
 	self.Memory = {}
 	self.ROMMemory = {}
 	self.PrecompileData = {}
+	self.PrecompileMemory = {}
 
 	self.Page = {}
 	for i = 0, 511 do
@@ -323,6 +324,14 @@ function ENT:WriteCell(Address, value)
 	if (Address < 0) then
 		return self:WritePort(-Address-1,value)
 	end
+
+	if (self.PrecompileMemory[math.floor(Address)]) then //If this byte was precompiled
+		local xeip = self.PrecompileMemory[math.floor(Address)]
+		self.PrecompileMemory[math.floor(Address)] = nil
+		self.PrecompileData[xeip] = nil //Void the precompile information
+//		self:Precompile(xeip)
+	end
+
 	if (Address < 65536) then
 		if (self.Page[math.floor(Address / 128)]) then
 			self.Memory[math.floor(Address)] = value
@@ -1120,7 +1129,8 @@ function ENT:InitializeOpcodeTable()
 	//------------------------------------------------------------
 end
 
-function ENT:PRead()
+function ENT:PRead(IP)
+	self.PrecompileMemory[self.TempIP] = IP
 	self.TempIP = self.TempIP + 1
 	return self:ReadCell(self.TempIP-1)
 end
@@ -1134,8 +1144,8 @@ function ENT:Precompile(IP)
 	self.PrecompileData[IP] = {}
 	self.PrecompileData[IP].Size = 0
 
-	local Opcode = self:PRead()
-	local RM = self:PRead()
+	local Opcode = self:PRead(IP)
+	local RM = self:PRead(IP)
 	self.PrecompileData[IP].Size = self.PrecompileData[IP].Size + 2
 
 	local Disp1 = 0
@@ -1160,18 +1170,18 @@ function ENT:Precompile(IP)
 
 	if (Opcode > 1000) then
 		if (Opcode > 10000) then
-			Segment2 = self:PRead() //FIXME wrong order
+			Segment2 = self:PRead(IP) //FIXME wrong order
 			self.PrecompileData[IP].Size = self.PrecompileData[IP].Size + 1
 
 			Opcode = Opcode-10000
 			if (Opcode > 1000) then
-				Segment1 = self:PRead()
+				Segment1 = self:PRead(IP)
 				self.PrecompileData[IP].Size = self.PrecompileData[IP].Size + 1
 
 				Opcode = Opcode-1000
 			end
 		else
-			Segment1 = self:PRead()
+			Segment1 = self:PRead(IP)
 			self.PrecompileData[IP].Size = self.PrecompileData[IP].Size + 1
 
 			Opcode = Opcode-1000
@@ -1199,7 +1209,7 @@ function ENT:Precompile(IP)
 
 	if (self.OpcodeCount[Opcode] && (self.OpcodeCount[Opcode] > 0)) then
 		if (dRM1 == 0) || (dRM1 == 25) then
-			self.PrecompileData[IP].PeekByte1 = self:PRead()
+			self.PrecompileData[IP].PeekByte1 = self:PRead(IP)
 			self.PrecompileData[IP].Size = self.PrecompileData[IP].Size + 1
 
 			if (self.PrecompileData[IP].PeekByte1 == nil) then
@@ -1212,7 +1222,7 @@ function ENT:Precompile(IP)
 
 	if (self.OpcodeCount[Opcode] && (self.OpcodeCount[Opcode] > 1)) then
 		if (dRM2 == 0) || (dRM2 == 25) then
-			self.PrecompileData[IP].PeekByte2 = self:PRead()
+			self.PrecompileData[IP].PeekByte2 = self:PRead(IP)
 			self.PrecompileData[IP].Size = self.PrecompileData[IP].Size + 1
 
 			if (self.PrecompileData[IP].PeekByte2 == nil) then
@@ -1490,6 +1500,41 @@ function ENT:Think()
 	return true
 end
 
+function ENT:BuildDupeInfo()
+	local info = self.BaseClass.BuildDupeInfo(self) or {}
+
+	info.UseROM = self.UseROM
+	if (self.UseROM) then
+		info.Memory = {}
+		for i=0,65535 do
+			if (self.ROMMemory[i]) then
+				info.Memory[i] = self.ROMMemory[i]
+			end
+		end
+	end
+
+	return info
+end
+
+
+function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
+	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
+
+	if ((info.UseROM) && (info.UseROM == true)) then
+		Msg("Loading ROM\n")
+		self.UseROM = info.UseROM
+		self.ROMMemory = {}
+		for i=0,65535 do
+			if (info.Memory[i]) then
+				self.ROMMemory[i] = info.Memory[i]
+			end
+		end
+
+
+		self:Reset()
+	end
+end
+
 function ENT:TriggerInput(iname, value)
 	if (iname == "Clk") then
 		self.Clk = value
@@ -1498,8 +1543,8 @@ function ENT:TriggerInput(iname, value)
 
 		self.Entity:NextThink(CurTime())
 	elseif (iname == "Frequency") then
-		if (!SinglePlayer() && (value > 20000)) then 
-			self.ThinkTime = 200 
+		if (!SinglePlayer() && (value > 30000)) then 
+			self.ThinkTime = 300 
 			return
 		end
 		if (value > 0) then

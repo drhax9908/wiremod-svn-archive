@@ -78,19 +78,21 @@ function ENT:Switch( on, key )
 
 	self.On[ key ] = on
 
-	if ( on ) then
-		self.Buffer[0] = self.Buffer[0] + 1
-		self.Buffer[self.Buffer[0]] = key
-		Wire_TriggerOutput(self.Entity, "Memory", key)
-	else
-		Wire_TriggerOutput(self.Entity, "Memory", 0)
-		for i = 1,self.Buffer[0] do
-			if (self.Buffer[i] == key) then
-				self.Buffer[0] = self.Buffer[0] - 1
-				for j = i,self.Buffer[0] do
-					self.Buffer[j] = self.Buffer[j+1]
+	if ((key != 21) && (key != 16)) then
+		if (on == true) then
+			self.Buffer[0] = self.Buffer[0] + 1
+			self.Buffer[self.Buffer[0]] = key
+			Wire_TriggerOutput(self.Entity, "Memory", key)
+		else
+			Wire_TriggerOutput(self.Entity, "Memory", 0)
+			for i = 1,self.Buffer[0] do
+				if (self.Buffer[i] == key) then
+					self.Buffer[0] = self.Buffer[0] - 1
+					for j = i,self.Buffer[0] do
+						self.Buffer[j] = self.Buffer[j+1]
+					end
+					return true
 				end
-				return true
 			end
 		end
 	end
@@ -102,7 +104,9 @@ end
 // Keyboard turning ON/OFF
 //=============================================================================
 
-KeyBoardPlayerKeys = {}
+if (!KeyBoardPlayerKeys) then
+	KeyBoardPlayerKeys = {}
+end
 
 function Wire_KeyOff ( pl, cmd, args )
 	local ent = ents.GetByIndex( KeyBoardPlayerKeys[pl:EntIndex()] )
@@ -110,15 +114,17 @@ function Wire_KeyOff ( pl, cmd, args )
 		ent.InUse = false
 		ent:SetOverlayText( "Keyboard - not in use" )
 	end
-	KeyBoardPlayerKeys[pl:EntIndex()] = -1
+	KeyBoardPlayerKeys[pl:EntIndex()] = nil
 
 	pl:ConCommand("wire_keyboard_releaseinput")
-	pl:PrintMessage(HUD_PRINTTALK,"Virtual keyboard turned off\n")
+	pl:PrintMessage(HUD_PRINTTALK,"Wired keyboard turned off\n")
 end
 concommand.Add("wire_keyboard_off", Wire_KeyOff)
 
 function Wire_KeyOn( pl, cmd, args )
-	KeyBoardPlayerKeys[pl:EntIndex()] = args[1]
+	if (pl) && (pl:IsValid()) && (!ent.InUse) then
+		KeyBoardPlayerKeys[pl:EntIndex()] = args[1]
+	end
 
 	pl:ConCommand("wire_keyboard_blockinput")
 	pl:PrintMessage(HUD_PRINTTALK,"Wired keyboard turned on - press ALT to exit the mode!\n")
@@ -140,6 +146,8 @@ function Wire_KeyPressed( pl, cmd, args )
 		pl:ConCommand("wire_keyboard_off")
 		return
 	end
+
+	Msg("Recieved key press for player "..pl:EntIndex()..", entity "..ent:EntIndex().."\n")	
 
 	//Get normalized/ASCII key
 	local nkey
