@@ -114,9 +114,7 @@ function ENT:Reset()
 	if (self.UseROM) then
 		for i = 0, 65535 do
 			if (self.ROMMemory[i]) then
-				self.Memory[i] = self.ROMMemory[i]
-			else
-				self.Memory[i] = nil
+				self:WriteCell(i,self.ROMMemory[i])
 			end
 		end
 	end
@@ -1521,7 +1519,6 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 
 	if ((info.UseROM) && (info.UseROM == true)) then
-		Msg("Loading ROM\n")
 		self.UseROM = info.UseROM
 		self.ROMMemory = {}
 		for i=0,65535 do
@@ -1543,8 +1540,8 @@ function ENT:TriggerInput(iname, value)
 
 		self.Entity:NextThink(CurTime())
 	elseif (iname == "Frequency") then
-		if (!SinglePlayer() && (value > 30000)) then 
-			self.ThinkTime = 300 
+		if (!SinglePlayer() && (value > 50000)) then 
+			self.ThinkTime = 500 
 			return
 		end
 		if (value > 0) then
