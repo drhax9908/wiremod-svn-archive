@@ -169,8 +169,8 @@ function TOOL:StartCompile(pl,ent)
 	ent.DebugLines = {}
 	ent.DebugData = {}
 
-	ent.Memory = {}
-	ent.ROMMemory = {}
+	//ent.Memory = {}
+	//ent.ROMMemory = {}
 	ent.PrecompileData = {}
 
 	self.FirstPassDone = false

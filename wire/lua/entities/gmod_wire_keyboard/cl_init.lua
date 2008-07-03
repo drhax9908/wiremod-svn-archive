@@ -23,6 +23,7 @@ concommand.Add("wire_keyboard_blockinput", Wire_BlockInput)
 function Wire_ReleaseInput(pl,cmd,args)
 	if (BlockFrame) then
 		BlockFrame:SetVisible(false)
+		BlockFrame = nil
 	end
 end
 concommand.Add("wire_keyboard_releaseinput", Wire_ReleaseInput)
