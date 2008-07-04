@@ -362,12 +362,6 @@ function TOOL:StartGhostEntities( EntityTable, Head, HoldPos, HoldAngle )
 	NextAddGhostTime = CurTime() + .2
 	self.UnfinishedGhost = true
 	
-	/*Msg("======\n")
-	for k,v in pairs ( self.Weapon:GetTable().Tool.adv_duplicator ) do
-		Msg(k.." = "..tostring(v).."\n")
-	end
-	Msg("======\n")*/
-	
 end
 
 //
@@ -465,8 +459,9 @@ end
 //
 function TOOL:AddToGhost()
 	local LimitedGhost = ( self:GetClientNumber( "LimitedGhost" ) == 1 ) or AdvDupe.LimitedGhost(self:GetOwner())
-	if ( !LimitedGhost and self.GhostEntitiesCount < AdvDupe.GhostLimitNorm(self:GetOwner()) )
-	or ( LimitedGhost and self.GhostEntitiesCount < AdvDupe.GhostLimitLimited(self:GetOwner()) ) then
+	limit = !LimitedGhost and AdvDupe.GhostLimitNorm(self:GetOwner()) or LimitedGhost and AdvDupe.GhostLimitLimited(self:GetOwner())
+	
+	if self.GhostEntitiesCount < limit then
 		
 		if ( !self.GhostEntities[self.HeadEntityIdx] || !self.GhostEntities[self.HeadEntityIdx]:IsValid() ) then
 			self.GhostEntities = nil
@@ -491,19 +486,12 @@ function TOOL:AddToGhost()
 			if ( !self.GhostEntities[ k ] ) then
 				self.GhostEntities[ k ] = self:MakeGhostFromTable( entTable, self.GhostEntities[self.HeadEntityIdx], self.HoldAngle, self.HoldPos )
 				
-				/*umsg.Start("AdvDupe_AddGhost", self:GetOwner())
-					umsg.Short( BeamNetVars.CommonStringToIndex( EntTable.Class ) )
-					umsg.Short( BeamNetVars.CommonStringToIndex( EntTable.Model ) )
-					umsg.Vector( EntTable.LocalPos )
-					umsg.Angle( EntTable.LocalAngle )
-				umsg.End()*/
-				
 				ghostcount = ghostcount + 1
 				self.GhostEntitiesCount = self.GhostEntitiesCount + 1
 			end
 			if ( ghostcount == AdvDupe.GhostsPerTick(self:GetOwner()) ) then
 				self.UnfinishedGhost = true
-				self:SetPercent( 100 * self.GhostEntitiesCount / math.min(500, self.NumOfEnts) )
+				self:SetPercent( 100 * self.GhostEntitiesCount / math.min(limit, self.NumOfEnts) )
 				return
 			end
 		end
@@ -518,33 +506,58 @@ end
 //
 //	Hides/Unhides ghost
 //
+local next_ghost_remove_timer_number = 1
 function TOOL:HideGhost(Hide)
-	if ( !self.GhostEntities ) then return end
-	for k,v in pairs( self.GhostEntities ) do
-		if ( v:IsValid() ) then
-			v:SetNoDraw(Hide)
-		else
-			self.GhostEntities[k] = nil
+	if CLIENT then return end
+	if not Hide and (!self.GhostEntities or !self.GhostEntities[ self.HeadEntityIdx ] || !self.GhostEntities[ self.HeadEntityIdx ]:IsValid() ) then
+		self:StartGhostEntities( self.Entities, self.HeadEntityIdx, self.HoldPos, self.HoldAngle )
+	elseif self.GhostEntities then
+		for k,v in pairs( self.GhostEntities ) do
+			if ( v:IsValid() ) then
+				v:SetNoDraw(Hide)
+			else
+				self.GhostEntities[k] = nil
+			end
 		end
+	end
+	if Hide and self.GhostEntities then
+		if not self.GhostCleanUpTimerName then
+			local timer_name = "AdvDupeGhost"..next_ghost_remove_timer_number
+			next_ghost_remove_timer_number = next_ghost_remove_timer_number + 1
+			self.GhostCleanUpTimerName = timer_name
+		end
+		local ghosts = self.GhostEntities
+		local ply = self:GetOwner()
+		timer.Create(self.GhostCleanUpTimerName, 180, 1,
+			function ()
+				if ghosts then
+					for k,v in pairs(ghosts) do
+						if v:IsValid() then v:Remove() end
+						ghosts[k] = nil
+					end
+					ghosts = nil
+				end
+				if ply and ply:IsValid() then
+					timer.Simple(.1, AdvDupe.SetPercent, ply, -1) //hide progress bar
+				end
+			end
+		)
+	elseif not Hide and self.GhostCleanUpTimerName then
+		timer.Stop(self.GhostCleanUpTimerName)
 	end
 end
 
 
 
 function TOOL:Deploy()
+	if CLIENT then return end
 	
-	if ( CLIENT ) then return end
-	
-	if ( self.Entities ) then
-		//self:StartGhostEntities( self.Entities, self.HeadEntityIdx, self.HoldPos, self.HoldAngle )
-		if ( !self:GetPasting() ) then self:HideGhost(false) end
-	end
+	if not self:GetPasting() and self.Entities then self:HideGhost(false) end
 	
 	if !AdvDupe[self:GetOwner()] then AdvDupe[self:GetOwner()] = {} end
 	AdvDupe[self:GetOwner()].cdir = AdvDupe.GetPlayersFolder(self:GetOwner())
 	AdvDupe[self:GetOwner()].cdir2 = ""
 	
-	//
 	//	TODO: Replace these with umsging
 	self:GetOwner():SendLua( "AdvDupeClient.CLcdir=\""..dupeshare.BaseDir.."\"" )
 	self:GetOwner():SendLua( "AdvDupeClient.CLcdir2=\""..dupeshare.BaseDir.."\"" )
@@ -554,12 +567,10 @@ function TOOL:Deploy()
 	self:UpdateLoadedFileInfo()
 	
 	self:UpdateList()
-	
-	//timer.Simple(.1, AdvDupe.SetPercent, self:GetOwner(), -1) //hide progress bar
-	
 end
 
 function TOOL:Holster()
+	if CLIENT then return end
 	self:HideGhost(true)
 end
 
@@ -1458,29 +1469,5 @@ else	// CLIENT
 		AdvDuplicator_UpdateControlPanel()
 	end
 	concommand.Add( "adv_duplicator_upload_cl", AdvDupeCL_UpLoad )
-	
-	
-	
-	//not used yet
-	/*local function UMAddGhost( um )
-		local tool = LocalPlayer():GetActiveWeapon()
-		if ( dupeshare.CurrentToolIsDuplicator(tool) ) then
-			
-			EntTable = {}
-			EntTable.Class = BeamNetVars.CommonStringFromIndex( um:ReadShort() )
-			EntTable.Model = BeamNetVars.CommonStringFromIndex( um:ReadShort() )
-			EntTable.LocalPos = um:ReadVector()
-			EntTable.LocalAngle = um:ReadAngle()
-			
-			GhostEnt = tool:GetNetworkedEntity( "GhostEntity", nil )
-			HoldAngle = tool:GetNetworkedAngle( "HoldAngle", Angle(0,0,0) )		
-			HoldPos = tool:GetNetworkedVector( "HoldPos", Vector(0,0,0) )
-			
-			self.GhostEntities[ k ] = self:MakeGhostFromTable( EntTable, GhostEnt, HoldAngle, HoldPos )
-			
-		end
-	end
-	usermessage.Hook("AdvDupe_AddGhost", UMAddGhost)*/
-	
 	
 end
