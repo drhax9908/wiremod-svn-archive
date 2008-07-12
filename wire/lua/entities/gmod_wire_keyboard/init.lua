@@ -1,6 +1,6 @@
 
-AddCSLuaFile( "cl_init.lua" )
-AddCSLuaFile( "shared.lua" )
+AddCSLuaFile("cl_init.lua")
+AddCSLuaFile("shared.lua")
 
 include('shared.lua')
 include('remap.lua')
@@ -11,10 +11,10 @@ ENT.OverlayDelay = 0
 local MODEL = Model("models/jaanus/wiretool/wiretool_input.mdl")
 
 function ENT:Initialize()
-	self.Entity:SetModel( MODEL )
-	self.Entity:PhysicsInit( SOLID_VPHYSICS )
-	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
-	self.Entity:SetSolid( SOLID_VPHYSICS )
+	self.Entity:SetModel(MODEL)
+	self.Entity:PhysicsInit(SOLID_VPHYSICS)
+	self.Entity:SetMoveType(MOVETYPE_VPHYSICS)
+	self.Entity:SetSolid(SOLID_VPHYSICS)
 	
 	self.On = {}
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Memory" })
@@ -29,11 +29,11 @@ function ENT:Initialize()
 	end
 
 	self.InUse = false
-	self:SetOverlayText( "Keyboard - not in use" )
+	self:SetOverlayText("Keyboard - not in use")
 end
 
 
-function ENT:ReadCell( Address )
+function ENT:ReadCell(Address)
 	if (Address >= 0) && (Address < 32) then
 		return self.Buffer[Address]
 	elseif (Address >= 32) && (Address < 256) then
@@ -47,7 +47,7 @@ function ENT:ReadCell( Address )
 	end
 end
 
-function ENT:WriteCell( Address, value )
+function ENT:WriteCell(Address, value)
 	if (Address >= 0) && (Address < 256) then
 		self:Switch(false,value)
 		return true
@@ -59,7 +59,7 @@ end
 function ENT:Use(pl)
 	if (!self.InUse) then
 		self.InUse = true
-		self:SetOverlayText( "Keyboard - In use by " .. pl:GetName() )
+		self:SetOverlayText("Keyboard - In use by " .. pl:GetName())
 		pl:ConCommand("wire_keyboard_on "..self:EntIndex())
 	end
 end
@@ -68,7 +68,7 @@ end
 // Switch key state to ON/OFF
 //=============================================================================
 
-function ENT:Switch( on, key )
+function ENT:Switch(on, key)
 	if (!self.Entity:IsValid()) then return false end
 
 	if (key == -1) then
@@ -108,11 +108,11 @@ if (!KeyBoardPlayerKeys) then
 	KeyBoardPlayerKeys = {}
 end
 
-function Wire_KeyOff ( pl, cmd, args )
-	local ent = ents.GetByIndex( KeyBoardPlayerKeys[pl:EntIndex()] )
+function Wire_KeyOff (pl, cmd, args)
+	local ent = ents.GetByIndex(KeyBoardPlayerKeys[pl:EntIndex()])
 	if (ent) && (ent:IsValid()) && (ent.InUse) then
 		ent.InUse = false
-		ent:SetOverlayText( "Keyboard - not in use" )
+		ent:SetOverlayText("Keyboard - not in use")
 	end
 	KeyBoardPlayerKeys[pl:EntIndex()] = nil
 
@@ -121,7 +121,8 @@ function Wire_KeyOff ( pl, cmd, args )
 end
 concommand.Add("wire_keyboard_off", Wire_KeyOff)
 
-function Wire_KeyOn( pl, cmd, args )
+function Wire_KeyOn(pl, cmd, args)
+	local ent = ents.GetByIndex(KeyBoardPlayerKeys[pl:EntIndex()])
 	if (pl) && (pl:IsValid()) && (!ent.InUse) then
 		KeyBoardPlayerKeys[pl:EntIndex()] = args[1]
 	end
@@ -135,11 +136,11 @@ concommand.Add("wire_keyboard_on", Wire_KeyOn)
 // Key press/release hook handlers
 //=============================================================================
 
-function Wire_KeyPressed( pl, cmd, args )
+function Wire_KeyPressed(pl, cmd, args)
 	local key = tonumber(args[2])
 
 	if (!KeyBoardPlayerKeys[pl:EntIndex()]) then return end
-	local ent = ents.GetByIndex( KeyBoardPlayerKeys[pl:EntIndex()] )
+	local ent = ents.GetByIndex(KeyBoardPlayerKeys[pl:EntIndex()])
 	if (!ent) || (!ent:IsValid()) || (!ent.InUse) then return end
 
 	if (key == KEY_RALT) || (key == KEY_LALT) then
@@ -147,7 +148,7 @@ function Wire_KeyPressed( pl, cmd, args )
 		return
 	end
 
-	Msg("Recieved key press for player "..pl:EntIndex()..", entity "..ent:EntIndex().."\n")	
+	//Msg("Recieved key press for player "..pl:EntIndex()..", entity "..ent:EntIndex().."\n")	
 
 	//Get normalized/ASCII key
 	local nkey
