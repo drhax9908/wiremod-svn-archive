@@ -219,8 +219,8 @@ function AdvDupeClient.ClientSaveRecievedFile()
 	
 	file.Write(filepath, temp)
 	
-	AdvDupeClient.Error( "Your file: \""..filepath.."\" was downloaded form the server", false, true )
-	MsgN("Your file: \""..filepath.."\" was downloaded form the server")
+	AdvDupeClient.Error( "Your file: \""..filepath.."\" was downloaded from the server", false, true )
+	MsgN("Your file: \""..filepath.."\" was downloaded from the server")
 	
 	RunConsoleCommand("adv_duplicator_updatelist")
 	
