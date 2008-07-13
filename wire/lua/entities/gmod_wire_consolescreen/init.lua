@@ -24,11 +24,6 @@ function ENT:Initialize()
 	self.Char = 0
 	self.CharParam = 0
 	self.Clk = 1
-	
-	//self.CursorEnabled = 0
-	//self.CursorX = 0
-	//self.CursorY = 0
-	//self.CursorSize = 0.25
 end
 
 function ENT:Use()
@@ -46,6 +41,7 @@ function ENT:SendPixel()
 		umsg.Start("consolescreen_datamessage", rp)
 			umsg.Long( self:EntIndex() )
 			umsg.Long( self.Clk )
+			umsg.Long( 1 )
 			umsg.Long( address*2 )
 			umsg.Float( self.Char )
 		umsg.End()
@@ -58,6 +54,7 @@ function ENT:SendPixel()
 		umsg.Start("consolescreen_datamessage", rp)
 			umsg.Long( self:EntIndex() )
 			umsg.Long( self.Clk )
+			umsg.Long( 1 )
 			umsg.Long( address*2+1 )
 			umsg.Float( self.CharParam )
 		umsg.End()
@@ -90,6 +87,7 @@ function ENT:WriteCell( Address, value )
 		umsg.Start("consolescreen_datamessage", rp)
 			umsg.Long( self:EntIndex() )
 			umsg.Long( self.Clk )
+			umsg.Long( 1 )
 			umsg.Long( Address )
 			umsg.Float( value )
 		umsg.End()
@@ -122,7 +120,7 @@ end
 
 
 function MakeWireconsoleScreen( pl, Ang, Pos, Smodel )
-	
+
 	if ( !pl:CheckLimit( "wire_consolescreens" ) ) then return false end
 	
 	local wire_consolescreen = ents.Create( "gmod_wire_consolescreen" )

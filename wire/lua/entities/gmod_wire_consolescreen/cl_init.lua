@@ -1,13 +1,19 @@
-
 include('shared.lua')
 
 ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
 ENT.RenderGroup 		= RENDERGROUP_BOTH
 
-function ENT:Initialize()
+if (!RenderTargetCache) then
+	RenderTargetCache = {}
+	for i=1,3 do
+		RenderTargetCache[i] = GetRenderTarget("Wire_GPUTexture"..math.random(), 512, 512)
+	end
+	RenderTargetCacheSize = 3
+end
 
-	surface.CreateFont( "lucida console", 30, 400, true, false, "console_font" ) 
+function ENT:Initialize()
+	surface.CreateFont("lucida console", 20, 800, true, false, "Wire_GPUFont_ConsoleFont")
 
 	self.Memory1 = {}
 	self.Memory2 = {}
@@ -23,6 +29,9 @@ function ENT:Initialize()
 
 	self.Memory1[2043] = 0.5
 
+	self.Memory1[2030] = 1
+	self.Memory1[2029] = 1
+
 	for i = 0, 2047 do
 		self.Memory2[i] = self.Memory1[i]
 	end
@@ -31,144 +40,180 @@ function ENT:Initialize()
 
 	self.PrevTime = CurTime()
 	self.IntTimer = 0
-	
+
+	self.Monitor = {}	
+	self:InitMonitorModels()
+
+	self.NeedRefresh = true
+	self.Flash = false
+	self.FrameNeedsFlash = false
+
+	if (RenderTargetCache[RenderTargetCacheSize]) then
+		self.RTTexture = RenderTargetCache[RenderTargetCacheSize]
+
+		print("Render target cache = taken from "..RenderTargetCacheSize)
+		RenderTargetCacheSize = RenderTargetCacheSize - 1
+	else
+		RenderTargetCacheSize = RenderTargetCacheSize + 1
+		RenderTargetCache[RenderTargetCacheSize] = GetRenderTarget("Wire_GPUTexture"..math.random(), 512, 512)
+		self.RTTexture = RenderTargetCache[RenderTargetCacheSize]
+
+		print("Render target cache = created new into "..RenderTargetCacheSize)
+	end
+
+
+	self.matScreen 	= Material("models\duckeh\buttons\0")
+	self.texScreen	= surface.GetTextureID("models\duckeh\buttons\0")
 end
 
-function ConsoleScreen_DataMessage( um )
-	local ent = ents.GetByIndex( um:ReadLong() )
+function ENT:OnRemove()
+ 	RenderTargetCacheSize = RenderTargetCacheSize + 1
+	RenderTargetCache[RenderTargetCacheSize] = self.RTTexture
+	print("Render target cache = restored into "..RenderTargetCacheSize)
+end
+
+function ConsoleScreen_DataMessage(um)
+	local ent = ents.GetByIndex(um:ReadLong())
 	local clk = um:ReadLong()
-	local address = um:ReadLong()
-	local value = um:ReadFloat()
-	if (ent) && (ent.Memory1) && (ent.Memory2) then
-		if (clk == 1) then
-			ent.Memory1[address] = value //Vis mem
-			ent.Memory2[address] = value //Invis mem
-		else
-			ent.Memory2[address] = value //Invis mem
-		end
-
-		//2038 - Shift rows (number of rows, >0 shift down, <0 shift up)
-		//2039 - Hardware Clear Row (Writing clears row)
-		//2040 - Hardware Clear Column (Writing clears column)
-		//2041 - Hardware Clear Screen
-
-		if (address == 2037) then
-			local delta = value
-			local low = ent.Memory1[2031]
-			local high = ent.Memory1[2032]
-			if (delta > 0) then
-				for j = low,high do
-					for i = 29,delta do
-						if (clk == 1) then
-							ent.Memory1[j*60+i*2] = ent.Memory1[j*60+i*2-delta*2]
-							ent.Memory1[j*60+i*2+1] = ent.Memory1[j*60+i*2+1-delta*2]
-						end
-						ent.Memory2[j*60+i*2] = ent.Memory2[j*60+i*2-delta*2]
-						ent.Memory2[j*60+i*2+1] = ent.Memory2[j*60+i*2+1-delta*2]
-					end
-				end
-				for j = low,high do
-					for i = 0, delta-1 do
-						if (clk == 1) then
-							ent.Memory1[j*60+i*2] = 0
-							ent.Memory1[j*60+i*2+1] = 0
-						end
-						ent.Memory2[j*60+i*2] = 0
-						ent.Memory2[j*60+i*2+1] = 0
-					end
-				end
+	local datasize = um:ReadLong()
+	for i=1,datasize do
+		local address = um:ReadLong()
+		local value = um:ReadFloat()
+		if (ent) && (ent.Memory1) && (ent.Memory2) then
+			if (clk == 1) then
+				ent.Memory1[address] = value //Vis mem
+				ent.Memory2[address] = value //Invis mem
 			else
-				delta = -delta
-				for j = low,high do
-					for i = 0,29-delta do
-						if (clk == 1) then
-							ent.Memory1[j*60+i*2] = ent.Memory1[j*60+i*2+delta*2]
-							ent.Memory1[j*60+i*2+1] = ent.Memory1[j*60+i*2+1+delta*2]
-						end
-						ent.Memory2[j*60+i*2] = ent.Memory2[j*60+i*2+delta*2]
-						ent.Memory2[j*60+i*2+1] = ent.Memory2[j*60+i*2+1+delta*2]
-					end
-				end
-				for j = low,high do
-					for i = 29-delta+1,29 do
-						if (clk == 1) then
-							ent.Memory1[j*60+i*2] = 0
-							ent.Memory1[j*60+i*2+1] = 0
-						end
-						ent.Memory2[j*60+i*2] = 0
-						ent.Memory2[j*60+i*2+1] = 0
-					end
-				end
+				ent.Memory2[address] = value //Invis mem
 			end
-		end
-		if (address == 2038) then
-			local delta = value
-			local low = ent.Memory1[2033]
-			local high = ent.Memory1[2034]
-			if (delta > 0) then
-				for j = low, high-delta do
-					for i = 0, 59 do
-						if (clk == 1) then
-							ent.Memory1[j*60+i] = ent.Memory1[(j+delta)*60+i]
-						end
-						ent.Memory2[j*60+i] = ent.Memory2[(j+delta)*60+i]
-					end
-				end
-				for j = high-delta+1,high do
-					for i = 0, 59 do
-						if (clk == 1) then
-							ent.Memory1[j*60+i] = 0
-						end
-						ent.Memory2[j*60+i] = 0
-					end
-				end
-			else
-				delta = -delta
-				for j = high,delta do
-					for i = 0, 59 do
-						if (clk == 1) then
-							ent.Memory1[j*60+i] = ent.Memory1[(j-delta)*60+i]
-						end
-						ent.Memory2[j*60+i] = ent.Memory2[(j-delta)*60+i]
-					end
-				end
-				for j = delta+1,low do
-					for i = 0, 59 do
-						if (clk == 1) then
-							ent.Memory1[j*60+i] = 0
-						end
-						ent.Memory2[j*60+i] = 0
-					end
-				end
-			end
-		end
-		if (address == 2039) then
-			for i = 0, 59 do
-				ent.Memory1[value*60+i] = 0
-				ent.Memory2[value*60+i] = 0
-			end
-		end
-		if (address == 2040) then
-			for i = 0, 17 do
-				ent.Memory1[i*60+value] = 0
-				ent.Memory2[i*60+value] = 0
-			end
-		end
-		if (address == 2041) then
-			for i = 0, 18*30*2 do 
-				ent.Memory1[i] = 0
-				ent.Memory2[i] = 0
-			end
-		end
+	
+			//2038 - Shift rows (number of rows, >0 shift down, <0 shift up)
+			//2039 - Hardware Clear Row (Writing clears row)
+			//2040 - Hardware Clear Column (Writing clears column)
+			//2041 - Hardware Clear Screen
 
-		if (ent.LastClk ~= clk) then
-			ent.LastClk = clk //swap the memory if clock changes
-			ent.Memory1 = table.Copy(ent.Memory2)
+			if (address == 2037) then
+				local delta = value
+				local low = ent.Memory1[2031]
+				local high = ent.Memory1[2032]
+				if (delta > 0) then
+					for j = low,high do
+						for i = 29,delta do
+							if (clk == 1) then
+								ent.Memory1[j*60+i*2] = ent.Memory1[j*60+i*2-delta*2]
+								ent.Memory1[j*60+i*2+1] = ent.Memory1[j*60+i*2+1-delta*2]
+							end
+							ent.Memory2[j*60+i*2] = ent.Memory2[j*60+i*2-delta*2]
+							ent.Memory2[j*60+i*2+1] = ent.Memory2[j*60+i*2+1-delta*2]
+						end
+					end
+					for j = low,high do
+						for i = 0, delta-1 do
+							if (clk == 1) then
+								ent.Memory1[j*60+i*2] = 0
+								ent.Memory1[j*60+i*2+1] = 0
+							end
+							ent.Memory2[j*60+i*2] = 0
+							ent.Memory2[j*60+i*2+1] = 0
+						end
+					end
+				else
+					delta = -delta
+					for j = low,high do
+						for i = 0,29-delta do
+							if (clk == 1) then
+								ent.Memory1[j*60+i*2] = ent.Memory1[j*60+i*2+delta*2]
+								ent.Memory1[j*60+i*2+1] = ent.Memory1[j*60+i*2+1+delta*2]
+							end
+							ent.Memory2[j*60+i*2] = ent.Memory2[j*60+i*2+delta*2]
+							ent.Memory2[j*60+i*2+1] = ent.Memory2[j*60+i*2+1+delta*2]
+						end
+					end
+					for j = low,high do
+						for i = 29-delta+1,29 do
+							if (clk == 1) then
+								ent.Memory1[j*60+i*2] = 0
+								ent.Memory1[j*60+i*2+1] = 0
+							end
+							ent.Memory2[j*60+i*2] = 0
+							ent.Memory2[j*60+i*2+1] = 0
+						end
+					end
+				end
+			end
+			if (address == 2038) then
+				local delta = value
+				local low = ent.Memory1[2033]
+				local high = ent.Memory1[2034]
+				if (delta > 0) then
+					for j = low, high-delta do
+						for i = 0, 59 do
+							if (clk == 1) then
+								ent.Memory1[j*60+i] = ent.Memory1[(j+delta)*60+i]
+							end
+							ent.Memory2[j*60+i] = ent.Memory2[(j+delta)*60+i]
+						end
+					end
+					for j = high-delta+1,high do
+						for i = 0, 59 do
+							if (clk == 1) then
+								ent.Memory1[j*60+i] = 0
+							end
+							ent.Memory2[j*60+i] = 0
+						end
+					end
+				else
+					delta = -delta
+					for j = high,delta do
+						for i = 0, 59 do
+							if (clk == 1) then
+								ent.Memory1[j*60+i] = ent.Memory1[(j-delta)*60+i]
+							end
+							ent.Memory2[j*60+i] = ent.Memory2[(j-delta)*60+i]
+						end
+					end
+					for j = delta+1,low do
+						for i = 0, 59 do
+							if (clk == 1) then
+								ent.Memory1[j*60+i] = 0
+							end
+							ent.Memory2[j*60+i] = 0
+						end
+					end
+				end
+			end
+			if (address == 2039) then
+				for i = 0, 59 do
+					ent.Memory1[value*60+i] = 0
+					ent.Memory2[value*60+i] = 0
+				end
+				ent.NeedRefresh = true
+			end
+			if (address == 2040) then
+				for i = 0, 17 do
+					ent.Memory1[i*60+value] = 0
+					ent.Memory2[i*60+value] = 0
+				end
+				ent.NeedRefresh = true
+			end
+			if (address == 2041) then
+				for i = 0, 18*30*2 do 
+					ent.Memory1[i] = 0
+					ent.Memory2[i] = 0
+				end
+				ent.NeedRefresh = true
+			end
+	
+			if (ent.LastClk ~= clk) then
+				ent.LastClk = clk //swap the memory if clock changes
+				ent.Memory1 = table.Copy(ent.Memory2)
 
-			//ent.Memory1,ent.Memory2 = ent.Memory2,ent.Memory1
-			//local temp = table.Copy(ent.Memory1)
-			//ent.Memory1 = table.Copy(ent.Memory2)
-			//ent.Memory2 = table.Copy(temp)			
+				ent.NeedRefresh = true
+			end
+
+			if (clk == 1) then
+				ent.NeedRefresh = true
+			end
 		end
 	end
 end
@@ -177,39 +222,180 @@ usermessage.Hook("consolescreen_datamessage", ConsoleScreen_DataMessage)
 function ENT:Draw()
 	self.Entity:DrawModel()
 
-	local OF = 0
-	local OU = 0
-	local OR = 0
-	local Res = 0.1
-	local RatioX = 1
+	local DeltaTime = CurTime()-(self.PrevTime or CurTime())
+	self.PrevTime = (self.PrevTime or CurTime())+DeltaTime
+	self.IntTimer = self.IntTimer + DeltaTime
+
+ 	local NewRT = self.RTTexture
+ 	local OldRT = render.GetRenderTarget()
+
+	local OldTex = self.matScreen:GetMaterialTexture("$basetexture")
+	self.matScreen:SetMaterialTexture("$basetexture",self.RTTexture)
+
+	if (self.NeedRefresh == true) then
+		self.NeedRefresh = false
+
+		local oldw = ScrW()
+		local oldh = ScrH()
+
+	 	render.SetRenderTarget(NewRT) 
+	 	render.SetViewPort(0,0,512,512)
+	 	cam.Start2D()
+			//Draw terminal here
+			//W/H = 16
+			local szx = 512/31
+			local szy = 512/19
+
+			local ch = self.Memory1[2042]
+
+			local hb = 24*math.fmod(ch,10)
+			local hg = 24*math.fmod(math.floor(ch / 10),10)
+			local hr = 24*math.fmod(math.floor(ch / 100),10)
+			surface.SetDrawColor(hr,hg,hb,255)
+			surface.DrawRect(0,0,512,512)
+		
+			for ty = 0, 17 do
+				for tx = 0, 29 do
+					local a = tx + ty*30
+					local c1 = self.Memory1[2*a]
+					local c2 = self.Memory1[2*a+1]
+
+					local cback = math.floor(c2 / 1000)
+					local cfrnt = c2 - math.floor(c2 / 1000)*1000
+
+					local fb = 24*math.fmod(cfrnt,10) + self.Memory1[2036]
+					local fg = 24*math.fmod(math.floor(cfrnt / 10),10) + self.Memory1[2036]
+					local fr = 24*math.fmod(math.floor(cfrnt / 100),10) + self.Memory1[2036]
+					local bb = 24*math.fmod(cback,10) + self.Memory1[2036]
+					local bg = 24*math.fmod(math.floor(cback / 10),10) + self.Memory1[2036]
+					local br = 24*math.fmod(math.floor(cback / 100),10) + self.Memory1[2036]
+
+					if (self.Flash == true) && (cback > 999) then
+						fb,bb = bb,fb
+						fg,bg = bg,fg
+						fr,br = br,fr
+					end
+
+					if (cback > 999) then
+						self.FrameNeedsFlash = true
+					end
+
+					if (c1 > 255) then c1 = 0 end
+					if (c1 < 0) then c1 = 0 end
+
+					//if (cback ~= 0) then
+						surface.SetDrawColor(br,bg,bb,255)
+						surface.DrawRect(tx*szx+szx/2,ty*szy+szy/2,szx*1.2,szy*1.2)
+					//end
+				end
+			end
+
+			for ty = 0, 17 do
+				for tx = 0, 29 do
+					local a = tx + ty*30
+					local c1 = self.Memory1[2*a]
+					local c2 = self.Memory1[2*a+1]
+
+					local cback = math.floor(c2 / 1000)
+					local cfrnt = c2 - math.floor(c2 / 1000)*1000
+
+					local fb = 24*math.fmod(cfrnt,10) + self.Memory1[2036]
+					local fg = 24*math.fmod(math.floor(cfrnt / 10),10) + self.Memory1[2036]
+					local fr = 24*math.fmod(math.floor(cfrnt / 100),10) + self.Memory1[2036]
+					local bb = 24*math.fmod(cback,10) + self.Memory1[2036]
+					local bg = 24*math.fmod(math.floor(cback / 10),10) + self.Memory1[2036]
+					local br = 24*math.fmod(math.floor(cback / 100),10) + self.Memory1[2036]
+
+					if (self.Flash == true) && (cback > 999) then
+						fb,bb = bb,fb
+						fg,bg = bg,fg
+						fr,br = br,fr
+					end
+
+					if (c1 > 255) then c1 = 0 end
+					if (c1 < 0) then c1 = 0 end
+
+					if (c1 ~= 0) && (cfrnt ~= 0) then
+						draw.DrawText(string.char(c1),"Wire_GPUFont_ConsoleFont",
+						tx*szx+szx/8+szx/2,ty*szy+szy/4+szy/2,Color(fr,fg,fb,255),0)
+					end
+				end
+			end
+
+			//2029 - Vertical scale (1)
+			//2030 - Horizontal scale (1)
+
+			//2031 - Low shift column
+			//2032 - High shift column
+			//2033 - Low shift row
+			//2034 - High shift row
+			//2035 - Charset, always 0
+			//2036 - Brightness (Add to color)
+			//2037 - Shift cells -OBSOLETE-
+			//2038 - Shift rows (number of rows, >0 shift down, <0 shift up)
+			//2039 - Hardware Clear Row (Writing clears row)
+			//2040 - Hardware Clear Column (Writing clears column)
+			//2041 - Hardware Clear Screen
+			//2042 - Hardware Background Color (000)
+			//2043 - Cursor Blink Rate (0.50)
+			//2044 - Cursor Size (0.25)
+			//2045 - Cursor Address
+			//2046 - Cursor Enabled
+			//2047 - Clk
+
+			if (self.Memory1[2045] > 1080) then self.Memory1[2045] = 1080 end
+			if (self.Memory1[2045] < 0) then self.Memory1[2045] = 0 end
+			if (self.Memory1[2044] > 1) then self.Memory1[2044] = 1 end
+			if (self.Memory1[2044] < 0) then self.Memory1[2044] = 0 end
+
+			if (self.Memory1[2046] >= 1) then
+				if (Flash) then
+					local a = math.floor(self.Memory1[2045] / 2)
 	
-	if self.Entity:GetModel() == "models/props_lab/monitor01b.mdl" then
-		OF = 6.53
-		OU = 0
-		OR = 0
-		Res = 0.02
-	elseif self.Entity:GetModel() == "models/kobilica/wiremonitorsmall.mdl" then
-		OF = 0.2
-		OU = 4.5
-		OR = -0.85
-		Res = 0.019
-	elseif self.Entity:GetModel() == "models/kobilica/wiremonitorbig.mdl" then
-		OF = 0.3
-		OU = 11.8
-		OR = -2.35
-		Res = 0.051
-	elseif self.Entity:GetModel() == "models/props/cs_office/computer_monitor.mdl" then
-		OF = 3.25
-		OU = 15.85
-		OR = -2.2
-		Res = 0.0364
-		RatioX = 0.75
-	elseif self.Entity:GetModel() == "models/props/cs_office/TV_plasma.mdl" then
-		OF = 6.1
-		OU = 17.05
-		OR = -5.99
-		Res = 0.075
-		RatioX = 0.57
+					local tx = a - math.floor(a / 30)*30
+					local ty = math.floor(a / 30)
+		
+					local c = self.Memory1[2*a+1]
+					local cback = 999-math.floor(c / 1000)
+					local bb = 24*math.fmod(cback,10)
+					local bg = 24*math.fmod(math.floor(cback / 10),10)
+					local br = 24*math.fmod(math.floor(cback / 100),10)
+	
+					surface.SetDrawColor(br,bg,bb,255)
+					surface.DrawRect(tx*szx+szx/2,ty*szy+szy*(1-self.Memory1[2044])+szy/2,szx*1.2,szy*1.2*self.Memory1[2044])
+				end
+			end
+	 	cam.End2D()
+	 	render.SetViewPort(0,0,oldw,oldh)
+	 	render.SetRenderTarget(OldRT) 
+	end
+
+	if (self.FrameNeedsFlash == true) then
+		if (self.IntTimer < self.Memory1[2043]) then
+			if (self.Flash == false) then
+				self.NeedRefresh = true
+			end
+			self.Flash = true
+		end
+
+		if (self.IntTimer >= self.Memory1[2043]*2) then
+			self.IntTimer = 0
+			if (self.Flash == true) then
+				self.NeedRefresh = true
+			end
+			self.Flash = false
+		end
+	end
+
+
+	self.FrameNeedsFlash = false
+
+	if (self.Monitor[self.Entity:GetModel()].OF) then
+		OF = self.Monitor[self.Entity:GetModel()].OF
+		OU = self.Monitor[self.Entity:GetModel()].OU
+		OR = self.Monitor[self.Entity:GetModel()].OR
+		Res = self.Monitor[self.Entity:GetModel()].RS
+		RatioX = self.Monitor[self.Entity:GetModel()].RatioX
 	end
 	
 	local ang = self.Entity:GetAngles()
@@ -218,114 +404,22 @@ function ENT:Draw()
 	ang:RotateAroundAxis(ang:Up(), 		rot.y)
 	ang:RotateAroundAxis(ang:Forward(), 	rot.z)
 	
-	local pos = self.Entity:GetPos() + (self.Entity:GetForward() * OF) + (self.Entity:GetUp() * OU) + (self.Entity:GetRight() * OR)
-	
+	local pos = self.Entity:GetPos()+(self.Entity:GetForward()*OF)+(self.Entity:GetUp()*OU)+(self.Entity:GetRight()*OR)
+
 	cam.Start3D2D(pos,ang,Res)
-		
-		local x = -254
-		local y = -247
-		local w = 676
-		local h = 692
+		local w = 512*math.Clamp(self.Memory1[2030],0,1)
+		local h = 512*math.Clamp(self.Memory1[2029],0,1)
+		local x = -w/2
+		local y = -h/2
 
-		local ch = self.Memory1[2042]
+		surface.SetDrawColor(0,0,0,255)
+		surface.DrawRect(-256,-256,512/RatioX,512)
 
-		local hb = 24*math.fmod(ch,10)
-		local hg = 24*math.fmod(math.floor(ch / 10),10)
-		local hr = 24*math.fmod(math.floor(ch / 100),10)
-		surface.SetDrawColor(hr,hg,hb,255)
-		surface.DrawRect(x/RatioX,y,(x+w)/RatioX,y+h)
-
-		//local ratio = 192/w;
-
-		local DeltaTime = CurTime()-(self.PrevTime or CurTime())
-		self.PrevTime = (self.PrevTime or CurTime())+DeltaTime
-		self.IntTimer = self.IntTimer + DeltaTime
-
-		local Flash = false
-
-		if (self.IntTimer <= self.Memory1[2043]) then
-			Flash = true			
-		end
-		if (self.IntTimer >= self.Memory1[2043]*2) then
-			self.IntTimer = 0
-		end
-		
-		for ty = 0, 17 do
-			for tx = 0, 29 do
-				local a = tx + ty*30
-				local c1 = self.Memory1[2*a]
-				local c2 = self.Memory1[2*a+1]
-				local cback = math.floor(c2 / 1000)
-				local cfrnt = c2 - math.floor(c2 / 1000)*1000
-
-				local fb = 24*math.fmod(cfrnt,10) + self.Memory1[2036]
-				local fg = 24*math.fmod(math.floor(cfrnt / 10),10) + self.Memory1[2036]
-				local fr = 24*math.fmod(math.floor(cfrnt / 100),10) + self.Memory1[2036]
-				local bb = 24*math.fmod(cback,10) + self.Memory1[2036]
-				local bg = 24*math.fmod(math.floor(cback / 10),10) + self.Memory1[2036]
-				local br = 24*math.fmod(math.floor(cback / 100),10) + self.Memory1[2036]
-
-				if (Flash) && (cback > 999) then
-					fb,bb = bb,fb
-					fg,bg = bg,fg
-					fr,br = br,fr
-				end
-
-				if (c1 > 255) then c1 = 0 end
-				if (c1 < 0) then c1 = 0 end
-
-				if (cback ~= 0) then
-					surface.SetDrawColor(br,bg,bb,255)
-					surface.DrawRect((x+tx*14)/RatioX,y+ty*24,14/RatioX+1,24+1)
-				end
-				if (c1 ~= 0) && (cfrnt ~= 0) then
-					draw.DrawText(string.char(c1),"console_font",(8+x+tx*14)/RatioX,y+ty*24,Color(fr,fg,fb,255),1)
-				end
-			end
-		end
-
-		//2031 - Low shift column
-		//2032 - High shift column
-		//2033 - Low shift row
-		//2034 - High shift row
-		//2035 - Charset, always 0
-		//2036 - Brightness (Add to color)
-		//2037 - Shift cells -OBSOLETE-
-		//2038 - Shift rows (number of rows, >0 shift down, <0 shift up)
-		//2039 - Hardware Clear Row (Writing clears row)
-		//2040 - Hardware Clear Column (Writing clears column)
-		//2041 - Hardware Clear Screen
-		//2042 - Hardware Background Color (000)
-		//2043 - Cursor Blink Rate (0.50)
-		//2044 - Cursor Size (0.25)
-		//2045 - Cursor Address
-		//2046 - Cursor Enabled
-		//2047 - Clk
-
-		if (self.Memory1[2045] > 1080) then self.Memory1[2045] = 1080 end
-		if (self.Memory1[2045] < 0) then self.Memory1[2045] = 0 end
-		if (self.Memory1[2044] > 1) then self.Memory1[2044] = 1 end
-		if (self.Memory1[2044] < 0) then self.Memory1[2044] = 0 end
-
-		if (self.Memory1[2046] >= 1) then
-			if (Flash) then
-				local a = math.floor(self.Memory1[2045] / 2)
-
-				local tx = a - math.floor(a / 30)*30
-				local ty = math.floor(a / 30)
-	
-				local c = self.Memory1[2*a+1]
-				local cback = 999-math.floor(c / 1000)
-				local bb = 24*math.fmod(cback,10)
-				local bg = 24*math.fmod(math.floor(cback / 10),10)
-				local br = 24*math.fmod(math.floor(cback / 100),10)
-	
-				surface.SetDrawColor(br,bg,bb,255)
-				surface.DrawRect((x+tx*14)/RatioX,y+ty*24+24*(1-self.Memory1[2044]),14/RatioX,24*self.Memory1[2044])
-			end
-		end
-		
+		surface.SetTexture(self.texScreen)
+		surface.DrawTexturedRect(x,y,w/RatioX,h)
 	cam.End3D2D()
+
+	self.matScreen:SetMaterialTexture("$basetexture",OldTex)
 	
 	Wire_Render(self.Entity)
 end

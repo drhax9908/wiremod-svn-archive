@@ -50,7 +50,7 @@ function ENT:Initialize()
 	self.DeltaTime = 0
 	self.ThinkTime = (1000)/100
 	self.PrevTime = CurTime()
-	self.CPUCyclesLeft = 0
+	self.SkipIterations = false
 
 	self:SetOverlayText("CPU")
 	self:InitializeOpcodeTable()
@@ -1134,6 +1134,8 @@ function ENT:PRead(IP)
 end
 
 function ENT:Precompile(IP)
+	self.SkipIterations = true
+
 	self.TempIP = IP
 	if (self.Debug) then
 		DebugMessage("Precompiling instruction at address "..IP)
@@ -1485,7 +1487,12 @@ function ENT:Think()
 	local Iterations = self.ThinkTime*0.5
 	while (Iterations > 0) && (self.Clk >= 1.0) && (!self.Idle) do
 		self:Execute()
-		Iterations = Iterations - 1
+		if (self.SkipIterations == true) then
+			self.SkipIterations = false
+			Iterations = Iterations - 7
+		else
+			Iterations = Iterations - 1
+		end
 	end
 
 	if (self.Idle) then
