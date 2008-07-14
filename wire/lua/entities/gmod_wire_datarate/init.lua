@@ -40,6 +40,8 @@ function ENT:Think()
 
 	self:SetOverlayText("Data transferrer\nHi-Speed data rate: "..math.floor(self.HDataRate).." bps\nWire data rate: "..math.floor(self.WDataRate).." bps")
 	self.Entity:NextThink(CurTime()+self.Interval)
+
+	return true
 end
 
 function ENT:ReadCell( Address )

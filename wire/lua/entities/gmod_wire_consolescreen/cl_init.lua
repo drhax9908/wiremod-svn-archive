@@ -4,17 +4,8 @@ ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
 ENT.RenderGroup 		= RENDERGROUP_BOTH
 
-if (!RenderTargetCache) then
-	RenderTargetCache = {}
-	for i=1,3 do
-		RenderTargetCache[i] = GetRenderTarget("Wire_GPUTexture"..math.random(), 512, 512)
-	end
-	RenderTargetCacheSize = 3
-end
 
 function ENT:Initialize()
-	surface.CreateFont("lucida console", 20, 800, true, false, "Wire_GPUFont_ConsoleFont")
-
 	self.Memory1 = {}
 	self.Memory2 = {}
 
@@ -22,15 +13,64 @@ function ENT:Initialize()
 		self.Memory1[i] = 0
 	end
 
+	//Hardware image control:tr
+	//[2022] - Screen ratio (read only)
+	//[2023] - Hardware scale
+	//[2024] - Rotation (0 - 0*, 1 - 90*, 2 - 180*, 3 - 270*)
+	//[2025] - Brightness White
+	//[2026] - Brightness B
+	//[2027] - Brightness G
+	//[2028] - Brightness R
+	//[2029] - Vertical scale (1)
+	//[2030] - Horizontal scale (1)
+	//
+	//Shifting control:
+	//[2031] - Low shift column
+	//[2032] - High shift column
+	//[2033] - Low shift row
+	//[2034] - High shift row
+	//
+	//Character output control:
+	//[2035] - Charset, always 0
+	//[2036] - Brightness (additive)
+	//
+	//Control registers:
+	//[2037] - Shift cells -OBSOLETE-
+	//[2038] - Shift rows (number of rows, >0 shift down, <0 shift up)
+	//[2039] - Hardware Clear Row (Writing clears row)
+	//[2040] - Hardware Clear Column (Writing clears column)
+	//[2041] - Hardware Clear Screen
+	//[2042] - Hardware Background Color (000)
+	//
+	//Cursor control:
+	//[2043] - Cursor Blink Rate (0.50)
+	//[2044] - Cursor Size (0.25)
+	//[2045] - Cursor Address
+	//[2046] - Cursor Enabled
+	//
+	//[2047] - Clk
+
+	self.Memory1[2022] = 3/4
+	self.Memory1[2023] = 0
+	self.Memory1[2024] = 0
+	self.Memory1[2025] = 1
+	self.Memory1[2026] = 1
+	self.Memory1[2027] = 1
+	self.Memory1[2028] = 1
+	self.Memory1[2029] = 1
+	self.Memory1[2030] = 1
 	self.Memory1[2031] = 0
 	self.Memory1[2032] = 17
 	self.Memory1[2033] = 0
 	self.Memory1[2034] = 17
+	self.Memory1[2035] = 0
+	self.Memory1[2036] = 0
 
+	self.Memory1[2042] = 000
 	self.Memory1[2043] = 0.5
-
-	self.Memory1[2030] = 1
-	self.Memory1[2029] = 1
+	self.Memory1[2044] = 0.25
+	self.Memory1[2045] = 0
+	self.Memory1[2046] = 0
 
 	for i = 0, 2047 do
 		self.Memory2[i] = self.Memory1[i]
@@ -48,28 +88,11 @@ function ENT:Initialize()
 	self.Flash = false
 	self.FrameNeedsFlash = false
 
-	if (RenderTargetCache[RenderTargetCacheSize]) then
-		self.RTTexture = RenderTargetCache[RenderTargetCacheSize]
-
-		print("Render target cache = taken from "..RenderTargetCacheSize)
-		RenderTargetCacheSize = RenderTargetCacheSize - 1
-	else
-		RenderTargetCacheSize = RenderTargetCacheSize + 1
-		RenderTargetCache[RenderTargetCacheSize] = GetRenderTarget("Wire_GPUTexture"..math.random(), 512, 512)
-		self.RTTexture = RenderTargetCache[RenderTargetCacheSize]
-
-		print("Render target cache = created new into "..RenderTargetCacheSize)
-	end
-
-
-	self.matScreen 	= Material("models\duckeh\buttons\0")
-	self.texScreen	= surface.GetTextureID("models\duckeh\buttons\0")
+	self.RTTexture = WireGPU_NeedRenderTarget()
 end
 
 function ENT:OnRemove()
- 	RenderTargetCacheSize = RenderTargetCacheSize + 1
-	RenderTargetCache[RenderTargetCacheSize] = self.RTTexture
-	print("Render target cache = restored into "..RenderTargetCacheSize)
+	WireGPU_ReturnRenderTarget(self.RTTexture)
 end
 
 function ConsoleScreen_DataMessage(um)
@@ -83,6 +106,7 @@ function ConsoleScreen_DataMessage(um)
 			if (clk == 1) then
 				ent.Memory1[address] = value //Vis mem
 				ent.Memory2[address] = value //Invis mem
+				ent.NeedRefresh = true
 			else
 				ent.Memory2[address] = value //Invis mem
 			end
@@ -210,10 +234,6 @@ function ConsoleScreen_DataMessage(um)
 
 				ent.NeedRefresh = true
 			end
-
-			if (clk == 1) then
-				ent.NeedRefresh = true
-			end
 		end
 	end
 end
@@ -226,14 +246,15 @@ function ENT:Draw()
 	self.PrevTime = (self.PrevTime or CurTime())+DeltaTime
 	self.IntTimer = self.IntTimer + DeltaTime
 
- 	local NewRT = self.RTTexture
- 	local OldRT = render.GetRenderTarget()
+	local NewRT = self.RTTexture
+	local OldRT = render.GetRenderTarget()
 
-	local OldTex = self.matScreen:GetMaterialTexture("$basetexture")
-	self.matScreen:SetMaterialTexture("$basetexture",self.RTTexture)
+	local OldTex = WireGPU_matScreen:GetMaterialTexture("$basetexture")
+	WireGPU_matScreen:SetMaterialTexture("$basetexture",self.RTTexture)
 
 	if (self.NeedRefresh == true) then
 		self.NeedRefresh = false
+		self.FrameNeedsFlash = false
 
 		local oldw = ScrW()
 		local oldh = ScrH()
@@ -253,7 +274,7 @@ function ENT:Draw()
 			local hr = 24*math.fmod(math.floor(ch / 100),10)
 			surface.SetDrawColor(hr,hg,hb,255)
 			surface.DrawRect(0,0,512,512)
-		
+
 			for ty = 0, 17 do
 				for tx = 0, 29 do
 					local a = tx + ty*30
@@ -263,12 +284,12 @@ function ENT:Draw()
 					local cback = math.floor(c2 / 1000)
 					local cfrnt = c2 - math.floor(c2 / 1000)*1000
 
-					local fb = 24*math.fmod(cfrnt,10) + self.Memory1[2036]
-					local fg = 24*math.fmod(math.floor(cfrnt / 10),10) + self.Memory1[2036]
-					local fr = 24*math.fmod(math.floor(cfrnt / 100),10) + self.Memory1[2036]
-					local bb = 24*math.fmod(cback,10) + self.Memory1[2036]
-					local bg = 24*math.fmod(math.floor(cback / 10),10) + self.Memory1[2036]
-					local br = 24*math.fmod(math.floor(cback / 100),10) + self.Memory1[2036]
+					local fb = math.Clamp(24*math.fmod(cfrnt,10) + self.Memory1[2036],0,255)
+					local fg = math.Clamp(24*math.fmod(math.floor(cfrnt / 10),10) + self.Memory1[2036],0,255)
+					local fr = math.Clamp(24*math.fmod(math.floor(cfrnt / 100),10) + self.Memory1[2036],0,255)
+					local bb = math.Clamp(24*math.fmod(cback,10) + self.Memory1[2036],0,255)
+					local bg = math.Clamp(24*math.fmod(math.floor(cback / 10),10) + self.Memory1[2036],0,255)
+					local br = math.Clamp(24*math.fmod(math.floor(cback / 100),10) + self.Memory1[2036],0,255)
 
 					if (self.Flash == true) && (cback > 999) then
 						fb,bb = bb,fb
@@ -283,65 +304,60 @@ function ENT:Draw()
 					if (c1 > 255) then c1 = 0 end
 					if (c1 < 0) then c1 = 0 end
 
-					//if (cback ~= 0) then
+					if (cback ~= 0) then
 						surface.SetDrawColor(br,bg,bb,255)
 						surface.DrawRect(tx*szx+szx/2,ty*szy+szy/2,szx*1.2,szy*1.2)
-					//end
-				end
-			end
-
-			for ty = 0, 17 do
-				for tx = 0, 29 do
-					local a = tx + ty*30
-					local c1 = self.Memory1[2*a]
-					local c2 = self.Memory1[2*a+1]
-
-					local cback = math.floor(c2 / 1000)
-					local cfrnt = c2 - math.floor(c2 / 1000)*1000
-
-					local fb = 24*math.fmod(cfrnt,10) + self.Memory1[2036]
-					local fg = 24*math.fmod(math.floor(cfrnt / 10),10) + self.Memory1[2036]
-					local fr = 24*math.fmod(math.floor(cfrnt / 100),10) + self.Memory1[2036]
-					local bb = 24*math.fmod(cback,10) + self.Memory1[2036]
-					local bg = 24*math.fmod(math.floor(cback / 10),10) + self.Memory1[2036]
-					local br = 24*math.fmod(math.floor(cback / 100),10) + self.Memory1[2036]
-
-					if (self.Flash == true) && (cback > 999) then
-						fb,bb = bb,fb
-						fg,bg = bg,fg
-						fr,br = br,fr
+					else
+						surface.SetDrawColor(hr,hg,hb,255)
+						surface.DrawRect(tx*szx+szx/2,ty*szy+szy/2,szx*1.2,szy*1.2)
 					end
-
-					if (c1 > 255) then c1 = 0 end
-					if (c1 < 0) then c1 = 0 end
 
 					if (c1 ~= 0) && (cfrnt ~= 0) then
-						draw.DrawText(string.char(c1),"Wire_GPUFont_ConsoleFont",
-						tx*szx+szx/8+szx/2,ty*szy+szy/4+szy/2,Color(fr,fg,fb,255),0)
+						if (c1 <= 127) then
+							draw.DrawText(string.char(c1),"WireGPU_ConsoleFont",
+							tx*szx+szx/8+szx/2,ty*szy+szy/4+szy/2,Color(fr,fg,fb,255),0)
+						else
+							//self:DrawGraphicsChar(c1)
+						end
 					end
 				end
 			end
 
-			//2029 - Vertical scale (1)
-			//2030 - Horizontal scale (1)
-
-			//2031 - Low shift column
-			//2032 - High shift column
-			//2033 - Low shift row
-			//2034 - High shift row
-			//2035 - Charset, always 0
-			//2036 - Brightness (Add to color)
-			//2037 - Shift cells -OBSOLETE-
-			//2038 - Shift rows (number of rows, >0 shift down, <0 shift up)
-			//2039 - Hardware Clear Row (Writing clears row)
-			//2040 - Hardware Clear Column (Writing clears column)
-			//2041 - Hardware Clear Screen
-			//2042 - Hardware Background Color (000)
-			//2043 - Cursor Blink Rate (0.50)
-			//2044 - Cursor Size (0.25)
-			//2045 - Cursor Address
-			//2046 - Cursor Enabled
-			//2047 - Clk
+//			for ty = 0, 17 do
+//				for tx = 0, 29 do
+//					local a = tx + ty*30
+//					local c1 = self.Memory1[2*a]
+//					local c2 = self.Memory1[2*a+1]
+//
+//					local cback = math.floor(c2 / 1000)
+//					local cfrnt = c2 - math.floor(c2 / 1000)*1000
+//
+//					local fb = math.Clamp(24*math.fmod(cfrnt,10) + self.Memory1[2036],0,255)
+//					local fg = math.Clamp(24*math.fmod(math.floor(cfrnt / 10),10) + self.Memory1[2036],0,255)
+//					local fr = math.Clamp(24*math.fmod(math.floor(cfrnt / 100),10) + self.Memory1[2036],0,255)
+//					local bb = math.Clamp(24*math.fmod(cback,10) + self.Memory1[2036],0,255)
+//					local bg = math.Clamp(24*math.fmod(math.floor(cback / 10),10) + self.Memory1[2036],0,255)
+//					local br = math.Clamp(24*math.fmod(math.floor(cback / 100),10) + self.Memory1[2036],0,255)
+//
+//					if (self.Flash == true) && (cback > 999) then
+//						fb,bb = bb,fb
+//						fg,bg = bg,fg
+//						fr,br = br,fr
+//					end
+//
+//					if (c1 > 255) then c1 = 0 end
+//					if (c1 < 0) then c1 = 0 end
+//
+//					if (c1 ~= 0) && (cfrnt ~= 0) then
+//						if (c1 <= 127) then
+//							draw.DrawText(string.char(c1),"WireGPU_ConsoleFont",
+//							tx*szx+szx/8+szx/2,ty*szy+szy/4+szy/2,Color(fr,fg,fb,255),0)
+//						else
+//							//self:DrawGraphicsChar(c1)
+//						end
+//					end
+//				end
+//			end
 
 			if (self.Memory1[2045] > 1080) then self.Memory1[2045] = 1080 end
 			if (self.Memory1[2045] < 0) then self.Memory1[2045] = 0 end
@@ -360,7 +376,7 @@ function ENT:Draw()
 					local bb = 24*math.fmod(cback,10)
 					local bg = 24*math.fmod(math.floor(cback / 10),10)
 					local br = 24*math.fmod(math.floor(cback / 100),10)
-	
+
 					surface.SetDrawColor(br,bg,bb,255)
 					surface.DrawRect(tx*szx+szx/2,ty*szy+szy*(1-self.Memory1[2044])+szy/2,szx*1.2,szy*1.2*self.Memory1[2044])
 				end
@@ -378,17 +394,17 @@ function ENT:Draw()
 			self.Flash = true
 		end
 
-		if (self.IntTimer >= self.Memory1[2043]*2) then
-			self.IntTimer = 0
+		if (self.IntTimer >= self.Memory1[2043]) then
 			if (self.Flash == true) then
 				self.NeedRefresh = true
 			end
 			self.Flash = false
 		end
+
+		if (self.IntTimer >= self.Memory1[2043]*2) then
+			self.IntTimer = 0
+		end
 	end
-
-
-	self.FrameNeedsFlash = false
 
 	if (self.Monitor[self.Entity:GetModel()].OF) then
 		OF = self.Monitor[self.Entity:GetModel()].OF
@@ -415,12 +431,12 @@ function ENT:Draw()
 		surface.SetDrawColor(0,0,0,255)
 		surface.DrawRect(-256,-256,512/RatioX,512)
 
-		surface.SetTexture(self.texScreen)
-		surface.DrawTexturedRect(x,y,w/RatioX,h)
+		surface.SetDrawColor(255*self.Memory1[2028]*self.Memory1[2025],255*self.Memory1[2027]*self.Memory1[2025],255*self.Memory1[2026]*self.Memory1[2025],255)
+		surface.SetTexture(WireGPU_texScreen)
+		WireGPU_DrawScreen(x,y,w/RatioX,h,self.Memory1[2024],self.Memory1[2023])
 	cam.End3D2D()
 
-	self.matScreen:SetMaterialTexture("$basetexture",OldTex)
-	
+	WireGPU_matScreen:SetMaterialTexture("$basetexture",OldTex)
 	Wire_Render(self.Entity)
 end
 

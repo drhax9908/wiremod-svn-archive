@@ -24,6 +24,9 @@ function ENT:Initialize()
 	self.Char = 0
 	self.CharParam = 0
 	self.Clk = 1
+
+	self.Monitor = {}
+	self:InitMonitorModels()
 end
 
 function ENT:Use()
@@ -67,6 +70,10 @@ function ENT:ReadCell( Address )
 	elseif (Address == 2047) then
 		return self.Clk
 	elseif (Address >= 0) && (Address <= 2046) then
+		if (Address == 2022) then
+			return self.Monitor[self.Entity:GetModel()].RatioX
+		end
+
 		return self.Memory[Address]
 	end
 end

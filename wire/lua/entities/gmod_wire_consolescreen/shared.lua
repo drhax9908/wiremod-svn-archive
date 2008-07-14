@@ -10,6 +10,7 @@ ENT.Instructions	= ""
 ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
 
+
 function ENT:AddMonitor(model,tof,tou,tor,trs,x1,x2,y1,y2)
 	self.Monitor[model] = {}
 	self.Monitor[model].OF = tof
@@ -40,5 +41,4 @@ function ENT:InitMonitorModels()
 
 	//1:1 monitor
 	//16:9 plasma 
-
 end
