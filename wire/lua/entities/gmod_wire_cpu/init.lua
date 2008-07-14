@@ -1310,9 +1310,20 @@ function ENT:Precompile(IP)
 			if (self.OpcodeTable[self.PrecompileData[self.XEIP].Opcode]) then
 				if (self.PrecompileData[self.XEIP].Param1) then
 					if (self.PrecompileData[self.XEIP].Param2) then
-						return self.OpcodeTable[self.PrecompileData[self.XEIP].Opcode](tonumber(self.PrecompileData[self.XEIP].Param1()),tonumber(self.PrecompileData[self.XEIP].Param2()))
+						local param1 = tonumber(self.PrecompileData[self.XEIP].Param1())
+						local param2 = tonumber(self.PrecompileData[self.XEIP].Param2())
+						if (param1 && param2) then
+							return self.OpcodeTable[self.PrecompileData[self.XEIP].Opcode](param1,param2)
+						else
+							return "Read error"
+						end
 					else
-						return self.OpcodeTable[self.PrecompileData[self.XEIP].Opcode](tonumber(self.PrecompileData[self.XEIP].Param1()),0)
+						local param1 = tonumber(self.PrecompileData[self.XEIP].Param1())
+						if (param1) then
+							return self.OpcodeTable[self.PrecompileData[self.XEIP].Opcode](param1,0)
+						else
+							return "Read error"
+						end
 					end
 				else
 					return self.OpcodeTable[self.PrecompileData[self.XEIP].Opcode](0,0)
@@ -1438,7 +1449,11 @@ function ENT:Execute()
 			//Execute
 			local Result = self.PrecompileData[self.XEIP].Execute()
 			if (Result) then
-				self.PrecompileData[self.XEIP].WriteBack(Result)
+				if (Result == "Read error") then
+					self:Interrupt(5)
+				else
+					self.PrecompileData[self.XEIP].WriteBack(Result)
+				end
 			end
 		else
 			if (self.PrecompileData[self.XEIP].UnknownOpcode) then
