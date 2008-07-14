@@ -1,4 +1,5 @@
 AddCSLuaFile( "autorun/client/cl_wirelib.lua" )
+AddCSLuaFile( "autorun/client/cl_gpulib.lua" )
 
 WireLib = {}
 
