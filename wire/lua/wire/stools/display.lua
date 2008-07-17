@@ -556,7 +556,7 @@ if SERVER then
 end
 
 TOOL.ClientConVar = {
-	sound = "common/warning.wav",
+	sound = "synth/square.wav",
 	collision = "0",
 	model = "models/cheeze/wires/speaker.mdl"
 }

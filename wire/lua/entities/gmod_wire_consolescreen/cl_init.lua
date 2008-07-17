@@ -406,12 +406,18 @@ function ENT:Draw()
 		end
 	end
 
-	if (self.Monitor[self.Entity:GetModel()].OF) then
+	if (self.Monitor[self.Entity:GetModel()]) && (self.Monitor[self.Entity:GetModel()].OF) then
 		OF = self.Monitor[self.Entity:GetModel()].OF
 		OU = self.Monitor[self.Entity:GetModel()].OU
 		OR = self.Monitor[self.Entity:GetModel()].OR
 		Res = self.Monitor[self.Entity:GetModel()].RS
 		RatioX = self.Monitor[self.Entity:GetModel()].RatioX
+	else
+		OF = 0
+		OU = 0
+		OR = 0
+		Res = 1
+		RatioX = 1
 	end
 	
 	local ang = self.Entity:GetAngles()
