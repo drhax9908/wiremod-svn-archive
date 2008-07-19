@@ -45,7 +45,7 @@ function ENT:OnRemove()
     
     if( self.Active == 1)then
         if(self.CamPod ~= nil)then
-            self.CamPod:GetPassenger():SetViewEntity(self.CamPod:GetPassenger())
+            self.CamPodPassenger:SetViewEntity(self.CamPodPassenger)
         else
             self.CamPlayer:SetViewEntity(self.CamPlayer)
         end
@@ -57,9 +57,10 @@ function ENT:TriggerInput(iname, value)
 	if (iname == "Activated") then
 		if (value == 0) then
 		  if(self.CamPod ~= nil)then
-		      if(self.CamPod:GetPassenger() ~= nil && self.CamPod:GetPassenger():IsValid())then
-		          self.CamPod:GetPassenger():SetViewEntity(self.CamPod:GetPassenger())
-		          self.CamPod:GetPassenger():SetFOV(self.OrginialFOV,0.01)
+		      if(self.CamPodPassenger ~= nil && self.CamPodPassenger:IsValid())then
+		          self.CamPodPassenger:SetViewEntity(self.CamPodPassenger)
+		          self.CamPodPassenger:SetFOV(self.OrginialFOV,0.01)
+				  self.CamPodPassenger = nil
 		      end
 		  else
 		      self.CamPlayer:SetViewEntity(self.CamPlayer)
@@ -70,8 +71,9 @@ function ENT:TriggerInput(iname, value)
 		else
 		  if(self.CamPod ~= nil)then
 		      if(self.CamPod:GetPassenger() ~= nil && self.CamPod:GetPassenger():IsValid())then
-		          self.CamPod:GetPassenger():SetViewEntity(self.CamEnt)
-		          self.CamPod:GetPassenger():SetFOV(self.ZoomAmount,0.01)
+					self.CamPodPassenger = self.CamPod:GetPassenger()
+					self.CamPodPassenger:SetViewEntity(self.CamEnt)
+					self.CamPodPassenger:SetFOV(self.ZoomAmount,0.01)
 		      end
 		  else
 		      self.CamPlayer:SetViewEntity(self.CamEnt)
@@ -84,8 +86,8 @@ function ENT:TriggerInput(iname, value)
 	   self.ZoomAmount = math.Clamp(value,1,self.OriginalFOV)
 	   if(self.Active == 1)then
 	       if(self.CamPod ~= nil)then
-		      if(self.CamPod:GetPassenger() ~= nil && self.CamPod:GetPassenger():IsValid())then
-		          self.CamPod:GetPassenger():SetFOV(self.ZoomAmount,0.01)
+		      if(self.CamPodPassenger ~= nil && self.CamPodPassenger:IsValid())then
+		          self.CamPodPassenger:SetFOV(self.ZoomAmount,0.01)
 		      end
 		  else
 		      self.CamPlayer:SetFOV(self.ZoomAmount,0.01)
