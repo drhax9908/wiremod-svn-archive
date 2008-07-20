@@ -697,6 +697,7 @@ function ENT:InitializeOpcodeTable()
 	self.OpcodeTable[41] = function (Param1,Param2)	//IRET
 		local newIP = self:Pop()
 		if (newIP) then
+			self:Pop() //XEIP
 			self.IP = newIP
 		end
 		Wire_TriggerOutput(self.Entity, "Error", 0)

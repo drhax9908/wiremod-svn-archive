@@ -13,7 +13,7 @@ function ENT:InitASMOpcodes()
 			self.OpcodeCount[i] = 0
 		elseif (i >= 50) && (i <= 59) then
 			self.OpcodeCount[i] = 2
-		elseif (i >= 60) && (i <= 68) then
+		elseif (i >= 60) && (i <= 69) then
 			self.OpcodeCount[i] = 2
 		elseif (i >= 70) && (i <= 79) then
 			self.OpcodeCount[i] = 1
@@ -43,8 +43,6 @@ function ENT:InitASMOpcodes()
 			self.OpcodeCount[i] = 1
 		end
 	end
-
-	self.OpcodeCount[70] = 1 //NMIINT
 end
 
 function ENT:Core_Version()
@@ -199,9 +197,9 @@ function ENT:DecodeOpcode( opcode )
 		return 68
 	elseif (opcode == "jmpf") then	//JMPF X,Y : CS = Y; IP = X	//2.00
 		return 69
+	//------------------------------------------------------------
 	elseif (opcode == "nmiint") then //NMIINT X : NMIINTERRUPT(X);	//4.00
 		return 70
-	//------------------------------------------------------------
 	elseif (opcode == "cne") || (opcode == "cnz") then	//CNE X  : CALL(X), IF CMPR ~= 0 //2.00
 		return 71
 	elseif (opcode == "cg") || (opcode == "cnle") then	//CG X 	 : CALL(X), IF CMPR > 0	 //2.00
