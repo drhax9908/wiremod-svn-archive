@@ -4,9 +4,11 @@ local RT_CACHE_SIZE = 3
 // Create rendertarget cache
 //
 if (!RenderTargetCache) then
+	RenderTarget_NextID = 4
+
 	RenderTargetCache = {}
 	for i=1,RT_CACHE_SIZE do
-		RenderTargetCache[i] = GetRenderTarget("WireGPU_RT_"..math.floor(9999999*math.random()), 512, 512)
+		RenderTargetCache[i] = GetRenderTarget("WireGPU_RT_"..i, 512, 512)
 	end
 	RenderTargetCacheSize = RT_CACHE_SIZE
 end
@@ -33,7 +35,8 @@ function WireGPU_NeedRenderTarget()
 		return RenderTargetCache[RenderTargetCacheSize+1]
 	else
 		RenderTargetCacheSize = RenderTargetCacheSize + 1
-		RenderTargetCache[RenderTargetCacheSize] = GetRenderTarget("WireGPU_RT_"..math.floor(9999999*math.random()), 512, 512)
+		RenderTargetCache[RenderTargetCacheSize] = GetRenderTarget("WireGPU_RT_"..RenderTarget_NextID, 512, 512)
+		RenderTarget_NextID = RenderTarget_NextID + 1
 
 		print("Render target cache = created new into "..RenderTargetCacheSize)
 		return RenderTargetCache[RenderTargetCacheSize]
