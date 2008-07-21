@@ -13,7 +13,10 @@ function ENT:Initialize()
 		self.Memory1[i] = 0
 	end
 
-	//Hardware image control:tr
+	//Caching control:
+	//[2020] - Force cache refresh
+	//[2021] - Cached blocks size (up to 28, 0 if disabled)
+	//Hardware image control:
 	//[2022] - Screen ratio (read only)
 	//[2023] - Hardware scale
 	//[2024] - Rotation (0 - 0*, 1 - 90*, 2 - 180*, 3 - 270*)
@@ -87,6 +90,8 @@ function ENT:Initialize()
 	self.NeedRefresh = true
 	self.Flash = false
 	self.FrameNeedsFlash = false
+
+	self.FramesSinceRedraw = 0
 
 	self.RTTexture = WireGPU_NeedRenderTarget()
 end
@@ -252,7 +257,10 @@ function ENT:Draw()
 	local OldTex = WireGPU_matScreen:GetMaterialTexture("$basetexture")
 	WireGPU_matScreen:SetMaterialTexture("$basetexture",self.RTTexture)
 
-	if (self.NeedRefresh == true) then
+	self.FramesSinceRedraw = self.FramesSinceRedraw + 1
+
+	if /*(self.FramesSinceRedraw > 4) && */(self.NeedRefresh == true) then
+		self.FramesSinceRedraw = 0
 		self.NeedRefresh = false
 		self.FrameNeedsFlash = false
 

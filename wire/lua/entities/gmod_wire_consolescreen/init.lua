@@ -1,14 +1,14 @@
-AddCSLuaFile( "cl_init.lua" )
-AddCSLuaFile( "shared.lua" )
+AddCSLuaFile("cl_init.lua")
+AddCSLuaFile("shared.lua")
 include('shared.lua')
 
 ENT.WireDebugName = "ConsoleScreen"
 
 function ENT:Initialize()
 	
-	self.Entity:PhysicsInit( SOLID_VPHYSICS )
-	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
-	self.Entity:SetSolid( SOLID_VPHYSICS )
+	self.Entity:PhysicsInit(SOLID_VPHYSICS)
+	self.Entity:SetMoveType(MOVETYPE_VPHYSICS)
+	self.Entity:SetSolid(SOLID_VPHYSICS)
 	
 	self.Inputs = Wire_CreateInputs(self.Entity, { "CharX", "CharY", "Char", "CharParam", "Clk", "Reset" })
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Memory" }) 
@@ -27,6 +27,10 @@ function ENT:Initialize()
 
 	self.Monitor = {}
 	self:InitMonitorModels()
+
+	self.DataCache = {}
+	self.DataCacheSize = 0
+	self.IgnoreDataTransfer = false
 end
 
 function ENT:Use()
@@ -42,11 +46,11 @@ function ENT:SendPixel()
 		rp:AddAllPlayers()
 
 		umsg.Start("consolescreen_datamessage", rp)
-			umsg.Long( self:EntIndex() )
-			umsg.Long( self.Clk )
-			umsg.Long( 1 )
-			umsg.Long( address*2 )
-			umsg.Float( self.Char )
+			umsg.Long(self:EntIndex())
+			umsg.Long(self.Clk)
+			umsg.Long(1)
+			umsg.Long(address*2)
+			umsg.Float(self.Char)
 		umsg.End()
 
 		self.Memory[address*2+1] = self.CharParam
@@ -55,16 +59,16 @@ function ENT:SendPixel()
 		rp:AddAllPlayers()
 
 		umsg.Start("consolescreen_datamessage", rp)
-			umsg.Long( self:EntIndex() )
-			umsg.Long( self.Clk )
-			umsg.Long( 1 )
-			umsg.Long( address*2+1 )
-			umsg.Float( self.CharParam )
+			umsg.Long(self:EntIndex())
+			umsg.Long(self.Clk)
+			umsg.Long(1)
+			umsg.Long(address*2+1)
+			umsg.Float(self.CharParam)
 		umsg.End()
 	end
 end
 
-function ENT:ReadCell( Address )
+function ENT:ReadCell(Address)
 	if (Address < 0) || (Address > 2047) then
 		return nil
 	elseif (Address == 2047) then
@@ -78,7 +82,29 @@ function ENT:ReadCell( Address )
 	end
 end
 
-function ENT:WriteCell( Address, value )
+function ENT:FlushCache()
+	if (self.DataCacheSize > 0) then
+		local rp = RecipientFilter()
+		rp:AddAllPlayers()
+
+		Msg("Flushed "..self.DataCacheSize.." bytes\n")
+	
+		umsg.Start("consolescreen_datamessage", rp)
+		umsg.Long(self:EntIndex())
+		umsg.Long(self.Clk)
+		umsg.Long(self.DataCacheSize)
+
+		for i=0,self.DataCacheSize-1 do
+			umsg.Long(self.DataCache[i].Address)
+			umsg.Float(self.DataCache[i].Value)
+		end
+
+		self.DataCacheSize = 0
+		umsg.End()
+	end
+end
+
+function ENT:WriteCell(Address, value)
 	if (Address < 0) || (Address > 2047) then
 		return false
 	elseif (Address >= 0) && (Address <= 2047) then
@@ -88,18 +114,38 @@ function ENT:WriteCell( Address, value )
 
 		self.Memory[Address] = value
 
-		local rp = RecipientFilter()
-		rp:AddAllPlayers()
+		//if (Address != 2047) then
+			self.DataCache[self.DataCacheSize] = {}
+			self.DataCache[self.DataCacheSize].Address = Address
+			self.DataCache[self.DataCacheSize].Value = value
+			self.DataCacheSize = self.DataCacheSize + 1
+			if (self.DataCacheSize > 20) then
+				self:FlushCache()
+			end
+			self.IgnoreDataTransfer = true
+		//else
+		//	local rp = RecipientFilter()
+		//	rp:AddAllPlayers()
 
-		umsg.Start("consolescreen_datamessage", rp)
-			umsg.Long( self:EntIndex() )
-			umsg.Long( self.Clk )
-			umsg.Long( 1 )
-			umsg.Long( Address )
-			umsg.Float( value )
-		umsg.End()
+		//	umsg.Start("consolescreen_datamessage", rp)
+		//		umsg.Long(self:EntIndex())
+		//		umsg.Long(self.Clk)
+		//		umsg.Long(1)
+		//		umsg.Long(Address)
+		//		umsg.Float(value)
+		//	umsg.End()
+		//end
 		return true
 	end
+end
+
+function ENT:Think()
+	if (!self.IgnoreDataTransfer) && (self.DataCacheSize > 0) then
+		self:FlushCache()
+	end
+	self.IgnoreDataTransfer = false
+	self.Entity:NextThink(CurTime()+0.1)
+	return true
 end
 
 function ENT:TriggerInput(iname, value)
@@ -126,16 +172,16 @@ function ENT:TriggerInput(iname, value)
 end
 
 
-function MakeWireconsoleScreen( pl, Ang, Pos, Smodel )
+function MakeWireconsoleScreen(pl, Ang, Pos, Smodel)
 
-	if ( !pl:CheckLimit( "wire_consolescreens" ) ) then return false end
+	if (!pl:CheckLimit("wire_consolescreens")) then return false end
 	
-	local wire_consolescreen = ents.Create( "gmod_wire_consolescreen" )
+	local wire_consolescreen = ents.Create("gmod_wire_consolescreen")
 	if (!wire_consolescreen:IsValid()) then return false end
 	wire_consolescreen:SetModel(Smodel)
 
-	wire_consolescreen:SetAngles( Ang )
-	wire_consolescreen:SetPos( Pos )
+	wire_consolescreen:SetAngles(Ang)
+	wire_consolescreen:SetPos(Pos)
 	wire_consolescreen:Spawn()
 	
 	wire_consolescreen:SetPlayer(pl)
@@ -144,9 +190,9 @@ function MakeWireconsoleScreen( pl, Ang, Pos, Smodel )
 		pl = pl,
 		Smodel = Smodel,
 	}
-	table.Merge(wire_consolescreen:GetTable(), ttable )
+	table.Merge(wire_consolescreen:GetTable(), ttable)
 	
-	pl:AddCount( "wire_consolescreens", wire_consolescreen )
+	pl:AddCount("wire_consolescreens", wire_consolescreen)
 	
 	return wire_consolescreen
 end
