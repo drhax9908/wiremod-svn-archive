@@ -166,6 +166,8 @@ function TOOL:StartCompile(pl,ent)
 	ent.Labels["trap31"] = 1073741824
 	ent.Labels["trap32"] = 1073741824
 
+	ent.Labels["programsize"]  = 0
+
 	ent.DebugLines = {}
 	ent.DebugData = {}
 
@@ -202,6 +204,7 @@ function TOOL:Compile_Pass2()
 	self:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Pass 2\n")
 	self:GetOwner():ConCommand("wire_cpu_editor_addlog \"".."ZyeliosASM: Pass 2".."\"")
 
+	cpu_ent.Labels["programsize"] = cpu_ent.WIP
  	cpu_ent.WIP = 0
 
 	//Compile each line
