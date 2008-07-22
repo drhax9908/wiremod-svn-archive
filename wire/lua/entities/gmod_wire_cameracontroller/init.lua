@@ -10,32 +10,49 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-	self.Inputs = Wire_CreateInputs(self.Entity, {"Activated","Zoom","X","Y","Z","Pitch","Yaw","Roll"})
 	self.Outputs = Wire_CreateOutputs(self.Entity, {"On"})
     self.Active = false
+    self.OriginalOwner = nil
     self.CamEnt = nil
     self.CamPlayer = nil
     self.CamPod = nil
     self.ZoomAmount = 0
     self.OriginalFOV = 0
-    
-    local cam = ents.Create("gmod_wire_cam")
-    if (!cam:IsValid()) then return false end
-
-	cam:SetAngles( Vector(0,0,0) )
-	cam:SetPos( self:GetPos() )
-	cam:SetModel( Model("models/props_junk/PopCan01a.mdl") )
-	cam:SetColor(0,0,0,0)
-	cam:Spawn()
-	
-	self.CamEnt = cam
+    self.Static = 0
 end
 
-function ENT:Setup(Player)
+function ENT:Setup(Player,Static)
     if(Player && Player:IsValid() && Player:IsPlayer())then
         self.CamPlayer = Player
+        self.OriginalOwner = Player
         self.OriginalFOV = self.CamPlayer:GetFOV()
     end
+    
+    if(Static == 0)then
+        local cam = ents.Create("gmod_wire_cam")
+        if (!cam:IsValid()) then return false end
+
+	   cam:SetAngles( Vector(0,0,0) )
+	   cam:SetPos( self:GetPos() )
+	   cam:SetModel( Model("models/props_junk/PopCan01a.mdl") )
+	   cam:SetColor(0,0,0,0)
+	   cam:Spawn()
+	
+	   self.CamEnt = cam
+        self.Inputs = Wire_CreateInputs(self.Entity, {"Activated","Zoom","X","Y","Z","Pitch","Yaw","Roll"})
+	else
+	   local cam = ents.Create("prop_physics")
+        if (!cam:IsValid()) then return false end
+
+	   cam:SetAngles( Vector(0,0,0) )
+	   cam:SetPos( self:GetPos()+Vector(0,0,64) )
+	   cam:SetModel( Model("models/dav0r/camera.mdl") )
+	   cam:Spawn()
+	
+	   self.CamEnt = cam
+	   	self.Inputs = Wire_CreateInputs(self.Entity, {"Activated","Zoom"})
+	   self.Static = 1
+	end
 end
 
 function ENT:OnRemove()
@@ -44,11 +61,7 @@ function ENT:OnRemove()
     end
     
     if( self.Active == 1)then
-        if(self.CamPod ~= nil)then
-            self.CamPodPassenger:SetViewEntity(self.CamPodPassenger)
-        else
-            self.CamPlayer:SetViewEntity(self.CamPlayer)
-        end
+        self.CamPlayer:SetViewEntity(self.CamPlayer)
     end
 	Wire_Remove(self.Entity)
 end
@@ -56,42 +69,27 @@ end
 function ENT:TriggerInput(iname, value)
 	if (iname == "Activated") then
 		if (value == 0) then
-		  if(self.CamPod ~= nil)then
-		      if(self.CamPodPassenger ~= nil && self.CamPodPassenger:IsValid())then
-		          self.CamPodPassenger:SetViewEntity(self.CamPodPassenger)
-		          self.CamPodPassenger:SetFOV(self.OrginialFOV,0.01)
-				  self.CamPodPassenger = nil
-		      end
-		  else
-		      self.CamPlayer:SetViewEntity(self.CamPlayer)
-		      self.CamPlayer:SetFOV(self.OrginialFOV,0.01)
-		  end
+		  self.CamPlayer:SetViewEntity(self.CamPlayer)
+		  self.CamPlayer:SetFOV(self.OrginialFOV,0.01)
 		  self.Active = 0
 		  Wire_TriggerOutput(self.Entity,"On",0)
 		else
 		  if(self.CamPod ~= nil)then
 		      if(self.CamPod:GetPassenger() ~= nil && self.CamPod:GetPassenger():IsValid())then
-					self.CamPodPassenger = self.CamPod:GetPassenger()
-					self.CamPodPassenger:SetViewEntity(self.CamEnt)
-					self.CamPodPassenger:SetFOV(self.ZoomAmount,0.01)
-		      end
-		  else
-		      self.CamPlayer:SetViewEntity(self.CamEnt)
-		      self.CamPlayer:SetFOV(self.ZoomAmount,0.01)
-		  end
+			     self.CamPlayer = self.CamPod:GetPassenger()
+			  else
+			     self.CamPlayer = self.OriginalOwner
+              end
+          end
+		  self.CamPlayer:SetViewEntity(self.CamEnt)
+		  self.CamPlayer:SetFOV(self.ZoomAmount,0.01)
 		  self.Active = 1
 		  Wire_TriggerOutput(self.Entity,"On",1)
 		end
 	elseif(iname == "Zoom")then
 	   self.ZoomAmount = math.Clamp(value,1,self.OriginalFOV)
 	   if(self.Active == 1)then
-	       if(self.CamPod ~= nil)then
-		      if(self.CamPodPassenger ~= nil && self.CamPodPassenger:IsValid())then
-		          self.CamPodPassenger:SetFOV(self.ZoomAmount,0.01)
-		      end
-		  else
-		      self.CamPlayer:SetFOV(self.ZoomAmount,0.01)
-		  end
+		  self.CamPlayer:SetFOV(self.ZoomAmount,0.01)
 	   end
     elseif(iname == "X")then
         local camPos = self.CamEnt:GetPos()
@@ -120,13 +118,6 @@ function ENT:TriggerInput(iname, value)
     end
 end
 
-function ENT:Use( activator, caller )
-	if ( !activator:IsPlayer() ) then return end
-	
-	self.CamPlayer = activator
-	self.OriginalFOV = self.CamPlayer:GetFOV()
-end
-
 function ENT:ShowOutput()
 	local text = "Wired Camera"
 	self:SetOverlayText( text )
@@ -135,4 +126,3 @@ end
 function ENT:OnRestore()
     Wire_Restored(self.Entity)
 end
-   

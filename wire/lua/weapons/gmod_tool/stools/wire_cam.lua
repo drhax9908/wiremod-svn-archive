@@ -8,6 +8,7 @@ if ( CLIENT ) then
     language.Add( "Tool_wire_cam_desc", "Spawns a constant Cam Controller prop for use with the wire system." )
     language.Add( "Tool_wire_cam_0", "Primary: Create/Update Cam Controller Secondary: Link a cam controller to a Pod." )
     language.Add( "WirecamTool_cam", "Camera Controller:" )
+    language.Add( "WirecamTool_Static","Static:")
 	language.Add( "sboxlimit_wire_cams", "You've hit Cam Controller limit!" )
 	language.Add( "undone_Wire cam", "Undone Wire Cam Controller" )
 end
@@ -18,6 +19,8 @@ end
 
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_siren.mdl"
+
+TOOL.ClientConVar[ "Static" ] = "0"
 
 cleanup.Register( "wire_cams" )
 
@@ -37,7 +40,9 @@ function TOOL:LeftClick( trace )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_cam = MakeWireCam( ply, trace.HitPos, Ang )
+    local Static = self:GetClientNumber("Static")
+
+	local wire_cam = MakeWireCam( ply, trace.HitPos, Ang, Static )
 
 	local min = wire_cam:OBBMins()
 	wire_cam:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -74,7 +79,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireCam( pl, Pos, Ang )
+	function MakeWireCam( pl, Pos, Ang, Static )
 		if ( !pl:CheckLimit( "wire_cams" ) ) then return false end
 	
 		local wire_cam = ents.Create( "gmod_wire_cameracontroller" )
@@ -84,12 +89,13 @@ if (SERVER) then
 		wire_cam:SetPos( Pos )
 		wire_cam:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
 		wire_cam:Spawn()
-		wire_cam:Setup(pl)
+		wire_cam:Setup(pl,Static)
 
 		wire_cam:GetTable():SetPlayer( pl )
 
 		local ttable = {
-			pl = pl
+			pl = pl,
+			Static=Static
 		}
 		table.Merge(wire_cam:GetTable(), ttable )
 		
@@ -98,7 +104,7 @@ if (SERVER) then
 		return wire_cam
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_cameracontroller", MakeWireCam, "Pos", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_cameracontroller", MakeWireCam, "Pos", "Ang", "Static", "Vel", "aVel", "frozen")
 
 end
 
@@ -133,5 +139,6 @@ end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_cam_name", Description = "#Tool_wire_cam_desc" })
+	panel:AddControl( "Checkbox", { Label = "#Wirecamtool_Static", Command = "wire_cam_static" } )
 end
 
