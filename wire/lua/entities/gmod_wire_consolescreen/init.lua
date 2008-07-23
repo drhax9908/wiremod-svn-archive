@@ -86,8 +86,6 @@ function ENT:FlushCache()
 	if (self.DataCacheSize > 0) then
 		local rp = RecipientFilter()
 		rp:AddAllPlayers()
-
-		Msg("Flushed "..self.DataCacheSize.." bytes\n")
 	
 		umsg.Start("consolescreen_datamessage", rp)
 		umsg.Long(self:EntIndex())
@@ -115,36 +113,38 @@ function ENT:WriteCell(Address, value)
 		self.Memory[Address] = value
 
 		//if (Address != 2047) then
-			self.DataCache[self.DataCacheSize] = {}
-			self.DataCache[self.DataCacheSize].Address = Address
-			self.DataCache[self.DataCacheSize].Value = value
-			self.DataCacheSize = self.DataCacheSize + 1
-			if (self.DataCacheSize > 20) then
-				self:FlushCache()
-			end
-			self.IgnoreDataTransfer = true
+		//	self.DataCache[self.DataCacheSize] = {}
+		//	self.DataCache[self.DataCacheSize].Address = Address
+		//	self.DataCache[self.DataCacheSize].Value = value
+		//	self.DataCacheSize = self.DataCacheSize + 1
+		//	if (self.DataCacheSize > 20) then
+		//		self:FlushCache()
+		//		self.IgnoreDataTransfer = true
+		//	end
 		//else
-		//	local rp = RecipientFilter()
-		//	rp:AddAllPlayers()
+			local rp = RecipientFilter()
+			rp:AddAllPlayers()
 
-		//	umsg.Start("consolescreen_datamessage", rp)
-		//		umsg.Long(self:EntIndex())
-		//		umsg.Long(self.Clk)
-		//		umsg.Long(1)
-		//		umsg.Long(Address)
-		//		umsg.Float(value)
-		//	umsg.End()
+			umsg.Start("consolescreen_datamessage", rp)
+				umsg.Long(self:EntIndex())
+				umsg.Long(self.Clk)
+				umsg.Long(1)
+				umsg.Long(Address)
+				umsg.Float(value)
+			umsg.End()
 		//end
 		return true
 	end
 end
 
 function ENT:Think()
-	if (!self.IgnoreDataTransfer) && (self.DataCacheSize > 0) then
-		self:FlushCache()
-	end
-	self.IgnoreDataTransfer = false
-	self.Entity:NextThink(CurTime()+0.1)
+	//if (self.IgnoreDataTransfer) then
+	//	self:FlushCache()
+	//	self.IgnoreDataTransfer = false
+	//	self.Entity:NextThink(CurTime()+0.1)
+	///else
+	//	self.Entity:NextThink(CurTime()+0.05)
+	//end
 	return true
 end
 

@@ -778,21 +778,21 @@ function ENT:InitializeOpcodeTable()
 	//------------------------------------------------------------
 	self.OpcodeTable[60] = function (Param1,Param2)	//BIT
 		local bits = bit.tobits(math.floor(Param1))
-		self.CMPR = bits[math.Clamp(Param2,0,31)]
+		self.CMPR = bits[math.Clamp(Param2,0,23)]
 	end
 	self.OpcodeTable[61] = function (Param1,Param2)	//SBIT
 		local bits = bit.tobits(math.floor(Param1))
-		bits[math.Clamp(Param2,0,31)] = 1
+		bits[math.Clamp(Param2,0,23)] = 1
 		return bit.tonumb(bits)
 	end
 	self.OpcodeTable[62] = function (Param1,Param2)	//CBIT
 		local bits = bit.tobits(math.floor(Param1))
-		bits[math.Clamp(Param2,0,31)] = 0
+		bits[math.Clamp(Param2,0,23)] = 0
 		return bit.tonumb(bits)
 	end
 	self.OpcodeTable[63] = function (Param1,Param2)	//TBIT
 		local bits = bit.tobits(math.floor(Param1))
-		bits[math.Clamp(Param2,0,31)] = 1-bits[math.Clamp(Param2,0,31)]
+		bits[math.Clamp(Param2,0,23)] = 1-bits[math.Clamp(Param2,0,23)]
 		return bit.tonumb(bits)
 	end
 	self.OpcodeTable[64] = function(Param1,Param2) //BAND
