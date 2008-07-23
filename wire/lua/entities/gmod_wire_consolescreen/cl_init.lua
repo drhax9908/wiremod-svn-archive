@@ -323,7 +323,11 @@ function ENT:Draw()
 					if (c1 ~= 0) && (cfrnt ~= 0) then
 						if (c1 <= 127) then
 							draw.DrawText(string.char(c1),"WireGPU_ConsoleFont",
-							tx*szx+szx/8+szx/2,ty*szy+szy/4+szy/2,Color(fr,fg,fb,255),0)
+							tx*szx+szx/8+szx/2,ty*szy+szy/4+szy/2,
+							Color(math.Clamp(fr*self.Memory1[2028]*self.Memory1[2025],0,255),
+							      math.Clamp(fg*self.Memory1[2027]*self.Memory1[2025],0,255),
+							      math.Clamp(fb*self.Memory1[2026]*self.Memory1[2025],0,255),
+							      255),0)
 						else
 							//self:DrawGraphicsChar(c1)
 						end
@@ -340,12 +344,12 @@ function ENT:Draw()
 //					local cback = math.floor(c2 / 1000)
 //					local cfrnt = c2 - math.floor(c2 / 1000)*1000
 //
-//					local fb = math.Clamp(24*math.fmod(cfrnt,10) + self.Memory1[2036],0,255)
-//					local fg = math.Clamp(24*math.fmod(math.floor(cfrnt / 10),10) + self.Memory1[2036],0,255)
-//					local fr = math.Clamp(24*math.fmod(math.floor(cfrnt / 100),10) + self.Memory1[2036],0,255)
-//					local bb = math.Clamp(24*math.fmod(cback,10) + self.Memory1[2036],0,255)
-//					local bg = math.Clamp(24*math.fmod(math.floor(cback / 10),10) + self.Memory1[2036],0,255)
-//					local br = math.Clamp(24*math.fmod(math.floor(cback / 100),10) + self.Memory1[2036],0,255)
+//					local fb = 24*math.fmod(cfrnt,10) + self.Memory1[2036]
+//					local fg = 24*math.fmod(math.floor(cfrnt / 10),10) + self.Memory1[2036]
+//					local fr = 24*math.fmod(math.floor(cfrnt / 100),10) + self.Memory1[2036]
+//					local bb = 24*math.fmod(cback,10) + self.Memory1[2036]
+//					local bg = 24*math.fmod(math.floor(cback / 10),10) + self.Memory1[2036]
+//					local br = 24*math.fmod(math.floor(cback / 100),10) + self.Memory1[2036]
 //
 //					if (self.Flash == true) && (cback > 999) then
 //						fb,bb = bb,fb
@@ -359,7 +363,11 @@ function ENT:Draw()
 //					if (c1 ~= 0) && (cfrnt ~= 0) then
 //						if (c1 <= 127) then
 //							draw.DrawText(string.char(c1),"WireGPU_ConsoleFont",
-//							tx*szx+szx/8+szx/2,ty*szy+szy/4+szy/2,Color(fr,fg,fb,255),0)
+//							tx*szx+szx/8+szx/2,ty*szy+szy/4+szy/2,
+// 							Color(math.Clamp(fr*self.Memory1[2028]*self.Memory1[2025],0,255),
+//							      math.Clamp(fg*self.Memory1[2027]*self.Memory1[2025],0,255),
+//							      math.Clamp(fb*self.Memory1[2026]*self.Memory1[2025],0,255),
+//							      255),0)
 //						else
 //							//self:DrawGraphicsChar(c1)
 //						end
@@ -385,7 +393,10 @@ function ENT:Draw()
 					local bg = 24*math.fmod(math.floor(cback / 10),10)
 					local br = 24*math.fmod(math.floor(cback / 100),10)
 
-					surface.SetDrawColor(br,bg,bb,255)
+					surface.SetDrawColor(math.Clamp(br*self.Memory1[2028]*self.Memory1[2025],0,255),
+							     math.Clamp(bg*self.Memory1[2027]*self.Memory1[2025],0,255),
+							     math.Clamp(bb*self.Memory1[2026]*self.Memory1[2025],0,255),
+							     255)
 					surface.DrawRect(tx*szx+szx/2,ty*szy+szy*(1-self.Memory1[2044])+szy/2,szx*1.2,szy*1.2*self.Memory1[2044])
 				end
 			end
@@ -445,7 +456,7 @@ function ENT:Draw()
 		surface.SetDrawColor(0,0,0,255)
 		surface.DrawRect(-256,-256,512/RatioX,512)
 
-		surface.SetDrawColor(255*self.Memory1[2028]*self.Memory1[2025],255*self.Memory1[2027]*self.Memory1[2025],255*self.Memory1[2026]*self.Memory1[2025],255)
+		surface.SetDrawColor(255,255,255,255)
 		surface.SetTexture(WireGPU_texScreen)
 		WireGPU_DrawScreen(x,y,w/RatioX,h,self.Memory1[2024],self.Memory1[2023])
 	cam.End3D2D()

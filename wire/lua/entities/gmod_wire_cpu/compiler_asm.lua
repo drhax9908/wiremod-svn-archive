@@ -585,6 +585,8 @@ function ENT:Compile_ASM( pl, line, linenumber, firstpass, debuginfo )
 		elseif (nextorg) then
 			if self:ValidNumber(opcode) then
 				self.WIP = tonumber(opcode)
+			elseif (self.Labels[opcode]) then
+				self.WIP = tonumber(self.Labels[opcode])
 			else
 				self:Error(pl,"ZyeliosASM: Error (E333) at line "..linenumber..": Invalid parameter in ORG macro\n")
 				return false
