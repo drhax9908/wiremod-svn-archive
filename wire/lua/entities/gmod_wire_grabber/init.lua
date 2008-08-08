@@ -89,6 +89,7 @@ function ENT:TriggerInput(iname, value)
 			
 			if( self.OnlyGrabOwners)then
 			     if(trace.Entity.Owner != self.Owner)then return false end
+			     if (not self:CheckOwner(trace.Entity)) then return false end
 			end
 			// Weld them!
 			local const = constraint.Weld(self.Entity, trace.Entity, 0, 0, self.WeldStrength)
@@ -186,4 +187,64 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 		Wire_TriggerOutput(self.Entity, "Holding", 1)
 		
 	end
+end
+
+// Free Fall's Owner Check Code
+function ENT:CheckOwner(ent)
+	ply = self.pl
+	
+	hasCPPI = (type( CPPI ) == "table")
+	hasEPS = type( eps ) == "table"
+	hasPropSecure = type( PropSecure ) == "table"
+	hasProtector = type( Protector ) == "table"
+	
+	local t = hook.GetTable()
+	
+	local fn = t.CanTool.PropProtection
+	hasPropProtection = type( fn ) == "function"
+	if hasPropProtection then
+		-- We're going to get the function we need now. It's local so this is a bit dirty			
+		local gi = debug.getinfo( fn )
+		for i=1, gi.nups do
+			local k, v = debug.getupvalue( fn, i )
+			if k == "Appartient" then
+				propProtectionFn = v
+			end
+		end
+	end
+	
+	local fn = t.CanTool[ "SPropProtection.EntityRemoved" ]	
+	hasSPropProtection = type( fn ) == "function"
+	if hasSPropProtection then
+		local gi = debug.getinfo( fn )
+		for i=1, gi.nups do
+			local k, v = debug.getupvalue( fn, i )
+			if k == "SPropProtection" then
+				SPropProtectionFn = v.PlayerCanTouch
+			end
+		end
+	end
+	
+	if not hasCPPI and not hasPropProtection and not hasSPropProtection and not hasEPS and not hasPropSecure and not hasProtector then return true end
+	
+	local owns
+	if hasCPPI then
+		owns = ent:CPPICanPhysgun( ply )
+	elseif hasPropProtection then -- Chaussette's Prop Protection (preferred over PropSecure)
+		owns = propProtectionFn( ply, ent )
+	elseif hasSPropProtection then -- Simple Prop Protection by Spacetech
+		if ent:GetNetworkedString( "Owner" ) ~= "" then -- So it doesn't give an unowned prop
+ 			owns = SPropProtectionFn( ply, ent )
+		else
+			owns = false
+ 		end
+ 	elseif hasEPS then -- EPS
+ 		owns = eps.CanPlayerTouch( ply, ent )
+	elseif hasPropSecure then -- PropSecure
+		owns = PropSecure.IsPlayers( ply, ent )
+	elseif hasProtector then -- Protector
+		owns = Protector.Owner( ent ) == ply:UniqueID()
+	end
+	
+	return owns
 end
