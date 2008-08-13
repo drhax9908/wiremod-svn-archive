@@ -198,6 +198,8 @@ function ENT:CheckOwner(ent)
 	hasPropSecure = type( PropSecure ) == "table"
 	hasProtector = type( Protector ) == "table"
 	
+	if not hasCPPI and not hasPropProtection and not hasSPropProtection and not hasEPS and not hasPropSecure and not hasProtector then return true end
+	
 	local t = hook.GetTable()
 	
 	local fn = t.CanTool.PropProtection
@@ -224,8 +226,6 @@ function ENT:CheckOwner(ent)
 			end
 		end
 	end
-	
-	if not hasCPPI and not hasPropProtection and not hasSPropProtection and not hasEPS and not hasPropSecure and not hasProtector then return true end
 	
 	local owns
 	if hasCPPI then
