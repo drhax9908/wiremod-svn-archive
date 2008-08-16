@@ -237,8 +237,6 @@ end
 
 
 function TOOL.BuildCPanel(panel)
-	panel:AddControl("Header", { Text = "#Tool_weld_ez2_name", Description = "#Tool_weld_ez2_desc" })
-	
 	panel:AddControl("ComboBox", {
 		Label = "#Presets",
 		MenuButton = "1",
