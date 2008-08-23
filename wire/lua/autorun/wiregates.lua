@@ -818,7 +818,7 @@ GateActions["ram8"] = {
     name = "RAM(8 store)",
     inputs = { "Clk", "AddrRead", "AddrWrite", "Data", "Reset" },
     output = function(gate, Clk, AddrRead, AddrWrite, Data, Reset )
-	if (Reset) then
+	if (Reset > 0) then
 	        gate.LatchStore = {}
 	        for i = 0, 7 do
 	            gate.LatchStore[i] = 0
@@ -854,7 +854,7 @@ GateActions["ram64"] = {
     name = "RAM(64 store)",
     inputs = { "Clk", "AddrRead", "AddrWrite", "Data", "Reset" },
     output = function(gate, Clk, AddrRead, AddrWrite, Data, Reset )
-	if (Reset) then
+	if (Reset > 0) then
 	        gate.LatchStore = {}
 	        for i = 0, 63 do
 	            gate.LatchStore[i] = 0
@@ -887,7 +887,7 @@ GateActions["ram32k"] = {
     name = "RAM(32kb)",
     inputs = { "Clk", "AddrRead", "AddrWrite", "Data", "Reset" },
     output = function(gate, Clk, AddrRead, AddrWrite, Data, Reset )
-	if (Reset) then
+	if (Reset > 0) then
 	        gate.LatchStore = {}
 	        for i = 0, 32767 do
 	            gate.LatchStore[i] = 0
@@ -946,7 +946,7 @@ GateActions["ram64x64"] = {
     name = "RAM(64x64 store)",
     inputs = { "Clk", "AddrReadX", "AddrReadY", "AddrWriteX", "AddrWriteY", "Data", "Reset" },
     output = function(gate, Clk, AddrReadX, AddrReadY, AddrWriteX, AddrWriteY, Data, Reset )
-	if (Reset) then
+	if (Reset > 0) then
 	        gate.LatchStore = {}
 	        for i = 0, 4095 do
 	            gate.LatchStore[i] = 0
