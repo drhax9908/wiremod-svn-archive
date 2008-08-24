@@ -46,8 +46,9 @@ end
    Sets the base torque
 ---------------------------------------------------------*/
 function ENT:UpdateOverlayText()
-	
-	self:SetOverlayText( "Torque: " .. math.floor( self.BaseTorque ) )
+
+	txt = "Torque: " .. math.floor( self.TorqueScale * self.BaseTorque ) .. "\nSpeed: 0\nBreak: " .. self.Breaking .. "\nSpeedMod: " .. math.floor( self.SpeedMod * 100 ) .. "%"
+	self:SetOverlayText( txt )
 
 end
 
@@ -288,4 +289,5 @@ function ENT:Use( activator, caller, type, value )
 	end
 	
 end
+
 

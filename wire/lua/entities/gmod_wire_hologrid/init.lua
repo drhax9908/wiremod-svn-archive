@@ -88,8 +88,8 @@ end
 duplicator.RegisterEntityClass(
 	"gmod_wire_hologrid",
 	MakeWireHologrid,
-	"Ang",
-	"Pos",
+	"pos", "ang",
 	"frozen"
 );
+
 
