@@ -63,6 +63,7 @@ function ENT:TriggerInput( inputname, value, iter )
 end
 
 
+if ( SERVER ) then
 function MakeWireHoloemitter( pl, pos, ang, r, g, b, a, showbeams, size, frozen )
 	// check the players limit
 	if( !pl:CheckLimit( "wire_holoemitters" ) ) then return; end
@@ -105,12 +106,8 @@ function MakeWireHoloemitter( pl, pos, ang, r, g, b, a, showbeams, size, frozen 
 	return emitter;
 end
 
-duplicator.RegisterEntityClass(
-	"gmod_wire_holoemitter",
-	MakeWireHoloemitter,
-	"Ang",
-	"Pos",
-	"r", "g", "b", "a",
-	"frozen"
-);
+duplicator.RegisterEntityClass( "gmod_wire_holoemitter", MakeWireHoloemitter, "pos", "ang", "r", "g", "b", "a", "showbeams", "size", "frozen" );
+
+end
+
 

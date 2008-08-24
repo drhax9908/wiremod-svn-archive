@@ -142,6 +142,7 @@ function TOOL:RightClick( trace )
 	wheelEnt:SetFwd( fwd )
 	wheelEnt:SetBck( bck )
 	wheelEnt:SetStop( stop )
+	wheelEnt:UpdateOverlayText()
 
 	return true
 
