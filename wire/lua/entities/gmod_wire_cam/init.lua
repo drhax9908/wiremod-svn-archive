@@ -21,7 +21,7 @@ function ENT:Think()
     if(self:GetColor() != Color(0,0,0,0))then
         self:SetColor(0,0,0,0)
     end
-    self:NextThink(CurTime()+0.25)
+    self:NextThink(CurTime()+0.1)
 end
 
 function ENT:RecieveInfo(Pos,Ang)
