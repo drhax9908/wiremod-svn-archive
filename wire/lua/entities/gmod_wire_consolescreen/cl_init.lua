@@ -123,8 +123,8 @@ function ConsoleScreen_DataMessage(um)
 
 			if (address == 2037) then
 				local delta = value
-				local low = ent.Memory1[2031]
-				local high = ent.Memory1[2032]
+				local low = math.floor(math.Clamp(ent.Memory1[2031],0,17))
+				local high = math.floor(math.Clamp(ent.Memory1[2032],0,17))
 				if (delta > 0) then
 					for j = low,high do
 						for i = 29,delta do
@@ -172,8 +172,8 @@ function ConsoleScreen_DataMessage(um)
 			end
 			if (address == 2038) then
 				local delta = value
-				local low = ent.Memory1[2033]
-				local high = ent.Memory1[2034]
+				local low = math.floor(math.Clamp(ent.Memory1[2033],0,29))
+				local high = math.floor(math.Clamp(ent.Memory1[2034],0,29))
 				if (delta > 0) then
 					for j = low, high-delta do
 						for i = 0, 59 do
@@ -243,6 +243,82 @@ function ConsoleScreen_DataMessage(um)
 	end
 end
 usermessage.Hook("consolescreen_datamessage", ConsoleScreen_DataMessage) 
+
+function ENT:DrawGraphicsChar(c,x,y,w,h,r,g,b)
+	surface.SetDrawColor(r,g,b,255)
+
+	if (c == 128) then
+		vertex = {}
+
+		//Generate vertex data
+		vertex[1] = {}
+		vertex[1]["x"] = x
+		vertex[1]["y"] = y+h
+
+		vertex[2] = {}
+		vertex[2]["x"] = x+w
+		vertex[2]["y"] = y+h
+
+		vertex[3] = {}
+		vertex[3]["x"] = x+w
+		vertex[3]["y"] = y
+		surface.DrawPoly(vertex)
+	end
+
+	if (c == 129) then
+		vertex = {}
+
+		//Generate vertex data
+		vertex[1] = {}
+		vertex[1]["x"] = x
+		vertex[1]["y"] = y+h
+
+		vertex[2] = {}
+		vertex[2]["x"] = x
+		vertex[2]["y"] = y
+
+		vertex[3] = {}
+		vertex[3]["x"] = x+w
+		vertex[3]["y"] = y+h
+		surface.DrawPoly(vertex)
+	end
+
+	if (c == 130) then
+		vertex = {}
+
+		//Generate vertex data
+		vertex[1] = {}
+		vertex[1]["x"] = x
+		vertex[1]["y"] = y+h
+
+		vertex[2] = {}
+		vertex[2]["x"] = x+w
+		vertex[2]["y"] = y
+
+		vertex[3] = {}
+		vertex[3]["x"] = x
+		vertex[3]["y"] = y
+		surface.DrawPoly(vertex)
+	end
+
+	if (c == 131) then
+		vertex = {}
+
+		//Generate vertex data
+		vertex[1] = {}
+		vertex[1]["x"] = x
+		vertex[1]["y"] = y
+
+		vertex[2] = {}
+		vertex[2]["x"] = x+w
+		vertex[2]["y"] = y
+
+		vertex[3] = {}
+		vertex[3]["x"] = x+w
+		vertex[3]["y"] = y+h
+		surface.DrawPoly(vertex)
+	end
+end
 
 function ENT:Draw()
 	self.Entity:DrawModel()
@@ -329,7 +405,10 @@ function ENT:Draw()
 							      math.Clamp(fb*self.Memory1[2026]*self.Memory1[2025],0,255),
 							      255),0)
 						else
-							//self:DrawGraphicsChar(c1)
+							self:DrawGraphicsChar(c1,tx*szx+szx/2,ty*szy+szy/2,szx,szy,
+								math.Clamp(fr*self.Memory1[2028]*self.Memory1[2025],0,255),
+								math.Clamp(fg*self.Memory1[2027]*self.Memory1[2025],0,255),
+								math.Clamp(fb*self.Memory1[2026]*self.Memory1[2025],0,255))
 						end
 					end
 				end
