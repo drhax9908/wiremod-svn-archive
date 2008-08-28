@@ -1,4 +1,4 @@
-local RT_CACHE_SIZE = 3
+local RT_CACHE_SIZE = 4
 
 //
 // Create rendertarget cache
