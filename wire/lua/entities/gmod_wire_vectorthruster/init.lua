@@ -199,7 +199,7 @@ function ENT:TriggerInput(iname, value)
 	elseif (iname == "Z") then
 		self.Z = value
 	elseif (iname == "Vector") then
-		if (type(value) != "vector") then Msg("non vector passed!\n") return end
+		if (type(value) != "Vector") then Msg("non vector passed!\n") return end
 		self.X = value.x
 		self.Y = value.y
 		self.Z = value.z
