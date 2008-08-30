@@ -218,7 +218,7 @@ function Wire_AdjustOutputs(ent, names, desc)
 	    if (v.Keep) then
 	        v.Keep = nil
 	    else
-			//fix by Syranide: unlinks wires of removed outputs
+			-- fix by Syranide: unlinks wires of removed outputs
 			for i,v in ipairs(outputs[k].Connected) do
 				if (v.Entity:IsValid()) then
 					Wire_Link_Clear(v.Entity, v.Name)
@@ -409,7 +409,7 @@ function WireLib.AdjustSpecialOutputs(ent, names, types, desc)
 	    if (v.Keep) then
 	        v.Keep = nil
 	    else
-			//fix by Syranide: unlinks wires of removed outputs
+			-- fix by Syranide: unlinks wires of removed outputs
 			for i,v in ipairs(outputs[k].Connected) do
 				if (v.Entity:IsValid()) then
 					Wire_Link_Clear(v.Entity, v)
@@ -529,7 +529,7 @@ function Wire_Remove(ent)
 					if (v.Entity.TriggerInput) then
 						v.Entity:TriggerInput(dstid, 0)
 					end
-					//disable for beamlib
+					-- disable for beamlib
 			        Wire_Link_Clear(v.Entity, v.Name)
 				end
 		    end
@@ -573,12 +573,12 @@ local function Wire_Link(dst, dstid, src, srcid, path)
 	table.insert(output.Connected, { Entity = dst, Name = dstid })
 	
 	if dst.OnInputWireLink then
-		//ENT:OnInputWireLink(iName, iType, oEnt, oName, oType)
+		-- ENT:OnInputWireLink(iName, iType, oEnt, oName, oType)
 		dst:OnInputWireLink(dstid, input.Type, src, srcid, output.Type)
 	end
 	
 	if src.OnOutputWireLink then
-		//ENT:OnOutputWireLink(oName, oType, iEnt, iName, iType)
+		-- ENT:OnOutputWireLink(oName, oType, iEnt, iName, iType)
 		src:OnOutputWireLink(srcid, output.Type, dst, dstid, input.Type)
 	end
 	
@@ -636,15 +636,15 @@ local function Wire_Unlink(ent, iname)
 			            table.remove(output.Connected, k)
 			        end
 			    end
-				//untested
+				-- untested
 				if input.Src.OnOutputWireLink then
-					//ENT:OnOutputWireLink(oName, oType, iEnt, iName, iType)
+					-- ENT:OnOutputWireLink(oName, oType, iEnt, iName, iType)
 					input.Src:OnOutputWireLink(input.SrcId, input.Src.Outputs[input.SrcId].Type, ent, iname, input.Type)
 				end
 			end
-			//untested
+			-- untested
 			if ent.OnInputWireUnlink then
-				//ENT:OnInputWireUnlink(iName, iType, oEnt, oName, oType)
+				-- ENT:OnInputWireUnlink(iName, iType, oEnt, oName, oType)
 				ent:OnInputWireUnlink(iname, input.Type, input.Src, input.SrcId, input.Src.Outputs[input.SrcId].Type)
 			end
 		end
@@ -698,7 +698,7 @@ end
 
 function Wire_Link_Node(idx, ent, pos)
     if (not CurLink[idx]) or (not CurLink[idx].Dst) then return end
-	if (!ent:IsValid()) then return end //its the world, give up
+	if (!ent:IsValid()) then return end -- its the world, give up
 	
 	local net_name = "wp_" .. CurLink[idx].DstId
 	local node_idx = CurLink[idx].Dst:GetNetworkedBeamInt(net_name)+1
@@ -726,7 +726,7 @@ function Wire_Link_End(idx, ent, pos, oname, pl)
 	
 	local input = CurLink[idx].Dst.Inputs[CurLink[idx].DstId]
 	local output = ent.Outputs[oname] or {}
-	--Msg("input type= " .. input.Type .. "  output type= " .. (output.Type or "NIL") .. "\n")	//I bet that was getting anoying (TAD2020)
+	--Msg("input type= " .. input.Type .. "  output type= " .. (output.Type or "NIL") .. "\n")	-- I bet that was getting anoying (TAD2020)
 	output.Type = output.Type or "NORMAL"
 	if (input.Type != output.Type) and (input.Type != "ANY") and (output.Type != "ANY") then
 		local txt = "Data Type Mismatch! Input takes "..input.Type.." and Output gives "..output.Type
@@ -826,18 +826,18 @@ end
 
 
 function Wire_AfterPasteMods(ply, Ent, DupeInfo)
-	//this does nothing for now, we need the blank function to get the duplicator to copy the WireDupeInfo into the pasted ent
+	-- this does nothing for now, we need the blank function to get the duplicator to copy the WireDupeInfo into the pasted ent
 end
 duplicator.RegisterEntityModifier( "WireDupeInfo", Wire_AfterPasteMods )
 
 
-//used for welding wired stuff, if trace is worl, the ent is not welded and is froze instead
+-- used for welding wired stuff, if trace is worl, the ent is not welded and is froze instead
 function WireLib.Weld(ent, traceEntity, tracePhysicsBone, DOR, collision, AllowWorldWeld)
 	if (!ent or !traceEntity or traceEntity:IsNPC() or traceEntity:IsPlayer()) then return end
 	local const
 	if ( traceEntity:IsValid() ) or ( traceEntity:IsWorld() and AllowWorldWeld ) then
 		const = constraint.Weld( ent, traceEntity, 0, tracePhysicsBone, 0, (not collision), DOR )
-		// Don't disable collision if it's not attached to anything
+		-- Don't disable collision if it's not attached to anything
 		if (!collision) then
 			ent:GetPhysicsObject():EnableCollisions( false )
 			ent.nocollide = true
@@ -946,7 +946,7 @@ WireLib.AfterPasteMods			= Wire_AfterPasteMods
 Wire_BuildDupeInfo				= WireLib.BuildDupeInfo
 Wire_ApplyDupeInfo				= WireLib.ApplyDupeInfo
 
-//backwards logic: set enable to false to show show values on gates instead
+--backwards logic: set enable to false to show show values on gates instead
 Wire_EnableGateInputValues = true
 local function WireEnableInputValues(pl, cmd, args)
 	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
@@ -1023,7 +1023,7 @@ end
 concommand.Add( "Wire_ForceDelayOverlayTextUpdate", WireForceDelayOverlayTextUpdate )
 
 
-/*Wire_UseOldGateOutputLables = false
+--[[Wire_UseOldGateOutputLables = false
 local function WireUseOldGateOutputLables(pl, cmd, args)
 	if ( args[1] ) and ( ( pl:IsAdmin() ) or ( pl:IsSuperAdmin( )() ) ) then
 		if args[1] == "1" or args[1] == 1 then 
@@ -1036,7 +1036,7 @@ local function WireUseOldGateOutputLables(pl, cmd, args)
 	end
 	pl:PrintMessage(HUD_PRINTCONSOLE, "\nWire_UseOldGateOutputLables = "..tostring(Wire_UseOldGateOutputLables).."\n")
 end
-concommand.Add( "Wire_UseOldGateOutputLables", WireUseOldGateOutputLables )*/
+concommand.Add( "Wire_UseOldGateOutputLables", WireUseOldGateOutputLables )]]
 
 
 local function PrintWireVersion(pl,cmd,args)
@@ -1049,3 +1049,18 @@ concommand.Add( "Wire_PrintVersion", PrintWireVersion )
 if (WireVersion) then
 	Msg("===============================\n===  Wire  "..WireVersion.."   Installed  ===\n===============================\n")
 end
+
+
+-- add wiresvn tag
+
+-- add wiresvn_rev tag (doesn't work like it should)
+--RunConsoleCommand("sv_tags", (GetConVarString("sv_tags") or "")..",wiresvn"..WireVersion)
+
+-- this still doesn't quiet work like it looks like it should, must be some issues with setting sv_tags (long tags, similar tags might be ignored/removed while duplicates might get though)
+local tags = string.Explode(",",(GetConVarString("sv_tags") or ""))
+for i,tag in ipairs(tags) do
+	if tag:find("wiresvn") then table.remove(tags,i) end
+end
+table.insert(tags, "wiresvn")
+table.sort(tags)
+RunConsoleCommand("sv_tags", table.concat(tags, ","))
