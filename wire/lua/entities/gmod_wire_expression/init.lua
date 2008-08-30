@@ -226,7 +226,7 @@ function ENT:_con(tbl)
 	end
 end
 
-function ENT:_imp(tbl)  if math.abs(self["_"..tbl[2][1]](self,tbl[2])) >= self.Delta then     if self["_"..tbl[3][1]](self,tbl[3]) == false then return false end end end
+function ENT:_imp(tbl)  if math.abs(self["_"..tbl[2][1]](self,tbl[2])) >= self.Delta then self.elser = 0    if self["_"..tbl[3][1]](self,tbl[3]) == false then return false end else self.elser = 1 end end
 function ENT:_cnd(tbl)  if math.abs(self["_"..tbl[2][1]](self,tbl[2])) >= self.Delta then return self["_"..tbl[3][1]](self,tbl[3]) else return self["_"..tbl[4][1]](self,tbl[4]) end end
 
 function ENT:_and(tbl)  if math.abs(self["_"..tbl[2][1]](self,tbl[2])) >= self.Delta and math.abs(self["_"..tbl[3][1]](self,tbl[3])) >= self.Delta then return 1 else return 0 end end
@@ -258,6 +258,7 @@ function ENT:_exp(tbl)  return self["_"..tbl[2][1]](self,tbl[2]) ^ self["_"..tbl
 
 function ENT:_not(tbl)  if math.abs(self["_"..tbl[2][1]](self,tbl[2])) < self.Delta then return 1 else return 0 end end
 
+ENT._else_0 =    function (self, n)    return self.elser end
 ENT._abs_1 =     function (self, n)    return math.abs(n) end
 ENT._ceil_1 =    function (self, n)    return math.ceil(n) end
 ENT._ceil_2 =    function (self, n, d) return math.ceil(n * 10 ^ d) / 10 ^ d end
