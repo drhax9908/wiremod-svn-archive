@@ -412,7 +412,7 @@ function WireLib.AdjustSpecialOutputs(ent, names, types, desc)
 			-- fix by Syranide: unlinks wires of removed outputs
 			for i,v in ipairs(outputs[k].Connected) do
 				if (v.Entity:IsValid()) then
-					Wire_Link_Clear(v.Entity, v)
+					Wire_Link_Clear(v.Entity, v.Name)
 				end
 			end
 			outputs[k] = nil
