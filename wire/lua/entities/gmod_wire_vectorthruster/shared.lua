@@ -76,7 +76,7 @@ local LastTime = 0
 function ENT:NetSetMul( mul )
 	--self.Entity:SetNetworkedBeamInt(5, math.floor(mul*100))
 	if (CurTime() > LastTime + Limit) then
-		self.Entity:SetNetworkedInt(5, math.floor(mul*100))
+		self.Entity:SetNetworkedInt(5, math.floor((mul or 0)*100))
 		LastTime = CurTime()
 	end
 end
