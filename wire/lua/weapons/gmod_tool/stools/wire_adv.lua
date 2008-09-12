@@ -173,11 +173,17 @@ if CLIENT then hook.Add("PlayerBindPress","wire_wire_adv",function(pl,bind,press
 		local trace = util.TraceLine(tr)
 		local override = self:GetClientInfo("scrollwithoutmod") == "1" and trace.Entity and trace.Entity:IsValid() and (trace.Entity:GetClass() == self.InputEntClass or trace.Entity:GetClass() == self.OutputEntClass)
 		
+		-- This is the issue why you can't scroll anymore after you pressed the context menu. I have no idea what it's purpose was.
+		-- But it's better to remove this crap instead of having this annoying bug when you can't switch away anymore from the toolgun using the scrollwheel
+		-- The reason is, "-menu_context" is never called if you close the context menu. No idea why.
+		--[[
 		if string.find(bind,"+menu_context") then
 			self.keyMOD = pressed
 		elseif string.find(bind,"-menu_context") then
 			self.keyMOD = false
 		elseif pl:GetActiveWeapon() == valid then
+		--]]
+		if pl:GetActiveWeapon() == valid then
 			if string.find(bind,"invnext") and pressed then
 				if override or self.keyMOD then
 					pl:ConCommand("wire_adv_next\n")
