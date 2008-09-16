@@ -588,6 +588,12 @@ function ENT:Execute()
 	self.TIMER = self.TIMER + self.DeltaTime
 	self.TMR = self.TMR + 1
 
+	if (self.BusLock == 1) then
+		if (self.Debug) then
+			print("Warning: execution while bus is locked")
+		end
+	end
+
 	if (!self.IP) then
 		self:Reset()
 		Wire_TriggerOutput(self.Entity, "Error", 5.0)

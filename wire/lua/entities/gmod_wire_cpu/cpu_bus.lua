@@ -13,6 +13,13 @@ function ENT:Write(value)
 end
 
 function ENT:ReadCell(Address)
+	if (not Address) then
+		if (self.Debug) then
+			print("Non-existant address fed into address bus (read)!")
+		end
+		return nil
+	end
+
 	Page = math.floor(Address / 128)
 	if (not self:Is48bitInteger(Address)) then
 		self:Interrupt(15,Address)
@@ -30,7 +37,7 @@ function ENT:ReadCell(Address)
 
 	if ((self.EF == 1) && (self.Page[Page]) && (self.Page[Page].Read == 0)) then //Page protection
 		self:Interrupt(12,Address)
-		return false
+		return nil
 	end
 
 	if (Address < 65536) then
@@ -68,6 +75,13 @@ function ENT:ReadCell(Address)
 end
 
 function ENT:WriteCell(Address, value)
+	if (not Address) then
+		if (self.Debug) then
+			print("Non-existant address fed into address bus (write)!")
+		end
+		return nil
+	end
+
 	Page = math.floor(Address / 128)
 	if (not self:Is48bitInteger(Address)) then
 		self:Interrupt(15,Address)

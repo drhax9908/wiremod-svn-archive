@@ -82,18 +82,30 @@ function ENT:Interrupt(intnumber,intparam)
 			return
 		else
 			if (self.EF == 1) then	//4 bytes interrupt table
-				if (intnumber < 0) or (intnumber > 255) or (intnumber > self.NIDT-1) then
+				if (intnumber < 0) or (intnumber > 255) then
 					self.INTR = 0
 					self:Interrupt(13,3)
 					return
 				end
 
+				if (intnumber > self.NIDT-1) then
+					if (intnumber == 0) then
+						self:Reset()
+					end
+					if (intnumber == 1) then
+						self.Clk = 0
+					end
+					return
+				end
+
 				local intaddress = self.IDTR + intnumber*4
 
+				self.BusLock = 0
 				local int_ip    =         self.ReadCell(intaddress+0)
 				local int_cs    =         self.ReadCell(intaddress+1)
 				local int_      =         self.ReadCell(intaddress+2)
 				local int_flags = to_bits(self.ReadCell(intaddress+3))
+				self.BusLock = 1
 
 				//Flags:
 				//3  [8 ] = CMPR shows if interrupt occured
@@ -106,13 +118,12 @@ function ENT:Interrupt(intnumber,intparam)
 					self.BusLock = 0
 					self:Push(self.IP)
 					self:Push(self.CS)
+					self.BusLock = 1
 
 					self.IP = int_ip
 					if (int_flags[4] == 0) then
 						self.CS = int_cs
 					end
-
-					self.BusLock = 1
 
 					if (int_flags[3] == 1) then
 						self.CMPR = 1
@@ -161,7 +172,7 @@ function ENT:Interrupt(intnumber,intparam)
 						self.IP = intoffset
 					end
 					self.CMPR = 0
-					self.BusLock = true
+					self.BusLock = 1
 				else
 					if (intnumber == 1) then
 						self.Clk = 0
@@ -170,6 +181,7 @@ function ENT:Interrupt(intnumber,intparam)
 				end
 			end
 		end
+		self.BusLock = 0
 	end
 end
 
