@@ -101,10 +101,10 @@ function ENT:Interrupt(intnumber,intparam)
 				local intaddress = self.IDTR + intnumber*4
 
 				self.BusLock = 0
-				local int_ip    =         self:ReadCell(intaddress+0)
-				local int_cs    =         self:ReadCell(intaddress+1)
-				local int_      =         self:ReadCell(intaddress+2)
-				local int_flags = to_bits(self:ReadCell(intaddress+3))
+				local int_ip    = 		       self:ReadCell(intaddress+0)
+				local int_cs    = 		       self:ReadCell(intaddress+1)
+				local int_      = 		       self:ReadCell(intaddress+2)
+				local int_flags = self:IntegerToBinary(self:ReadCell(intaddress+3))
 				self.BusLock = 1
 
 				//Flags:
@@ -113,7 +113,7 @@ function ENT:Interrupt(intnumber,intparam)
 				//5  [32] = Interrupt enabled
 
 				if (int_flags[5] == 1) then
-					if (self.Debug) then DebugMessage("INTERRUPT: #"..intnumber.." HANDLED\nJumpOffset="..intoffset.."\n") end
+					if (self.Debug) then DebugMessage("INTERRUPT: #"..intnumber.." HANDLED\nJumpOffset="..int_ip..":"..int_cs.."\n") end
 
 					self.BusLock = 0
 					self:Push(self.IP)
