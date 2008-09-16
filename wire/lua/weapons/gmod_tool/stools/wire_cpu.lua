@@ -139,8 +139,8 @@ function TOOL:StartCompile(pl)
 	pl:ConCommand('wire_cpu_vgui_status "Initializing"')
 	pl:ConCommand('wire_cpu_vgui_progress "0"')
 
-	if (self:GetClientInfo("userom") == "1") then ent.UseROM = true
-	else					      ent.UseROM = false
+	if (self:GetClientInfo("rom") == "1") then ent.UseROM = true
+	else					   ent.UseROM = false
 	end
 
 	if (self:GetClientInfo("dump_data") == "1") then
