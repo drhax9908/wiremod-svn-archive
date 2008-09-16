@@ -569,12 +569,12 @@ function ENT:Compile()
 				self:Write(0)
 			end
 		elseif (keyword == "code") then
-			AddLabel("codestart")
+			self:AddLabel("codestart")
 			if (not self.FirstPass) && (not self.Labels["datastart"]) then
 				self:Error("No matching 'data' macro was found!")
 			end
 		elseif (keyword == "data") then
-			AddLabel("datastart")
+			self:AddLabel("datastart")
 			if (not self.FirstPass) && (not self.Labels["codestart"]) then
 				self:Error("No matching 'code' macro was found!")
 			end
