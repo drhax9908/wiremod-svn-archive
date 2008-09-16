@@ -1,6 +1,6 @@
 function ENT:Write(value)
 	if (tonumber(value) ~= nil) && (value) then
-		if (self.UseROM) then
+		if (self.UseROM == true) then
 			if (self.WIP < 65536) then
 				self.ROMMemory[self.WIP] = value
 			end
