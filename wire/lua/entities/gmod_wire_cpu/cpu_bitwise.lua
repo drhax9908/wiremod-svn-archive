@@ -22,8 +22,8 @@ function ENT:IntegerToBinary(n)
 	end
 
 	local tbl = {}
-	local cnt = 1
-	while ((n > 0) and (cnt <= self.IPREC)) do
+	local cnt = 0
+	while ((n > 0) and (cnt < self.IPREC)) do
 		local last = math.fmod(n,2)
 		if(last == 1) then
 			tbl[cnt] = 1
@@ -33,7 +33,7 @@ function ENT:IntegerToBinary(n)
 		n = (n-last)/2
 		cnt = cnt + 1
 	end
-	while (cnt <= self.IPREC) do
+	while (cnt < self.IPREC) do
 		tbl[cnt] = 0
 		cnt = cnt + 1
 	end
@@ -45,13 +45,13 @@ function ENT:BinaryToInteger(tbl)
 	local n = table.getn(tbl)
 	local sign = 0
 	if (n > self.IPREC-1) then
-		sign = tbl[self.IPREC]
-		n = self.IPREC-1
+		sign = tbl[self.IPREC-1]
+		n = self.IPREC
 	end
 
 	local rslt = 0
 	local power = 1
-	for i = 1, n do
+	for i = 0, n-1 do
 		rslt = rslt + tbl[i]*power
 		power = power*2
 	end
@@ -69,7 +69,7 @@ function ENT:BinaryOr(m,n)
 	local tbl = {}
 
 	local rslt = math.max(table.getn(tbl_m), table.getn(tbl_n))
-	for i = 1, rslt do
+	for i = 0, rslt-1 do
 		tbl[i] = math.min(1,tbl_m[i]+tbl_n[i])
 	end
 
@@ -82,7 +82,7 @@ function ENT:BinaryAnd(m,n)
 	local tbl = {}
 
 	local rslt = math.max(table.getn(tbl_m), table.getn(tbl_n))
-	for i = 1, rslt do
+	for i = 0, rslt-1 do
 		tbl[i] = tbl_m[i]*tbl_n[i]
 	end
 
@@ -94,7 +94,7 @@ function ENT:BinaryNot(n)
 	local tbl = {}
 
 	local rslt = table.getn(tbl_n)
-	for i = 1, rslt do
+	for i = 0, rslt-1 do
 		tbl[i] = 1-tbl_n[i]
 	end
 	return self:BinaryToInteger(tbl)
@@ -106,7 +106,7 @@ function ENT:BinaryXor(m,n)
 	local tbl = {}
 
 	local rslt = math.max(table.getn(tbl_m), table.getn(tbl_n))
-	for i = 1, rslt do
+	for i = 0, rslt-1 do
 		tbl[i] = (tbl_m[i]+tbl_n[i]) % 2
 	end
 
@@ -118,10 +118,10 @@ function ENT:BinarySHR(n,bits)
 	local tbl = {}
 
 	local rslt = table.getn(tbl_n)
-	for i = 1, self.IPREC-bits do
+	for i = 0, self.IPREC-bits-1 do
 		tbl[i] = tbl_n[i+bits]
 	end
-	for i = self.IPREC-bits+1,rslt do
+	for i = self.IPREC-bits,rslt-1 do
 		tbl[i] = 0
 	end
 
@@ -132,14 +132,10 @@ function ENT:BinarySHL(n,bits)
 	local tbl_n = self:IntegerToBinary(n)
 	local tbl = {}
 
-	for i= 1,self.IPREC do
-		print(i.." - "..tbl_n[i])
-	end
-
-	for i = bits+1,self.IPREC do
+	for i = bits,self.IPREC-1 do
 		tbl[i] = tbl_n[i-bits]
 	end
-	for i = 1,bits do
+	for i = 0,bits-1 do
 		tbl[i] = 0
 	end
 
