@@ -432,6 +432,10 @@ function ENT:Precompile(IP)
 				self.PrecompileData[IP].Size = self.PrecompileData[IP].Size + 1
 
 				Opcode = Opcode-1000
+
+				local Temp = Segment2
+				Segment2 = Segment1
+				Segment1 = Temp
 			end
 		else
 			Segment1 = self:PRead(IP)
