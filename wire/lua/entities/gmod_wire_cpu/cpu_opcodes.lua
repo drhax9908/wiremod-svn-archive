@@ -37,8 +37,8 @@ function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode["loopa"]  = 25  //LOOP X     : IF EAX ~= 0 THEN JUMP X    2.00
 	self.DecodeOpcode["loopb"]  = 26  //LOOP X     : IF EBX ~= 0 THEN JUMP X    2.00
 	self.DecodeOpcode["loopd"]  = 27  //LOOP X     : IF EDX ~= 0 THEN JUMP X    2.00
-	self.DecodeOpcode["spg"]    = 28  //SRD X      : PAGE(X) = READ ONLY	    2.00
-	self.DecodeOpcode["cpg"]    = 29  //CRD X      : PAGE(X) = READ AND WRITE   2.00
+	self.DecodeOpcode["spg"]    = 28  //SPG X      : PAGE(X) = READ ONLY	    2.00
+	self.DecodeOpcode["cpg"]    = 29  //CPG X      : PAGE(X) = READ AND WRITE   2.00
 	//-----------------------------------------------------------------------------
 	self.DecodeOpcode["pop"]    = 30  //POP X      : X <- STACK
 	self.DecodeOpcode["call"]   = 31  //CALL X     : IP -> STACK; IP = X
@@ -1006,7 +1006,7 @@ function ENT:InitializeOpcodeTable()
 	end
 	self.OpcodeTable[126] = function (Param1,Param2)	//LEA
 		if (self.PrecompileData[self.XEIP].EffectiveAddress2) then
-			return self.PrecompileData[self.XEIP].EffectiveAddress2()
+			return self.PrecompileData[self.XEIP]:EffectiveAddress2()
 		else
 			return Param2
 		end
@@ -1038,5 +1038,7 @@ function ENT:InitializeOpcodeRunlevels()
 	self.OpcodeRunLevel[110] = 0	//NMIRET
 	self.OpcodeRunLevel[111] = 0	//IDLE
 	self.OpcodeRunLevel[121] = 0	//CPUSET
-	//fixme: add cpp spp srl
+	self.OpcodeRunLevel[122] = 0	//CPP
+	self.OpcodeRunLevel[123] = 0	//SPP
+	self.OpcodeRunLevel[124] = 0	//SRL
 end
