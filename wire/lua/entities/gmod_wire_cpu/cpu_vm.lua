@@ -538,7 +538,7 @@ function ENT:Precompile(IP)
 			end
 		end
 	else
-		if (self.Debug) then Msg("Precompile almost failed (Unknown opcode "..opcode..")\n") end
+		if (self.Debug) then Msg("Precompile almost failed (Unknown opcode "..Opcode..")\n") end
 		self.PrecompileData[IP].UnknownOpcode = true
 		self.PrecompileData[IP].Valid = false
 		return

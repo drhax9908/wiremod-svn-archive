@@ -455,7 +455,7 @@ function ENT:InitializeOpcodeTable()
 		end
 	end
 	self.OpcodeTable[32] = function (Param1,Param2)	//BNOT
-		return BinaryNot(Param1)
+		return self:BinaryNot(Param1)
 	end
 	self.OpcodeTable[33] = function (Param1,Param2)	//FINT
 		return math.floor(Param1)

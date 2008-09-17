@@ -105,7 +105,7 @@ function ENT:WriteCell(Address, value)
 
 	if ((self.EF == 1) && (self.Page[Page]) && (self.Page[Page].Write == 0)) then //Page protection
 		self:Interrupt(9,Address)
-		return falseye
+		return false
 	end
 
 	if (Address < 65536) then
