@@ -651,7 +651,7 @@ local function Wire_Unlink(ent, iname)
 
 	    input.Value = 0
 		if (ent.TriggerInput) then
-			ent:TriggerInput(iname, 0)
+			ent:TriggerInput(iname, WireLib.DT[input.Type].Zero)
 		end
 
 	    input.Src = nil
