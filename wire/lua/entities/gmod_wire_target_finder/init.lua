@@ -164,6 +164,7 @@ function ENT:SelectorNext(ch)
 		self.SelectedTargetsSel[ch] = sel + 1
 		self.Inputs[ch.."-HoldTarget"].Value = 1 //put the channel on hold so it wont change in the next scan
 		Wire_TriggerOutput(self.Entity, tostring(ch), 1)
+		Wire_TriggerOutput(self.Entity, tostring(ch).."_Ent", self.SelectedTargets[ch])
 	end
 end
 
