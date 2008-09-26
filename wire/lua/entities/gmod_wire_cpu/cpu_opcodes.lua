@@ -59,8 +59,8 @@ function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode["clp"]    = 45  //CLP        : PF = FALSE		   2.00
 	//self.DecodeOpcode[""]     = 46  //RESERVED   :
 	self.DecodeOpcode["retf"]   = 47  //RETF       : IP,CS <- STACK		   2.00
-	self.DecodeOpcode["ste"]    = 48  //STE        : EF = TRUE		   4.00
-	self.DecodeOpcode["cle"]    = 49  //CLE        : EF = FALSE		   4.00
+	self.DecodeOpcode["stef"]   = 48  //STEF       : EF = TRUE		   4.00
+	self.DecodeOpcode["clef"]   = 49  //CLEF       : EF = FALSE		   4.00
 	//-----------------------------------------------------------------------------
 	self.DecodeOpcode["and"]    = 50  //FAND X,Y   : X = X AND Y
 	self.DecodeOpcode["or"]     = 51  //FOR X,Y    : X = X OR Y
@@ -921,7 +921,9 @@ function ENT:InitializeOpcodeTable()
 	end
 	self.OpcodeTable[121] = function (Param1,Param2)	//CPUSET
 		if (self.CPUVariable[Param1]) then
-			self[self.CPUVariable[Param1]] = Param2
+			if (not self.CPUVariableReadonly[Param1]) then
+				self[self.CPUVariable[Param1]] = Param2
+			end
 		end
 	end
 	self.OpcodeTable[122] = function (Param1,Param2)	//SPP

@@ -136,7 +136,7 @@ function ENT:Interrupt(intnumber,intparam)
 						self.Clk = 0
 					end
 					if (int_flags[3] == 1) then
-						self.CMPR = 0
+						self.CMPR = -1
 					end
 				end
 			else //2 bytes interrupt table
