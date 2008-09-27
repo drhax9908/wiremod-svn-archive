@@ -748,7 +748,7 @@ function ENT:GetLabel(labelname)
 	for labelk,labelv in pairs(self.Labels) do
 		if (labelk == labelname) then
 			if (labelv.Local == true) then
-				if (math.abs(WIP - labelv.WIP) < LocalVarRange)) then
+				if (math.abs(WIP - labelv.WIP) < LocalVarRange) then
 					foundlabel = labelv
 					return foundlabel					
 				end
