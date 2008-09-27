@@ -377,9 +377,38 @@ function ENT:Compile()
 		local keyword = string.lower(word)
 		self:_whitespace()
 
-		if (keyword == "") then return end
+		//if (keyword == "") then return end
 
-		if (self.DecodeOpcode[keyword]) then
+		local islabel = self:_need(":")
+
+		if ((keyword == "") || (islabel == true) then //Label
+			local locvar = false
+			local globvar = false
+
+			if (self:_need("@")) then locvar = true elseif
+			   (self:_need("$")) then globvar = true end
+
+			if (islabel || self:_need(":")) then
+				if (locvar == true) then
+					self:AddLocalLabel(keyword)
+				elseif (globvar == true) then
+					self:AddGlobalLabel(keyword)
+				else
+					self:AddLabel(keyword)
+				end
+			else
+				if (keyword ~= "") then
+					local peek = self:_peek()
+					if (peek == ";") then
+						self:Error("Invalid label definition or unknown keyword '"..keyword.."' (expecting ':' rather than ';')")
+					else
+						self:Error("Unknown keyword '"..keyword.."'")
+					end
+				else
+					self:Error("Unexpected character")
+				end
+			end
+		elseif (self.DecodeOpcode[keyword]) then
 			self:GenerateCode(keyword)
 		elseif (keyword == "db") then
 			local ParsingString = false
@@ -661,7 +690,7 @@ function ENT:Compile()
 			end
 
 			if (self.LastKeyword ~= "return") then
-				self:GenerateASM("ret")
+				self:GenerateASM("ret") //pop ebp!!
 			end
 			self.CurrentFunction = nil
 		elseif (keyword == "getarg") then
@@ -697,39 +726,14 @@ function ENT:Compile()
 			self:GenerateASM("mov ecx,"..argscnt)
 			self:GenerateASM("call "..address)
 			if (argscnt ~= 0) then
-				self:GenerateASM("mov esp,ebp:-"..argscnt)
+				self:GenerateASM("mov esp,ebp:-"..argscnt)//add esp,argscnt
 			end
 
 			if (not self:_need(")")) then
 				self:Error("Error in function call syntax")
 			end
-		else //Label
-			local locvar = false
-			local globvar = false
-
-			if (self:_need("@")) then locvar = true elseif
-			   (self:_need("$")) then globvar = true end
-
-			if (self:_need(":")) then
-				if (locvar == true) then
-					self:AddLocalLabel(keyword)
-				elseif (globvar == true) then
-					self:AddGlobalLabel(keyword)
-				else
-					self:AddLabel(keyword)
-				end
-			else
-				if (keyword ~= "") then
-					local peek = self:_peek()
-					if (peek == ";") then
-						self:Error("Invalid label definition or unknown keyword '"..keyword.."' (expecting ':' rather than ';')")
-					else
-						self:Error("Unknown keyword '"..keyword.."'")
-					end
-				else
-					self:Error("Unexpected character")
-				end
-			end
+		else
+			self:Error("Internal error #SAHZ8, report to black phoenix")
 		end
 
 		self.LastKeyword = keyword
@@ -742,12 +746,16 @@ end
 function ENT:GetLabel(labelname)
 	local foundlabel = nil
 	for labelk,labelv in pairs(self.Labels) do
-		if (labelk == labelname)/* and 
-		  ((labelv.Local == false) or 
-		  ((labelv.Local) and (math.abs(WIP - labelv.WIP) < LocalVarRange)))*/ then
-			foundlabel = labelv
-			return foundlabel
-			//fixme: stop
+		if (labelk == labelname) then
+			if (labelv.Local == true) then
+				if (math.abs(WIP - labelv.WIP) < LocalVarRange)) then
+					foundlabel = labelv
+					return foundlabel					
+				end
+			else
+				foundlabel = labelv
+				return foundlabel
+			end
 		end
 	end
 	return foundlabel
