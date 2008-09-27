@@ -381,7 +381,7 @@ function ENT:Compile()
 
 		local islabel = self:_need(":")
 
-		if ((keyword == "") || (islabel == true) then //Label
+		if ((keyword == "") || (islabel == true)) then //Label
 			local locvar = false
 			local globvar = false
 
