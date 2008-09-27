@@ -85,6 +85,8 @@ if (SERVER) then
 			                local input = cmp.Inputs[k]
 							if (type(input.Value) == "number") then
 								dbginfo = dbginfo .. k .. ":" .. math.Round(input.Value*1000)/1000 .. " "
+							elseif (type(input.Value) == "string") then
+								dbginfo = dbginfo .. k .. ":\"" .. input.Value .. "\" "
 							elseif (type(input.Value) == "Vector") then
 								dbginfo = dbginfo .. k .. ":(" .. math.Round(input.Value.x*10)/10 .. "," .. math.Round(input.Value.y*10)/10 .. "," .. math.Round(input.Value.z*10)/10 .. ") "
 							end
@@ -97,6 +99,8 @@ if (SERVER) then
 			                local output = cmp.Outputs[k]
 							if (type(output.Value) == "number") then
 								dbginfo = dbginfo .. k .. ":" .. math.Round(output.Value*1000)/1000 .. " "
+							elseif (type(output.Value) == "string") then
+								dbginfo = dbginfo .. k .. ":\"" .. output.Value .. "\" "
 							elseif (type(output.Value) == "Vector") then
 								dbginfo = dbginfo .. k .. ":(" .. math.Round(output.Value.x*10)/10 .. "," .. math.Round(output.Value.y*10)/10 .. "," .. math.Round(output.Value.z*10)/10 .. ") "
 							end
