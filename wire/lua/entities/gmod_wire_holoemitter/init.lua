@@ -5,7 +5,7 @@ include( "shared.lua" );
 // wire debug and overlay crap.
 ENT.WireDebugName	= "Holographic Emitter"
 ENT.OverlayDelay 	= 0;
-ENT.LastClear           = 0;
+ENT.LastClear       = 0;
 
 // init.
 function ENT:Initialize( )
@@ -64,50 +64,75 @@ end
 
 
 if ( SERVER ) then
-function MakeWireHoloemitter( pl, pos, ang, r, g, b, a, showbeams, size, frozen )
-	// check the players limit
-	if( !pl:CheckLimit( "wire_holoemitters" ) ) then return; end
-	
-	// create the emitter
-	local emitter = ents.Create( "gmod_wire_holoemitter" );
-		emitter:SetPos( pos );
-		emitter:SetAngles( ang );
-	emitter:Spawn();
-	emitter:Activate();
-	
-	if emitter:GetPhysicsObject():IsValid() then
-		local Phys = emitter:GetPhysicsObject()
-		Phys:EnableMotion(!frozen)
-	end
+	function MakeWireHoloemitter( pl, pos, ang, r, g, b, a, showbeams, size, frozen )
+		// check the players limit
+		if( !pl:CheckLimit( "wire_holoemitters" ) ) then return; end
+		
+		// create the emitter
+		local emitter = ents.Create( "gmod_wire_holoemitter" );
+			emitter:SetPos( pos );
+			emitter:SetAngles( ang );
+		emitter:Spawn();
+		emitter:Activate();
+		
+		if emitter:GetPhysicsObject():IsValid() then
+			local Phys = emitter:GetPhysicsObject()
+			Phys:EnableMotion(!frozen)
+		end
 
-	// setup the emitter.
-	emitter:SetColor( r, g, b, a );
-	emitter:SetPlayer( pl );
+		// setup the emitter.
+		emitter:SetColor( r, g, b, a );
+		emitter:SetPlayer( pl );
+		
+		// update size and show states
+		emitter:SetNetworkedBool( "ShowBeam", showbeams );
+		emitter:SetNetworkedFloat( "PointSize", size );
+		
+		// store the color on the table.
+		local tbl = {
+			r = r,
+			g = g,
+			b = b,
+			a = a,
+			showbeams = showbeams,
+			size = size,
+		};
+		table.Merge( emitter:GetTable(), tbl );
+		
+		// add to the players count
+		pl:AddCount( "wire_holoemitters", emitter );
+		
+		//
+		return emitter;
+	end
 	
-	// update size and show states
-	emitter:SetNetworkedBool( "ShowBeam", showbeams );
-	emitter:SetNetworkedFloat( "PointSize", size );
-	
-	// store the color on the table.
-	local tbl = {
-		r = r,
-		g = g,
-		b = b,
-		a = a,
-		showbeams = showbeams,
-		size = size,
-	};
-	table.Merge( emitter:GetTable(), tbl );
-	
-	// add to the players count
-	pl:AddCount( "wire_holoemitters", emitter );
-	
-	//
-	return emitter;
+	duplicator.RegisterEntityClass("gmod_wire_holoemitter",MakeWireHoloemitter,"Pos","Ang","r", "g", "b", "a","showbeams","size","frozen");
 end
 
-duplicator.RegisterEntityClass( "gmod_wire_holoemitter", MakeWireHoloemitter, "pos", "ang", "r", "g", "b", "a", "showbeams", "size", "frozen" );
+function ENT:BuildDupeInfo()
+	local info = self.BaseClass.BuildDupeInfo(self) or {}
 
+	grid = self.Entity:GetNetworkedEntity( "grid" )
+	if (grid) and (grid:IsValid()) then
+		info.holoemitter_grid = grid:EntIndex()
+	end
+
+	return info
+end
+
+function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
+	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
+
+	local grid = nil
+	if (info.holoemitter_grid) then
+		grid = GetEntByID(info.holoemitter_grid)
+		if (!grid) then
+			grid = ents.GetByIndex(info.holoemitter_grid)
+		end
+	end
+	if (grid && grid:IsValid()) then
+		self:LinkToGrid(grid)
+	end
 end
 
 
