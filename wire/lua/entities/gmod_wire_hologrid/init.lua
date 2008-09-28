@@ -57,39 +57,51 @@ function ENT:AcceptInput(name,activator,caller)
 	end
 end
 
+if ( SERVER ) then
+	function MakeWireHologrid( pl, pos, ang, frozen )
+		// check the players limit
+		if( !pl:CheckLimit( "wire_hologrids" ) ) then return; end
+		
+		// create the emitter
+		local emitter = ents.Create( "gmod_wire_hologrid" );
+			emitter:SetPos( pos );
+			emitter:SetAngles( ang );
+		emitter:Spawn();
+		emitter:Activate();
+		
+		if emitter:GetPhysicsObject():IsValid() then
+			local Phys = emitter:GetPhysicsObject()
+			Phys:EnableMotion(!frozen)
+		end
 
-function MakeWireHologrid( pl, pos, ang, frozen )
-	// check the players limit
-	if( !pl:CheckLimit( "wire_hologrids" ) ) then return; end
-	
-	// create the emitter
-	local emitter = ents.Create( "gmod_wire_hologrid" );
-		emitter:SetPos( pos );
-		emitter:SetAngles( ang );
-	emitter:Spawn();
-	emitter:Activate();
-	
-	if emitter:GetPhysicsObject():IsValid() then
-		local Phys = emitter:GetPhysicsObject()
-		Phys:EnableMotion(!frozen)
+		// setup the emitter.
+		emitter:SetPlayer( pl );
+		
+		// add to the players count
+		pl:AddCount( "wire_hologrids", emitter );
+		
+		//
+		return emitter;
 	end
 
-	// setup the emitter.
-	emitter:SetPlayer( pl );
-	
-	// add to the players count
-	pl:AddCount( "wire_hologrids", emitter );
-	
-	//
-	return emitter;
+	duplicator.RegisterEntityClass("gmod_wire_hologrid",MakeWireHologrid,"Pos","Ang","frozen");
 end
 
-// register with duplicator
-duplicator.RegisterEntityClass(
-	"gmod_wire_hologrid",
-	MakeWireHologrid,
-	"pos", "ang",
-	"frozen"
-);
+function ENT:BuildDupeInfo()
+	local info = self.BaseClass.BuildDupeInfo(self) or {}
+
+	info.hologrid_usegps = self.usesgps
+
+	return info
+end
+
+function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
+	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
+
+	if (info.hologrid_usegps) then
+		self.usesgps = info.hologrid_usegps
+		self.Entity:SetNetworkedBool( "UseGPS", (self.usesgps==1) )
+	end
+end
 
 
