@@ -202,7 +202,9 @@ if SERVER then
 	CreateConVar('sbox_maxwire_consolescreens', 20)
 end
 
+TOOL.GetGhostAngle = GetScreenAngle
 TOOL.ClientConVar[ "model" ] = "models/props_lab/monitor01b.mdl"
+TOOL.ClientConVar[ "createflat" ] = "0"
 TOOL.NoLeftOnClass = true
 
 function TOOL.BuildCPanel(panel)
@@ -219,6 +221,7 @@ function TOOL.BuildCPanel(panel)
 			["#LCD Screen (1:1)"]		= { wire_consolescreen_model = "models/blacknecro/ledboard60.mdl" },
 		}
 	})
+	panel:CheckBox("#Create Flat to Surface", "wire_consolescreen_createflat")
 end
 
 
