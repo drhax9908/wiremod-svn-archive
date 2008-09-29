@@ -90,12 +90,15 @@ function WireToolMakeConsoleScreen( self, trace, ply )
 	if ( !self:GetSWEP():CheckLimit( "wire_consolescreens" ) ) then return false end
 	
 	local model = self:GetClientInfo( "model" )
+	local CreateFlat = self:GetClientNumber( "createflat" )
 	
 	if (not util.IsValidModel(model)) then return false end
 	if (not util.IsValidProp(model)) then return false end
 	
 	local Ang = trace.HitNormal:Angle()
-	Ang.pitch = Ang.pitch + 90
+	if (CreateFlat == 0) then
+		Ang.pitch = Ang.pitch + 90
+	end
 	
 	local wire_consolescreen = MakeWireconsoleScreen( ply, Ang, trace.HitPos, model )
 	local min = wire_consolescreen:OBBMins()
