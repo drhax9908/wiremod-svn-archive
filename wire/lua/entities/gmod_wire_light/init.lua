@@ -24,27 +24,38 @@ function ENT:OnRemove()
 	if not self.RadiantComponent:IsValid() then return end
 	self.RadiantComponent:SetParent() //Bugfix by aVoN
 	self.RadiantComponent:Fire("TurnOff","",0)
-	self.RadiantComponent:Fire("kill","",1); 
+	self.RadiantComponent:Fire("kill","",1) 
 end
 
 function ENT:DirectionalOn()
-	
 	if (self.DirectionalComponent) then
 		self:DirectionalOff()
 	end
 
-	local flashlight = ents.Create("effect_flashlight")
-		flashlight:SetPos( self.Entity:GetPos() )
-		flashlight:SetAngles( (self.Entity:GetAngles()+Vector( 0, 0, 180 )) )
+	local flashlight = ents.Create( "env_projectedtexture" )
 		flashlight:SetParent( self.Entity )
-		flashlight:SetColor( self.R, self.G, self.B, 255 )
+
+		// The local positions are the offsets from parent..
+		flashlight:SetLocalPos( Vector( 0, 0, 0 ) )
+		flashlight:SetAngles( self.Entity:GetAngles() + Angle( -90, 0, 0 ) )
+
+		// Looks like only one flashlight can have shadows enabled!
+		flashlight:SetKeyValue( "enableshadows", 1 )
+		flashlight:SetKeyValue( "farz", 2048 )
+		flashlight:SetKeyValue( "nearz", 8 )
+
+		//Todo: Make this tweakable?
+		flashlight:SetKeyValue( "lightfov", 50 )
+
+		// Color.. Bright pink if none defined to alert us to error
+		flashlight:SetKeyValue( "lightcolor", "255 0 255" )
 	flashlight:Spawn()
+	flashlight:Input( "SpotlightTexture", NULL, NULL, "effects/flashlight001" )
 
 	self.DirectionalComponent = flashlight
 end
 
 function ENT:DirectionalOff()
-
 	if (!self.DirectionalComponent) then return end
 
 	self.DirectionalComponent:Remove()
@@ -53,7 +64,6 @@ end
 
 
 function ENT:RadiantOn()
-	
 	if (self.RadiantComponent) then
 		self.RadiantComponent:Fire("TurnOn","","0")
 	else
@@ -69,12 +79,11 @@ function ENT:RadiantOn()
 		dynlight:Spawn()
 		self.RadiantComponent = dynlight
 	end
-	self.RadiantState = 1
 
+	self.RadiantState = 1
 end
 
 function ENT:RadiantOff()
-
 	if (!self.RadiantComponent) then return end
 	if not self.RadiantComponent:IsValid() then return end
 	self.RadiantComponent:Fire("TurnOff","","0")
@@ -129,7 +138,7 @@ function ENT:ShowOutput( R, G, B )
 				if (!self.DirectionalComponent) then
 					self:DirectionalOn()
 				end
-				self.DirectionalComponent:SetColor( R, G, B, 255 )
+				self.DirectionalComponent:SetKeyValue( "lightcolor", Format( "%i %i %i", R, G, B ) )
 			end
 			if (self.radiant) then
 				if (self.RadiantState == 0) then
