@@ -38,7 +38,7 @@ function ENT:Reset()
 	self.TIMER = 0	 //Internal clock
 	self.CPAGE = 0	 //Current page ID
 
-	self.BPREC = 64	 //Binary precision for integer emulation mode
+	self.BPREC = 48	 //Binary precision for integer emulation mode
 	self.IPREC = 48	 //Integer precision
 
 	self.CODEBYTES = 0 //Executed size of code
@@ -51,10 +51,12 @@ function ENT:Reset()
 
 	self.Clk = self.InputClk
 
-	if (self.UseROM) then
-		for i = 0, 65535 do
-			if (self.ROMMemory[i]) then
-				self:WriteCell(i,self.ROMMemory[i])
+	if (!self.IsGPU) then
+		if (self.UseROM == true) then
+			for i = 0, 65535 do
+				if (self.ROMMemory[i]) then
+					self:WriteCell(i,self.ROMMemory[i])
+				end
 			end
 		end
 	end
@@ -62,7 +64,7 @@ function ENT:Reset()
 	self.HaltPort = -1
 
 	if (self.Debug) then DebugMessage("CPU RESET") end
-	Wire_TriggerOutput(self.Entity, "Error", 0.0)
+	if (!self.IsGPU) then Wire_TriggerOutput(self.Entity, "Error", 0.0) end
 end
 
 function ENT:InitializeCPUVariableSet()
@@ -360,6 +362,11 @@ function ENT:InitializeLookupTables()
 	self.EffectiveAddress1[40] = function() return self.ESP + self.PrecompileData[self.XEIP].PeekByte1 end
 	self.EffectiveAddress1[41] = function() return self.EBP + self.PrecompileData[self.XEIP].PeekByte1 end
 
+	for i=1000,2024 do
+		self.EffectiveAddress1[i] = function(Result) return -(self.PrecompileData[self.XEIP].dRM2-1000)-1 end
+	end
+
+
 	self.EffectiveAddress2 = {}
 	self.EffectiveAddress2[17] = function() return self.EAX + self[self.PrecompileData[self.XEIP].Segment2] end
 	self.EffectiveAddress2[18] = function() return self.EBX + self[self.PrecompileData[self.XEIP].Segment2] end
@@ -380,6 +387,10 @@ function ENT:InitializeLookupTables()
 	self.EffectiveAddress2[39] = function() return self.EDI + self.PrecompileData[self.XEIP].PeekByte2 end
 	self.EffectiveAddress2[40] = function() return self.ESP + self.PrecompileData[self.XEIP].PeekByte2 end
 	self.EffectiveAddress2[41] = function() return self.EBP + self.PrecompileData[self.XEIP].PeekByte2 end
+
+	for i=1000,2024 do
+		self.EffectiveAddress2[i] = function(Result) return -(self.PrecompileData[self.XEIP].dRM2-1000)-1 end
+	end
 end
 
 function ENT:PRead(IP)

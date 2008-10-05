@@ -827,13 +827,14 @@ GateActions["ram8"] = {
 
         AddrRead = math.floor(tonumber(AddrRead))
         AddrWrite = math.floor(tonumber(AddrWrite))
+
         if (Clk > 0) then
             if (AddrWrite >= 0) and (AddrWrite < 8) then
                 gate.LatchStore[AddrWrite] = Data
             end
         end
         
-		if (AddrRead < 0) or (AddrRead >= 8) then return 0 end
+	if (AddrRead < 0) or (AddrRead >= 8) then return 0 end
 		
         return gate.LatchStore[AddrRead] or 0
     end,
@@ -1333,23 +1334,24 @@ GateActions["pulser"] = {
 GateActions["squarepulse"] = {
 	group = "Time",
 	name = "Square Pulse",
-	inputs = { "Run", "Reset", "PulseTime", "GapTime" },
+	inputs = { "Run", "Reset", "PulseTime", "GapTime", "Min", "Max" },
 	timed = true,
-	output = function(gate, Run, Reset, PulseTime, GapTime)
+	output = function(gate, Run, Reset, PulseTime, GapTime, Min, Max)
 	    local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
 	    gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
-		if ( Reset > 0 ) then
+
+		if (Reset > 0) then
 			gate.Accum = 0
-		elseif ( Run > 0 ) then
+		elseif (Run > 0) then
 			gate.Accum = gate.Accum+DeltaTime
-			if (gate.Accum >= GapTime) then
-				return 1
+			if (gate.Accum <= PulseTime) then
+				return Max
 			end
 			if (gate.Accum >= PulseTime + GapTime) then
-				gate.Accum = gate.Accum - PulseTime - GapTime
+				gate.Accum = 0
 			end
 		end
-		return 0
+		return Min
 	end,
 	reset = function(gate)
 	    gate.PrevTime = CurTime()
@@ -1359,6 +1361,52 @@ GateActions["squarepulse"] = {
 	    return "Run:"..Run.." Reset:"..Reset.." PulseTime:"..PulseTime.." GapTime:"..GapTime.." = "..Out
 	end
 }
+
+GateActions["sawpulse"] = {
+	group = "Time",
+	name = "Saw Pulse",
+	inputs = { "Run", "Reset", "SlopeRaiseTime", "PulseTime", "SlopeDescendTime", "GapTime", "Min", "Max" },
+	timed = true,
+	output = function(gate, Run, Reset, SlopeRaiseTime, PulseTime, SlopeDescendTime, GapTime, Min, Max)
+	    local DeltaTime = CurTime()-(gate.PrevTime or CurTime())
+	    gate.PrevTime = (gate.PrevTime or CurTime())+DeltaTime
+
+		if (Reset > 0) then
+			gate.Accum = 0
+		elseif (Run > 0) then
+			local val = Min
+			gate.Accum = gate.Accum+DeltaTime
+			if (gate.Accum >= 0) && (gate.Accum < SlopeRaiseTime) then
+				if (SlopeRaiseTime != 0) then
+					val = Min + (Max-Min) * (gate.Accum-0) / SlopeRaiseTime
+				end
+			end
+			if (gate.Accum >= SlopeRaiseTime) && (gate.Accum < SlopeRaiseTime+PulseTime) then
+				return Max
+			end
+			if (gate.Accum >= SlopeRaiseTime+PulseTime) && (gate.Accum < SlopeRaiseTime+PulseTime+SlopeDescendTime) then
+				if (SlopeDescendTime != 0) then
+					val =  Min + (Max-Min) * (gate.Accum-SlopeRaiseTime+PulseTime) / SlopeDescendTime
+				end
+			end
+			if (gate.Accum >= SlopeRaiseTime+PulseTime+SlopeDescendTime) then
+			end
+			if (gate.Accum >= SlopeRaiseTime+PulseTime+SlopeDescendTime+GapTime) then
+				gate.Accum = 0
+			end	
+			return val
+		end
+		return Min
+	end,
+	reset = function(gate)
+	    gate.PrevTime = CurTime()
+	    gate.Accum = 0
+	end,
+	label = function(Out, Run, Reset, PulseTime, GapTime)
+	    return "Run:"..Run.." Reset:"..Reset.." PulseTime:"..PulseTime.." GapTime:"..GapTime.." = "..Out
+	end
+}
+
 
 GateActions["derive"] = {
 	group = "Time",

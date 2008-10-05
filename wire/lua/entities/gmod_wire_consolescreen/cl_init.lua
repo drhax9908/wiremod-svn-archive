@@ -65,7 +65,7 @@ function ENT:Initialize()
 	self.Memory1[2031] = 0
 	self.Memory1[2032] = 17
 	self.Memory1[2033] = 0
-	self.Memory1[2034] = 17
+	self.Memory1[2034] = 29
 	self.Memory1[2035] = 0
 	self.Memory1[2036] = 0
 
@@ -84,20 +84,17 @@ function ENT:Initialize()
 	self.PrevTime = CurTime()
 	self.IntTimer = 0
 
-	self.Monitor = {}	
-	self:InitMonitorModels()
-
 	self.NeedRefresh = true
 	self.Flash = false
 	self.FrameNeedsFlash = false
 
 	self.FramesSinceRedraw = 0
 
-	self.RTTexture = WireGPU_NeedRenderTarget()
+	WireGPU_NeedRenderTarget(self:EntIndex())
 end
 
 function ENT:OnRemove()
-	WireGPU_ReturnRenderTarget(self.RTTexture)
+	WireGPU_ReturnRenderTarget(self:EntIndex())
 end
 
 function ConsoleScreen_DataMessage(um)
@@ -327,6 +324,8 @@ function ENT:Draw()
 	self.PrevTime = (self.PrevTime or CurTime())+DeltaTime
 	self.IntTimer = self.IntTimer + DeltaTime
 
+	self.RTTexture = WireGPU_GetMyRenderTarget(self:EntIndex())
+
 	local NewRT = self.RTTexture
 	local OldRT = render.GetRenderTarget()
 
@@ -504,12 +503,12 @@ function ENT:Draw()
 		end
 	end
 
-	if (self.Monitor[self.Entity:GetModel()]) && (self.Monitor[self.Entity:GetModel()].OF) then
-		OF = self.Monitor[self.Entity:GetModel()].OF
-		OU = self.Monitor[self.Entity:GetModel()].OU
-		OR = self.Monitor[self.Entity:GetModel()].OR
-		Res = self.Monitor[self.Entity:GetModel()].RS
-		RatioX = self.Monitor[self.Entity:GetModel()].RatioX
+	if (WireGPU_Monitors[self.Entity:GetModel()]) && (WireGPU_Monitors[self.Entity:GetModel()].OF) then
+		OF = WireGPU_Monitors[self.Entity:GetModel()].OF
+		OU = WireGPU_Monitors[self.Entity:GetModel()].OU
+		OR = WireGPU_Monitors[self.Entity:GetModel()].OR
+		Res = WireGPU_Monitors[self.Entity:GetModel()].RS
+		RatioX = WireGPU_Monitors[self.Entity:GetModel()].RatioX
 	else
 		OF = 0
 		OU = 0

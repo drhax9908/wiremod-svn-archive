@@ -63,7 +63,13 @@ function ENT:Interrupt(intnumber,intparam)
 	self.BusLock = 1
 	if (intparam) then self.LADD = intparam else self.LADD = self.XEIP end
 
-	Wire_TriggerOutput(self.Entity, "Error", intnumber)
+	local fracparam = intparam
+	if (intparam ~= 0) then
+		while (math.floor(fracparam) > 0) do
+			fracparam = fracparam / 10
+		end
+	end
+	Wire_TriggerOutput(self.Entity, "Error", intnumber+fracparam)
 
 	if (self.IF == 1) then
 		if (self.PF == 0) && (self.EF == 0) then

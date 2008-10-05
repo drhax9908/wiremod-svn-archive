@@ -16,7 +16,7 @@ function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode["je"]     = 7   //JE X       : IP = X, IF CMPR = 0
 	self.DecodeOpcode["jz"]     = 7   //JZ X       : IP = X, IF CMPR = 0
 	self.DecodeOpcode["cpuid"]  = 8   //CPUID X    : EAX -> CPUID[X]
-	self.DecodeOpcode["push"]   = 9   //PUSH X     : WRITE(ESP+SS,X); ESP = ESP + 1
+	self.DecodeOpcode["push"]   = 9   //PUSH X     : WRITE(ESP+SS,X); ESP = ESP - 1
 	//-----------------------------------------------------------------------------
 	self.DecodeOpcode["add"]    = 10  //ADD X,Y    : X = X + Y
 	self.DecodeOpcode["sub"]    = 11  //SUB X,Y    : X = X - Y
@@ -40,7 +40,7 @@ function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode["spg"]    = 28  //SPG X      : PAGE(X) = READ ONLY	    2.00
 	self.DecodeOpcode["cpg"]    = 29  //CPG X      : PAGE(X) = READ AND WRITE   2.00
 	//-----------------------------------------------------------------------------
-	self.DecodeOpcode["pop"]    = 30  //POP X      : X <- STACK
+	self.DecodeOpcode["pop"]    = 30  //POP X      : X = READ(ESP+SS); ESP = ESP + 1
 	self.DecodeOpcode["call"]   = 31  //CALL X     : IP -> STACK; IP = X
 	self.DecodeOpcode["bnot"]   = 32  //BNOT X     : X = BINARY NOT X
 	self.DecodeOpcode["fint"]   = 33  //FINT X     : X = FLOOR(X)
@@ -153,81 +153,12 @@ function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode["grl"]    = 125 //GRL X,Y    : X = PAGE[Y].RunLevel	   5.00
 	self.DecodeOpcode["lea"]    = 126 //LEA X,Y    : X = ADDRESS(Y)		   5.00
 	//-----------------------------------------------------------------------------
-
-
-	//---------------------------------------------------------------------------------------------------------------------
-	// GPU Opcodes
-	//---------------------------------------------------------------------------------------------------------------------
-	self.DecodeOpcode["drect_test"]     = 200 //DRECT_TEST		: Draw retarded stuff
-	self.DecodeOpcode["dexit"]          = 201 //DEXIT		: End current frame execution
-	self.DecodeOpcode["dclr"]           = 202 //DCLR		: Clear screen color to black
-	self.DecodeOpcode["dvxflush"]       = 203 //DVXFLUSH		: Flush current vertex data
-	self.DecodeOpcode["dclrtex"]        = 204 //DCLRTEX		: Clear background with texture
-	//- Pipe controls and one-operand opcodes -----------------------------------------------------------------------------
-	self.DecodeOpcode["dvxpipe"]        = 210 //DVXPIPE X		: Vertex pipe = X					[INT]
-	self.DecodeOpcode["dcvxpipe"]       = 211 //DCVXPIPE X		: Coordinate vertex pipe = X				[INT]
-	self.DecodeOpcode["denable"]        = 212 //DENABLE X		: Enable parameter X					[INT]
-	self.DecodeOpcode["dclrscr"]        = 213 //DCLRSCR X		: Clear screen with color X				[COLOR]
-	self.DecodeOpcode["dcolor"]         = 214 //DCOLOR X		: Set current color to X				[COLOR]
-	self.DecodeOpcode["dtex"]           = 215 //DTEX X		: Set current texture to X				[TEXSLOT]
-	self.DecodeOpcode["dfnt"]           = 216 //DFNT X		: Set current hw font to X				[FNTSLOT]
-	self.DecodeOpcode["ddisable"]       = 217 //DDISABLE X		: Disable parameter X					[INT]
-	self.DecodeOpcode["dtexslotclr"]    = 218 //DTEXSLOTCLR X	: Clear texslot X					[TEXSLOT]
-	self.DecodeOpcode["dstrslotclr"]    = 219 //DSTRSLOTCLR X	: Clear strslot X					[STRSLOT]
-	//- Rendering opcodes -------------------------------------------------------------------------------------------------
-	self.DecodeOpcode["drect"]          = 220 //DRECT X,Y		: Draw rectangle (XY1,XY2)				[2F,2F]
-	self.DecodeOpcode["dcircle"]        = 221 //DCIRCLE X,Y		: Draw circle (XY,R)					[2F,F]
-	self.DecodeOpcode["dvxpoly"]        = 222 //DVXPOLY X,Y		: Draw solid 2d polygon (OFFSET,NUMVALUES)		[2F,INT]
-	self.DecodeOpcode["dvxdata_2f"]     = 222
-	self.DecodeOpcode["dvxtexpoly"]     = 223 //DVXTEXPOLY X,Y	: Draw textured 2d polygon (OFFSET,NUMVALUES)		[2F+UV,INT]
-	self.DecodeOpcode["dvxdata_2f_tex"] = 223
-	self.DecodeOpcode["dvxdata_3f"]     = 224 //DVXDATA_3F X,Y 	: Send array of 3d vertexes to vertex buffer		[3F,INT]
-	self.DecodeOpcode["dvxdata_3f_tex"] = 225 //DVXDATA_3F_TEX X,Y 	: Send array of 3d vertexe +UV coordinates to vbuffer	[3F+UV,INT]
-	self.DecodeOpcode["dwrite"]         = 226 //DWRITE X,Y		: Write X too coordinates Y				[STRSLOT,2F]
-	self.DecodeOpcode["dtransform2f"]   = 227 //DTRANSFORM2F X,Y	: Transform Y, save to X				[2F,2F]
-	self.DecodeOpcode["dtransform3f"]   = 228 //DTRANSFORM3F X,Y	: Transform Y, save to X				[3F,3F]
-	self.DecodeOpcode["dwritef"]        = 229 //DWRITEF X,Y		: Write 1F X too coordinates Y 				[F,2F]
-	//- Font & texture control opcodes ------------------------------------------------------------------------------------
-	self.DecodeOpcode["dloadtex"]       = 230 //DLOADTEX X,Y	: Load texture named Y (STRSLOT) into texslot X		[TEXSLOT,STRSLOT]
-	self.DecodeOpcode["dloadfnt"]       = 231 //DLOADFNT X,Y	: Load font by ID Y into hw slot X			[FNTSLOT,STRSLOT]
-	self.DecodeOpcode["dstrslot"]       = 232 //DSTRSLOT X,Y	: Load null-pointed string Y into slot X		[STRSLOT,STRING]
-	self.DecodeOpcode["dentrypoint"]    = 233 //DENTRYPOINT X,Y	: Set entry point X to address Y			[INT,INT]
-	self.DecodeOpcode["dscrmode"]       = 234 //DSCRMODE X,Y	: Set screen width and height to (X,Y) (pipe 2)		[INT,INT]
-	self.DecodeOpcode["dsetlight"]      = 235 //DSETLIGHT X,Y	: Set light X to Y (Y points to [pos,color])		[INT,3F+COLOR]
-	//- Vector math -------------------------------------------------------------------------------------------------------
-	self.DecodeOpcode["vadd"]           = 240 //VADD X,Y		: X = X + Y						[MODEF,MODEF]
-	self.DecodeOpcode["vsub"]           = 241 //VSUB X,Y		: X = X - Y						[MODEF,MODEF]
-	self.DecodeOpcode["vmul"]           = 242 //VMUL X,Y		: X = X * SCALAR Y					[MODEF,MODEF]
-	self.DecodeOpcode["vdot"]           = 243 //VDOT X,Y		: X = X . Y						[MODEF,MODEF]
-	self.DecodeOpcode["vcross"]         = 244 //VCROSS X,Y		: X = X x Y						[MODEF,MODEF]
-	self.DecodeOpcode["vmov"]           = 245 //VMOV X,Y		: X = Y							[MODEF,MODEF]
-	self.DecodeOpcode["vnorm"]          = 246 //VNORM X,Y		: X = NORMALIZE(Y)					[MODEF,MODEF]
-	self.DecodeOpcode["vcolornorm"]     = 247 //VCOLORNORM X,Y	: X = COLOR_NORMALIZE(Y)				[MODEF,MODEF]
-	//- Matrix math -------------------------------------------------------------------------------------------------------
-	self.DecodeOpcode["madd"]           = 250 //X,Y										[MATRIX,MATRIX]
-	self.DecodeOpcode["msub"]           = 251 //X,Y										[MATRIX,MATRIX]
-	self.DecodeOpcode["mmul"]           = 252 //X,Y										[MATRIX,MATRIX]
-	self.DecodeOpcode["mrot"]           = 253 //X -> ROT(Y)									[MATRIX,MATRIX]
-	self.DecodeOpcode["mscale"]         = 254 //X -> SCALE(Y)								[MATRIX,MATRIX]
-	self.DecodeOpcode["mperspective"]   = 255 //X -> PERSP(Y)								[MATRIX,MATRIX]
-	self.DecodeOpcode["mtrans"]         = 256 //X -> TRANS(Y)								[MATRIX,MATRIX]
-	self.DecodeOpcode["mlookat"]        = 257 //X -> LOOKAT(Y)								[MATRIX,MATRIX]
-	//- Misc math ---------------------------------------------------------------------------------------------------------
-	self.DecodeOpcode["mident"]         = 260 //MIDENT X		: Load identity matrix into X				[MATRIX]
-	self.DecodeOpcode["mload"]          = 261 //MLOAD X		: Load matrix X into view matrix			[MATRIX]
-	self.DecodeOpcode["mread"]          = 262 //MREAD X		: Write view matrix into matrix X			[MATRIX]
-	self.DecodeOpcode["dt"]             = 263 //DT X		: X -> Frame DeltaTime					[F]
-	self.DecodeOpcode["ddframe"]        = 264 //DDFRAME X		: Draw bordered frame					[-BORDERINFO-]
-	//Bordered frames info:
-	//X points to array of 2f's:
-	//[PosX;PosY][Width;Height][HighlightPointer;ShadowPointer][FacePointer;BorderSize]
-	//---------------------------------------------------------------------------------------------------------------------
 end
 
 function ENT:InitializeASMOpcodes()
 	self.OpcodeCount = {}
 	self.OpcodeCount[0] = 0
-	for i=1,270 do
+	for i=1,300 do
 		if ((i >= 1) && (i <= 9)) then
 			self.OpcodeCount[i] = 1
 		elseif (i >= 10) && (i <= 19) then	
@@ -269,9 +200,16 @@ function ENT:InitializeASMOpcodes()
 		elseif (i >= 250) && (i <= 259) then
 			self.OpcodeCount[i] = 2
 		elseif (i >= 260) && (i <= 269) then
+			self.OpcodeCount[i] = 2
+		elseif (i >= 270) && (i <= 279) then
 			self.OpcodeCount[i] = 1
+		elseif (i >= 280) && (i <= 289) then
+			self.OpcodeCount[i] = 1
+		elseif (i >= 290) && (i <= 299) then
+			self.OpcodeCount[i] = 2
 		end
 	end
+	self.OpcodeCount[280] = 1 //DDFRAME
 end
 
 function ENT:InitializeOpcodeTable()

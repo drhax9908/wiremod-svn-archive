@@ -25,9 +25,6 @@ function ENT:Initialize()
 	self.CharParam = 0
 	self.Clk = 1
 
-	self.Monitor = {}
-	self:InitMonitorModels()
-
 	self.DataCache = {}
 	self.DataCacheSize = 0
 	self.IgnoreDataTransfer = false
@@ -75,7 +72,7 @@ function ENT:ReadCell(Address)
 		return self.Clk
 	elseif (Address >= 0) && (Address <= 2046) then
 		if (Address == 2022) then
-			return self.Monitor[self.Entity:GetModel()].RatioX
+			return WireGPU_Monitors[self.Entity:GetModel()].RatioX
 		end
 
 		return self.Memory[Address]
@@ -110,7 +107,11 @@ function ENT:WriteCell(Address, value)
 			self.Clk = value
 		end
 
-		//if (Address >= 1080) or (self.Memory[Address] != value) then
+		//if (Address < 1080) then
+		self:ClientWriteCell(Address,value)
+		//end
+
+		if (Address >= 1080) or (self.Memory[Address] != value) then
 			self.DataCache[self.DataCacheSize] = {}
 			self.DataCache[self.DataCacheSize].Address = Address
 			self.DataCache[self.DataCacheSize].Value = value
@@ -119,7 +120,7 @@ function ENT:WriteCell(Address, value)
 				self:FlushCache()
 				self.IgnoreDataTransfer = true
 			end
-		//end
+		end
 		self.Memory[Address] = value
 
 		//else
@@ -139,7 +140,7 @@ function ENT:WriteCell(Address, value)
 end
 
 function ENT:Think()
-	if (self.IgnoreDataTransfer) then
+	if (self.IgnoreDataTransfer == true) then
 		self:FlushCache()
 		self.IgnoreDataTransfer = false
 		self.Entity:NextThink(CurTime()+0.1)
@@ -169,6 +170,86 @@ function ENT:TriggerInput(iname, value)
 		self:WriteCell(2041,0)
 		self:WriteCell(2046,0)
 		self:WriteCell(2042,0)
+	end
+end
+
+function ENT:ClientWriteCell(address, value)
+	if (address == 2037) then
+		local delta = value
+		local low = math.floor(math.Clamp(self.Memory[2031],0,17))
+		local high = math.floor(math.Clamp(self.Memory[2032],0,17))
+		if (delta > 0) then
+			for j = low,high do
+				for i = 29,delta do
+					self.Memory[j*60+i*2] = self.Memory[j*60+i*2-delta*2]
+					self.Memory[j*60+i*2+1] = self.Memory[j*60+i*2+1-delta*2]
+				end
+			end
+			for j = low,high do
+				for i = 0, delta-1 do
+					self.Memory[j*60+i*2] = 0
+					self.Memory[j*60+i*2+1] = 0
+				end
+			end
+		else
+			delta = -delta
+			for j = low,high do
+				for i = 0,29-delta do
+					self.Memory[j*60+i*2] = self.Memory[j*60+i*2+delta*2]
+					self.Memory[j*60+i*2+1] = self.Memory[j*60+i*2+1+delta*2]
+				end
+			end
+			for j = low,high do
+				for i = 29-delta+1,29 do
+					self.Memory[j*60+i*2] = 0
+					self.Memory[j*60+i*2+1] = 0
+				end
+			end
+		end
+	end
+	if (address == 2038) then
+		local delta = value
+		local low = math.floor(math.Clamp(self.Memory[2033],0,29))
+		local high = math.floor(math.Clamp(self.Memory[2034],0,29))
+		if (delta > 0) then
+			for j = low, high-delta do
+				for i = 0, 59 do
+					self.Memory[j*60+i] = self.Memory[(j+delta)*60+i]
+				end
+			end
+			for j = high-delta+1,high do
+				for i = 0, 59 do
+						self.Memory[j*60+i] = 0
+				end
+			end
+		else
+			delta = -delta
+			for j = high,delta do
+				for i = 0, 59 do
+					self.Memory[j*60+i] = self.Memory[(j-delta)*60+i]
+				end
+			end
+			for j = delta+1,low do
+				for i = 0, 59 do
+					self.Memory[j*60+i] = 0
+				end
+			end
+		end
+	end
+	if (address == 2039) then
+		for i = 0, 59 do
+			self.Memory[value*60+i] = 0
+		end
+	end
+	if (address == 2040) then
+		for i = 0, 17 do
+			self.Memory[i*60+value] = 0
+		end
+	end
+	if (address == 2041) then
+		for i = 0, 18*30*2 do 
+			self.Memory[i] = 0
+		end
 	end
 end
 
