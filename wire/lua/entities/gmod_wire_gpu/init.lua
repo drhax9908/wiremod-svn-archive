@@ -1,7 +1,7 @@
 AddCSLuaFile("gpu_vm.lua")
 AddCSLuaFile("gpu_opcodes.lua")
-AddCSLuaFile("gpu_bus.lua")
-AddCSLuaFile("gpu_interrupts.lua")
+AddCSLuaFile("gpu_serverbus.lua")
+AddCSLuaFile("gpu_interrupt.lua")
 AddCSLuaFile("gpu_clientbus.lua")
 
 AddCSLuaFile("entities/gmod_wire_cpu/cpu_opcodes.lua")
