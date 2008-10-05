@@ -393,7 +393,8 @@ SourcePrevCharRate = 0
 SourceTotalChars = 0
 SourceLoadedChars = 0
 
-local function UploadProgram(pl)
+function CPU_UploadProgram(pl)
+	if (CLIENT) then
 	local SendLinesMax = SourceLinesSent + pl:GetInfo("wire_gpu_packet_bandwidth")	
 	local TotalChars = 0
 	if SendLinesMax > table.Count(SourceLines) then 
@@ -431,9 +432,11 @@ local function UploadProgram(pl)
 		pl:ConCommand('wire_gpu_vgui_close')
 		timer.Remove("GPUSendTimer")
 	end
+	end
 end
 	
-local function LoadProgram(pl, command, args)
+function LoadProgram(pl, command, args) 
+	if (CLIENT) then
 	local fname = "GPUChip\\"..pl:GetInfo("wire_gpu_filename");
 	if (!file.Exists(fname)) then
 		fname = "GPUChip\\"..pl:GetInfo("wire_gpu_filename")..".txt";
@@ -465,8 +468,9 @@ local function LoadProgram(pl, command, args)
 	pl:ConCommand('wire_gpu_vgui_progress "0"')
 
 	//Send 50 lines
-	if (SinglePlayer()) then timer.Create("GPUSendTimer",pl:GetInfo("wire_gpu_packet_rate_sp"),0,UploadProgram,pl,false)
-	else			 timer.Create("GPUSendTimer",pl:GetInfo("wire_gpu_packet_rate_mp"),0,UploadProgram,pl,false)
+	if (SinglePlayer()) then timer.Create("GPUSendTimer",pl:GetInfo("wire_gpu_packet_rate_sp"),0,CPU_UploadProgram,pl,false)
+	else			 timer.Create("GPUSendTimer",pl:GetInfo("wire_gpu_packet_rate_mp"),0,CPU_UploadProgram,pl,false)
+	end
 	end
 end
 concommand.Add("wire_gpu_load", LoadProgram)

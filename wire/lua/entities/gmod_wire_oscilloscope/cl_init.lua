@@ -84,40 +84,8 @@ function ENT:Draw()
 		OF = 0
 		OU = 0
 		OR = 0
-<<<<<<< .mine
 		Res = 1
 		RatioX = 1
-=======
-		Res = 0.05
-	elseif self.Entity:GetModel() == "models/kobilica/wiremonitorsmall.mdl" then
-		OF = 0.2
-		OU = 4.5
-		OR = -0.85
-		Res = 0.045
-	elseif self.Entity:GetModel() == "models/kobilica/wiremonitorbig.mdl" then
-		OF = 0.3
-		OU = 11.8
-		OR = -2.35
-		Res = 0.12
-	elseif self.Entity:GetModel() == "models/props/cs_office/computer_monitor.mdl" then
-		OF = 3.25
-		OU = 15.85
-		OR = -2.2
-		Res = 0.085
-		RatioX = 0.75
-	elseif self.Entity:GetModel() == "models/props_phx/sp_screen.mdl" then
-		OF = 6.1
-		OU = 17.7
-		OR = -4.99
-		Res = 0.17
-		RatioX = 0.57
-	elseif self.Entity:GetModel() == "models/props/cs_office/TV_plasma.mdl" then
-		OF = 6.1
-		OU = 17.05
-		OR = -5.99
-		Res = 0.175
-		RatioX = 0.57
->>>>>>> .r702
 	end
 	
 	local ang = self.Entity:GetAngles()
