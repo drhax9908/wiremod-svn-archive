@@ -24,15 +24,15 @@
 
 function ENT:InitializeErrors()
 	self.ErrorText = {}
-	self.ErrorText[2]  = "Unexpected end of program"
-	self.ErrorText[3]  = "Division by zero"
+	self.ErrorText[2]  = "Unexpected end\n   of program"
+	self.ErrorText[3]  = "Division by\n   zero"
 	self.ErrorText[4]  = "Unknown opcode"
-	self.ErrorText[5]  = "Internal processor error"
-	self.ErrorText[6]  = "Stack error (overflow/underflow)"
-	self.ErrorText[7]  = "Memory read/write fault"
-	self.ErrorText[13] = "General processor fault"
-	self.ErrorText[15] = "Address space violation"
-	self.ErrorText[23] = "String read error"
+	self.ErrorText[5]  = "Internal\n   processor error"
+	self.ErrorText[6]  = "Stack error\n   (overflow/underflow)"
+	self.ErrorText[7]  = "Memory read/\n  write fault"
+	self.ErrorText[13] = "General \n  processor fault"
+	self.ErrorText[15] = "Address space \n  violation"
+	self.ErrorText[23] = "String read \n  error"
 end
 
 function ENT:Interrupt(intnumber,intparam)
