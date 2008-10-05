@@ -473,7 +473,11 @@ end
 end
 
 local function LoadProgram(pl, command, args) 
-	pl:SendLua("GPU_LoadProgram(LocalPlayer())")
+	if (SERVER) then
+		pl:SendLua("GPU_LoadProgram(LocalPlayer())")
+	else
+		GPU_LoadProgram(pl, command, args)
+	end
 end
 concommand.Add("wire_gpu_load", LoadProgram)
 
