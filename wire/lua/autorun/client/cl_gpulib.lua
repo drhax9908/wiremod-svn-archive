@@ -1,20 +1,19 @@
-local RT_CACHE_SIZE = 4
+local RT_CACHE_SIZE = 16
 
 //
 // Create rendertarget cache
 //
 if (!RenderTargetCache) then
-	RenderTarget_NextID = 4
-
 	RenderTargetCache = {}
 	for i=1,RT_CACHE_SIZE do
-		RenderTargetCache[i] = GetRenderTarget("WireGPU_RT_"..i, 512, 512)
+		RenderTargetCache[i] = {}
+		RenderTargetCache[i].Target = GetRenderTarget("WireGPU_RT_"..i, 512, 512)
+		RenderTargetCache[i].Used = nil
 	end
-	RenderTargetCacheSize = RT_CACHE_SIZE
 end
 
 //
-// Create basic vital fonts
+// Create basic fonts
 //
 surface.CreateFont("lucida console", 20, 800, true, false, "WireGPU_ConsoleFont")
 
@@ -27,26 +26,36 @@ WireGPU_texScreen	= surface.GetTextureID("models\duckeh\buttons\0")
 //
 // Rendertarget cache management
 //
-function WireGPU_NeedRenderTarget()
-	if (RenderTargetCache[RenderTargetCacheSize]) then
-		print("Render target cache = taken from "..RenderTargetCacheSize)
-
-		RenderTargetCacheSize = RenderTargetCacheSize - 1
-		return RenderTargetCache[RenderTargetCacheSize+1]
-	else
-		RenderTargetCacheSize = RenderTargetCacheSize + 1
-		RenderTargetCache[RenderTargetCacheSize] = GetRenderTarget("WireGPU_RT_"..RenderTarget_NextID, 512, 512)
-		RenderTarget_NextID = RenderTarget_NextID + 1
-
-		print("Render target cache = created new into "..RenderTargetCacheSize)
-		return RenderTargetCache[RenderTargetCacheSize]
+function WireGPU_NeedRenderTarget(entindex)
+	for i=1,#RenderTargetCache do
+		if (not RenderTargetCache[i].Used) then
+			RenderTargetCache[i].Used = entindex
+			return RenderTargetCache[i].Target
+		end
 	end
+
+	//Need to create new. PANIC?!
+	//print("RENDER TARGET PANIC. RENDER TARGET PANIC!")
+	return RenderTargetCache[1].Target
 end
 
-function WireGPU_ReturnRenderTarget(rt)
- 	RenderTargetCacheSize = RenderTargetCacheSize + 1
-	RenderTargetCache[RenderTargetCacheSize] = rt
-	print("Render target cache = restored into "..RenderTargetCacheSize)
+function WireGPU_GetMyRenderTarget(entindex)
+	for i=1,#RenderTargetCache do
+		if ((RenderTargetCache[i].Used) and
+		    (RenderTargetCache[i].Used == entindex)) then
+			return RenderTargetCache[i].Target
+		end
+	end
+	return WireGPU_NeedRenderTarget(entindex)
+end
+
+function WireGPU_ReturnRenderTarget(entindex)
+	for i=1,#RenderTargetCache do
+		if ((RenderTargetCache[i].Used) and
+		    (RenderTargetCache[i].Used == entindex)) then
+			RenderTargetCache[i].Used = nil
+		end
+	end
 end
 
 //
@@ -59,28 +68,31 @@ function WireGPU_DrawScreen(x,y,w,h,rotation,scale)
 	vertex[1] = {}
 	vertex[1]["x"] = x
 	vertex[1]["y"] = y
-	vertex[1]["u"] = 0-scale
-	vertex[1]["v"] = 0-scale
 
 	vertex[2] = {}
 	vertex[2]["x"] = x+w
 	vertex[2]["y"] = y
-	vertex[2]["u"] = 1+scale
-	vertex[2]["v"] = 0-scale
 
 	vertex[3] = {}
 	vertex[3]["x"] = x+w
 	vertex[3]["y"] = y+h
-	vertex[3]["u"] = 1+scale
-	vertex[3]["v"] = 1+scale
 
 	vertex[4] = {}
 	vertex[4]["x"] = x
 	vertex[4]["y"] = y+h
-	vertex[4]["u"] = 0-scale
-	vertex[4]["v"] = 1+scale
 
 	//Rotation
+	if (rotation == 0) then
+		vertex[4]["u"] = 0-scale
+		vertex[4]["v"] = 1+scale
+		vertex[3]["u"] = 1+scale
+		vertex[3]["v"] = 1+scale
+		vertex[2]["u"] = 1+scale
+		vertex[2]["v"] = 0-scale
+		vertex[1]["u"] = 0-scale
+		vertex[1]["v"] = 0-scale
+	end
+
 	if (rotation == 1) then
 		vertex[2]["u"] = 0-scale
 		vertex[2]["v"] = 0-scale

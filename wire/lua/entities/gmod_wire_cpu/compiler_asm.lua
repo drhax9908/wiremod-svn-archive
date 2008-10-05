@@ -19,7 +19,7 @@ function ENT:InitializeRegisterNames()
 	self.RegisterName["ls"] = 15
 
 	for i=0,1023 do
-		self.RegisterName["port"..i] = 1000+i
+		self.RegisterName["port"..i] = 1000+i-1
 	end
 
 	self.SegmentName = {}
@@ -80,6 +80,7 @@ function ENT:_need(char)
 		return false
 	else
 		self.CurrentLine = string.sub(self.CurrentLine,2,9999)
+		self:_whitespace()
 		return true
 	end
 end
@@ -235,7 +236,16 @@ function ENT:ParseOpcodeParameter(keyword)
 				end
 			end
 		else
-			self:Error("Expected '#' for memory reference")
+//			if (self:_need("(")) then //(1,2,3,4)
+//				self:_whitespace()
+//				while (!_self:_need())
+//
+//				if (!self:_need(")")) then
+//					self:Error("Excepted closing bracket for in-place definition")
+//				end
+//			else
+				self:Error("Expected '#' for memory reference")
+//			end
 		end
 	else
 		if (self:_need(":")) then //Segment prefix
@@ -355,7 +365,9 @@ function ENT:GenerateCode(keyword)
 	if (dRM2.Byte) then self:Write(dRM2.Byte) end
 
 	if (self.FirstPass == false) then
-		self:Precompile(XEIP)
+		if (not self.IsGPU) then
+			self:Precompile(XEIP)
+		end
 	end
 end
 
@@ -381,12 +393,23 @@ function ENT:Compile()
 
 		local islabel = self:_need(":")
 
+		if ((islabel == false) && (keyword == "")) then 
+			if (self.CurrentLine == "") then
+				return
+			else
+				self:Error("Internal error #ASHSXCH (or maybe not, did you insert some weird character into wrong place?)")
+				return
+			end
+		end
+
 		if ((keyword == "") || (islabel == true)) then //Label
 			local locvar = false
 			local globvar = false
 
 			if (self:_need("@")) then locvar = true elseif
 			   (self:_need("$")) then globvar = true end
+
+			if (keyword == "") then keyword = self:_keyword() end
 
 			if (islabel || self:_need(":")) then
 				if (locvar == true) then
@@ -405,7 +428,7 @@ function ENT:Compile()
 						self:Error("Unknown keyword '"..keyword.."'")
 					end
 				else
-					self:Error("Unexpected character")
+					//self:Error("Unexpected character")
 				end
 			end
 		elseif (self.DecodeOpcode[keyword]) then
@@ -441,6 +464,21 @@ function ENT:Compile()
 					self:_whitespace()
 				else
 					local char = self:_char()
+					if (char == "\\") then
+						local char2 = self:_char()
+						if (char2 == "n") then
+							char = '\n'
+						end
+						if (char2 == "\\") then
+							char = '\\'
+						end
+						if (char2 == "r") then
+							char = '\r'
+						end
+						if (char2 == "0") then
+							char = string.char(0)
+						end
+					end
 					self:Write(string.byte(char))
 				end
 			end
@@ -515,87 +553,255 @@ function ENT:Compile()
 			else
 				self:Error("Error in 'define' macro syntax: missing second parameter (define value)")
 			end
-		elseif (keyword == "float") || (keyword == "scalar") || (keyword == "vector1f") then
+		elseif (keyword == "string") then
 			local name = self:_keyword()
-			AddLabel(name)
-			if (self:need(",")) then
+			self:_whitespace()
+			self:AddLabel(name)
+			if (self:_need(",")) then
+				local ParsingString = false
+				while (self.FatalError == false) && (self.CurrentLine ~= "") && (not self:_need(";")) do	
+					if (self:_need("'")) then
+						if (ParsingString == true) then
+							if (self:_peek() == "'") then
+								self:_char()
+								self:Write(string.byte("'"))
+							else
+								ParsingString = false
+								self:_whitespace()
+								self:_need(",")
+								self:_whitespace()
+							end
+						else
+							ParsingString = true					
+						end
+					end
+					if (ParsingString == false) then
+						if (self:_need("$")) then //Offset...
+							local value = self:_lcheck(self:_keyword())
+							self:Write(self.WIP+self:GetValidValue(value))
+						else
+							local value = self:_lcheck(self:_keyword())
+							self:Write(self:GetValidValue(value))
+						end
+						self:_whitespace()
+						self:_need(",")
+						self:_whitespace()
+					else
+						local char = self:_char()
+						self:Write(string.byte(char))
+					end
+				end
+			end
+			self:Write(0)
+		elseif (keyword == "float") || (keyword == "scalar") || (keyword == "vector1f") || (keyword == "vec1f") then
+			local name = self:_keyword()
+			self:_whitespace()
+			self:AddLabel(name)
+			if (self:_need(",")) then
 				local x = self:_keyword()
+				self:_whitespace()
+				self:AddLabel(name..".x")
 				self:Write(self:GetValidValue(x))
 			else
+				self:AddLabel(name..".x")
 				self:Write(0)
 			end
-		elseif (keyword == "vector2f") || (keyword == "uv") || (keyword == "vector") then
+		elseif (keyword == "vector2f") || (keyword == "uv") || (keyword == "vector") || (keyword == "vec2f") then
 			local name = self:_keyword()
-			AddLabel(name)
-			if (self:need(",")) then
+			self:_whitespace()
+			self:AddLabel(name)
+			if (self:_need(",")) then
 				local x = self:_keyword()
+				self:_whitespace()
+				self:AddLabel(name..".x")
+				self:AddLabel(name..".u")
 				self:Write(self:GetValidValue(x))
 				if (self:_need(",")) then
 					local y = self:_keyword()
+					self:_whitespace()
+					self:AddLabel(name..".y")
+					self:AddLabel(name..".v")
 					self:Write(self:GetValidValue(y))
 				else
+					self:AddLabel(name..".v")
 					self:Write(0)
 				end
 			else
+				self:AddLabel(name..".x")
+				self:AddLabel(name..".u")
 				self:Write(0)
+				self:AddLabel(name..".y")
+				self:AddLabel(name..".v")
 				self:Write(0)
 			end
-		elseif (keyword == "vector3f") then
+		elseif (keyword == "vector3f") || (keyword == "vec3f") then
 			local name = self:_keyword()
-			AddLabel(name)
-			if (self:need(",")) then
+			self:_whitespace()
+			self:AddLabel(name)
+			if (self:_need(",")) then
 				local x = self:_keyword()
+				self:_whitespace()
+				self:AddLabel(name..".x")
 				self:Write(self:GetValidValue(x))
 				if (self:_need(",")) then
 					local y = self:_keyword()
+					self:_whitespace()
+					self:AddLabel(name..".y")
 					self:Write(self:GetValidValue(y))
 					if (self:_need(",")) then
 						local z = self:_keyword()
+						self:_whitespace()
+						self:AddLabel(name..".z")
 						self:Write(self:GetValidValue(z))
 					else
+						self:AddLabel(name..".z")
 						self:Write(0)
 					end
 				else
+					self:AddLabel(name..".y")
 					self:Write(0)
+					self:AddLabel(name..".z")
 					self:Write(0)
 				end
 			else
+				self:AddLabel(name..".x")
 				self:Write(0)
+				self:AddLabel(name..".y")
 				self:Write(0)
+				self:AddLabel(name..".z")
 				self:Write(0)
 			end
-		elseif (keyword == "vector4f") || (keyword == "color") then
+		elseif (keyword == "vector4f") || (keyword == "vec4f") then
 			local name = self:_keyword()
-			AddLabel(name)
-			if (self:need(",")) then
+			self:_whitespace()
+			self:AddLabel(name)
+			if (self:_need(",")) then
 				local x = self:_keyword()
+				self:_whitespace()
+				self:AddLabel(name..".x")
+				self:AddLabel(name..".r")
 				self:Write(self:GetValidValue(x))
 				if (self:_need(",")) then
 					local y = self:_keyword()
+					self:_whitespace()
+					self:AddLabel(name..".y")
+					self:AddLabel(name..".g")
 					self:Write(self:GetValidValue(y))
 					if (self:_need(",")) then
 						local z = self:_keyword()
+						self:_whitespace()
+						self:AddLabel(name..".z")
+						self:AddLabel(name..".b")
 						self:Write(self:GetValidValue(z))
 						if (self:_need(",")) then
 							local w = self:_keyword()
+							self:_whitespace()
+							self:AddLabel(name..".w")
+							self:AddLabel(name..".a")
 							self:Write(self:GetValidValue(w))
 						else
+							self:AddLabel(name..".w")
+							self:AddLabel(name..".a")
 							self:Write(0)
 						end
 					else
+						self:AddLabel(name..".z")
+						self:AddLabel(name..".b")
 						self:Write(0)
+						self:AddLabel(name..".w")
+						self:AddLabel(name..".a")
 						self:Write(0)
 					end
 				else
+					self:AddLabel(name..".y")
+					self:AddLabel(name..".g")
 					self:Write(0)
+					self:AddLabel(name..".z")
+					self:AddLabel(name..".b")
 					self:Write(0)
+					self:AddLabel(name..".w")
+					self:AddLabel(name..".a")
 					self:Write(0)
 				end
 			else
+				self:AddLabel(name..".x")
+				self:AddLabel(name..".r")
 				self:Write(0)
+				self:AddLabel(name..".y")
+				self:AddLabel(name..".g")
 				self:Write(0)
+				self:AddLabel(name..".z")
+				self:AddLabel(name..".b")
 				self:Write(0)
+				self:AddLabel(name..".w")
+				self:AddLabel(name..".a")
 				self:Write(0)
+			end
+		elseif (keyword == "color") then //copypasta from vector4f
+			local name = self:_keyword()
+			self:_whitespace()
+			self:AddLabel(name)
+			if (self:_need(",")) then
+				local x = self:_keyword()
+				self:_whitespace()
+				self:AddLabel(name..".x")
+				self:AddLabel(name..".r")
+				self:Write(self:GetValidValue(x))
+				if (self:_need(",")) then
+					local y = self:_keyword()
+					self:_whitespace()
+					self:AddLabel(name..".y")
+					self:AddLabel(name..".g")
+					self:Write(self:GetValidValue(y))
+					if (self:_need(",")) then
+						local z = self:_keyword()
+						self:_whitespace()
+						self:AddLabel(name..".z")
+						self:AddLabel(name..".b")
+						self:Write(self:GetValidValue(z))
+						if (self:_need(",")) then
+							local w = self:_keyword()
+							self:_whitespace()
+							self:AddLabel(name..".w")
+							self:AddLabel(name..".a")
+							self:Write(self:GetValidValue(w))
+						else
+							self:AddLabel(name..".w")
+							self:AddLabel(name..".a")
+							self:Write(255)
+						end
+					else
+						self:AddLabel(name..".z")
+						self:AddLabel(name..".b")
+						self:Write(0)
+						self:AddLabel(name..".w")
+						self:AddLabel(name..".a")
+						self:Write(255)
+					end
+				else
+					self:AddLabel(name..".y")
+					self:AddLabel(name..".g")
+					self:Write(0)
+					self:AddLabel(name..".z")
+					self:AddLabel(name..".b")
+					self:Write(0)
+					self:AddLabel(name..".w")
+					self:AddLabel(name..".a")
+					self:Write(255)
+				end
+			else
+				self:AddLabel(name..".x")
+				self:AddLabel(name..".r")
+				self:Write(0)
+				self:AddLabel(name..".y")
+				self:AddLabel(name..".g")
+				self:Write(0)
+				self:AddLabel(name..".z")
+				self:AddLabel(name..".b")
+				self:Write(0)
+				self:AddLabel(name..".w")
+				self:AddLabel(name..".a")
+				self:Write(255)
 			end
 		elseif (keyword == "code") then
 			self:AddLabel("codestart")
@@ -608,6 +814,8 @@ function ENT:Compile()
 				self:Error("No matching 'code' macro was found!")
 			end
 
+			self:Write(2)
+			self:Write(0)
 			self:Write(self:GetValidValue("codestart"))
 		elseif (keyword == "org") then
 			local value = self:_lcheck(self:_keyword())
@@ -657,7 +865,8 @@ function ENT:Compile()
 
 			self:AddLabel(fname)
 			self:GenerateASM("push ebp")
-			self:GenerateASM("mov ebp,1:esp")
+			self:GenerateASM("mov ebp,esp")
+			self:GenerateASM("inc ebp")
 
 			if (self:_need("(")) then
 				local argument = self:_getstring(",")
@@ -683,6 +892,8 @@ function ENT:Compile()
 					self:GenerateASM("mov "..self.ReturnVariable..","..retval)
 				end
 			end
+			self:GenerateASM("add esp,2")
+			self:GenerateASM("pop ebp")
 			self:GenerateASM("ret")
 		elseif (keyword == "end") then
 			if (not self.CurrentFunction) then
@@ -690,7 +901,9 @@ function ENT:Compile()
 			end
 
 			if (self.LastKeyword ~= "return") then
-				self:GenerateASM("ret") //pop ebp!!
+				self:GenerateASM("add esp,2")
+				self:GenerateASM("pop ebp")
+				self:GenerateASM("ret")
 			end
 			self.CurrentFunction = nil
 		elseif (keyword == "getarg") then
@@ -726,14 +939,14 @@ function ENT:Compile()
 			self:GenerateASM("mov ecx,"..argscnt)
 			self:GenerateASM("call "..address)
 			if (argscnt ~= 0) then
-				self:GenerateASM("mov esp,ebp:-"..argscnt)//add esp,argscnt
+				self:GenerateASM("add esp,"..argscnt)
 			end
 
 			if (not self:_need(")")) then
 				self:Error("Error in function call syntax")
 			end
 		else
-			self:Error("Internal error #SAHZ8, report to black phoenix")
+			self:Error("Internal error #SAHZ8, report to black phoenix. Data: "..self.CurrentLine)
 		end
 
 		self.LastKeyword = keyword
@@ -748,7 +961,7 @@ function ENT:GetLabel(labelname)
 	for labelk,labelv in pairs(self.Labels) do
 		if (labelk == labelname) then
 			if (labelv.Local == true) then
-				if (math.abs(WIP - labelv.WIP) < LocalVarRange) then
+				if (math.abs(self.WIP - labelv.WIP) < self.LocalVarRange) then
 					foundlabel = labelv
 					return foundlabel					
 				end
