@@ -1,5 +1,6 @@
 
 AddCSLuaFile( "autorun/client/cl_modelplug.lua" )
+AddCSLuaFile( "autorun/WireMonitors.lua" )
 
 
 ModelPlugInfo = {}
