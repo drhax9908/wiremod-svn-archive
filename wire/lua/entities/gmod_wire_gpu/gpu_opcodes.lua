@@ -89,6 +89,7 @@ function ENT:InitializeGPUOpcodeNames()
 	self.DecodeOpcode["vmode"]          = 273 //VMODE X		: Vector mode = Y					[INT]
 	self.DecodeOpcode["dt"]             = 274 //DT X		: X -> Frame DeltaTime					[F]
 	self.DecodeOpcode["dstrprecache"]   = 275 //DSTRPRECACHE X	: Read and cache string					[STRING]
+	self.DecodeOpcode["dshade"]         = 276 //DSHADE X		: COLOR = COLOR * X					[F]
 	//- Extra drawing -----------------------------------------------------------------------------------------------------
 	self.DecodeOpcode["ddframe"]        = 280 //DDFRAME X		: Draw bordered frame					[BORDER_STRUCT]
 	self.DecodeOpcode["ddbar"]          = 281 //DDBAR X		: Draw progress bar					[BAR_STRUCT]
@@ -331,8 +332,13 @@ function ENT:InitializeGPUOpcodeTable()
  		self.CurFontSize = math.floor(math.Clamp(Param1,4,200))
 	end
 	self.OpcodeTable[219] = function (Param1, Param2)	//DMOVE
- 		self:WriteCell(65484,self:ReadCell(Param1+0))
- 		self:WriteCell(65483,self:ReadCell(Param1+1))
+		if (Param1 == 0) then
+ 			self:WriteCell(65484,0)
+ 			self:WriteCell(65483,0)
+		else			
+	 		self:WriteCell(65484,self:ReadCell(Param1+0))
+	 		self:WriteCell(65483,self:ReadCell(Param1+1))
+		end
 	end
 	//------------------------------------------------------------
 	self.OpcodeTable[220] = function (Param1, Param2)	//DVXDATA_2F
@@ -496,25 +502,25 @@ function ENT:InitializeGPUOpcodeTable()
 		local astart = self:ReadCell(65478)
 		local aend = self:ReadCell(65477)
 		local astep = (aend-astart) / numsides
-		local cx = self:ReadCell(Param1+0)
-		local cy = self:ReadCell(Param1+1)
+		local c = self:Read2f(Param1)
+
 		local r = Param2
 
 		for i=1,3 do vertexbuf[i] = {} end
 
 		for i=1,numsides do
-			vertexbuf[1]["x"] = cx + r*math.sin(astart+astep*(i+0))
-			vertexbuf[1]["y"] = cy + r*math.cos(astart+astep*(i+0))
+			vertexbuf[1]["x"] = c.x + r*math.sin(astart+astep*(i+0))
+			vertexbuf[1]["y"] = c.y + r*math.cos(astart+astep*(i+0))
 			vertexbuf[1]["u"] = 0
 			vertexbuf[1]["v"] = 0
 
-			vertexbuf[2]["x"] = cx
-			vertexbuf[2]["y"] = cy
+			vertexbuf[2]["x"] = c.x
+			vertexbuf[2]["y"] = c.y
 			vertexbuf[2]["u"] = 0
 			vertexbuf[2]["v"] = 0
 
-			vertexbuf[3]["x"] = cx + r*math.sin(astart+astep*(i+1))
-			vertexbuf[3]["y"] = cy + r*math.cos(astart+astep*(i+1))
+			vertexbuf[3]["x"] = c.x + r*math.sin(astart+astep*(i+1))
+			vertexbuf[3]["y"] = c.y + r*math.cos(astart+astep*(i+1))
 			vertexbuf[3]["u"] = 0
 			vertexbuf[3]["v"] = 0
 
@@ -955,6 +961,14 @@ function ENT:InitializeGPUOpcodeTable()
 	self.OpcodeTable[275] = function (Param1, Param2)	//DSTRPRECACHE
 		self.StringCache[Param1] = self:ReadStr(Param1)
 	end
+	self.OpcodeTable[276] = function (Param1, Param2)	//DSHADE
+		self.CurColor.x = self.CurColor.x*Param1
+		self.CurColor.y = self.CurColor.y*Param1
+		self.CurColor.z = self.CurColor.z*Param1
+		surface.SetDrawColor(self.CurColor.x,self.CurColor.y,self.CurColor.z,255)
+	end
+
+
 	//------------------------------------------------------------
 	self.OpcodeTable[280] = function (Param1, Param2)	//DDFRAME
 		local v1 = self:Read2f(Param1+0) //x,y
