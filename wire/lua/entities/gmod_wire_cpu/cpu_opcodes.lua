@@ -529,7 +529,9 @@ function ENT:InitializeOpcodeTable()
 	end
 	self.OpcodeTable[63] = function (Param1,Param2)	//TBIT
 		local bits = self:IntegerToBinary(math.floor(Param1))
-		bits[math.floor(math.Clamp(Param2,0,self.IPREC-1)+1)] = 1-bits[math.floor(math.Clamp(Param2,0,self.IPREC-1)+1)]
+		if (bits[math.floor(math.Clamp(Param2,0,self.IPREC-1)+1)]) then
+			bits[math.floor(math.Clamp(Param2,0,self.IPREC-1)+1)] = 1-bits[math.floor(math.Clamp(Param2,0,self.IPREC-1)+1)]
+		end
 		return self:BinaryToInteger(bits)
 	end
 	self.OpcodeTable[64] = function(Param1,Param2) 	//BAND
