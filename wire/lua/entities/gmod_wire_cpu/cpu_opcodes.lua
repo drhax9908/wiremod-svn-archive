@@ -184,7 +184,7 @@ function ENT:InitializeASMOpcodes()
 		elseif (i >= 110) && (i <= 119) then
 			self.OpcodeCount[i] = 0
 		elseif (i >= 120) && (i <= 129) then
-			self.OpcodeCount[i] = 1
+			self.OpcodeCount[i] = 2
 
 		//GPU OPCODES
 		elseif (i >= 200) && (i <= 209) then

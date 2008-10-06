@@ -5,7 +5,8 @@ AddCSLuaFile("gpu_interrupt.lua")
 AddCSLuaFile("gpu_clientbus.lua")
 
 AddCSLuaFile("entities/gmod_wire_cpu/cpu_opcodes.lua")
-AddCSLuaFile("entities/gmod_wire_cpu/compiler_asm.lua")
+AddCSLuaFile("entities/gmod_wire_cpu/cpu_vm.lua")
+AddCSLuaFile("entities/gmod_wire_cpu/cpu_bitwise.lua")
 
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
