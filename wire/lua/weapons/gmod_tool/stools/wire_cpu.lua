@@ -17,7 +17,7 @@ end
 
 TOOL.ClientConVar["model"] 		= "models/cheeze/wires/cpu.mdl"
 TOOL.ClientConVar["filename"] 		= ""
-TOOL.ClientConVar["packet_bandwidth"] 	= 400
+TOOL.ClientConVar["packet_bandwidth"] 	= 300
 TOOL.ClientConVar["packet_rate_sp"] 	= 0.05
 TOOL.ClientConVar["packet_rate_mp"] 	= 0.4
 TOOL.ClientConVar["compile_rate"] 	= 0.05
@@ -30,15 +30,15 @@ cleanup.Register("wire_cpus")
 
 //=============================================================================
 if (SERVER) then
-	SourceCode = {}
+	CPU_SourceCode = {}
 
 	local function AddSourceLine(pl, command, args)
-		SourceCode[tonumber(args[1])] = tostring(args[2])
+		CPU_SourceCode[tonumber(args[1])] = tostring(args[2])
 	end
 	concommand.Add("wire_cpu_addsrc", AddSourceLine)
 	
 	local function ClearSource(pl, command, args)
-		SourceCode = {}
+		CPU_SourceCode = {}
 	end
 	concommand.Add("wire_cpu_clearsrc", ClearSource)
 end
@@ -63,17 +63,17 @@ local function CompileProgram_Timer(tool,firstpass)
 	if (!tool.LineNumber) 			then return end
 
 	local SendLinesMax = tool.LineNumber + tool:GetOwner():GetInfo("wire_cpu_compile_bandwidth")
-	if (SendLinesMax > table.Count(SourceCode)) then SendLinesMax = table.Count(SourceCode) end
+	if (SendLinesMax > table.Count(CPU_SourceCode)) then SendLinesMax = table.Count(CPU_SourceCode) end
 	local Rate = 0
 
-	if (SourceCode[tostring(tool.LineNumber)]) then
-		if (string.len(SourceCode[tostring(tool.LineNumber)]) > 256) then
+	if (CPU_SourceCode[tostring(tool.LineNumber)]) then
+		if (string.len(CPU_SourceCode[tostring(tool.LineNumber)]) > 256) then
 			SendLinesMax = tool.LineNumber
 		end
 	end
 
 	while (tool.LineNumber <= SendLinesMax) and (tool.CPU_Entity) do
-		local line = SourceCode[tonumber(tool.LineNumber)]
+		local line = CPU_SourceCode[tonumber(tool.LineNumber)]
 		if (line) then
 			if (string.len(line) > 254) then
 				tool:GetOwner():PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Line "..tool.LineNumber.." too long! I compile it, but it may trigger infinite loop thing.\n")
@@ -87,14 +87,14 @@ local function CompileProgram_Timer(tool,firstpass)
 		Rate = Rate + 1
 	end
 
-	local TimeLeft = (table.Count(SourceCode)*2 - tool.LineNumber) / Rate
+	local TimeLeft = (table.Count(CPU_SourceCode)*2 - tool.LineNumber) / Rate
 	if (not firstpass) then
-		TimeLeft = (table.Count(SourceCode) - tool.LineNumber) / Rate
+		TimeLeft = (table.Count(CPU_SourceCode) - tool.LineNumber) / Rate
 	end
 	tool.PrevRate = (tool.PrevRate*1.5+TimeLeft*0.5) / 2
 	TimeLeft = math.floor(tool.PrevRate / 10)
 
-	local TempPercent = ((tool.LineNumber-1)/table.Count(SourceCode))*100
+	local TempPercent = ((tool.LineNumber-1)/table.Count(CPU_SourceCode))*100
 	if (firstpass) then
 		if (!tool.FirstPassDone) then
 			tool:GetOwner():ConCommand('wire_cpu_vgui_status "Compiling ('.. TimeLeft ..' seconds left), '..tool.LineNumber..' lines processed"')
@@ -107,7 +107,7 @@ local function CompileProgram_Timer(tool,firstpass)
 		end
 	end
 
-	if (tool.LineNumber > table.Count(SourceCode)) || (TempPercent >= 100) then
+	if (tool.LineNumber > table.Count(CPU_SourceCode)) || (TempPercent >= 100) then
 		if (!tool.FirstPassDone) then
 			tool.FirstPassDone = true
 			tool:Compile_Pass2()
@@ -129,7 +129,7 @@ end
 
 function TOOL:StartCompile(pl)
 	local ent = self.CPU_Entity
-	if table.Count(SourceCode) == 0 then return end
+	if table.Count(CPU_SourceCode) == 0 then return end
 
 	pl:PrintMessage(HUD_PRINTCONSOLE,"----> ZyeliosASM compiler - Version 2.0 (SVN REV "..CPUStool_Version().."/"..ent:CPUID_Version()..") <----\n")
 	pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compiling...\n")
@@ -190,7 +190,7 @@ function TOOL:Compile_End()
 	local ent = self.CPU_Entity
 
 	if (ent.FatalError) then pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile aborted: fatal error has occured\n")			
-	else			 pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile succeded! "..(table.Count(SourceCode)-1).." lines, "..ent.WIP.." bytes, "..table.Count(ent.Labels).." definitions.\n")
+	else			 pl:PrintMessage(HUD_PRINTCONSOLE,"-> ZyeliosASM: Compile succeded! "..(table.Count(CPU_SourceCode)-1).." lines, "..ent.WIP.." bytes, "..table.Count(ent.Labels).." definitions.\n")
 	end
 
 	pl:ConCommand('wire_cpu_vgui_close')
@@ -380,7 +380,7 @@ if (CLIENT) then
 	concommand.Add("wire_cpu_vgui_progress", VGUI_Progress)
 end
 
-//if (CLIENT) then
+if (CLIENT) then
 
 SourceLines = {}
 SourceLineNumbers = {}
@@ -389,7 +389,7 @@ SourcePrevCharRate = 0
 SourceTotalChars = 0
 SourceLoadedChars = 0
 
-local function UploadProgram(pl)
+function CPU_UploadProgram(pl)
 	local SendLinesMax = SourceLinesSent + pl:GetInfo("wire_cpu_packet_bandwidth")	
 	local TotalChars = 0
 	if SendLinesMax > table.Count(SourceLines) then 
@@ -429,7 +429,7 @@ local function UploadProgram(pl)
 	end
 end
 	
-local function LoadProgram(pl, command, args)
+function CPU_LoadProgram(pl, command, args)
 	local fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename");
 	if (!file.Exists(fname)) then
 		fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename")..".txt";
@@ -461,8 +461,18 @@ local function LoadProgram(pl, command, args)
 	pl:ConCommand('wire_cpu_vgui_progress "0"')
 
 	//Send 50 lines
-	if (SinglePlayer()) then timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_sp"),0,UploadProgram,pl,false)
-	else			 timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_mp"),0,UploadProgram,pl,false)
+	if (SinglePlayer()) then timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_sp"),0,CPU_UploadProgram,pl,false)
+	else			 timer.Create("CPUSendTimer",pl:GetInfo("wire_cpu_packet_rate_mp"),0,CPU_UploadProgram,pl,false)
+	end
+end
+
+end
+
+local function LoadProgram(pl, command, args) 
+	if (SERVER) then
+		pl:SendLua("CPU_LoadProgram(LocalPlayer())")
+	else
+		CPU_LoadProgram(pl, command, args)
 	end
 end
 concommand.Add("wire_cpu_load", LoadProgram)
