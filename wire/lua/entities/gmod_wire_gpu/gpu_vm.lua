@@ -297,26 +297,27 @@ function ENT:GPUMathReset()
 end
 
 function ENT:Transform(x,y)
-	local transx = x+self:ReadCell(65484)
-	local transy = y+self:ReadCell(65483)
+	local transx = x
+	local transy = y
 
-//	if ((self:ReadCell(65482) != 0) || (self:ReadCell(65481) != 1)) then
-//		local centerx = self:ReadCell(65480)
-//		local centery = self:ReadCell(65479)
-//
-//		local vd = math.sqrt((x-centerx)*(x-centerx)+(y-centery)*(y-centery)) + 0.0001
-//		local vx = x / vd
-//		local vy = y / vd
-//
-//		local acos = math.acos(vx)
-//		local asin = math.asin(vy)
-//
-//		acos = acos + self:ReadCell(65482)
-//		asin = asin + self:ReadCell(65482)
-//
-//		transx = math.cos(acos) * vd * self:ReadCell(65481)
-//		transy = math.sin(asin) * vd * self:ReadCell(65481)
-//	end
+	if ((self:ReadCell(65482) != 0) || (self:ReadCell(65481) != 1)) then
+		local centerx = self:ReadCell(65480)
+		local centery = self:ReadCell(65479)
+
+		local vd = math.sqrt((x-centerx)*(x-centerx)+(y-centery)*(y-centery)) + 0.0001
+		local vx = x / vd
+		local vy = y / vd
+
+		local atan = math.atan2(vx,vy)
+
+		atan = atan + self:ReadCell(65482)
+
+		transx = math.cos(atan) * vd * self:ReadCell(65481)
+		transy = math.sin(atan) * vd * self:ReadCell(65481)
+	end
+
+	transx = transx+self:ReadCell(65484)
+	transy = transy+self:ReadCell(65483)
 
 	    if (self.CVertexPipe == 0) then
 		transx = transx
@@ -424,28 +425,49 @@ end
 
 function ENT:Read2f(addr)
 	local resultcoord = {}
-	resultcoord.x = self:ReadCell(addr+0)
-	resultcoord.y = self:ReadCell(addr+1)
-	resultcoord.z = 0
-	resultcoord.w = 0
+	if (addr == 0) then
+		resultcoord.x = 0
+		resultcoord.y = 0
+		resultcoord.z = 0
+		resultcoord.w = 0
+	else
+		resultcoord.x = self:ReadCell(addr+0)
+		resultcoord.y = self:ReadCell(addr+1)
+		resultcoord.z = 0
+		resultcoord.w = 0
+	end
 	return resultcoord
 end
 
 function ENT:Read3f(addr)
 	local resultcoord = {}
-	resultcoord.x = self:ReadCell(addr+0)
-	resultcoord.y = self:ReadCell(addr+1)
-	resultcoord.z = self:ReadCell(addr+2)
-	resultcoord.w = 0
+	if (addr == 0) then
+		resultcoord.x = 0
+		resultcoord.y = 0
+		resultcoord.z = 0
+		resultcoord.w = 0
+	else
+		resultcoord.x = self:ReadCell(addr+0)
+		resultcoord.y = self:ReadCell(addr+1)
+		resultcoord.z = self:ReadCell(addr+2)
+		resultcoord.w = 0
+	end
 	return resultcoord
 end
 
 function ENT:Read4f(addr)
 	local resultcoord = {}
-	resultcoord.x = self:ReadCell(addr+0)
-	resultcoord.y = self:ReadCell(addr+1)
-	resultcoord.z = self:ReadCell(addr+2)
-	resultcoord.w = self:ReadCell(addr+3)
+	if (addr == 0) then
+		resultcoord.x = 0
+		resultcoord.y = 0
+		resultcoord.z = 0
+		resultcoord.w = 0
+	else
+		resultcoord.x = self:ReadCell(addr+0)
+		resultcoord.y = self:ReadCell(addr+1)
+		resultcoord.z = self:ReadCell(addr+2)
+		resultcoord.w = self:ReadCell(addr+3)
+	end
 	return resultcoord
 end
 
