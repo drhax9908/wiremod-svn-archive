@@ -275,7 +275,7 @@ function ENT:InitializeLookupTables()
 	self.ParamFunctions_2[49] = function() return self.EBP + self.PrecompileData[self.XEIP].PeekByte2 end
 
 	for i=1000,2024 do
-		self.ParamFunctions_2[i] = function() return self:ReadPort(self.PrecompileData[self.XEIP].dRM1-1000) end
+		self.ParamFunctions_2[i] = function() return self:ReadPort(self.PrecompileData[self.XEIP].dRM2-1000) end
 	end
 
 	self.WriteBackFunctions = {}

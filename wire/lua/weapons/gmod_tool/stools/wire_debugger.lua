@@ -120,7 +120,11 @@ if (SERVER) then
 								umsg.String(dbginfo)
 							umsg.End()
 							dbg_line_cache[ply][l] = dbginfo
-							dbg_line_time[ply][l] = CurTime() + 0.2
+							if (SinglePlayer()) then
+								dbg_line_time[ply][l] = CurTime() + 0.05
+							else
+								dbg_line_time[ply][l] = CurTime() + 0.2
+							end
 						end
 					end
 			    end

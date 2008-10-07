@@ -7,7 +7,7 @@ function WireGPU_AddMonitor(name,model,tof,tou,tor,trs,x1,x2,y1,y2,rot90)
 	WireGPU_Monitors[model].OU = tou
 	WireGPU_Monitors[model].OR = tor
 	WireGPU_Monitors[model].RS = trs
-	WireGPU_Monitors[model].RatioX = (y1-y2)/(x2-x1)
+	WireGPU_Monitors[model].RatioX = math.abs((y1-y2)/(x2-x1))
 
 	WireGPU_Monitors[model].x1 = x1
 	WireGPU_Monitors[model].x2 = x2
@@ -30,5 +30,5 @@ WireGPU_AddMonitor("Billboard",		"models/props/cs_assault/Billboard.mdl",	1,	0,	
 
 WireGPU_AddMonitor("LED Board (1:1)",	"models/blacknecro/ledboard60.mdl",		6.1,	18.5,	11.0,	0.065,	-60,	 60,	-60,	  60)
 WireGPU_AddMonitor("Cube 1x1x1",	"models/hunter/blocks/cube1x1x1.mdl",		24,	0,	0,	0.09,	-48,	 48,	-48,	  48)
-WireGPU_AddMonitor("Panel 1x1",		"models/hunter/plates/plate1x1.mdl",		0,	1.7,	-46,	0.09,	-48,	 48,	-48,	  48,true)
-WireGPU_AddMonitor("Panel 2x2",		"models/hunter/plates/plate2x2.mdl",		0,	1.7,	-93,	0.182,	-48,	 48,	-48,	  48,true)
+WireGPU_AddMonitor("Panel 1x1",		"models/hunter/plates/plate1x1.mdl",		0,	1.7,	46,	0.09,	-48,	 48,	-48,	  48,true)
+WireGPU_AddMonitor("Panel 2x2",		"models/hunter/plates/plate2x2.mdl",		0,	1.7,	93,	0.182,	-48,	 48,	-48,	  48,true)

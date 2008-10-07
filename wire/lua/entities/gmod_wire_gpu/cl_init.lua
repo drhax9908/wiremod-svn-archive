@@ -14,10 +14,10 @@ function ENT:Initialize()
 	self.Debug = false
 
 	self.Memory = {}
+	self.ROMMemory = {}
+
 	self.PrecompileData = {}
 	self.PrecompileMemory = {}
-
-	self.ROMMemory = {}
 
 	self:InitGraphicTablet()
 	self:InitializeGPUOpcodeTable()
@@ -60,14 +60,17 @@ function WireGPU_MemoryMessage(umsg)
 	local ent = ents.GetByIndex(umsg:ReadLong())
 	local cachebase = umsg:ReadLong()
 	local cachesize = umsg:ReadLong()
-	if (ent) && (ent.Memory) && (cachebase >= 0) && (cachebase + cachesize < 65536) then
-		for i=0,cachesize-1 do
-			local value = umsg:ReadFloat()
 
-			ent:WriteCell(cachebase+i,value)
-			ent.ROMMemory[cachebase+i] = value
-			if (cachebase+i == 65534) then
-				ent:GPUHardReset()
+	if ((ent) && (ent.Memory)) then
+		if (cachebase >= 0) && (cachebase + cachesize < 65537) then
+			for i=0,cachesize-1 do
+				local value = umsg:ReadFloat()
+
+				ent:WriteCell(cachebase+i,value)
+				ent.ROMMemory[cachebase+i] = value
+				if (cachebase+i == 65534) then
+					ent:GPUHardReset()
+				end
 			end
 		end
 	end
