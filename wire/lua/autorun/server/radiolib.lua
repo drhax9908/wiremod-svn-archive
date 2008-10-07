@@ -37,10 +37,18 @@ function Radio_Receive(ent ,ch )
 		if (radio_channels[ent.pl:SteamID()] == nil) then return {} end
 		if (type(radio_channels[ent.pl:SteamID()][ch]) == "table") then
 			return radio_channels[ent.pl:SteamID()][ch] //Nothing fancy needed :P
+		else
+			local retable = {}
+			for i=1,20 do retable[tostring(i)] = 0 end			
+			return retable
 		end
 	else
 		if (type(radio_channels[ch]) == "table") then
 			return radio_channels[ch] //Nothing fancy needed :P
+		else
+			local retable = {}
+			for i=1,20 do retable[tostring(i)] = 0 end			
+			return retable
 		end
 	end
 	return {}

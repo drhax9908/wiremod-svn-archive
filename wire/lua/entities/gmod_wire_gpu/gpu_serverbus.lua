@@ -66,7 +66,7 @@ function ENT:WriteCell(Address, value)
 		//0. Write it to internal memory
 		self.Memory[Address] = value
 
-		if (self.CachingEnabled) && (!(Address == 65535)) && (!(Address == 65534)) then
+		if (self.CachingEnabled == true) && (Address ~= 65535) && (Address ~= 65534) then
 			//1. Check if address recieved is in current memory cache
 			if ((Address >= self.MemoryCacheBase) &&
 			    (Address < self.MemoryCacheBase+self.MemoryCacheSize)) then

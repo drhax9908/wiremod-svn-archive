@@ -647,7 +647,7 @@ function ENT:InitializeGPUOpcodeTable()
 			self.StringCache[Param2] = self:ReadStr(Param2)
 		end
 		local text = self.StringCache[Param2]
-		local ptr = Param2 + string.len(text) + 1
+		local ptr = Param2 + string.len(text) + 2
 		local finaltext = ""
 
 		local inparam = false

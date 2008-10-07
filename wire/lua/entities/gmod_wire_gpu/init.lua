@@ -55,6 +55,7 @@ end
 
 function ENT:GPU_ResendData(pl)
 	//FIXME
+	//self:FlushCache()
 end
 
 function GPU_PlayerRespawn(pl)
@@ -121,20 +122,32 @@ function ENT:BuildDupeInfo()
 	return info
 end
 
+function Resend_GPU_Data(gpuent)
+	gpuent:InitializeBus()
+	gpuent:FlushCache()
+	for i=0,65535 do
+		if (gpuent.Memory[i]) then
+			gpuent:WriteCell(i,gpuent.Memory[i])
+		end
+	end
+	gpuent:FlushCache()
+
+	gpuent:WriteCell(65534,1) //reset
+	gpuent:WriteCell(65535,gpuent.Clk)
+end
+
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 
 	self.SerialNo = info.SerialNo
 	self.Memory = {}
+
 	for i=0,65535 do
 		if (info.Memory[i]) then
 			self.Memory[i] = info.Memory[i]
-			self:WriteCell(i,self.Memory[i])
 		end
 	end
-	self:FlushCache()
 
-
-	self:WriteCell(65534,1) //reset
+	timer.Create("GPU_Paste_Timer",0.1,1,Resend_GPU_Data,self)
 end
