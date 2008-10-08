@@ -20,6 +20,7 @@ end
 TOOL.ClientConVar[ "multiplier" ] = "1"
 TOOL.ClientConVar[ "length" ] = "100"
 TOOL.ClientConVar[ "beam" ] = "1"
+TOOL.ClientConVar[ "reaction" ] = "0"
 TOOL.ClientConVar[ "Model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
 
 local forcermodels = {
@@ -45,9 +46,10 @@ function TOOL:LeftClick( trace )
 	Ang.pitch = Ang.pitch + 90
 	
 	local showbeam = self:GetClientNumber( "beam" ) == 1
+	local reaction = self:GetClientNumber( "reaction" ) == 1
 	local model = self:GetClientInfo("Model")
 	
-	local wire_forcer = MakeWireForcer( ply, trace.HitPos, Ang, self:GetClientNumber( "multiplier" ), self:GetClientNumber( "length" ), showbeam, model )
+	local wire_forcer = MakeWireForcer( ply, trace.HitPos, Ang, self:GetClientNumber( "multiplier" ), self:GetClientNumber( "length" ), showbeam, reaction, model )
 
 	local min = wire_forcer:OBBMins()
 	if(model == "models/jaanus/wiretool/wiretool_grabber_forcer.mdl")then
@@ -71,7 +73,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireForcer( pl, Pos, Ang, Force, Length, showbeam,Model )
+	function MakeWireForcer( pl, Pos, Ang, Force, Length, showbeam, reaction, Model )
 		if ( !pl:CheckLimit( "wire_forcers" ) ) then return false end
 	
 		local wire_forcer = ents.Create( "gmod_wire_forcer" )
@@ -82,7 +84,7 @@ if (SERVER) then
 		wire_forcer:SetModel( Model )
 		wire_forcer:Spawn()
 
-		wire_forcer:Setup(Force, Length, showbeam)
+		wire_forcer:Setup(Force, Length, showbeam, reaction)
 		wire_forcer:SetPlayer( pl )
 		
 		local ttable = {
@@ -90,6 +92,7 @@ if (SERVER) then
 			Force	= Force,
 			Length	= Length,
 			showbeam = showbeam,
+			reaction = reaction,
 		}
 		table.Merge(wire_forcer:GetTable(), ttable )
 		
@@ -98,7 +101,7 @@ if (SERVER) then
 		return wire_forcer
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_forcer", MakeWireForcer, "Pos", "Ang", "Force", "Length", "showbeam", "Model", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_forcer", MakeWireForcer, "Pos", "Ang", "Force", "Length", "showbeam", "reaction", "Model", "Vel", "aVel", "frozen")
 	
 end
 
@@ -167,5 +170,6 @@ function TOOL.BuildCPanel(panel)
 		Max = "10000",
 		Command = "wire_forcer_length"
   })
-  panel:AddControl( "Checkbox", { Label = "Show Beam", Command = "wire_forcer_beam" } )
+  panel:AddControl( "Checkbox", { Label = "Show beam", Command = "wire_forcer_beam" } )
+  panel:AddControl( "Checkbox", { Label = "Apply reaction force", Command = "wire_forcer_reaction" } )
 end
