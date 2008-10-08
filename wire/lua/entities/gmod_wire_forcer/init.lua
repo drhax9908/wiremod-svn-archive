@@ -21,7 +21,7 @@ function ENT:Initialize()
 	self:SetForceBeam(false)
 end
 
-function ENT:Setup(force, length, showbeam)
+function ENT:Setup(force, length, showbeam, reaction)
 	self.Force = math.max(force, 1)
 	self.Tlength = math.max(length, 1)
 	self.F = 0
@@ -32,6 +32,7 @@ function ENT:Setup(force, length, showbeam)
 	else
 		self:SetBeamLength(0)
 	end
+	self.Reaction = reaction
 	self:TriggerInput("Force", 0)
 end
 
@@ -74,6 +75,13 @@ function ENT:Think()
 					if (self.FoO > 0.1) or (self.FoO < -0.1) then phys:ApplyForceOffset( vForward * self.FoO, trace.HitPos ) end
 					//if (self.V > 0.1) or (self.V < -0.1) then phys:SetVelocity( vForward * self.V ) end
 					if (self.V > 0.1) or (self.V < -0.1) then phys:SetVelocityInstantaneous( vForward * self.V ) end
+				end
+				if (self.Reaction) then
+					phys = self.Entity:GetPhysicsObject()
+					if (phys:IsValid()) then
+						if (self.F > 0.1) or (self.F < -0.1) then phys:ApplyForceCenter( vForward * -self.Force * self.F ) end
+						if (self.FoO > 0.1) or (self.FoO < -0.1) then phys:ApplyForceCenter( vForward * -self.FoO ) end
+					end
 				end
 			else
 				if (self.V > 0.1) or (self.V < -0.1) then trace.Entity:SetVelocity( vForward * self.V ) end
