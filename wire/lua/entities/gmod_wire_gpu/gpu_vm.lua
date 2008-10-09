@@ -78,7 +78,7 @@ function ENT:GPUResetRegisters()
 	self.Memory[65515] = 800
 	self.Memory[65514] = 600
 	self.Memory[65513] = 0
-	self.Memory[65512] = 100
+	self.Memory[65512] = 1
 
 	//Cursor control:
 	//[65505] - Cursor X (0..1)
@@ -312,8 +312,8 @@ function ENT:Transform(x,y)
 
 		atan = atan + self:ReadCell(65482)
 
-		transx = math.cos(atan) * vd * self:ReadCell(65481)
-		transy = math.sin(atan) * vd * self:ReadCell(65481)
+		transx = math.cos(atan) * vd * self:ReadCell(65481)+centerx
+		transy = math.sin(atan) * vd * self:ReadCell(65481)+centery
 	end
 
 	transx = transx+self:ReadCell(65484)
@@ -327,6 +327,8 @@ function ENT:Transform(x,y)
 		transx = transx*512
 	elseif (self.CVertexPipe == 3) then
 		transx = 256+transx*256
+	elseif (self.CVertexPipe == 4) then
+		transx = 256+transx
 	end
 
 	    if (self.CVertexPipe == 0) then
@@ -337,6 +339,8 @@ function ENT:Transform(x,y)
 		transy = transy*512
 	elseif (self.CVertexPipe == 3) then
 		transy = 256+transy*256
+	elseif (self.CVertexPipe == 4) then
+		transy = 256+transy
 	end
 
 	local trans = {}
@@ -346,8 +350,13 @@ function ENT:Transform(x,y)
 end
 
 //FIXME: I can do faster vertex transform...
-function ENT:VertexTransform(coord)
+function ENT:VertexTransform(coord) //FIXME: coord can have UV
 	local resultcoord = coord
+	resultcoord.trans = {} //Transformed 3d point
+	resultcoord.trans.x = 0
+	resultcoord.trans.y = 0
+	resultcoord.trans.z = 0
+	resultcoord.trans.w = 0
 	if (!coord) then return end
 
 	if (self.VertexPipe == 0) then
@@ -370,8 +379,10 @@ function ENT:VertexTransform(coord)
 		if (!coord["y"]) then coord["y"] = 0 end
 		if (!coord["z"]) then coord["z"] = 0 end
 
-		resultcoord["x"] = 256+256*(coord["z"]+coord["x"]+1000*self:ReadCell(65512))/(coord["z"]+1000*self:ReadCell(65512))
-		resultcoord["y"] = 256+256*(coord["z"]+coord["y"]+1000*self:ReadCell(65512))/(coord["z"]+1000*self:ReadCell(65512))
+		local transx = (coord["x"]+coord["z"]+self:ReadCell(65512))/(coord["z"]+self:ReadCell(65512))
+		local transy = (coord["y"]+coord["z"]+self:ReadCell(65512))/(coord["z"]+self:ReadCell(65512))
+
+		resultcoord = self:Transform(transx,transy)
 	elseif (self.VertexPipe == 4) then
 		if (!coord["x"]) then coord["x"] = 0 end
 		if (!coord["y"]) then coord["y"] = 0 end
@@ -387,29 +398,36 @@ function ENT:VertexTransform(coord)
 			       self.TransformMatrix[1*4+3] * 1
 
 		resultcoord = self:Transform(transx,transy)
-	elseif (self.VertexPipe == 5) then
+	elseif (self.VertexPipe == 5) then //3d matrix transformation
 		if (!coord["x"]) then coord["x"] = 0 end
 		if (!coord["y"]) then coord["y"] = 0 end
 		if (!coord["z"]) then coord["z"] = 0 end
+		if (!coord["w"]) then coord["w"] = 1 end
 
-		local acoord = coord
-		acoord["x"] =   self.TransformMatrix[0*4+0] * coord["x"] +
-			        self.TransformMatrix[0*4+1] * coord["y"] +
-			        self.TransformMatrix[0*4+2] * coord["z"] +
-			        self.TransformMatrix[0*4+3] * 0
+		local tmp = {}
+		local invW
 
-		acoord["y"] =   self.TransformMatrix[1*4+0] * coord["x"] +
-			        self.TransformMatrix[1*4+1] * coord["y"] +
-			        self.TransformMatrix[1*4+2] * coord["z"] +
-			        self.TransformMatrix[1*4+3] * 0
+		for i=0,3 do
+			tmp[i] = self.TransformMatrix[i*4+0] * coord["x"] + 
+				 self.TransformMatrix[i*4+1] * coord["y"] + 
+				 self.TransformMatrix[i*4+2] * coord["z"] + 
+				 self.TransformMatrix[i*4+3] * coord["w"]
+		end
 
-		acoord["z"] = 4+self.TransformMatrix[2*4+0] * coord["x"] +
-			        self.TransformMatrix[2*4+1] * coord["y"] +
-			        self.TransformMatrix[2*4+2] * coord["z"] +
-			        self.TransformMatrix[2*4+3] * 0
+		invW = 1 / tmp[3]
 
-		resultcoord["x"] = 256+256*self:ReadCell(65512)*(acoord["x"])/(acoord["z"])
-		resultcoord["y"] = 256+256*self:ReadCell(65512)*(acoord["y"])/(acoord["z"])
+		//Apply perspective divide
+		local acoord = {}
+		acoord["x"] = tmp[0] / tmp[3]
+		acoord["y"] = tmp[1] / tmp[3]
+		acoord["z"] = tmp[2] / tmp[3]
+		acoord["w"] = 1
+
+		local transx = acoord["x"]
+		local transy = acoord["y"]
+
+		resultcoord = self:Transform(transx,transy)
+		resultcoord.trans = acoord
 	end
 	return resultcoord
 end
@@ -536,4 +554,82 @@ function ENT:FontWrite(posaddr,text)
 			   "WireGPU_"..self.FontNames[self.CurFont]..self.CurFontSize)
 	draw.DrawText(text,"WireGPU_"..self.FontNames[self.CurFont]..self.CurFontSize,
 		      vertexbuf["x"],vertexbuf["y"],Color(self.CurColor.x,self.CurColor.y,self.CurColor.z,255),0)
+end
+
+function ENT:DrawLine(point1,point2)
+	local vertexbuf = {} 
+	for i=1,4 do vertexbuf[i] = {} end
+
+	local center = {}
+	center.x = (point1.x + point2.x) / 2
+	center.y = (point1.y + point2.y) / 2
+
+	local normpoint1 = {}
+	normpoint1.x = (point1.x - center.x)
+	normpoint1.y = (point1.y - center.y)
+	local normpoint2 = {}
+	normpoint2.x = (point2.x - center.x)
+	normpoint2.y = (point2.y - center.y)
+
+	local width = 1
+
+	local len = math.sqrt((point1.x-point2.x)*(point1.x-point2.x)+(point1.y-point2.y)*(point1.y-point2.y)) + 0.0001
+	local dx = (point1.x-point2.x) / vd
+	local dy = (point1.y-point2.y) / vd
+
+	local angle = math.atan2(dx,dy)
+
+	local transx = 0
+	local transy = 0
+
+	local TransformLineVertex = function(x,y)
+		local vd = math.sqrt(x*x+y*y) + 0.0001
+		local vx = x / vd
+		local vy = y / vd
+
+		local atan = math.atan2(vx,vy)
+		atan = atan + angle
+
+		transx = math.cos(atan) * vd
+		transy = math.sin(atan) * vd
+	end
+
+	TransformLineVertex(normpoint1.x,-width)
+	vertexbuf[1]["x"] = transx + center.x
+	vertexbuf[1]["y"] = transy + center.y
+	vertexbuf[1]["u"] = 0
+	vertexbuf[1]["v"] = 0
+
+	TransformLineVertex(normpoint2.x,-width)
+	vertexbuf[2]["x"] = transx + center.x
+	vertexbuf[2]["y"] = transy + center.y
+	vertexbuf[2]["u"] = 1
+	vertexbuf[2]["v"] = 0
+
+	TransformLineVertex(normpoint2.x,width)
+	vertexbuf[3]["x"] = transx + center.x
+	vertexbuf[3]["y"] = transy + center.y
+	vertexbuf[3]["u"] = 1
+	vertexbuf[3]["v"] = 1
+
+	TransformLineVertex(normpoint1.x,width)
+	vertexbuf[4]["x"] = transx + center.x
+	vertexbuf[4]["y"] = transy + center.y
+	vertexbuf[4]["u"] = 0
+	vertexbuf[4]["v"] = 1
+
+
+	if (self.VertexBufEnabled == true) then
+		self.VertexBuffer[self.VertexBufferCount] = vertexbuf
+		self.VertexBufferCount = self.VertexBufferCount + 1
+	else
+		vertexbuf[1] = self:VertexTransform(vertexbuf[1])
+		vertexbuf[2] = self:VertexTransform(vertexbuf[2])
+		vertexbuf[3] = self:VertexTransform(vertexbuf[3])
+		vertexbuf[4] = self:VertexTransform(vertexbuf[4])
+
+		surface.SetTexture(self.ColorTexture)
+		surface.DrawPoly(vertexbuf)
+	 	surface.SetTexture(self.CurrentTexture)
+	end
 end
