@@ -198,7 +198,7 @@ function ENT:Draw()
 
 		surface.SetDrawColor(255,255,255,255)
 		surface.SetTexture(WireGPU_texScreen)
-		WireGPU_DrawScreen(x,y,w/RatioX,h,self:ReadCell(65523),self:ReadCell(65522))
+		WireGPU_DrawScreen(x,y,w/RatioX,h,self:ReadCell(65522),self:ReadCell(65523))
 
 		local trace = {}
 		trace.start = LocalPlayer():GetShootPos()

@@ -593,6 +593,14 @@ function ENT:Compile()
 				end
 			end
 			self:Write(0)
+		elseif (keyword == "matrix") then
+			local name = self:_keyword()
+			self:_whitespace()
+			self:AddLabel(name)
+			self:Write(1) self:Write(0) self:Write(0) self:Write(0)
+			self:Write(0) self:Write(1) self:Write(0) self:Write(0)
+			self:Write(0) self:Write(0) self:Write(1) self:Write(0)
+			self:Write(0) self:Write(0) self:Write(0) self:Write(1)
 		elseif (keyword == "float") || (keyword == "scalar") || (keyword == "vector1f") || (keyword == "vec1f") then
 			local name = self:_keyword()
 			self:_whitespace()

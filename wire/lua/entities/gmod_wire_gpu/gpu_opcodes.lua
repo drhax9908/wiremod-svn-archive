@@ -27,9 +27,9 @@ function ENT:InitializeGPUOpcodeNames()
 	self.DecodeOpcode["dmove"]	    = 219 //DMOVE X		: Set offset position to X				[2F]
 	//- Rendering opcodes -------------------------------------------------------------------------------------------------
 	self.DecodeOpcode["dvxdata_2f"]     = 220 //DVXDATA_2F X,Y	: Draw solid 2d polygon    (OFFSET,NUMVALUES)		[2F,INT]
-	self.DecodeOpcode["dvxpoly"]        = 220
+	self.DecodeOpcode["dvxpoly"]        = 220 //DVXPOLY = DVXDATA_2F
 	self.DecodeOpcode["dvxdata_2f_tex"] = 221 //DVXDATA_2F_TEX X,Y	: Draw textured 2d polygon (OFFSET,NUMVALUES)		[2F+UV,INT]
-	self.DecodeOpcode["dvxtexpoly"]     = 221
+	self.DecodeOpcode["dvxtexpoly"]     = 221 //DVXTEXPOLY = DVXDATA_2F_TEX
 	self.DecodeOpcode["dvxdata_3f"]     = 222 //DVXDATA_3F X,Y	: Draw solid 3d polygon    (OFFSET,NUMVALUES)		[3F,INT]
 	self.DecodeOpcode["dvxdata_3f_tex"] = 223 //DVXDATA_3F_TEX X,Y	: Draw textured 3d polygon (OFFSET,NUMVALUES)		[3F+UV,INT]
 //	self.DecodeOpcode[""]               = 224 //<reserved>
@@ -72,15 +72,15 @@ function ENT:InitializeGPUOpcodeNames()
 	self.DecodeOpcode["dhaschanged"]    = 258 //DHASCHANGED X,Y	: CMPR = HasChanged(Memory[X...Y])			[INT,INT]
 	self.DecodeOpcode["dloopxy"]        = 259 //DLOOPXY X,Y		: IF DX>0 {IP=X;IF CX>0{CX--}ELSE{DX--;CX=Y}}		[INT,INT]
 	//- Matrix math -------------------------------------------------------------------------------------------------------
-	self.DecodeOpcode["madd"]           = 260 //X,Y										[MATRIX,MATRIX]
-	self.DecodeOpcode["msub"]           = 261 //X,Y										[MATRIX,MATRIX]
-	self.DecodeOpcode["mmul"]           = 262 //X,Y										[MATRIX,MATRIX]
-	self.DecodeOpcode["mrot"]           = 263 //X -> ROT(Y)									[MATRIX,4F]
-	self.DecodeOpcode["mscale"]         = 264 //X -> SCALE(Y)								[MATRIX,4F]
-	self.DecodeOpcode["mperspective"]   = 265 //X -> PERSP(Y)								[MATRIX,4F]
-	self.DecodeOpcode["mtrans"]         = 266 //X -> TRANS(Y)								[MATRIX,4F]
-	self.DecodeOpcode["mlookat"]        = 267 //X -> LOOKAT(Y)								[MATRIX,4F]
-//	self.DecodeOpcode[""]               = 268 //<reserved>
+	self.DecodeOpcode["madd"]           = 260 //X = X + Y										[MATRIX,MATRIX]
+	self.DecodeOpcode["msub"]           = 261 //X = X - Y										[MATRIX,MATRIX]
+	self.DecodeOpcode["mmul"]           = 262 //X = X * Y										[MATRIX,MATRIX]
+	self.DecodeOpcode["mrotate"]        = 263 //X = ROT(Y)									[MATRIX,4F]
+	self.DecodeOpcode["mscale"]         = 264 //X = SCALE(Y)								[MATRIX,4F]
+	self.DecodeOpcode["mperspective"]   = 265 //X = PERSP(Y)								[MATRIX,4F]
+	self.DecodeOpcode["mtranslate"]     = 266 //X = TRANS(Y)								[MATRIX,4F]
+	self.DecodeOpcode["mlookat"]        = 267 //X = LOOKAT(Y)								[MATRIX,4F]
+	self.DecodeOpcode["mmov"]           = 268 //X = Y
 //	self.DecodeOpcode[""]               = 269 //<reserved>
 	//- Misc --------------------------------------------------------------------------------------------------------------
 	self.DecodeOpcode["mident"]         = 270 //MIDENT X		: Load identity matrix into X				[MATRIX]
@@ -100,6 +100,10 @@ function ENT:InitializeGPUOpcodeNames()
 	self.DecodeOpcode["dfromsprite"]    = 292 //DFROMSPRITE X,Y	: Copy sprite Y	to region X				[4F,INT]
 	self.DecodeOpcode["dsprite"]        = 293 //DSPRITE X,Y		: Draw sprite Y to position X				[2F,INT]
 	self.DecodeOpcode["dmuldt"]         = 294 //DMULDT X,Y		: X = Y * dT						[2F,2F]
+	//- 3D ----------------------------------------------------------------------------------------------------------------
+	self.DecodeOpcode["drotate"]        = 300 //DROTATE X		: Rotate(X)						[4F]
+	self.DecodeOpcode["dtranslate"]     = 301 //DTRANSLATE X	: Translate(X)						[4F]
+	self.DecodeOpcode["dscale"]         = 302 //DSCALE X		: Scale(X)						[4F]
 
 
 	
@@ -173,72 +177,97 @@ function ENT:InitializeGPUOpcodeTable()
 		local centera = {}
 		local centerb = {}
 
-		if ((a[1]["z"]) && (b[1]["z"])) then
-			centera["x"] = (a[1]["x"] + a[2]["x"] + a[3]["x"]) / 3
-			centera["y"] = (a[1]["y"] + a[2]["y"] + a[3]["y"]) / 3
-			centera["z"] = (a[1]["z"] + a[2]["z"] + a[3]["z"]) / 3
+		centera["x"] = (a[1].trans["x"] + a[2].trans["x"] + a[3].trans["x"]) / 3
+		centera["y"] = (a[1].trans["y"] + a[2].trans["y"] + a[3].trans["y"]) / 3
+		centera["z"] = (a[1].trans["z"] + a[2].trans["z"] + a[3].trans["z"]) / 3
 	
-			centerb["x"] = (b[1]["x"] + b[2]["x"] + b[3]["x"]) / 3
-			centerb["y"] = (b[1]["y"] + b[2]["y"] + b[3]["y"]) / 3
-			centerb["z"] = (b[1]["z"] + b[2]["z"] + b[3]["z"]) / 3
+		centerb["x"] = (b[1].trans["x"] + b[2].trans["x"] + b[3].trans["x"]) / 3
+		centerb["y"] = (b[1].trans["y"] + b[2].trans["y"] + b[3].trans["y"]) / 3
+		centerb["z"] = (b[1].trans["z"] + b[2].trans["z"] + b[3].trans["z"]) / 3
 	
-			local dista = math.sqrt(centera["x"]*centera["x"]+
-					        centera["y"]*centera["y"]+
-					        centera["z"]*centera["z"])
+		local dista = math.sqrt(centera["x"]*centera["x"]+
+				        centera["y"]*centera["y"]+
+				        centera["z"]*centera["z"])
 	
-			local distb = math.sqrt(centerb["x"]*centerb["x"]+
-					        centerb["y"]*centerb["y"]+
-					        centerb["z"]*centerb["z"])
+		local distb = math.sqrt(centerb["x"]*centerb["x"]+
+				        centerb["y"]*centerb["y"]+
+				        centerb["z"]*centerb["z"])
 	
-			return dista<distb
-		else
-			return 0
-		end
+		return dista<distb
 	end
 	self.OpcodeTable[204] = function (Param1, Param2)	//DVXFLUSH
-		if self.VertexBufZSort == true then
-			table.sort(self.VertexBuffer,self.VertexSortFunc) 
-		end
-		if self.VertexBufEnabled == true then
+		if (self.VertexBufEnabled == true) then
 			for i=0,self.VertexBufferCount-1 do
 				if (self.VertexBuffer[i][1]) then self.VertexBuffer[i][1] = self:VertexTransform(self.VertexBuffer[i][1]) end
 				if (self.VertexBuffer[i][2]) then self.VertexBuffer[i][2] = self:VertexTransform(self.VertexBuffer[i][2]) end
 				if (self.VertexBuffer[i][3]) then self.VertexBuffer[i][3] = self:VertexTransform(self.VertexBuffer[i][3]) end
-				if (self.VertexBuffer[i][3]) then self.VertexBuffer[i][4] = self:VertexTransform(self.VertexBuffer[i][4]) end
+				if (self.VertexBuffer[i][4]) then self.VertexBuffer[i][4] = self:VertexTransform(self.VertexBuffer[i][4]) end
+			end
+
+			if self.VertexBufZSort == true then
+				table.sort(self.VertexBuffer,self.VertexSortFunc) 
+			end
+
+			local newcolor = self.CurColor
+			local newtexture = self.CurrentTexture
+
+			for i=0,self.VertexBufferCount-1 do
+				if (self.VertexBuffer[i].SetColor) then
+					newcolor = self.VertexBuffer[i].SetColor
+				end
+				if (self.VertexBuffer[i].SetTexture) then
+					newtexture = self.VertexBuffer[i].SetTexture
+				end
 
 				local Cull = false
 
-				if (self.VertexCulling == true) || (self.VertexLighting == true) then
-					local v1 = Vector(self.VertexBuffer[i][1])
-					local v2 = Vector(self.VertexBuffer[i][2])
-					local v3 = Vector(self.VertexBuffer[i][3])
+				//Msg("vertex "..i.."\n")
 
+				if (self.VertexCulling == true) || (self.VertexLighting == true) then //fixme lua error on 2d vertexes
+					local v1 = Vector(self.VertexBuffer[i][1].trans.x,self.VertexBuffer[i][1].trans.y,self.VertexBuffer[i][1].trans.z)
+					local v2 = Vector(self.VertexBuffer[i][2].trans.x,self.VertexBuffer[i][2].trans.y,self.VertexBuffer[i][2].trans.z)
+					local v3 = Vector(self.VertexBuffer[i][3].trans.x,self.VertexBuffer[i][3].trans.y,self.VertexBuffer[i][3].trans.z)
+					local vpos = (v1+v2+v3) * 1/3
 					local normal = (v1 - v2):Cross(v2 - v3)
+					normal:Normalize()
 
 					if (self.VertexCulling == true) then
 						local dot = normal:Dot(Vector(0,0,1))
-						if (dot < 0) then
-							Cull = true
-						end
+						if (dot > 0) then Cull = true end
 					end
 
-					local color = {}
-					color.x = 0
-					color.y = 0
-					color.z = 0
-					color.w = 0
+					if (Cull == false) then
+						local diffusecolor = {}
+						diffusecolor.x = 0
+						diffusecolor.y = 0
+						diffusecolor.z = 0
+						diffusecolor.w = 255
 
-					for i=0,7 do //apply lights
-						if (self.Lights[i] && (self.Lights[i]["col"]["w"] != 0)) then
-							local diffuse = normal:Dot(Vector(self.Lights[i]["pos"]))
-							if (diffuse < 0) then diffuse = 0 end
-							color.x = color.x + self.Lights[i]["col"].x * diffuse
-							color.y = color.y + self.Lights[i]["col"].y * diffuse
-							color.z = color.z + self.Lights[i]["col"].z * diffuse
+						for i=0,7 do //apply lights
+							if (self.Lights[i]) then
+								local plight = self.Lights[i].pos
+								local vlight = Vector(plight.x,plight.y,plight.z)
+								local vvec = (vpos - vlight):Normalize()
+								local brightness = self.Lights[i].col.w / 255
+								local diffuse = -normal:Dot(vlight) * brightness
+
+								if (diffuse < 0) then diffuse = 0 end
+	
+								diffusecolor.x = diffusecolor.x + self.Lights[i].col.x * diffuse
+								diffusecolor.y = diffusecolor.y + self.Lights[i].col.y * diffuse
+								diffusecolor.z = diffusecolor.z + self.Lights[i].col.z * diffuse
+								if (diffusecolor.x > 255) then diffusecolor.x = 255 end
+								if (diffusecolor.y > 255) then diffusecolor.y = 255 end
+								if (diffusecolor.z > 255) then diffusecolor.z = 255 end
+							end
 						end
+
+						newcolor = diffusecolor //FIXME: take in current color into account
 					end
 				end
 				if (Cull == false) then
+					surface.SetDrawColor(newcolor.x,newcolor.y,newcolor.z,newcolor.w)
+					surface.SetTexture(newtexture)
 					surface.DrawPoly(self.VertexBuffer[i])
 				end
 			end
@@ -287,31 +316,27 @@ function ENT:InitializeGPUOpcodeTable()
 		end
 
 	end
-//	self.OpcodeTable[214] = function (Param1, Param2)	//DCLRSCR
-//		local tcolor = self:TransformColor(self:Read3f(Param1))
-//		self.CurColor = tcolor
-//
-// 		surface.SetDrawColor(tcolor.x,tcolor.y,tcolor.z,tcolor.w)
-// 		surface.DrawRect(0,0,512,512) 
-//	end
-//	self.OpcodeTable[215] = function (Param1, Param2)	//DCOLOR
-//		local tcolor = self:TransformColor(self:Read3f(Param1))
-//		self.CurColor = tcolor
-//
-// 		surface.SetDrawColor(tcolor.x,tcolor.y,tcolor.z,tcolor.w)
-//	end
 	self.OpcodeTable[214] = function (Param1, Param2)	//DCLRSCR
-		local tcolor = self:Read3f(Param1)
+		local tcolor = self:TransformColor(self:Read3f(Param1))
 		self.CurColor = tcolor
 
- 		surface.SetDrawColor(tcolor.x,tcolor.y,tcolor.z,255)
- 		surface.DrawRect(0,0,512,512) 
+ 		surface.SetDrawColor(tcolor.x,tcolor.y,tcolor.z,tcolor.w)
+ 		surface.DrawRect(0,0,512,512)
+
+		if (!self.VertexBuffer[self.VertexBufferCount]) then
+			self.VertexBuffer[self.VertexBufferCount] = {}
+		end
+		self.VertexBuffer[self.VertexBufferCount].SetColor = tcolor
 	end
 	self.OpcodeTable[215] = function (Param1, Param2)	//DCOLOR
-		local tcolor = self:Read3f(Param1)
+		local tcolor = self:TransformColor(self:Read3f(Param1))
 		self.CurColor = tcolor
 
- 		surface.SetDrawColor(tcolor.x,tcolor.y,tcolor.z,255)
+ 		surface.SetDrawColor(tcolor.x,tcolor.y,tcolor.z,tcolor.w)
+		if (!self.VertexBuffer[self.VertexBufferCount]) then
+			self.VertexBuffer[self.VertexBufferCount] = {}
+		end
+		self.VertexBuffer[self.VertexBufferCount].SetColor = tcolor
 	end
 	self.OpcodeTable[216] = function (Param1, Param2)	//DBINDTEXTURE
 		if (Param2 != 0) then
@@ -323,7 +348,11 @@ function ENT:InitializeGPUOpcodeTable()
 		else
 			self.CurrentTexture = self.ColorTexture
 		end
-	 	surface.SetTexture(surface.GetTextureID(self.CurrentTexture))
+	 	surface.SetTexture(self.CurrentTexture)
+		if (!self.VertexBuffer[self.VertexBufferCount]) then
+			self.VertexBuffer[self.VertexBufferCount] = {}
+		end
+		self.VertexBuffer[self.VertexBufferCount].SetTexture = self.CurrentTexture
 	end
 	self.OpcodeTable[217] = function (Param1, Param2)	//DSETFONT
 		self.CurFont = math.floor(math.Clamp(Param1,0,#self.FontNames-1))
@@ -391,6 +420,8 @@ function ENT:InitializeGPUOpcodeTable()
 		for i=1,3 do vertexbuf[i] = {} end
 
 		for i=1,Param2 do
+			for j=1,3 do vertexbuf[j] = {} end
+
 			vertexbuf[1]["x"] = self:ReadCell(Param1+(i-1)*9+0)
 			vertexbuf[1]["y"] = self:ReadCell(Param1+(i-1)*9+1)
 			vertexbuf[1]["z"] = self:ReadCell(Param1+(i-1)*9+2)
@@ -541,7 +572,7 @@ function ENT:InitializeGPUOpcodeTable()
 
 	end
 	self.OpcodeTable[227] = function (Param1, Param2)	//DLINE
-		//FIXME
+		self:DrawLine(self:Read2f(Param1),self:Read2f(Param2))
 	end
 	self.OpcodeTable[228] = function (Param1, Param2)	//DRECTWH
 		local vertexbuf = {} 
@@ -625,8 +656,8 @@ function ENT:InitializeGPUOpcodeTable()
 			self:Interrupt(19,0)
 		else
 			self.Lights[Param1] = {}
-			self.Lights[Param1]["pos"] = self:Read3f(Param2+0) //Pos
-			self.Lights[Param1]["col"] = self:Read3f(Param2+4) //Color
+			self.Lights[Param1].pos = self:Read4f(Param2+0) //Pos
+			self.Lights[Param1].col = self:Read4f(Param2+4) //Color
 		end		
 	end
 	self.OpcodeTable[245] = function (Param1, Param2)	//DGETLIGHT
@@ -701,56 +732,40 @@ function ENT:InitializeGPUOpcodeTable()
 	//------------------------------------------------------------
 	self.OpcodeTable[250] = function (Param1, Param2)	//VADD
 		if (self.VectorMode == 2) then
-			local vec1 = Vector(self:Read2f(Param1),0)
-			local vec2 = Vector(self:Read2f(Param2),0)
-			self:Write2f(Param1,vec1+vec2)
+			local vec1 = self:Read2f(Param1)
+			local vec2 = self:Read2f(Param2)
+			self:Write2f(Param1,{x = vec1.x + vec2.x, y = vec1.y + vec2.y, z = 0})
 		else
-			local vec1 = Vector(self:Read3f(Param1))
-			local vec2 = Vector(self:Read3f(Param2))
-			self:Write3f(Param1,vec1+vec2)
+			local vec1 = self:Read3f(Param1)
+			local vec2 = self:Read3f(Param2)
+			self:Write3f(Param1,{x = vec1.x + vec2.x, y = vec1.y + vec2.y, z = vec1.z + vec2.z})
 		end
 	end
 	self.OpcodeTable[251] = function (Param1, Param2)	//VSUB
 		if (self.VectorMode == 2) then
-			local vec1 = Vector(self:Read2f(Param1),0)
-			local vec2 = Vector(self:Read2f(Param2),0)
-			self:Write2f(Param1,vec1-vec2)
+			local vec1 = self:Read2f(Param1)
+			local vec2 = self:Read2f(Param2)
+			self:Write2f(Param1,{x = vec1.x - vec2.x, y = vec1.y - vec2.y, z = 0})
 		else
-			local vec1 = Vector(self:Read3f(Param1))
-			local vec2 = Vector(self:Read3f(Param2))
-			self:Write3f(Param1,vec1-vec2)
+			local vec1 = self:Read3f(Param1)
+			local vec2 = self:Read3f(Param2)
+			self:Write3f(Param1,{x = vec1.x - vec2.x, y = vec1.y - vec2.y, z = vec1.z - vec2.z})
 		end
 	end
 	self.OpcodeTable[252] = function (Param1, Param2)	//VMUL
 		if (self.VectorMode == 2) then
-			local vec1 = Vector(self:Read2f(Param1),0)
-			self:Write2f(Param1,vec1*Param2)
+			local vec = self:Read3f(Param1)
+			self:Write2f(Param1,{x = vec.x*Param2, y = vec.y*Param2, z = 0})
 		else
-			local vec1 = Vector(self:Read3f(Param1))
-			self:Write3f(Param1,vec1*Param2)
+			local vec = self:Read3f(Param1)
+			self:Write3f(Param1,{x = vec.x*Param2, y = vec.y*Param2, z = vec.z*Param2})
 		end
 	end
 	self.OpcodeTable[253] = function (Param1, Param2)	//VDOT
-		if (self.VectorMode == 2) then
-			local vec1 = Vector(self:Read2f(Param1),0)
-			local vec2 = Vector(self:Read2f(Param1),0)
-			self:Write(Param1,vec1:Dot(vec2))
-		else
-			local vec1 = Vector(self:Read3f(Param1))
-			local vec2 = Vector(self:Read3f(Param1))
-			self:Write(Param1,vec1:Dot(vec2))
-		end
+
 	end
 	self.OpcodeTable[254] = function (Param1, Param2)	//VCROSS
-		if (self.VectorMode == 2) then
-			local vec1 = Vector(self:Read2f(Param1),0)
-			local vec2 = Vector(self:Read2f(Param1),0)
-			self:Write2f(Param1,vec1:Cross(vec2))
-		else
-			local vec1 = Vector(self:Read3f(Param1))
-			local vec2 = Vector(self:Read3f(Param1))
-			self:Write3f(Param1,vec1:Cross(vec2))
-		end
+
 	end
 	self.OpcodeTable[255] = function (Param1, Param2)	//VMOV
 		if (self.VectorMode == 2) then
@@ -760,18 +775,10 @@ function ENT:InitializeGPUOpcodeTable()
 		end
 	end
 	self.OpcodeTable[256] = function (Param1, Param2)	//VNORM
-		if (self.VectorMode == 2) then
-			self:Write2f(Param1,Vector(self:Read2f(Param2),0):GetNormalized())
-		else
-			self:Write3f(Param1,Vector(self:Read3f(Param2)):GetNormalized())
-		end
+
 	end
 	self.OpcodeTable[257] = function (Param1, Param2)	//VCOLORNORM
-		if (self.VectorMode == 2) then
-			self:Write2f(Param1,255*Vector(self:Read2f(Param2),0):GetNormalized())
-		else
-			self:Write3f(Param1,255*Vector(self:Read3f(Param2)):GetNormalized())
-		end
+
 	end
 	//------------------------------------------------------------
 	self.OpcodeTable[260] = function (Param1, Param2)	//MADD
@@ -815,16 +822,16 @@ function ENT:InitializeGPUOpcodeTable()
 		self:WriteMatrix(Param1,rmx)		
 
 	end
-	self.OpcodeTable[263] = function (Param1, Param2) 	//MROT
+	self.OpcodeTable[263] = function (Param1, Param2) 	//MROTATE
 		local vec = self:Read4f(Param2)
 		local rm = {}
 
 		local axis = {}
-		axis[0] = -vec.x
-		axis[1] = -vec.y
-		axis[2] = -vec.z
+		axis[0] = vec.x
+		axis[1] = vec.y
+		axis[2] = vec.z
 		
-		local angle = vec.w * 3.1415926 / 180;
+		local angle = vec.w;
 
 		local mag = math.sqrt(axis[0]*axis[0] + axis[1]*axis[1] + axis[2]*axis[2])
 		if (mag > 0) then
@@ -891,7 +898,44 @@ function ENT:InitializeGPUOpcodeTable()
 		self:WriteMatrix(Param1,rm)		
 
 	end
-	self.OpcodeTable[266] = function (Param1, Param2) 	//MTRANS
+	self.OpcodeTable[265] = function (Param1, Param2) 	//MPERSPECTIVE
+		local vec = self:Read4f(Param2)
+		local rm = {}		
+
+		local sine
+		local cotangent
+		local deltaZ
+		local radians = vec.x / 2.0 * 3.1415 / 180.0
+		  
+		deltaZ = vec.w - vec.z
+		sine = math.sin(radians)
+		//Should be non-zero to avoid division by zero
+
+		cotangent = math.cos(radians) / sine
+		  
+		rm[0*4+0] = cotangent / vec.y
+		rm[1*4+0] = 0.0;
+		rm[2*4+0] = 0.0;
+		rm[3*4+0] = 0.0;
+		  
+		rm[0*4+1] = 0.0;
+		rm[1*4+1] = cotangent;
+		rm[2*4+1] = 0.0;
+		rm[3*4+1] = 0.0;
+		  
+		rm[0*4+2] = 0.0;
+		rm[1*4+2] = 0.0;
+		rm[2*4+2] = -(vec.z + vec.w) / deltaZ;
+		rm[3*4+2] = -2 * vec.z * vec.w / deltaZ;
+		  
+		rm[0*4+3] = 0.0;
+		rm[1*4+3] = 0.0;
+		rm[2*4+3] = -1;
+		rm[3*4+3] = 0;
+
+		self:WriteMatrix(Param1,rm)
+	end
+	self.OpcodeTable[266] = function (Param1, Param2) 	//MTRANSLATE
 		local vec = self:Read3f(Param2)
 		local rm = {}
 
@@ -916,8 +960,78 @@ function ENT:InitializeGPUOpcodeTable()
 		rm[14] = 0
 		rm[15] = 1
 
-		self:WriteMatrix(Param1,rm)		
+		self:WriteMatrix(Param1,rm)
+	end
+	self.OpcodeTable[267] = function (Param1, Param2) 	//MLOOKAT
+		local eye = self:Read3f(Param2+0)
+		local center = self:Read3f(Param2+3)
+		local up = self:Read3f(Param2+6)
+		local rm = {}
 
+		local x = {}
+		local y = {}
+		local z = {}	
+
+		// Difference eye and center vectors to make Z vector
+		z[0] = eye.x - center.x
+		z[1] = eye.y - center.y
+		z[2] = eye.z - center.z
+
+		// Normalize Z
+		local mag = math.sqrt(z[0]*z[0] + z[1]*z[1] + z[2]*z[2])
+		if (mag > 0) then
+			z[0] = z[0] / mag
+			z[1] = z[1] / mag
+			z[2] = z[2] / mag
+		end
+
+		// Up vector makes Y vector
+		y[0] = up.x
+		y[1] = up.y
+		y[2] = up.z
+
+		// X vector = Y cross Z.
+		x[0] =	y[1]*z[2] - y[2]*z[1]
+		x[1] = -y[0]*z[2] + y[2]*z[0]
+		x[2] =	y[0]*z[1] - y[1]*z[0]
+
+		// Recompute Y = Z cross X
+		y[0] =	z[1]*x[2] - z[2]*x[1]
+		y[1] = -z[0]*x[2] + z[2]*x[0]
+		y[2] =	z[0]*x[1] - z[1]*x[0]
+
+		// Normalize X
+		mag = math.sqrt(x[0]*x[0] + x[1]*x[1] + x[2]*x[2])
+		if (mag > 0) then
+			x[0] = x[0] / mag
+			x[1] = x[1] / mag
+			x[2] = x[2] / mag
+		end
+
+		// Normalize Y
+		mag = math.sqrt(y[0]*y[0] + y[1]*y[1] + y[2]*y[2])
+		if (mag > 0) then
+			y[0] = y[0] / mag
+			y[1] = y[1] / mag
+			y[2] = y[2] / mag
+		end
+
+		// Build resulting view matrix.
+		rm[0*4+0] = x[0];	rm[0*4+1] = x[1];
+		rm[0*4+2] = x[2];	rm[0*4+3] = -x[0]*eye.x + -x[1]*eye.y + -x[2]*eye.z;
+
+		rm[1*4+0] = y[0];	rm[1*4+1] = y[1];
+		rm[1*4+2] = y[2];	rm[1*4+3] = -y[0]*eye.x + -y[1]*eye.y + -y[2]*eye.z;
+
+		rm[2*4+0] = z[0];	rm[2*4+1] = z[1];
+		rm[2*4+2] = z[2];	rm[2*4+3] = -z[0]*eye.x + -z[1]*eye.y + -z[2]*eye.z;
+
+		rm[3*4+0] = 0.0;	rm[3*4+1] = 0.0;  rm[3*4+2] = 0.0; rm[3*4+3] = 1.0;
+
+		self:WriteMatrix(Param1,rm)
+	end
+	self.OpcodeTable[268] = function (Param1, Param2) 	//MMOV
+		self:WriteMatrix(Param1,self:ReadMatrix(Param2))
 	end
 	//------------------------------------------------------------
 	self.OpcodeTable[270] = function (Param1, Param2) 	//MIDENT

@@ -72,11 +72,16 @@ _active:
 
 in ebx,0; mul ebx,180;
 
-cmp #eventhorizon_radius,ebx; //This code resizes event horizon
-sub #eventhorizon_radius,6;
-jge _noadd;
-  add #eventhorizon_radius,6;
-_noadd:
+mul #eventhorizon_radius,0.99;
+mul ebx,1.01;
+add #eventhorizon_radius,ebx;
+div #eventhorizon_radius,2;
+
+//cmp #eventhorizon_radius,ebx; //This code resizes event horizon
+//sub #eventhorizon_radius,6;
+//jge _noadd;
+//  add #eventhorizon_radius,6;
+//_noadd:
 //180
 
 dshade eax;
