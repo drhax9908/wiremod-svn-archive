@@ -90,6 +90,7 @@ function ENT:InitializeGPUOpcodeNames()
 	self.DecodeOpcode["dt"]             = 274 //DT X		: X -> Frame DeltaTime					[F]
 	self.DecodeOpcode["dstrprecache"]   = 275 //DSTRPRECACHE X	: Read and cache string					[STRING]
 	self.DecodeOpcode["dshade"]         = 276 //DSHADE X		: COLOR = COLOR * X					[F]
+	self.DecodeOpcode["dsetwidth"]      = 277 //DSETWIDTH X		: LINEWIDTH = X						[F]
 	//- Extra drawing -----------------------------------------------------------------------------------------------------
 	self.DecodeOpcode["ddframe"]        = 280 //DDFRAME X		: Draw bordered frame					[BORDER_STRUCT]
 	self.DecodeOpcode["ddbar"]          = 281 //DDBAR X		: Draw progress bar					[BAR_STRUCT]
@@ -1081,7 +1082,9 @@ function ENT:InitializeGPUOpcodeTable()
 		self.CurColor.z = self.CurColor.z*Param1
 		surface.SetDrawColor(self.CurColor.x,self.CurColor.y,self.CurColor.z,255)
 	end
-
+	self.OpcodeTable[277] = function (Param1, Param2)	//DSETWIDTH
+		self:WriteCell(65476,Param1)
+	end
 
 	//------------------------------------------------------------
 	self.OpcodeTable[280] = function (Param1, Param2)	//DDFRAME

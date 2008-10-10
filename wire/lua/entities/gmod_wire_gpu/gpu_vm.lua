@@ -73,12 +73,10 @@ function ENT:GPUResetRegisters()
 	//[65515] - Image width (800)
 	//[65514] - Image height (600)
 	//[65513] - Real screen ratio
-	//[65512] - Focal length (vertex pipe)
 
 	self.Memory[65515] = 800
 	self.Memory[65514] = 600
 	self.Memory[65513] = 0
-	self.Memory[65512] = 1
 
 	//Cursor control:
 	//[65505] - Cursor X (0..1)
@@ -118,6 +116,7 @@ function ENT:GPUResetRegisters()
 	//[65479] - Center point Y
 	//[65478] - Circle start (rad)
 	//[65477] - Circle end (rad)
+	//[65476] - Line width (1)
 
 	self.Memory[65485] = 32
 	self.Memory[65484] = 0
@@ -128,6 +127,7 @@ function ENT:GPUResetRegisters()
 	self.Memory[65479] = 0
 	self.Memory[65478] = 0
 	self.Memory[65477] = 3.141592*2
+	self.Memory[65476] = 1
 
 
 	//=================================
@@ -564,60 +564,34 @@ function ENT:DrawLine(point1,point2)
 	center.x = (point1.x + point2.x) / 2
 	center.y = (point1.y + point2.y) / 2
 
-	local normpoint1 = {}
-	normpoint1.x = (point1.x - center.x)
-	normpoint1.y = (point1.y - center.y)
-	local normpoint2 = {}
-	normpoint2.x = (point2.x - center.x)
-	normpoint2.y = (point2.y - center.y)
+	local width = self:ReadCell(65476)
 
-	local width = 1
+	local len = math.sqrt((point1.x-point2.x)*(point1.x-point2.x)+
+			      (point1.y-point2.y)*(point1.y-point2.y)) + 0.0001
+	local dx = (point2.x-point1.x) / len
+	local dy = (point2.y-point1.y) / len
+	local angle = math.atan2(dy,dx)//+3.1415926/2
+	local dangle = math.atan2(width,len/2)
 
-	local len = math.sqrt((point1.x-point2.x)*(point1.x-point2.x)+(point1.y-point2.y)*(point1.y-point2.y)) + 0.0001
-	local dx = (point1.x-point2.x) / vd
-	local dy = (point1.y-point2.y) / vd
-
-	local angle = math.atan2(dx,dy)
-
-	local transx = 0
-	local transy = 0
-
-	local TransformLineVertex = function(x,y)
-		local vd = math.sqrt(x*x+y*y) + 0.0001
-		local vx = x / vd
-		local vy = y / vd
-
-		local atan = math.atan2(vx,vy)
-		atan = atan + angle
-
-		transx = math.cos(atan) * vd
-		transy = math.sin(atan) * vd
-	end
-
-	TransformLineVertex(normpoint1.x,-width)
-	vertexbuf[1]["x"] = transx + center.x
-	vertexbuf[1]["y"] = transy + center.y
+	vertexbuf[1]["x"] = center.x - 0.5 * len * math.cos(angle-dangle)
+	vertexbuf[1]["y"] = center.y - 0.5 * len * math.sin(angle-dangle)
 	vertexbuf[1]["u"] = 0
 	vertexbuf[1]["v"] = 0
 
-	TransformLineVertex(normpoint2.x,-width)
-	vertexbuf[2]["x"] = transx + center.x
-	vertexbuf[2]["y"] = transy + center.y
+	vertexbuf[2]["x"] = center.x + 0.5 * len * math.cos(angle+dangle)
+	vertexbuf[2]["y"] = center.y + 0.5 * len * math.sin(angle+dangle)
 	vertexbuf[2]["u"] = 1
-	vertexbuf[2]["v"] = 0
+	vertexbuf[2]["v"] = 1
 
-	TransformLineVertex(normpoint2.x,width)
-	vertexbuf[3]["x"] = transx + center.x
-	vertexbuf[3]["y"] = transy + center.y
-	vertexbuf[3]["u"] = 1
+	vertexbuf[3]["x"] = center.x + 0.5 * len * math.cos(angle-dangle)
+	vertexbuf[3]["y"] = center.y + 0.5 * len * math.sin(angle-dangle)
+	vertexbuf[3]["u"] = 0
 	vertexbuf[3]["v"] = 1
 
-	TransformLineVertex(normpoint1.x,width)
-	vertexbuf[4]["x"] = transx + center.x
-	vertexbuf[4]["y"] = transy + center.y
-	vertexbuf[4]["u"] = 0
-	vertexbuf[4]["v"] = 1
-
+	vertexbuf[4]["x"] = center.x - 0.5 * len * math.cos(angle+dangle)
+	vertexbuf[4]["y"] = center.y - 0.5 * len * math.sin(angle+dangle)
+	vertexbuf[4]["u"] = 1
+	vertexbuf[4]["v"] = 0
 
 	if (self.VertexBufEnabled == true) then
 		self.VertexBuffer[self.VertexBufferCount] = vertexbuf
