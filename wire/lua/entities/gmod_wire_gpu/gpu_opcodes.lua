@@ -249,17 +249,15 @@ function ENT:InitializeGPUOpcodeTable()
 								local plight = self.Lights[i].pos
 								local vlight = Vector(plight.x,plight.y,plight.z)
 								local vvec = (vpos - vlight):Normalize()
-								local brightness = self.Lights[i].col.w / 255
-								local diffuse = -normal:Dot(vlight) * brightness
+								local brightness = self.Lights[i].col.w
+								local diffuse = -normal:Dot(vlight)
 
 								if (diffuse < 0) then diffuse = 0 end
+								diffuse = diffuse * brightness
 	
-								diffusecolor.x = diffusecolor.x + self.Lights[i].col.x * diffuse
-								diffusecolor.y = diffusecolor.y + self.Lights[i].col.y * diffuse
-								diffusecolor.z = diffusecolor.z + self.Lights[i].col.z * diffuse
-								if (diffusecolor.x > 255) then diffusecolor.x = 255 end
-								if (diffusecolor.y > 255) then diffusecolor.y = 255 end
-								if (diffusecolor.z > 255) then diffusecolor.z = 255 end
+								diffusecolor.x = math.Clamp(diffusecolor.x + self.Lights[i].col.x * diffuse,0,255)
+								diffusecolor.y = math.Clamp(diffusecolor.y + self.Lights[i].col.y * diffuse,0,255)
+								diffusecolor.z = math.Clamp(diffusecolor.z + self.Lights[i].col.z * diffuse,0,255)
 							end
 						end
 

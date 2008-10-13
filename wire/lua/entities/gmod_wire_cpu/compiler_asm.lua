@@ -954,7 +954,7 @@ function ENT:Compile()
 				self:Error("Error in function call syntax")
 			end
 		else
-			self:Error("Internal error #SAHZ8, report to black phoenix. Data: "..self.CurrentLine)
+			self:Error("Syntax error. This should not be here: \""..self.CurrentLine.."\"")
 		end
 
 		self.LastKeyword = keyword

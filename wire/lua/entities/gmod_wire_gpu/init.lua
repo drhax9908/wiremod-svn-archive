@@ -149,5 +149,5 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 		end
 	end
 
-	timer.Create("GPU_Paste_Timer",0.1,1,Resend_GPU_Data,self)
+	timer.Create("GPU_Paste_Timer"..math.floor(math.random()*1000000),0.1+math.random()*0.7,1,Resend_GPU_Data,self)
 end
