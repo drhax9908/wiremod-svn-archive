@@ -141,11 +141,11 @@ end
 
 function ENT:Think()
 	if (self.IgnoreDataTransfer == true) then
-		self:FlushCache()
 		self.IgnoreDataTransfer = false
-		self.Entity:NextThink(CurTime()+0.1)
+		self.Entity:NextThink(CurTime()+0.2)
 	else
-		self.Entity:NextThink(CurTime()+0.05)
+		self:FlushCache()
+		self.Entity:NextThink(CurTime()+0.1)
 	end
 	return true
 end
