@@ -168,6 +168,7 @@ end
 function ENT:SetSample(sample)
 	if (self.SampleTable[sample]) then
 		self:StopSounds()
+		self:SetSound(self.SampleTable[sample])
 	end
 end
 
