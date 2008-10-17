@@ -13,6 +13,7 @@ function ENT:Initialize()
 	
 	self.Inputs = Wire_CreateInputs(self.Entity, { "A", "Toggle", "Volume", "Play", "Stop", 
 		"PitchRelative", "LFOType", "LFORate", "LFOModPitch", "LFOModVolume", "Sample" })
+	self.Outputs = Wire_CreateOutputs(self.Entity, { "Memory" })
 
 	self.Active = 0
 	self.Volume = 5
@@ -107,7 +108,7 @@ function ENT:TriggerInput(iname, value)
 			self:StopSounds()
 		end
 	elseif (iname == "Volume") then
-		local volume = math.Clamp(math.floor(value*10),0,10)
+		local volume = math.Clamp(math.floor(value*100),0,100)
 		self.Volume = volume
 
 		self.SND:ChangeVolume(volume)

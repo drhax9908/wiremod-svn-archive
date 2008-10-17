@@ -99,15 +99,6 @@ function ENT:_getc()
 	return string.sub(self.CurrentLine,1,1)
 end
 
-function ENT:_lcheck(keyword)
-	if (keyword == "") then
-		self:_need("@")
-		return self:_keyword()
-	else
-		return keyword
-	end		
-end
-
 function ENT:_getstring(sepchar)
 	local str = ""
 	self:_whitespace()
@@ -126,12 +117,10 @@ function ENT:_word()
 	      (string.sub(self.CurrentLine,1,1) ~= ";") &&
 	      (string.sub(self.CurrentLine,1,1) ~= "#") &&
 	      (string.sub(self.CurrentLine,1,1) ~= ":") &&
-	      (string.sub(self.CurrentLine,1,1) ~= "@") &&
 	      (string.sub(self.CurrentLine,1,1) ~= ",") &&
 	      (string.sub(self.CurrentLine,1,1) ~= "'") &&
 	      (string.sub(self.CurrentLine,1,1) ~= "\"") &&
 	      (string.sub(self.CurrentLine,1,1) ~= "!") &&
-	      (string.sub(self.CurrentLine,1,1) ~= "$") && 
 	      (string.sub(self.CurrentLine,1,1) ~= "%") &&
 	      (string.sub(self.CurrentLine,1,1) ~= "^") &&
 	      (string.sub(self.CurrentLine,1,1) ~= "&") &&
@@ -219,7 +208,7 @@ function ENT:ParseOpcodeParameter(keyword)
 
 	if (keyword == "") then //#EAX
 		if (self:_need("#")) then
-			keyword = self:_lcheck(self:_keyword())
+			keyword = self:_keyword()
 			if (self.RegisterName[keyword]) then //#EAX
 				if (self.GeneralRegister[keyword]) then
 					result.RM = 17+self.RegisterName[keyword]
@@ -251,7 +240,7 @@ function ENT:ParseOpcodeParameter(keyword)
 		if (self:_need(":")) then //Segment prefix
 			if (self:_need("#")) then //EAX:#EBX
 				if (self.RegisterName[keyword]) then //EAX:#EBX
-					local register = self:_lcheck(self:_keyword())
+					local register = self:_keyword()
 					if (self.RegisterName[register]) then
 						if (self.GeneralRegister[register]) then
 							result.RM = 17+self.RegisterName[register]
@@ -333,7 +322,7 @@ function ENT:GenerateCode(keyword)
 	end
 
 	if (self.OpcodeCount[self.DecodeOpcode[keyword]] > 0) then
-		dRM1 = self:ParseOpcodeParameter(self:_lcheck(self:_keyword()))
+		dRM1 = self:ParseOpcodeParameter(self:_keyword())
 		if (self.FatalError) then return end
 	end
 	if (self.OpcodeCount[self.DecodeOpcode[keyword]] > 1) then
@@ -342,7 +331,7 @@ function ENT:GenerateCode(keyword)
 			self:Error("Expected second operand for opcode '"..keyword.."'!")
 		end
 		self:_whitespace()
-		dRM2 = self:ParseOpcodeParameter(self:_lcheck(self:_keyword()))
+		dRM2 = self:ParseOpcodeParameter(self:_keyword())
 		if (self.FatalError) then return end
 	end
 
@@ -389,49 +378,7 @@ function ENT:Compile()
 		local keyword = string.lower(word)
 		self:_whitespace()
 
-		//if (keyword == "") then return end
-
-		local islabel = self:_need(":")
-
-		if ((islabel == false) && (keyword == "")) then 
-			if (self.CurrentLine == "") then
-				return
-			else
-				self:Error("Internal error #ASHSXCH (or maybe not, did you insert some weird character into wrong place?)")
-				return
-			end
-		end
-
-		if ((keyword == "") || (islabel == true)) then //Label
-			local locvar = false
-			local globvar = false
-
-			if (self:_need("@")) then locvar = true elseif
-			   (self:_need("$")) then globvar = true end
-
-			if (keyword == "") then keyword = self:_keyword() end
-
-			if (islabel || self:_need(":")) then
-				if (locvar == true) then
-					self:AddLocalLabel(keyword)
-				elseif (globvar == true) then
-					self:AddGlobalLabel(keyword)
-				else
-					self:AddLabel(keyword)
-				end
-			else
-				if (keyword ~= "") then
-					local peek = self:_peek()
-					if (peek == ";") then
-						self:Error("Invalid label definition or unknown keyword '"..keyword.."' (expecting ':' rather than ';')")
-					else
-						self:Error("Unknown keyword '"..keyword.."'")
-					end
-				else
-					//self:Error("Unexpected character")
-				end
-			end
-		elseif (self.DecodeOpcode[keyword]) then
+		if (self.DecodeOpcode[keyword]) then
 			self:GenerateCode(keyword)
 		elseif (keyword == "db") then
 			local ParsingString = false
@@ -453,10 +400,10 @@ function ENT:Compile()
 				end
 				if (ParsingString == false) then
 					if (self:_need("$")) then //Offset...
-						local value = self:_lcheck(self:_keyword())
+						local value = self:_keyword()
 						self:Write(self.WIP+self:GetValidValue(value))
 					else
-						local value = self:_lcheck(self:_keyword())
+						local value = self:_keyword()
 						self:Write(self:GetValidValue(value))
 					end
 					self:_whitespace()
@@ -491,10 +438,10 @@ function ENT:Compile()
 					return
 				end
 
-				local bword = self:_lcheck(self:_keyword())
+				local bword = self:_keyword()
 				self:_whitespace()
 				if (self:_need(",")) then
-					local cword = self:_lcheck(self:_keyword())
+					local cword = self:_keyword()
 
 					if (bword == "") then
 						self.Error("Missing second parameter for 'alloc' macro!")
@@ -540,7 +487,7 @@ function ENT:Compile()
 			local definename = self:_keyword()
 			self:_whitespace()
 			if (self:_need(",")) then
-				local definevalue = self:_lcheck(self:_keyword())
+				local definevalue = self:_keyword()
 				if (self.FirstPass) then
 					if (self.Labels[definename]) then
 						self:Error("Label '"..definename.."' already exists (previously defined at line "..self.Labels[definename].DefineLine..")")
@@ -577,10 +524,10 @@ function ENT:Compile()
 					end
 					if (ParsingString == false) then
 						if (self:_need("$")) then //Offset...
-							local value = self:_lcheck(self:_keyword())
+							local value = self:_keyword()
 							self:Write(self.WIP+self:GetValidValue(value))
 						else
-							local value = self:_lcheck(self:_keyword())
+							local value = self:_keyword()
 							self:Write(self:GetValidValue(value))
 						end
 						self:_whitespace()
@@ -826,10 +773,10 @@ function ENT:Compile()
 			self:Write(0)
 			self:Write(self:GetValidValue("codestart"))
 		elseif (keyword == "org") then
-			local value = self:_lcheck(self:_keyword())
+			local value = self:_keyword()
 			self.WIP = self:GetValidValue(value)
 		elseif (keyword == "offset") then
-			local value = self:_lcheck(self:_keyword())
+			local value = self:_keyword()
 			self.OffsetWIP = self:GetValidValue(value)
 		elseif (keyword == "wipe_locals") then
 			self:WipeLocals()
@@ -954,7 +901,30 @@ function ENT:Compile()
 				self:Error("Error in function call syntax")
 			end
 		else
-			self:Error("Syntax error. This should not be here: \""..self.CurrentLine.."\"")
+			if (self:_need(":")) then
+				if (string.sub(keyword,1,1) == "@") then
+					self:AddLocalLabel(keyword)
+				elseif (string.sub(keyword,1,1) == "$") then
+					self:AddGlobalLabel(keyword)
+				else
+					self:AddLabel(keyword)
+				end
+			else
+				if (keyword ~= "") then
+					local peek = self:_peek()
+					if (peek == ";") then
+						self:Error("Invalid label definition or unknown keyword '"..keyword.."' (expecting ':' rather than ';')")
+					else
+						self:Error("Unknown keyword '"..keyword.."'")
+					end
+				else
+					if (self.CurrentLine == "") then
+						return
+					else
+						self:Error("Syntax error. This should not be here: \""..self.CurrentLine.."\"")
+					end
+				end
+			end
 		end
 
 		self.LastKeyword = keyword
