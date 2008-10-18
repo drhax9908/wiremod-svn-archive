@@ -48,12 +48,12 @@ function ENT:GPUResetRegisters()
 	//Hardware control registers:
 	//[65535] - CLK
 	//[65534] - RESET
-	//[65533] - <reserved>
+	//[65533] - HARDWARE CLEAR
 	//[65532] - Vertex mode (render vertex instead of RT)
 
 	self.Memory[65535] = 1
 	self.Memory[65534] = 0
-	self.Memory[65533] = 0
+	self.Memory[65533] = 1
 	self.Memory[65532] = 0
 
 	//Image control:
@@ -76,15 +76,15 @@ function ENT:GPUResetRegisters()
 
 	self.Memory[65515] = 800
 	self.Memory[65514] = 600
-	self.Memory[65513] = 0
+	//self.Memory[65513] = 0
 
 	//Cursor control:
 	//[65505] - Cursor X (0..1)
 	//[65504] - Cursor Y (0..1)
 	//[65503] - Cursor visible
 
-	self.Memory[65505] = 0
-	self.Memory[65504] = 0
+	//self.Memory[65505] = 0
+	//self.Memory[65504] = 0
 	self.Memory[65503] = 0
 
 	//Brightness control:

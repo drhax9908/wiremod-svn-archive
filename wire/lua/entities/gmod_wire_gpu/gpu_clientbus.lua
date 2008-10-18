@@ -3,17 +3,17 @@ function ENT:ReadCell(Address)
 		if (self.Debug) then
 			print("Non-existant address fed into address bus (read)!")
 		end
-		return nil
+		return 0
 	end
 
 
 	if (not self:Is48bitInteger(Address)) then
 		self:Interrupt(15,Address)
-		return nil
+		return 0
 	end
 
 	if (Address < 0) || (Address > 65536) then
-		return nil
+		return 0
 	else
 		if (self.Memory[Address]) then
 			return self.Memory[Address]

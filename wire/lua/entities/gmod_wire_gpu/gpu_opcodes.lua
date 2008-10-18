@@ -37,13 +37,13 @@ function ENT:InitializeGPUOpcodeNames()
 	self.DecodeOpcode["dcircle"]        = 226 //DCIRCLE X,Y		: Draw circle (XY,R)					[2F,F]
 	self.DecodeOpcode["dline"]          = 227 //DLINE X,Y		: Draw line (XY1,XY2)					[2F,2F]
 	self.DecodeOpcode["drectwh"]        = 228 //DRECTWH X,Y		: Draw rectangle (XY,WH)				[2F,2F]
-	self.DecodeOpcode[""]               = 229 //<reserved>
+	self.DecodeOpcode["dtrectwh"]       = 229 //DTRECTWH X,Y	: Draw textured rectangle (XY1,XY2)			[2F,2F]
 	//- More rendering ----------------------------------------------------------------------------------------------------
 	self.DecodeOpcode["dtransform2f"]   = 230 //DTRANSFORM2F X,Y	: Transform Y, save to X				[2F,2F]
 	self.DecodeOpcode["dtransform3f"]   = 231 //DTRANSFORM3F X,Y	: Transform Y, save to X				[3F,3F]
 	self.DecodeOpcode["dscrsize"]       = 232 //DSCRSIZE X,Y	: Set screen size					[F,F]
 	self.DecodeOpcode["drotatescale"]   = 233 //DROTATESCALE X,Y	: Rotate and scale
-	self.DecodeOpcode["dorect"]         = 234 //DORECT X,Y		: Draw outlined rectangle (XY1,XY2)			[2F,2F]
+	self.DecodeOpcode["dorectwh"]       = 234 //DORECTWH X,Y	: Draw outlined rectangle (XY1,XY2)			[2F,2F]
 	self.DecodeOpcode["docircle"]       = 235 //DOCIRCLE X,Y	: Draw outlined circle (XY1,XY2)			[2F,2F]
 //	self.DecodeOpcode[""]               = 236 //DOPOLY X,Y		: Draw outlined polygon					[2F,INT]
 //	self.DecodeOpcode[""]               = 237 //DCSCREEN X,Y	: Draw console screen					[2F,CONSOLE_STRUCT]
@@ -343,9 +343,9 @@ function ENT:InitializeGPUOpcodeTable()
 			if (!self.StringCache[addr]) then
 				self.StringCache[addr] = self:ReadStr(addr)
 			end
-			self.CurrentTexture = self.StringCache[addr]
+			self.CurrentTexture = surface.GetTextureID(self.StringCache[addr])
 		else
-			self.CurrentTexture = self.ColorTexture
+			self.CurrentTexture = surface.GetTextureID(self.ColorTexture)
 		end
 	 	surface.SetTexture(self.CurrentTexture)
 		if (!self.VertexBuffer[self.VertexBufferCount]) then
@@ -528,7 +528,7 @@ function ENT:InitializeGPUOpcodeTable()
 	end
 	self.OpcodeTable[226] = function (Param1, Param2)	//DCIRCLE
 		local vertexbuf = {} 
-		local numsides = math.Clamp(self:ReadCell(65485),3,128)
+		local numsides = math.Clamp(self:ReadCell(65485),3,64)
 		local astart = self:ReadCell(65478)
 		local aend = self:ReadCell(65477)
 		local astep = (aend-astart) / numsides
@@ -612,6 +612,43 @@ function ENT:InitializeGPUOpcodeTable()
 		 	surface.SetTexture(self.CurrentTexture)
 		end
 	end
+	self.OpcodeTable[229] = function (Param1, Param2)	//DTRECTWH
+		local vertexbuf = {} 
+		for i=1,4 do vertexbuf[i] = {} end
+
+		vertexbuf[1]["x"] = self:ReadCell(Param1+0)
+		vertexbuf[1]["y"] = self:ReadCell(Param1+1)
+		vertexbuf[1]["u"] = 0
+		vertexbuf[1]["v"] = 0
+
+		vertexbuf[2]["x"] = self:ReadCell(Param2+0)
+		vertexbuf[2]["y"] = self:ReadCell(Param1+1)
+		vertexbuf[2]["u"] = 1
+		vertexbuf[2]["v"] = 0
+
+		vertexbuf[3]["x"] = self:ReadCell(Param2+0)
+		vertexbuf[3]["y"] = self:ReadCell(Param2+1)
+		vertexbuf[3]["u"] = 1
+		vertexbuf[3]["v"] = 1
+
+		vertexbuf[4]["x"] = self:ReadCell(Param1+0)
+		vertexbuf[4]["y"] = self:ReadCell(Param2+1)
+		vertexbuf[4]["u"] = 0
+		vertexbuf[4]["v"] = 1
+
+
+		if (self.VertexBufEnabled == true) then
+			self.VertexBuffer[self.VertexBufferCount] = vertexbuf
+			self.VertexBufferCount = self.VertexBufferCount + 1
+		else
+			vertexbuf[1] = self:VertexTransform(vertexbuf[1])
+			vertexbuf[2] = self:VertexTransform(vertexbuf[2])
+			vertexbuf[3] = self:VertexTransform(vertexbuf[3])
+			vertexbuf[4] = self:VertexTransform(vertexbuf[4])
+
+			surface.DrawPoly(vertexbuf)
+		end
+	end
 	//------------------------------------------------------------
 	self.OpcodeTable[230] = function (Param1, Param2)	//DTRANSFORM2F
 		local tcoord = self:Read2f(Param2)
@@ -630,6 +667,24 @@ function ENT:InitializeGPUOpcodeTable()
 	self.OpcodeTable[233] = function (Param1, Param2)	//DROTATESCALE
 		self:WriteCell(65482,Param1)
 		self:WriteCell(65481,Param2)
+	end
+	self.OpcodeTable[234] = function (Param1, Param2)	//DORECTWH
+		local vertexbuf = {} 
+		for i=1,4 do vertexbuf[i] = {} end
+
+		vertexbuf[1]["x"] = self:ReadCell(Param1+0)
+		vertexbuf[1]["y"] = self:ReadCell(Param1+1)
+		vertexbuf[2]["x"] = self:ReadCell(Param1+0)+self:ReadCell(Param2+0)
+		vertexbuf[2]["y"] = self:ReadCell(Param1+1)
+		vertexbuf[3]["x"] = self:ReadCell(Param1+0)+self:ReadCell(Param2+0)
+		vertexbuf[3]["y"] = self:ReadCell(Param1+1)+self:ReadCell(Param2+1)
+		vertexbuf[4]["x"] = self:ReadCell(Param1+0)
+		vertexbuf[4]["y"] = self:ReadCell(Param1+1)+self:ReadCell(Param2+1)
+
+		self:DrawLine(vertexbuf[1],vertexbuf[2])
+		self:DrawLine(vertexbuf[2],vertexbuf[3])
+		self:DrawLine(vertexbuf[3],vertexbuf[4])
+		self:DrawLine(vertexbuf[4],vertexbuf[1])
 	end
 	//------------------------------------------------------------
 	self.OpcodeTable[240] = function (Param1, Param2)	//DWRITE

@@ -7,6 +7,8 @@ ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
 ENT.RenderGroup 		= RENDERGROUP_BOTH
 
+WireGPU_HookedGPU = nil
+
 function ENT:Initialize()
 	self.IsGPU = true
 	self.PrevTime = CurTime()
@@ -43,6 +45,11 @@ function ENT:Initialize()
 end
 
 function ENT:OnUse()
+	//if (WireGPU_HookedGPU == self) then
+	//	WireGPU_HookedGPU = nil
+	//else
+	//	WireGPU_HookedGPU = self
+	//end
 	self:DoCall(2,4000)
 end
 
@@ -141,14 +148,16 @@ function ENT:Draw()
 	 	render.SetRenderTarget(NewRT) 
 	 	render.SetViewPort(0,0,512,512)
 	 	cam.Start2D() 
-	 		surface.SetDrawColor(0,0,0,255)
-	 		surface.DrawRect(0,0,512,512)
+			if (self:ReadCell(65533) == 1) then
+		 		surface.SetDrawColor(0,0,0,255)
+		 		surface.DrawRect(0,0,512,512)
+			end
 			if (self:ReadCell(65535) == 1) then
-				//if (self.EntryPoint[3]) && (self.HandleError == 1) then
-				//	self:DoCall(3,FrameRate*600)
-				//else
+				if (self.EntryPoint[3]) && (self.HandleError == 1) then
+					self:DoCall(3,FrameRate*600)
+				else
 					self:DoCall(0,FrameRate*600)
-				//end
+				end
 			end
 	 	cam.End2D()
 	 	render.SetViewPort(0,0,oldw,oldh)
@@ -200,6 +209,8 @@ function ENT:Draw()
 		surface.SetTexture(WireGPU_texScreen)
 		WireGPU_DrawScreen(x,y,w/RatioX,h,self:ReadCell(65522),self:ReadCell(65523))
 
+		//self.workingDistance = 256
+
 		local trace = {}
 		trace.start = LocalPlayer():GetShootPos()
 		trace.endpos = (LocalPlayer():GetAimVector() * self.workingDistance) + trace.start
@@ -225,6 +236,37 @@ function ENT:Draw()
 	WireGPU_matScreen:SetMaterialTexture("$basetexture",OldTex)
 	Wire_Render(self.Entity)
 end
+
+//function drawBrickTexture()
+//	//local mat = Material("models\duckeh\buttons\0")
+//	//local tex = surface.GetTextureID("models\duckeh\buttons\0")
+//
+//	//local OldTex = WireGPU_matScreen:GetMaterialTexture("$basetexture")
+//	//WireGPU_matScreen:SetMaterialTexture("$basetexture","phoenix_storms/wire/pcb_green")
+//
+//	surface.SetDrawColor(255,255,255,255)
+//	surface.SetTexture(surface.GetTextureID(""))
+//	surface.DrawTexturedRect(ScrW()*0.5-256,ScrH()*0.5-256,512,512)
+//
+//	//WireGPU_matScreen:SetMaterialTexture("$basetexture",OldTex)
+//
+//	if (WireGPU_HookedGPU) then
+//		local OldTex = WireGPU_matScreen:GetMaterialTexture("$basetexture")
+//		WireGPU_matScreen:SetMaterialTexture("$basetexture",WireGPU_HookedGPU.FrameBuffer)
+//
+//		local w = 512*math.Clamp(WireGPU_HookedGPU:ReadCell(65525),0,1)
+//		local h = 512*math.Clamp(WireGPU_HookedGPU:ReadCell(65524),0,1)
+//		local x = -w/2
+//		local y = -h/2
+//
+//		surface.SetDrawColor(255,255,255,255)
+//		surface.SetTexture(WireGPU_texScreen)
+//		WireGPU_DrawScreen(x,y,w/RatioX,h,WireGPU_HookedGPU:ReadCell(65522),WireGPU_HookedGPU:ReadCell(65523))
+//
+//		WireGPU_matScreen:SetMaterialTexture("$basetexture",OldTex)
+//	end
+//end
+//hook.Add("HUDPaint","DrawTheBricks",drawBrickTexture) 
 
 function ENT:IsTranslucent()
 	return true
