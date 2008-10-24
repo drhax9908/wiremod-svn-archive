@@ -17,6 +17,8 @@ function ENT:GPUHardReset()
 
 	self.EntryPoint = {}
 	self.EntryPoint[0] = 0
+
+	self.Memory[65533] = 1
 end
 
 function ENT:GPUFrameReset()
@@ -53,7 +55,7 @@ function ENT:GPUResetRegisters()
 
 	self.Memory[65535] = 1
 	self.Memory[65534] = 0
-	self.Memory[65533] = 1
+	//self.Memory[65533] = 1
 	self.Memory[65532] = 0
 
 	//Image control:
