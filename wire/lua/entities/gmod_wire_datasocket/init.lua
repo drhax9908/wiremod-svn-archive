@@ -25,10 +25,12 @@ function ENT:Initialize()
 	
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Memory" })
 	self:SetOverlayText( "Data socket" )
+	Wire_TriggerOutput(self.Entity, "Memory", 0)
 end
 
 function ENT:SetMemory(mement)
 	self.Memory = mement
+	Wire_TriggerOutput(self.Entity, "Memory", 1)
 end
 
 function ENT:Setup(a,ar,ag,ab,aa)
@@ -78,6 +80,7 @@ function ENT:Think()
 		end
 
 		self.Memory = nil //We're now getting no signal
+		Wire_TriggerOutput(self.Entity, "Memory", 0)
 
 		self.Entity:NextThink( CurTime() + NEW_PLUG_WAIT_TIME ) //Give time before next grabbing a plug.
 		return true
@@ -122,6 +125,7 @@ function ENT:AttachPlug( plug )
 	    self.MyPlug = nil
 		plug:SetSocket(nil)
 	    self.Memory = nil
+    	    Wire_TriggerOutput(self.Entity, "Memory", 0)
 	    return
 	end
 
@@ -133,6 +137,7 @@ function ENT:AttachPlug( plug )
 	    self.MyPlug = nil
 	    plug:SetSocket(nil)
 	    self.Memory = nil
+            Wire_TriggerOutput(self.Entity, "Memory", 0)
 	    return
 	end
 

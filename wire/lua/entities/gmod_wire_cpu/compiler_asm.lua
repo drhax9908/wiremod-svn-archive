@@ -18,6 +18,10 @@ function ENT:InitializeRegisterNames()
 	self.RegisterName["ks"] = 14
 	self.RegisterName["ls"] = 15
 
+	self.RegisterName_ = self.RegisterName
+	self.RegisterName_["edx"] = 2
+	self.RegisterName_["ecx"] = 3
+
 	for i=0,1023 do
 		self.RegisterName["port"..i] = 1000+i-1
 	end
@@ -271,7 +275,7 @@ function ENT:ParseOpcodeParameter(keyword)
 					local register = self:_keyword()
 					if (self.RegisterName[register]) then
 						if (self.GeneralRegister[register]) then
-							result.RM = 26+self.RegisterName[register]
+							result.RM = 26+self.RegisterName_[register]
 							result.Segment = self.SegmentName[keyword]
 						else
 							self:Error("Expected general register for parameter with offset")

@@ -18,7 +18,9 @@ function ENT:Initialize()
 	self.Memory = nil
 	
 	self.Inputs = Wire_CreateInputs(self.Entity, { "Memory" })
+	self.Outputs = Wire_CreateOutputs(self.Entity, { "Connected" })
 	self:SetOverlayText( "Data plug" )
+	Wire_TriggerOutput(self.Entity, "Connected", 0)
 end
 
 function ENT:OnRemove()
@@ -51,11 +53,14 @@ function ENT:SetSocket(socket)
 	self.MySocket = socket
 	if (self.MySocket) and (self.MySocket:IsValid()) then
 		self.MySocket:SetMemory(self.Memory)
+	else
+		Wire_TriggerOutput(self.Entity, "Connected", 0)
 	end
 end
 
 function ENT:AttachedToSocket(socket)
 	socket:SetMemory(self.Memory)
+	Wire_TriggerOutput(self.Entity, "Connected", 1)
 end
 
 function ENT:OnRestore()

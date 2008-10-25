@@ -197,19 +197,13 @@ function TOOL:Compile_End()
 
 	if (self:GetClientInfo("dump_data") == "1") then
 		pl:PrintMessage(HUD_PRINTCONSOLE,"ZyeliosASM: Dumping data\n")
-		local codedump = "Count: "..ent.WIP.."\n"
-		//local pointerdump = "Count: "..table.Count(ent.Labels).."\n"
+		local codedump = ""
 		for i = 0,ent.WIP do
 			if (ent.Memory[i]) then
-				codedump = codedump.."["..i.."]".."="..ent.Memory[i].."\n"
+				codedump = codedump.."db "..ent.Memory[i].."\n"
 			end
 		end
-		/*for k,v in pairs(ent.Labels) do
-			pointerdump = pointerdump.."#pointer "..k.." "..v.."\n"
-		end*/
 		file.Write("cdump.txt",codedump)
-		file.Write("ldump.txt",ent.Dump)
-		//file.Write("pdump.txt",pointerdump)
 		pl:PrintMessage(HUD_PRINTCONSOLE,"ZyeliosASM: Dumped!\n")
 	end
 

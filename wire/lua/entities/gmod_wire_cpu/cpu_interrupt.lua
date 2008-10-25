@@ -65,7 +65,7 @@ function ENT:Interrupt(intnumber,intparam)
 
 	local fracparam = intparam
 	if (intparam ~= 0) then
-		while (math.floor(fracparam) > 0) do
+		while (math.floor(fracparam) >= 1) do
 			fracparam = fracparam / 10
 		end
 	end

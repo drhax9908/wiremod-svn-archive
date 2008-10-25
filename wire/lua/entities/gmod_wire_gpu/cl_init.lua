@@ -108,21 +108,25 @@ end
 
 function ENT:OutputError(intnumber,intparam)
 	local ErrorText = "Unknown error"
-	if (self.ErrorText[intnumber]) then
-		ErrorText = self.ErrorText[intnumber]
-	end
+	if (self.ErrorText[intnumber]) then ErrorText = self.ErrorText[intnumber] end
+
+	surface.SetDrawColor(200,0,0,255)
+	surface.DrawRect(64-4,128-4,512-128+8,128+8)
+	surface.SetDrawColor(30,30,30,255)
+	surface.DrawRect(64,128,512-128,128)
+
 	draw.DrawText(
-"GPU Error   = \n"..
-"Parameter   = \n"..
-"Instruction = \n"..
-"Error       = \n",
-	"WireGPU_ConsoleFont",16,16,Color(255,64,64,255),0)
+"GPU Error  : \n"..
+"Parameter  : \n"..
+"Instruction: \n"..
+"Error: \n",
+	"WireGPU_ConsoleFont",64+4,128+4,Color(255,64,64,255),0)
 	draw.DrawText(
-"              "..intnumber.."\n"..
-"              "..intparam.."\n"..
-"              "..self.XEIP.."\n"..
-"              "..ErrorText.."\n",
-	"WireGPU_ConsoleFont",16,16,Color(255,255,255,255),0)
+"             "..intnumber.."\n"..
+"             "..intparam .."\n"..
+"             "..self.XEIP.."\n"..
+"       "..ErrorText.."\n",
+	"WireGPU_ConsoleFont",64+4,128+4,Color(255,255,255,255),0)
 end
 
 function ENT:Draw()

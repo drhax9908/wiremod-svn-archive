@@ -29,7 +29,7 @@ end
 function ENT:Think()
 	self.BaseClass.Think(self)
 
-	self.DataRate = (self.DataRate*1.5 + self.DataBytes * 4 * 0.5) / 2
+	self.DataRate = (self.DataRate*1.2 + self.DataBytes * 4 * 0.8) / 2
 	self.DataBytes = 0
 
 	Wire_TriggerOutput(self.Entity, "Memory", self.DataRate)
@@ -42,10 +42,7 @@ function ENT:ReadCell( Address )
 	for i = 1,4 do
 		if (Address >= self.MemStart[i]) && (Address <= self.MemEnd[i]) then
 			if (self.Memory[i]) then
-				if (self.Memory[i].LatchStore && self.Memory[i].LatchStore[ math.floor(Address) - self.MemStart[i] ] ) then
-					self.DataBytes = self.DataBytes + 1
-					return self.Memory[i].LatchStore[ math.floor(Address) - self.MemStart[i] ]
-				elseif (self.Memory[i].ReadCell) then
+				if (self.Memory[i].ReadCell) then
 					self.DataBytes = self.DataBytes + 1
 					local val = self.Memory[i]:ReadCell( Address - self.MemStart[i] )
 					if (val) then
@@ -67,9 +64,7 @@ function ENT:WriteCell( Address, value )
 	for i = 1,4 do
 		if (Address >= self.MemStart[i]) && (Address <= self.MemEnd[i]) then
 			if (self.Memory[i]) then
-				if (self.Memory[i].LatchStore && self.Memory[i].LatchStore[ math.floor(Address) - self.MemStart[i] ] ) then
-					self.Memory[i].LatchStore[ math.floor(Address) - self.MemStart[i] ] = value
-				elseif (self.Memory[i].WriteCell) then
+				if (self.Memory[i].WriteCell) then
 					self.Memory[i]:WriteCell( Address - self.MemStart[i], value )
 				end
 			end
@@ -79,6 +74,7 @@ function ENT:WriteCell( Address, value )
 	end
 	return res
 end
+
 
 function ENT:TriggerInput(iname, value)
 	if (iname == "Memory1") then
