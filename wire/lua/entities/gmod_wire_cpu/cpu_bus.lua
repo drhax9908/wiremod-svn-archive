@@ -48,14 +48,7 @@ function ENT:ReadCell(Address)
 		end
 	else
 		if (self.Inputs.MemBus.Src) then
-			if (self.Inputs.MemBus.Src.LatchStore) then
-				if (self.Inputs.MemBus.Src.LatchStore[Address-65536]) then
-					return self.Inputs.MemBus.Src.LatchStore[Address-65536]
-				else
-					self:Interrupt(7,Address)
-					return nil
-				end
-			elseif (self.Inputs.MemBus.Src.ReadCell) then
+			if (self.Inputs.MemBus.Src.ReadCell) then
 				local var = self.Inputs.MemBus.Src:ReadCell(Address-65536)
 				if (var) then
 					return var
@@ -113,15 +106,7 @@ function ENT:WriteCell(Address, value)
 		return true
 	else
 		if (self.Inputs.MemBus.Src) then
-			if (self.Inputs.MemBus.Src.LatchStore) then
-				if (self.Inputs.MemBus.Src.LatchStore[Address-65536]) then
-					self.Inputs.MemBus.Src.LatchStore[Address-65536] = value
-					return true
-				else
-					self:Interrupt(7,Address)
-					return false
-				end
-			elseif (self.Inputs.MemBus.Src.WriteCell) then
+			if (self.Inputs.MemBus.Src.WriteCell) then
 				if (self.Inputs.MemBus.Src:WriteCell(Address-65536,value)) then
 					return true
 				else
@@ -153,14 +138,7 @@ function ENT:ReadPort(Address)
 		return nil
 	end
 	if (self.Inputs.IOBus.Src) then
-		if (self.Inputs.IOBus.Src.LatchStore) then
-			if (self.Inputs.IOBus.Src.LatchStore[math.floor(Address)]) then
-				return self.Inputs.IOBus.Src.LatchStore[math.floor(Address)]
-			else
-				self:Interrupt(10,Address)
-				return nil
-			end
-		elseif (self.Inputs.IOBus.Src.ReadCell) then
+		if (self.Inputs.IOBus.Src.ReadCell) then
 			local var = self.Inputs.IOBus.Src:ReadCell(math.floor(Address))
 			if (var) then
 				return var
@@ -188,15 +166,7 @@ function ENT:WritePort(Address, value)
 		return false
 	end
 	if (self.Inputs.IOBus.Src) then
-		if (self.Inputs.IOBus.Src.LatchStore) then
-			if (self.Inputs.IOBus.Src.LatchStore[math.floor(Address)]) then
-				self.Inputs.IOBus.Src.LatchStore[math.floor(Address)] = value
-				return true
-			else
-				self:Interrupt(10,Address)
-				return false
-			end
-		elseif (self.Inputs.IOBus.Src.WriteCell) then
+		if (self.Inputs.IOBus.Src.WriteCell) then
 			if (self.Inputs.IOBus.Src:WriteCell(math.floor(Address),value)) then
 				return true
 			else

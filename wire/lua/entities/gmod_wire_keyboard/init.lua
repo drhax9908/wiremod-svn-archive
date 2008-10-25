@@ -141,7 +141,7 @@ function Wire_KeyPressed(pl, cmd, args)
 
 	if (!KeyBoardPlayerKeys[pl:EntIndex()]) then return end
 	local ent = ents.GetByIndex(KeyBoardPlayerKeys[pl:EntIndex()])
-	if (!ent) || (!ent:IsValid()) || (!ent.InUse) then return end
+	if (!ent) || (!ent:IsValid()) || (!ent.InUse) then pl:ConCommand("wire_keyboard_off") return end
 
 	if (key == KEY_RALT) || (key == KEY_LALT) then
 		pl:ConCommand("wire_keyboard_off")

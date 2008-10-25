@@ -98,6 +98,21 @@ function ENT:CalcOutput(iter)
 	end
 end
 
+function ENT:ReadCell(Address)
+	if (self.Action) && (self.Action.ReadCell) then
+		return self.Action:ReadCell(self,Address)
+	else
+		return nil
+	end
+end
+
+function ENT:WriteCell(Address,value)
+	if (self.Action) && (self.Action.WriteCell) then
+		return self.Action:WriteCell(self,Address,value)
+	else
+		return false
+	end
+end
 
 function ENT:ShowOutput()
 	local txt = ""
