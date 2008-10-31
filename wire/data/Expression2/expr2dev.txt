@@ -1,0 +1,19 @@
+@name Vector Test
+@inputs A O X:vector
+@outputs B C
+@outputs E:vector
+@persist D
+
+D = D + 1
+
+L = "hello"
+
+B = A * 3 + 1
+E = X + vec(1,1,1) + vec(3,3,3)
+C = E:length()
+
+if(1) {
+   G = 1
+} else {
+   G = 0
+}
