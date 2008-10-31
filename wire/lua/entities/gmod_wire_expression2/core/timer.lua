@@ -1,0 +1,94 @@
+/******************************************************************************\
+  Timer support
+\******************************************************************************/
+
+// interval does not work currently, or does it?
+
+local timerid = 0
+local runner
+
+local function Execute(self, name)
+	runner = name
+	
+	self.data['timer'].timers[name] = nil
+	
+	self.entity:Execute()
+	
+	if !self.data['timer'].timers[name] then
+		timer.Destroy("e2_" .. self.data['timer'].timerid .. "_" .. name)
+	end
+	
+	runner = nil
+end
+
+local function AddTimer(self, name, delay)
+	if delay < 10 then delay = 10 end
+	
+	self.data['timer'].timers[name] = true
+	
+	if runner == name then
+		timer.Adjust("e2_" .. self.data['timer'].timerid .. "_" .. name, delay/1000, 1, Execute, self, name)
+		timer.Start("e2_" .. self.data['timer'].timerid .. "_" .. name)
+	else
+		timer.Create("e2_" .. self.data['timer'].timerid .. "_" .. name, delay/1000, 1, Execute, self, name)
+	end
+end
+
+local function RemoveTimer(self, name)
+	if self.data['timer'].timers[name] then
+		timer.Destroy("e2_" .. self.data['timer'].timerid .. "_" .. name)
+		self.data['timer'].timers[name] = nil
+	end
+end
+
+/******************************************************************************/
+
+registerCallback("construct", function(self)
+	self.data['timer'] = {}
+	self.data['timer'].timerid = timerid
+	self.data['timer'].timers = {}
+	
+	timerid = timerid + 1
+end)
+
+registerCallback("destruct", function(self)
+	for name,_ in pairs(self.data['timer'].timers) do
+		RemoveTimer(self, name)
+	end
+end)
+
+/******************************************************************************/
+
+registerFunction("interval", "n", "", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	AddTimer(self, "interval", rv1)
+end)
+
+registerFunction("timer", "sn", "", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	AddTimer(self, rv1, rv2)
+end)
+
+registerFunction("stoptimer", "s", "", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	RemoveTimer(self, rv1)
+end)
+
+registerFunction("clk", "", "n", function(self, args)
+	if runner == "interval"
+	   then return 1 else return 0 end
+end)
+
+registerFunction("clk", "s", "n", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if runner == rv1
+	   then return 1 else return 0 end
+end)
+
+registerFunction("curtime", "", "n", function(self, args)
+	return CurTime()
+end)
