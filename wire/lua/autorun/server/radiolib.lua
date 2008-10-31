@@ -7,6 +7,24 @@ function Radio_Register( o )
 	table.insert( radio_sets, o )
 end
 
+function Radio_TuneOut(ent,ch)
+	if (ent.Secure == true) then
+		radio_channels[ent.pl:SteamID()][ch] = {}
+	else
+		radio_channels[ch] = {}
+	end
+
+	for i, o in ipairs( radio_sets ) do
+	    if (not IsEntity(o.Entity)) then
+	        table.remove(radio_sets, i)
+	    elseif (o.Channel == ch && o.Entity:EntIndex() != ent:EntIndex()) then
+		local retable = {}
+		for i=1,20 do retable[tostring(i)] = 0 end
+		o:ReceiveRadio(retable)
+	    end
+	end
+end
+
 function Radio_Transmit(ent,ch,k,v)
 	if (ent.Secure == true) then
 		if (radio_channels[ent.pl:SteamID()] == nil) then radio_channels[ent.pl:SteamID()]  = {} end
@@ -32,11 +50,13 @@ function Radio_Transmit(ent,ch,k,v)
 	end
 end
 
-function Radio_Receive(ent ,ch )
+function Radio_Receive(ent, ch)
 	if (ent.Secure == true) then
 		if (radio_channels[ent.pl:SteamID()] == nil) then return {} end
 		if (type(radio_channels[ent.pl:SteamID()][ch]) == "table") then
-			return radio_channels[ent.pl:SteamID()][ch] //Nothing fancy needed :P
+			local retable = radio_channels[ent.pl:SteamID()][ch]
+			for i=1,20 do if (!radio_channels[ent.pl:SteamID()][ch][i]) then retable[tostring(i)] = 0 end end
+			return retable //Nothing fancy needed :P
 		else
 			local retable = {}
 			for i=1,20 do retable[tostring(i)] = 0 end			
@@ -44,7 +64,9 @@ function Radio_Receive(ent ,ch )
 		end
 	else
 		if (type(radio_channels[ch]) == "table") then
-			return radio_channels[ch] //Nothing fancy needed :P
+			local retable = radio_channels[ch]
+			for i=1,20 do if (!radio_channels[ch][i]) then retable[tostring(i)] = 0 end end
+			return retable //Nothing fancy needed :P
 		else
 			local retable = {}
 			for i=1,20 do retable[tostring(i)] = 0 end			

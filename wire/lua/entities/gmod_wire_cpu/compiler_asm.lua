@@ -1050,7 +1050,7 @@ function ENT:AddLocalLabel(labelname)
 		end
 	else
 		if (self.Labels[labelname]) then
-			if (self.Labels[labelname].WIP ~= self.WIP) then
+			if (self.Labels[labelname].WIP ~= self.WIP) && (math.abs(self.WIP - self.Labels[labelname].WIP) < self.LocalVarRange) then
 				self.Labels[labelname].WIP = self.WIP
 				self:Error("Label pointer changed between stages - report this to Black Phoenix!")
 			end
