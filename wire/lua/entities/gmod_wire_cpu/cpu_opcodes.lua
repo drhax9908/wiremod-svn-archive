@@ -515,22 +515,22 @@ function ENT:InitializeOpcodeTable()
 	//------------------------------------------------------------
 	self.OpcodeTable[60] = function (Param1,Param2)	//BIT
 		local bits = self:IntegerToBinary(Param1)
-		self.CMPR = bits[math.floor(math.Clamp(Param2,0,self.IPREC-1)+1)]
+		self.CMPR = bits[math.floor(math.Clamp(Param2,0,self.IPREC-1))]
 	end
 	self.OpcodeTable[61] = function (Param1,Param2)	//SBIT
 		local bits = self:IntegerToBinary(math.floor(Param1))
-		bits[math.floor(math.Clamp(Param2,0,self.IPREC-1)+1)] = 1
+		bits[math.floor(math.Clamp(Param2,0,self.IPREC-1))] = 1
 		return self:BinaryToInteger(bits)
 	end
 	self.OpcodeTable[62] = function (Param1,Param2)	//CBIT
 		local bits = IntegerToBinary(math.floor(Param1))
-		bits[math.floor(math.Clamp(Param2,0,self.IPREC-1)+1)] = 0
+		bits[math.floor(math.Clamp(Param2,0,self.IPREC-1))] = 0
 		return self:BinaryToInteger(bits)
 	end
 	self.OpcodeTable[63] = function (Param1,Param2)	//TBIT
 		local bits = self:IntegerToBinary(math.floor(Param1))
-		if (bits[math.floor(math.Clamp(Param2,0,self.IPREC-1)+1)]) then
-			bits[math.floor(math.Clamp(Param2,0,self.IPREC-1)+1)] = 1-bits[math.floor(math.Clamp(Param2,0,self.IPREC-1)+1)]
+		if (bits[math.floor(math.Clamp(Param2,0,self.IPREC-1))]) then
+			bits[math.floor(math.Clamp(Param2,0,self.IPREC-1))] = 1-bits[math.floor(math.Clamp(Param2,0,self.IPREC-1))]
 		end
 		return self:BinaryToInteger(bits)
 	end

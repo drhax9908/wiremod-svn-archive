@@ -9,6 +9,9 @@ end
 
 function Radio_TuneOut(ent,ch)
 	if (ent.Secure == true) then
+		if (radio_channels[ent.pl:SteamID()] == nil) then
+			radio_channels[ent.pl:SteamID()] = {}
+		end
 		radio_channels[ent.pl:SteamID()][ch] = {}
 	else
 		radio_channels[ch] = {}
