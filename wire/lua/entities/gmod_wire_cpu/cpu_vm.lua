@@ -178,8 +178,8 @@ function ENT:InitializeLookupTables()
 
 	self.ParamFunctions_1[34] = function() return self:ReadCell(self.EAX + self.PrecompileData[self.XEIP].PeekByte1) end
 	self.ParamFunctions_1[35] = function() return self:ReadCell(self.EBX + self.PrecompileData[self.XEIP].PeekByte1) end
-	self.ParamFunctions_1[36] = function() return self:ReadCell(self.EDX + self.PrecompileData[self.XEIP].PeekByte1) end
-	self.ParamFunctions_1[37] = function() return self:ReadCell(self.ECX + self.PrecompileData[self.XEIP].PeekByte1) end
+	self.ParamFunctions_1[36] = function() return self:ReadCell(self.ECX + self.PrecompileData[self.XEIP].PeekByte1) end
+	self.ParamFunctions_1[37] = function() return self:ReadCell(self.EDX + self.PrecompileData[self.XEIP].PeekByte1) end
 	self.ParamFunctions_1[38] = function() return self:ReadCell(self.ESI + self.PrecompileData[self.XEIP].PeekByte1) end
 	self.ParamFunctions_1[39] = function() return self:ReadCell(self.EDI + self.PrecompileData[self.XEIP].PeekByte1) end
 	self.ParamFunctions_1[40] = function() return self:ReadCell(self.ESP + self.PrecompileData[self.XEIP].PeekByte1) end
@@ -258,8 +258,8 @@ function ENT:InitializeLookupTables()
 
 	self.ParamFunctions_2[34] = function() return self:ReadCell(self.EAX + self.PrecompileData[self.XEIP].PeekByte2) end
 	self.ParamFunctions_2[35] = function() return self:ReadCell(self.EBX + self.PrecompileData[self.XEIP].PeekByte2) end
-	self.ParamFunctions_2[36] = function() return self:ReadCell(self.EDX + self.PrecompileData[self.XEIP].PeekByte2) end
-	self.ParamFunctions_2[37] = function() return self:ReadCell(self.ECX + self.PrecompileData[self.XEIP].PeekByte2) end
+	self.ParamFunctions_2[36] = function() return self:ReadCell(self.ECX + self.PrecompileData[self.XEIP].PeekByte2) end
+	self.ParamFunctions_2[37] = function() return self:ReadCell(self.EDX + self.PrecompileData[self.XEIP].PeekByte2) end
 	self.ParamFunctions_2[38] = function() return self:ReadCell(self.ESI + self.PrecompileData[self.XEIP].PeekByte2) end
 	self.ParamFunctions_2[39] = function() return self:ReadCell(self.EDI + self.PrecompileData[self.XEIP].PeekByte2) end
 	self.ParamFunctions_2[40] = function() return self:ReadCell(self.ESP + self.PrecompileData[self.XEIP].PeekByte2) end
@@ -355,8 +355,8 @@ function ENT:InitializeLookupTables()
 
 	self.EffectiveAddress1[34] = function() return self.EAX + self.PrecompileData[self.XEIP].PeekByte1 end
 	self.EffectiveAddress1[35] = function() return self.EBX + self.PrecompileData[self.XEIP].PeekByte1 end
-	self.EffectiveAddress1[36] = function() return self.EDX + self.PrecompileData[self.XEIP].PeekByte1 end
-	self.EffectiveAddress1[37] = function() return self.ECX + self.PrecompileData[self.XEIP].PeekByte1 end
+	self.EffectiveAddress1[36] = function() return self.ECX + self.PrecompileData[self.XEIP].PeekByte1 end
+	self.EffectiveAddress1[37] = function() return self.EDX + self.PrecompileData[self.XEIP].PeekByte1 end
 	self.EffectiveAddress1[38] = function() return self.ESI + self.PrecompileData[self.XEIP].PeekByte1 end
 	self.EffectiveAddress1[39] = function() return self.EDI + self.PrecompileData[self.XEIP].PeekByte1 end
 	self.EffectiveAddress1[40] = function() return self.ESP + self.PrecompileData[self.XEIP].PeekByte1 end
@@ -381,8 +381,8 @@ function ENT:InitializeLookupTables()
 
 	self.EffectiveAddress2[34] = function() return self.EAX + self.PrecompileData[self.XEIP].PeekByte2 end
 	self.EffectiveAddress2[35] = function() return self.EBX + self.PrecompileData[self.XEIP].PeekByte2 end
-	self.EffectiveAddress2[36] = function() return self.EDX + self.PrecompileData[self.XEIP].PeekByte2 end
-	self.EffectiveAddress2[37] = function() return self.ECX + self.PrecompileData[self.XEIP].PeekByte2 end
+	self.EffectiveAddress2[36] = function() return self.ECX + self.PrecompileData[self.XEIP].PeekByte2 end
+	self.EffectiveAddress2[37] = function() return self.EDX + self.PrecompileData[self.XEIP].PeekByte2 end
 	self.EffectiveAddress2[38] = function() return self.ESI + self.PrecompileData[self.XEIP].PeekByte2 end
 	self.EffectiveAddress2[39] = function() return self.EDI + self.PrecompileData[self.XEIP].PeekByte2 end
 	self.EffectiveAddress2[40] = function() return self.ESP + self.PrecompileData[self.XEIP].PeekByte2 end
@@ -584,9 +584,9 @@ end
 function ENT:PrintState()
 	Msg("TMR="..self.TMR.."  TIMER="..self.TIMER.."  XEIP="..self.XEIP.."  CMPR="..self.CMPR.."\n")
 	Msg("EAX="..self.EAX.."  EBX="..self.EBX.."  ECX="..self.ECX.."  EDX="..self.EDX.."\n")
-	Msg("ESI="..self.ESI.."  EDI="..self.EDI.."  ESP="..self.ESP.."  EBP="..self.EBP.."\n")
+	Msg("ESI="..self.ESI.."  EDI="..self.EDI.."  ESP="..self.ESP.."  EBP="..self.EBP.."  ESZ="..self.ESZ.."\n")
 
-	Msg(" CS="..self.CS)
+	 Msg("CS="..self.CS)
 	Msg(" SS="..self.SS)
 	Msg(" DS="..self.DS)
 	Msg(" FS="..self.FS)
@@ -674,6 +674,16 @@ function ENT:Execute()
 			DebugMessage("")
 		end
 		self:PrintState()
+
+		Msg("Memory at opcode: ")
+		for i=self.XEIP,self.XEIP+6 do
+			local val = self:ReadCell(self.XEIP)
+			if (val) then
+				Msg("["..val.."] ")
+			end
+		end
+		Msg("\n")
+
 		if (self.DebugData[self.XEIP]) then
 			print("")
 			if (self.DebugLines[self.DebugData[self.XEIP]-2]) then
