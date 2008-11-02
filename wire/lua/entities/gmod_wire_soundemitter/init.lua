@@ -155,13 +155,13 @@ function ENT:SetSound(sound)
 	self:StopSounds()
 
 	local parsedsound = sound
-	while (string.find(parsedsound,"%s") && (string.find(parsedsound,"%s") == 1)) do
+	while (string.find(parsedsound," ") && (string.find(parsedsound," ") == 1)) do
 		parsedsound = string.sub(parsedsound,2,string.len(parsedsound))
 	end
 	util.PrecacheSound(parsedsound)
 	local tsound = (parsedsound or ""):gsub("[/\\]+","/")
 
-	self.SampleTable[0] = sound
+	self.SampleTable[0] = parsedsound
 	self.SND = CreateSound(self.Entity, Sound(self.SampleTable[0]))
 	self:SetOverlayText( "Sound: " .. tsound )
 end
