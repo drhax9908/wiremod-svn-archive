@@ -4,9 +4,9 @@
 \******************************************************************************/
 
 if SERVER then
-	AddCSLuaFile("toolscreen.lua")
-	resource.AddFile("expression 2/cog.vmt")
-	resource.AddFile("expression 2/cog.vtf")
+	AddCSLuaFile("E2toolscreen.lua")
+	resource.AddFile("materials/expression 2/cog.vmt")
+	resource.AddFile("materials/expression 2/cog.vtf")
 	return
 end
 
