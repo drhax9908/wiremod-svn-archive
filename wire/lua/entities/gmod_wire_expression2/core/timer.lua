@@ -12,7 +12,9 @@ local function Execute(self, name)
 	
 	self.data['timer'].timers[name] = nil
 	
+	if(self.entity and self.entity.Execute) then
 	self.entity:Execute()
+	end
 	
 	if !self.data['timer'].timers[name] then
 		timer.Destroy("e2_" .. self.data['timer'].timerid .. "_" .. name)
