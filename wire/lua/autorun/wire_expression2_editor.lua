@@ -77,7 +77,7 @@ function Editor:PaintOver()
 	surface.SetTextPos( 10, 6 )
 	surface.DrawText(self.Title .. self.subTitle)
 	if(self.E2) then
-	surface.SetTexture(logo) 
+	surface.SetTexture(self.logo) 
 	surface.SetDrawColor( 255, 255, 255, 128 )
 	surface.DrawTexturedRect( w-148, h-158, 128, 128)
 	end
