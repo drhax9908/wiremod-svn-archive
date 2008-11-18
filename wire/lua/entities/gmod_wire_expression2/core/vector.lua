@@ -247,14 +247,14 @@ registerFunction("rotate", "v:a", "v", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	local v = Vector(rv1[1],rv1[2],rv1[3]):Rotate(Angle(rv2[1],rv2[2],rv2[3]))
-	return {v.x,z.y,v.z}
+	return {v.x,v.y,v.z}
 end)
 
 registerFunction("rotate", "v:nnn", "v", function(self, args)
 	local op1, op2, op3, op4 = args[2], args[3], args[4], args[5]
 	local rv1, rv2, rv3, rv4 = op1[1](self, op1), op2[1](self, op2), op2[1](self, op3), op2[1](self, op4)
 	local v = Vector(rv1[1],rv1[2],rv1[3]):Rotate(Angle(rv2,rv3,rv4))
-	return {v.x,z.y,v.z}
+	return {v.x,v.y,v.z}
 end)
 
 /******************************************************************************/
