@@ -35,7 +35,8 @@ function ENT:ReadCell(Address)
 		return self:ReadPort(-Address-1)
 	end
 
-	if ((self.EF == 1) && (self.Page[Page]) && (self.Page[Page].Read == 0)) then //Page protection
+	if ((self.EF == 1) && (self.Page[Page]) 
+	 && (self.Page[Page].Read == 0) && (self.CurrentPage.RunLevel > self.Page[Page].RunLevel)) then //Page protection
 		self:Interrupt(12,Address)
 		return nil
 	end
@@ -96,7 +97,8 @@ function ENT:WriteCell(Address, value)
 		self.PrecompileData[xeip] = nil
 	end
 
-	if ((self.EF == 1) && (self.Page[Page]) && (self.Page[Page].Write == 0)) then //Page protection
+	if ((self.EF == 1) && (self.Page[Page])
+	 && (self.Page[Page].Write == 0) && (self.CurrentPage.RunLevel > self.Page[Page].RunLevel)) then //Page protection
 		self:Interrupt(9,Address)
 		return false
 	end

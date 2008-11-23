@@ -103,7 +103,7 @@ function ENT:_getstring(sepchar)
 	local str = ""
 	self:_whitespace()
 	while ((self.CurrentLine ~= "") && (self:_getc() ~= sepchar) && (self:_getc() ~= ")")) do //fixme isalphanum
-		str = str .. _char()
+		str = str .. self:_char()
 	end
 	return string.lower(str)
 end

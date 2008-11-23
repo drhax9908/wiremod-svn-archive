@@ -47,6 +47,9 @@ function ENT:Reset()
 	self.BusLock = 0
 	self.Idle = 0
 
+	self.BlockStart = 0
+	self.BlockSize = 0
+
 	self.CurrentPage = nil
 
 	self.Clk = self.InputClk
@@ -115,6 +118,8 @@ function ENT:InitializeCPUVariableSet()
 	self.CPUVariable[50] = "BPREC"
 	self.CPUVariable[51] = "IPREC"
 	self.CPUVariable[52] = "NIDT"
+	self.CPUVariable[53] = "BlockStart"
+	self.CPUVariable[54] = "BlockSize"
 end
 
 function ENT:InitializeLookupTables()
