@@ -431,15 +431,26 @@ function ENT:VertexTransform(coord) //FIXME: coord can have UV
 		resultcoord = self:Transform(transx,transy)
 		resultcoord.trans = acoord
 	end
+
+	if (!resultcoord.trans) then
+		resultcoord.trans = {}
+		resultcoord.trans.x = 0
+		resultcoord.trans.y = 0
+		resultcoord.trans.z = 0
+	end
+	if (!resultcoord.trans.x) then resultcoord.trans.x = 0 end
+	if (!resultcoord.trans.y) then resultcoord.trans.y = 0 end
+	if (!resultcoord.trans.z) then resultcoord.trans.z = 0 end
+
 	return resultcoord
 end
 
 function ENT:TransformColor(color)
 	local tcolor = color
-	tcolor.x = color.x
-	tcolor.y = color.y
-	tcolor.z = color.z
-	tcolor.w = 255//color.w
+	tcolor.x = color.x * self:ReadCell(65495) * self:ReadCell(65494)
+	tcolor.y = color.y * self:ReadCell(65495) * self:ReadCell(65493)
+	tcolor.z = color.z * self:ReadCell(65495) * self:ReadCell(65492)
+	tcolor.w = color.w
 	return tcolor
 end
 

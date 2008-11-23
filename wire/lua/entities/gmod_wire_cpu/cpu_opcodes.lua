@@ -1,7 +1,7 @@
 function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode = {}
 
-	//-----------------------------------------------------------------------------	
+	//-----------------------------------------------------------------------------	------
 	self.DecodeOpcode["jne"]    = 1   //JNE X      : IP = X, IF CMPR ~= 0
 	self.DecodeOpcode["jnz"]    = 1   //JNZ X      : IP = X, IF CMPR ~= 0
 	self.DecodeOpcode["jmp"]    = 2   //JMP X      : IP = X
@@ -17,7 +17,7 @@ function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode["jz"]     = 7   //JZ X       : IP = X, IF CMPR = 0
 	self.DecodeOpcode["cpuid"]  = 8   //CPUID X    : EAX -> CPUID[X]
 	self.DecodeOpcode["push"]   = 9   //PUSH X     : WRITE(ESP+SS,X); ESP = ESP - 1
-	//-----------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
 	self.DecodeOpcode["add"]    = 10  //ADD X,Y    : X = X + Y
 	self.DecodeOpcode["sub"]    = 11  //SUB X,Y    : X = X - Y
 	self.DecodeOpcode["mul"]    = 12  //MUL X,Y    : X = X * Y
@@ -28,18 +28,18 @@ function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode["wd"]     = 17  //WD X,Y     : MEMORY[X] = Y
 	self.DecodeOpcode["min"]    = 18  //MIN X,Y    : MIN(X,Y)
 	self.DecodeOpcode["max"]    = 19  //MAX X,Y    : MAX(X,Y)
-	//-----------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
 	self.DecodeOpcode["inc"]    = 20  //INC X      : X = X + 1
 	self.DecodeOpcode["dec"]    = 21  //DEC X      : X = X - 1
 	self.DecodeOpcode["neg"]    = 22  //NEG X      : X = -X
 	self.DecodeOpcode["rand"]   = 23  //RAND X     : X = Random(0..1)
-	self.DecodeOpcode["loop"]   = 24  //LOOP X     : IF ECX ~= 0 THEN JUMP X    2.00
-	self.DecodeOpcode["loopa"]  = 25  //LOOP X     : IF EAX ~= 0 THEN JUMP X    2.00
-	self.DecodeOpcode["loopb"]  = 26  //LOOP X     : IF EBX ~= 0 THEN JUMP X    2.00
-	self.DecodeOpcode["loopd"]  = 27  //LOOP X     : IF EDX ~= 0 THEN JUMP X    2.00
-	self.DecodeOpcode["spg"]    = 28  //SPG X      : PAGE(X) = READ ONLY	    2.00
-	self.DecodeOpcode["cpg"]    = 29  //CPG X      : PAGE(X) = READ AND WRITE   2.00
-	//-----------------------------------------------------------------------------
+	self.DecodeOpcode["loop"]   = 24  //LOOP X     : IF ECX ~= 0 THEN JUMP X    	2.00
+	self.DecodeOpcode["loopa"]  = 25  //LOOP X     : IF EAX ~= 0 THEN JUMP X    	2.00
+	self.DecodeOpcode["loopb"]  = 26  //LOOP X     : IF EBX ~= 0 THEN JUMP X    	2.00
+	self.DecodeOpcode["loopd"]  = 27  //LOOP X     : IF EDX ~= 0 THEN JUMP X    	2.00
+	self.DecodeOpcode["spg"]    = 28  //SPG X      : PAGE(X) = READ ONLY	    	2.00
+	self.DecodeOpcode["cpg"]    = 29  //CPG X      : PAGE(X) = READ AND WRITE   	2.00
+	//-----------------------------------------------------------------------------------
 	self.DecodeOpcode["pop"]    = 30  //POP X      : X = READ(ESP+SS); ESP = ESP + 1
 	self.DecodeOpcode["call"]   = 31  //CALL X     : IP -> STACK; IP = X
 	self.DecodeOpcode["bnot"]   = 32  //BNOT X     : X = BINARY NOT X
@@ -48,20 +48,20 @@ function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode["ffrac"]  = 35  //FFRAC X    : X = X - FLOOR(X)
 	self.DecodeOpcode["finv"]   = 36  //FINV X     : X = 1 / X
 	self.DecodeOpcode["halt"]   = 37  //HALT X     : HALT UNTIL PORT[X]
-	self.DecodeOpcode["fshl"]   = 38  //FSHL X     : X = X * 2		   2.00
-	self.DecodeOpcode["fshr"]   = 39  //FSHR X     : X = X / 2		   2.00
-	//-----------------------------------------------------------------------------
+	self.DecodeOpcode["fshl"]   = 38  //FSHL X     : X = X * 2		   	2.00
+	self.DecodeOpcode["fshr"]   = 39  //FSHR X     : X = X / 2		   	2.00
+	//-----------------------------------------------------------------------------------
 	self.DecodeOpcode["ret"]    = 40  //RET        : IP <- STACK
-	self.DecodeOpcode["iret"]   = 41  //IRET       : IP <- STACK 		   2.00
-	self.DecodeOpcode["sti"]    = 42  //STI        : IF = TRUE		   2.00
-	self.DecodeOpcode["cli"]    = 43  //CLI        : IF = FALSE		   2.00
-	self.DecodeOpcode["stp"]    = 44  //STP        : PF = TRUE		   2.00
-	self.DecodeOpcode["clp"]    = 45  //CLP        : PF = FALSE		   2.00
+	self.DecodeOpcode["iret"]   = 41  //IRET       : IP <- STACK 		   	2.00
+	self.DecodeOpcode["sti"]    = 42  //STI        : IF = TRUE		   	2.00
+	self.DecodeOpcode["cli"]    = 43  //CLI        : IF = FALSE		   	2.00
+	self.DecodeOpcode["stp"]    = 44  //STP        : PF = TRUE		   	2.00
+	self.DecodeOpcode["clp"]    = 45  //CLP        : PF = FALSE		   	2.00
 	//self.DecodeOpcode[""]     = 46  //RESERVED   :
-	self.DecodeOpcode["retf"]   = 47  //RETF       : IP,CS <- STACK		   2.00
-	self.DecodeOpcode["stef"]   = 48  //STEF       : EF = TRUE		   4.00
-	self.DecodeOpcode["clef"]   = 49  //CLEF       : EF = FALSE		   4.00
-	//-----------------------------------------------------------------------------
+	self.DecodeOpcode["retf"]   = 47  //RETF       : IP,CS <- STACK		   	2.00
+	self.DecodeOpcode["stef"]   = 48  //STEF       : EF = TRUE		   	4.00
+	self.DecodeOpcode["clef"]   = 49  //CLEF       : EF = FALSE		   	4.00
+	//-----------------------------------------------------------------------------------
 	self.DecodeOpcode["and"]    = 50  //FAND X,Y   : X = X AND Y
 	self.DecodeOpcode["or"]     = 51  //FOR X,Y    : X = X OR Y
 	self.DecodeOpcode["xor"]    = 52  //FXOR X,Y   : X = X XOR Y
@@ -71,59 +71,59 @@ function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode["fasin"]  = 56  //FASIN X,Y  : X = ASIN Y
 	self.DecodeOpcode["facos"]  = 57  //FACOS X,Y  : X = ACOS Y
 	self.DecodeOpcode["fatan"]  = 58  //FATAN X,Y  : X = ATAN Y
-	self.DecodeOpcode["mod"]    = 59  //MOD X,Y    : X = X MOD Y		   2.00
-	//-----------------------------------------------------------------------------
-	self.DecodeOpcode["bit"]    = 60  //BIT X,Y    : CMPR = BIT(X,Y)	   2.00
-	self.DecodeOpcode["sbit"]   = 61  //SBIT X,Y   : BIT(X,Y) = 1		   2.00
-	self.DecodeOpcode["cbit"]   = 62  //CBIT X,Y   : BIT(X,Y) = 0		   2.00
-	self.DecodeOpcode["tbit"]   = 63  //TBIT X,Y   : BIT(X,Y) = ~BIT(X,Y)	   2.00
-	self.DecodeOpcode["band"]   = 64  //BAND X,Y   : X = X BAND Y		   2.00
-	self.DecodeOpcode["bor"]    = 65  //BOR X,Y    : X = X BOR Y		   2.00
-	self.DecodeOpcode["bxor"]   = 66  //BXOR X,Y   : X = X BXOR Y		   2.00
-	self.DecodeOpcode["bshl"]   = 67  //BSHL X,Y   : X = X BSHL Y		   2.00
-	self.DecodeOpcode["bshr"]   = 68  //BSHR X,Y   : X = X BSHR Y		   2.00
-	self.DecodeOpcode["jmpf"]   = 69  //JMPF X,Y   : CS = Y; IP = X		   2.00
-	//-----------------------------------------------------------------------------
-	self.DecodeOpcode["nmiint"] = 70  //NMIINT X   : NMIINTERRUPT(X);	   4.00
-	self.DecodeOpcode["cne"]    = 71  //CNE X      : CALL(X), IF CMPR ~= 0	   2.00
-	self.DecodeOpcode["cnz"]    = 71  //CNZ X      : CALL(X), IF CMPR ~= 0	   2.00
+	self.DecodeOpcode["mod"]    = 59  //MOD X,Y    : X = X MOD Y		   	2.00
+	//-----------------------------------------------------------------------------------
+	self.DecodeOpcode["bit"]    = 60  //BIT X,Y    : CMPR = BIT(X,Y)	   	2.00
+	self.DecodeOpcode["sbit"]   = 61  //SBIT X,Y   : BIT(X,Y) = 1		   	2.00
+	self.DecodeOpcode["cbit"]   = 62  //CBIT X,Y   : BIT(X,Y) = 0		   	2.00
+	self.DecodeOpcode["tbit"]   = 63  //TBIT X,Y   : BIT(X,Y) = ~BIT(X,Y)	   	2.00
+	self.DecodeOpcode["band"]   = 64  //BAND X,Y   : X = X BAND Y		   	2.00
+	self.DecodeOpcode["bor"]    = 65  //BOR X,Y    : X = X BOR Y		   	2.00
+	self.DecodeOpcode["bxor"]   = 66  //BXOR X,Y   : X = X BXOR Y		   	2.00
+	self.DecodeOpcode["bshl"]   = 67  //BSHL X,Y   : X = X BSHL Y		   	2.00
+	self.DecodeOpcode["bshr"]   = 68  //BSHR X,Y   : X = X BSHR Y		   	2.00
+	self.DecodeOpcode["jmpf"]   = 69  //JMPF X,Y   : CS = Y; IP = X		   	2.00
+	//-----------------------------------------------------------------------------------
+	self.DecodeOpcode["nmiint"] = 70  //NMIINT X   : NMIINTERRUPT(X);	   	4.00
+	self.DecodeOpcode["cne"]    = 71  //CNE X      : CALL(X), IF CMPR ~= 0	   	2.00
+	self.DecodeOpcode["cnz"]    = 71  //CNZ X      : CALL(X), IF CMPR ~= 0	   	2.00
 	//self.DecodeOpcode[""]     = 72  //RESERVED   :
-	self.DecodeOpcode["cg"]     = 73  //CG X       : CALL(X), IF CMPR > 0	   2.00
-	self.DecodeOpcode["cnle"]   = 73  //CNLE X     : CALL(X), IF !(CMPR <= 0)  2.00
-	self.DecodeOpcode["cge"]    = 74  //CGE X      : CALL(X), IF CMPR >= 0	   2.00
-	self.DecodeOpcode["cnl"]    = 74  //CNL X      : CALL(X), IF !(CMPR < 0)   2.00
-	self.DecodeOpcode["cl"]     = 75  //CL X       : CALL(X), IF CMPR < 0	   2.00
-	self.DecodeOpcode["cnge"]   = 75  //CNGE X     : CALL(X), IF !(CMPR >= 0)  2.00
-	self.DecodeOpcode["cle"]    = 76  //CLE X      : CALL(X), IF CMPR <= 0	   2.00
-	self.DecodeOpcode["cng"]    = 76  //CNG X      : CALL(X), IF !(CMPR > 0)   2.00
-	self.DecodeOpcode["ce"]     = 77  //CE X       : CALL(X), IF CMPR = 0	   2.00
-	self.DecodeOpcode["cz"]     = 77  //CZ X       : CALL(X), IF CMPR = 0	   2.00
-	self.DecodeOpcode["mcopy"]  = 78  //MCOPY X    : X BYTES(ESI) -> EDI	   2.00
-	self.DecodeOpcode["mxchg"]  = 79  //MXCHG X    : X BYTES(ESI) <> EDI	   2.00
-	//-----------------------------------------------------------------------------
-	self.DecodeOpcode["fpwr"]   = 80  //FPWR X,Y   : X = X ^ Y		   2.00
-	self.DecodeOpcode["xchg"]   = 81  //XCHG X,Y   : X,Y = Y,X		   2.00
-	self.DecodeOpcode["flog"]   = 82  //FLOG X,Y   : X = LOG(Y)		   2.00
-	self.DecodeOpcode["flog10"] = 83  //FLOG10 X,Y : X = LOG10(Y)		   2.00
-	self.DecodeOpcode["in"]     = 84  //IN X,Y     : X = PORT[Y]		   2.00
-	self.DecodeOpcode["out"]    = 85  //OUT X,Y    : PORT[X] = Y		   2.00
-	self.DecodeOpcode["fabs"]   = 86  //FABS X,Y   : X = ABS(Y)		   2.00
-	self.DecodeOpcode["fsgn"]   = 87  //FSGN X,Y   : X = SIGN(Y)		   2.00
-	self.DecodeOpcode["fexp"]   = 88  //FEXP X,Y   : X = EXP(Y)		   2.00
-	self.DecodeOpcode["callf"]  = 89  //CALLF X,Y  : CS = Y; CALL(X)	   2.00
-	//-----------------------------------------------------------------------------
-	self.DecodeOpcode["fpi"]    = 90  //FPI X      : X = PI			   2.00
-	self.DecodeOpcode["fe"]     = 91  //FE X       : X = E			   2.00
-	self.DecodeOpcode["int"]    = 92  //INT X      : INTERRUPT(X)		   2.00
-	self.DecodeOpcode["tpg"]    = 93  //TPG X      : CMPR = TEST PAGE(X)	   2.00
-	self.DecodeOpcode["fceil"]  = 94  //FCEIL X    : X = CEIL(X)		   2.00
-	self.DecodeOpcode["erpg"]   = 95  //ERPG X     : ERASE ROM PAGE(X)	   2.00
-	self.DecodeOpcode["wrpg"]   = 96  //WRPG X     : WRITE ROM PAGE(X)	   2.00
-	self.DecodeOpcode["rdpg"]   = 97  //RDPG X     : READ ROM PAGE(X)	   2.00
-	self.DecodeOpcode["timer"]  = 98  //TIMER X    : X = TIMER		   2.00
-	self.DecodeOpcode["lidtr"]  = 99  //LIDTR X    : IDTR = X		   2.00
+	self.DecodeOpcode["cg"]     = 73  //CG X       : CALL(X), IF CMPR > 0	   	2.00
+	self.DecodeOpcode["cnle"]   = 73  //CNLE X     : CALL(X), IF !(CMPR <= 0)  	2.00
+	self.DecodeOpcode["cge"]    = 74  //CGE X      : CALL(X), IF CMPR >= 0	   	2.00
+	self.DecodeOpcode["cnl"]    = 74  //CNL X      : CALL(X), IF !(CMPR < 0)   	2.00
+	self.DecodeOpcode["cl"]     = 75  //CL X       : CALL(X), IF CMPR < 0	   	2.00
+	self.DecodeOpcode["cnge"]   = 75  //CNGE X     : CALL(X), IF !(CMPR >= 0)  	2.00
+	self.DecodeOpcode["cle"]    = 76  //CLE X      : CALL(X), IF CMPR <= 0	   	2.00
+	self.DecodeOpcode["cng"]    = 76  //CNG X      : CALL(X), IF !(CMPR > 0)   	2.00
+	self.DecodeOpcode["ce"]     = 77  //CE X       : CALL(X), IF CMPR = 0	   	2.00
+	self.DecodeOpcode["cz"]     = 77  //CZ X       : CALL(X), IF CMPR = 0	   	2.00
+	self.DecodeOpcode["mcopy"]  = 78  //MCOPY X    : X BYTES(ESI) -> EDI	   	2.00
+	self.DecodeOpcode["mxchg"]  = 79  //MXCHG X    : X BYTES(ESI) <> EDI	   	2.00
+	//-----------------------------------------------------------------------------------
+	self.DecodeOpcode["fpwr"]   = 80  //FPWR X,Y   : X = X ^ Y		   	2.00
+	self.DecodeOpcode["xchg"]   = 81  //XCHG X,Y   : X,Y = Y,X		   	2.00
+	self.DecodeOpcode["flog"]   = 82  //FLOG X,Y   : X = LOG(Y)		   	2.00
+	self.DecodeOpcode["flog10"] = 83  //FLOG10 X,Y : X = LOG10(Y)		   	2.00
+	self.DecodeOpcode["in"]     = 84  //IN X,Y     : X = PORT[Y]		   	2.00
+	self.DecodeOpcode["out"]    = 85  //OUT X,Y    : PORT[X] = Y		   	2.00
+	self.DecodeOpcode["fabs"]   = 86  //FABS X,Y   : X = ABS(Y)		   	2.00
+	self.DecodeOpcode["fsgn"]   = 87  //FSGN X,Y   : X = SIGN(Y)		   	2.00
+	self.DecodeOpcode["fexp"]   = 88  //FEXP X,Y   : X = EXP(Y)		   	2.00
+	self.DecodeOpcode["callf"]  = 89  //CALLF X,Y  : CS = Y; CALL(X)	   	2.00
+	//-----------------------------------------------------------------------------------
+	self.DecodeOpcode["fpi"]    = 90  //FPI X      : X = PI			   	2.00
+	self.DecodeOpcode["fe"]     = 91  //FE X       : X = E			   	2.00
+	self.DecodeOpcode["int"]    = 92  //INT X      : INTERRUPT(X)		   	2.00
+	self.DecodeOpcode["tpg"]    = 93  //TPG X      : CMPR = 1 IF PAGE READS, ELSE 0	2.00
+	self.DecodeOpcode["fceil"]  = 94  //FCEIL X    : X = CEIL(X)		   	2.00
+	self.DecodeOpcode["erpg"]   = 95  //ERPG X     : ERASE ROM PAGE(X)	   	2.00
+	self.DecodeOpcode["wrpg"]   = 96  //WRPG X     : WRITE ROM PAGE(X)	   	2.00
+	self.DecodeOpcode["rdpg"]   = 97  //RDPG X     : READ ROM PAGE(X)	   	2.00
+	self.DecodeOpcode["timer"]  = 98  //TIMER X    : X = TIMER		   	2.00
+	self.DecodeOpcode["lidtr"]  = 99  //LIDTR X    : IDTR = X		   	2.00
 	//self.DecodeOpcode[""]     = 100 //RESERVED
-	//-----------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
 	self.DecodeOpcode["jner"]   = 101 //JNER X     : IP = IP+X, IF CMPR ~= 0
 	self.DecodeOpcode["jnzr"]   = 101 //JNZR X     : IP = IP+X, IF CMPR ~= 0
 	self.DecodeOpcode["jmpr"]   = 102 //JMPR X     : IP = IP+X
@@ -137,22 +137,25 @@ function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode["jngr"]   = 106 //JNGR X     : IP = IP+X, IF !(CMPR > 0)
 	self.DecodeOpcode["jer"]    = 107 //JER X      : IP = IP+X, IF CMPR = 0
 	self.DecodeOpcode["jzr"]    = 107 //JZR X      : IP = IP+X, IF CMPR = 0
-	self.DecodeOpcode["lneg"]   = 108 //LNEG X     : X = LOGic NEGATE(X)	   3.00
+	self.DecodeOpcode["lneg"]   = 108 //LNEG X     : X = LOGic NEGATE(X)	   	3.00
 	//self.DecodeOpcode[""]     = 109 //RESERVED
-	//-----------------------------------------------------------------------------
-	self.DecodeOpcode["nmiret"] = 110 //NMIRET     : NMIRESTORE;		   2.00
-	self.DecodeOpcode["idle"]   = 111 //IDLE       : FORCE_CPU_IDLE;	   4.00
-	self.DecodeOpcode["nop"]    = 112 //NOP        : <does nothing>		   5.00
+	//-----------------------------------------------------------------------------------
+	self.DecodeOpcode["nmiret"] = 110 //NMIRET     : NMIRESTORE;		   	2.00
+	self.DecodeOpcode["idle"]   = 111 //IDLE       : FORCE_CPU_IDLE;	   	4.00
+	self.DecodeOpcode["nop"]    = 112 //NOP        : <does nothing>		   	5.00
 	//self.DecodeOpcode[""]     = 113 //RESERVED
-	//-----------------------------------------------------------------------------
-	self.DecodeOpcode["cpuget"] = 120 //CPUGET X,Y : X = CPU[Y]		   5.00
-	self.DecodeOpcode["cpuset"] = 121 //CPUSET X,Y : CPU[X] = Y		   5.00
-	self.DecodeOpcode["spp"]    = 122 //SPP X,Y    : PAGE[X].Y = 1		   5.00
-	self.DecodeOpcode["cpp"]    = 123 //CPP X,Y    : PAGE[X].Y = 0		   5.00
-	self.DecodeOpcode["srl"]    = 124 //SRL X,Y    : PAGE[X].RunLevel = Y	   5.00
-	self.DecodeOpcode["grl"]    = 125 //GRL X,Y    : X = PAGE[Y].RunLevel	   5.00
-	self.DecodeOpcode["lea"]    = 126 //LEA X,Y    : X = ADDRESS(Y)		   5.00
-	//-----------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+	self.DecodeOpcode["cpuget"] = 120 //CPUGET X,Y : X = CPU[Y]		   	5.00
+	self.DecodeOpcode["cpuset"] = 121 //CPUSET X,Y : CPU[X] = Y		   	5.00
+	self.DecodeOpcode["spp"]    = 122 //SPP X,Y    : PAGE[X].Y = 1		   	5.00 [BLOCK]
+	self.DecodeOpcode["cpp"]    = 123 //CPP X,Y    : PAGE[X].Y = 0		   	5.00 [BLOCK]
+	self.DecodeOpcode["srl"]    = 124 //SRL X,Y    : PAGE[X].RunLevel = Y	   	5.00 [BLOCK]
+	self.DecodeOpcode["grl"]    = 125 //GRL X,Y    : X = PAGE[Y].RunLevel	   	5.00
+	self.DecodeOpcode["lea"]    = 126 //LEA X,Y    : X = ADDRESS(Y)		   	5.00
+	self.DecodeOpcode["block"]  = 127 //BLOCK X,Y  : SETUP_DATA_BLOCK([X..X+Y-1])	6.00
+	self.DecodeOpcode["cmpand"] = 128 //CMPAND X,Y : CMPR = CMPR AND (X - Y)   	6.00
+	self.DecodeOpcode["cmpor"]  = 129 //CMPOR X,Y  : CMPR = CMPR OR (X - Y)    	6.00
+	//-----------------------------------------------------------------------------------
 end
 
 function ENT:InitializeASMOpcodes()
@@ -289,6 +292,7 @@ function ENT:InitializeOpcodeTable()
 		self.CMPR = Param1 - Param2
 	end
 	self.OpcodeTable[16] = function (Param1,Param2)	//RD
+		if (Param2 < 0) then return 0 end
 		if (self.Memory[Param2]) then
 			return self.Memory[Param2]
 		else
@@ -296,6 +300,7 @@ function ENT:InitializeOpcodeTable()
 		end
 	end
 	self.OpcodeTable[17] = function (Param1,Param2)	//WD
+		if (Param1 < 0) then return end
 		self.Memory[Param1] = Param2
 	end
 	self.OpcodeTable[18] = function (Param1,Param2)	//MIN
@@ -462,10 +467,10 @@ function ENT:InitializeOpcodeTable()
 			self.CS = newCS
 		end
 	end
-	self.OpcodeTable[48] = function (Param1,Param2)	//STE
+	self.OpcodeTable[48] = function (Param1,Param2)	//STEF
 		self.EF = 1
 	end
-	self.OpcodeTable[49] = function (Param1,Param2)	//CLE
+	self.OpcodeTable[49] = function (Param1,Param2)	//CLEF
 		self.EF = 0
 	end
 	//------------------------------------------------------------
@@ -523,7 +528,7 @@ function ENT:InitializeOpcodeTable()
 		return self:BinaryToInteger(bits)
 	end
 	self.OpcodeTable[62] = function (Param1,Param2)	//CBIT
-		local bits = IntegerToBinary(math.floor(Param1))
+		local bits = self:IntegerToBinary(math.floor(Param1))
 		bits[math.floor(math.Clamp(Param2,0,self.IPREC-1))] = 0
 		return self:BinaryToInteger(bits)
 	end
@@ -608,9 +613,13 @@ function ENT:InitializeOpcodeTable()
 		if (Param1 == 0) then return end
 		for i = 1,math.Clamp(Param1,0,8192) do
 			local val
-			val = self:ReadCell(self.ESI+self[self.PrecompileData[self.XEIP].Segment1])
-			if (val == nil) then return end
-			if (self:WriteCell(self.EDI+self[self.PrecompileData[self.XEIP].Segment2],val) == false) then return end
+			if (self.PrecompileData[self.XEIP]) then
+				val = self:ReadCell(self.ESI+self[self.PrecompileData[self.XEIP].Segment1])
+				if (val == nil) then return end
+				if (self:WriteCell(self.EDI+self[self.PrecompileData[self.XEIP].Segment2],val) == false) then return end
+			else
+				return
+			end
 			self.EDI = self.EDI + 1
 			self.ESI = self.ESI + 1
 		end
@@ -619,10 +628,14 @@ function ENT:InitializeOpcodeTable()
 		if (Param1 == 0) then return end
 		for i = 1,math.Clamp(Param1,0,8192) do
 			local val
-			val1 = self:ReadCell(self.ESI+self[self.PrecompileData[self.XEIP].Segment1])
-			val2 = self:ReadCell(self.EDI+self[self.PrecompileData[self.XEIP].Segment2])
-			if (val1 == nil) || (val2 == nil) then return end
-			if (self:WriteCell(self.EDI+self[self.PrecompileData[self.XEIP].Segment2],val1) == false) || (self:WriteCell(self.ESI+self[self.PrecompileData[self.XEIP].Segment1],val2) == false) then return end
+			if (self.PrecompileData[self.XEIP]) then
+				val1 = self:ReadCell(self.ESI+self[self.PrecompileData[self.XEIP].Segment1])
+				val2 = self:ReadCell(self.EDI+self[self.PrecompileData[self.XEIP].Segment2])
+				if (val1 == nil) || (val2 == nil) then return end
+				if (self:WriteCell(self.EDI+self[self.PrecompileData[self.XEIP].Segment2],val1) == false) || (self:WriteCell(self.ESI+self[self.PrecompileData[self.XEIP].Segment1],val2) == false) then return end
+			else
+				return
+			end
 			self.EDI = self.EDI + 1
 			self.ESI = self.ESI + 1
 		end
@@ -867,71 +880,156 @@ function ENT:InitializeOpcodeTable()
 		end
 	end
 	self.OpcodeTable[122] = function (Param1,Param2)	//SPP
-		local page = math.floor(Param1 / 128)
-		if (not self.Page[page]) then
-			self.Page[page] = {}
-			self.Page[page].Read  = 1
-			self.Page[page].Write = 1
-			self.Page[page].Execute = 1
-			self.Page[page].RunLevel = self.CurrentPage.RunLevel
-		end
-
-		if (self.CurrentPage.RunLevel <= Page[page].RunLevel) then
-			if (Param2 == 0) then
-				self.Page[page].Read  = 1
-			elseif (Param2 == 1) then
-				self.Page[page].Write = 1
-			elseif (Param2 == 2) then
-				self.Page[page].Execute = 1
-			elseif (Param2 == 3) then
-				self.Page[page].RunLevel = 1
-			end
-		else
-			self:Interrupt(11,page)
-		end
+		if (self.BlockSize > 0) then
+			local addr = self.BlockStart
+			self.BlockSize = math.Clamp(self.BlockSize,0,8192)
+			while (addr < self.BlockStart + self.BlockSize) do
+				local page = math.floor(addr / 128)
+				if (not self.Page[page]) then
+					self.Page[page] = {}
+					self.Page[page].Read  = 1
+					self.Page[page].Write = 1
+					self.Page[page].Execute = 1
+					self.Page[page].RunLevel = self.CurrentPage.RunLevel
+				end
 		
+				if (self.CurrentPage.RunLevel <= self.Page[page].RunLevel) then
+					if (Param2 == 0) then
+						self.Page[page].Read  = 1
+					elseif (Param2 == 1) then
+						self.Page[page].Write = 1
+					elseif (Param2 == 2) then
+						self.Page[page].Execute = 1
+					elseif (Param2 == 3) then
+						self.Page[page].RunLevel = 1
+					end
+				else
+					self:Interrupt(11,page)
+					return
+				end
+				addr = addr + 128
+			end
+			self.BlockSize = 0
+		else
+			local page = math.floor(Param1 / 128)
+			if (not self.Page[page]) then
+				self.Page[page] = {}
+				self.Page[page].Read  = 1
+				self.Page[page].Write = 1
+				self.Page[page].Execute = 1
+				self.Page[page].RunLevel = self.CurrentPage.RunLevel
+			end
+	
+			if (self.CurrentPage.RunLevel <= self.Page[page].RunLevel) then
+				if (Param2 == 0) then
+					self.Page[page].Read = 1
+				elseif (Param2 == 1) then
+					self.Page[page].Write = 1
+				elseif (Param2 == 2) then
+					self.Page[page].Execute = 1
+				elseif (Param2 == 3) then
+					self.Page[page].RunLevel = 1
+				end
+			else
+				self:Interrupt(11,page)
+			end
+		end		
 	end
 	self.OpcodeTable[123] = function (Param1,Param2)	//CPP
-		local page = math.floor(Param1 / 128)
-		if (not self.Page[page]) then
-			self.Page[page] = {}
-			self.Page[page].Read  = 1
-			self.Page[page].Write = 1
-			self.Page[page].Execute = 1
-			self.Page[page].RunLevel = self.CurrentPage.RunLevel
-		end
-
-		if (self.CurrentPage.RunLevel <= Page[page].RunLevel) then
-			if (Param2 == 0) then
-				self.Page[page].Read  = 0
-			elseif (Param2 == 1) then
-				self.Page[page].Write = 0
-			elseif (Param2 == 2) then
-				self.Page[page].Execute = 0
-			elseif (Param2 == 3) then
-				self.Page[page].RunLevel = 0
-			end
-		else
-			self:Interrupt(11,page)
-		end
+		if (self.BlockSize > 0) then
+			local addr = self.BlockStart
+			self.BlockSize = math.Clamp(self.BlockSize,0,8192)
+			while (addr < self.BlockStart + self.BlockSize) do
+				local page = math.floor(addr / 128)
+				if (not self.Page[page]) then
+					self.Page[page] = {}
+					self.Page[page].Read  = 1
+					self.Page[page].Write = 1
+					self.Page[page].Execute = 1
+					self.Page[page].RunLevel = self.CurrentPage.RunLevel
+				end
 		
+				if (self.CurrentPage.RunLevel <= self.Page[page].RunLevel) then
+					if (Param2 == 0) then
+						self.Page[page].Read = 0
+					elseif (Param2 == 1) then
+						self.Page[page].Write = 0
+					elseif (Param2 == 2) then
+						self.Page[page].Execute = 0
+					elseif (Param2 == 3) then
+						self.Page[page].RunLevel = 0
+					end
+				else
+					self:Interrupt(11,page)
+					return
+				end
+				addr = addr + 128
+			end
+			self.BlockSize = 0
+		else
+			local page = math.floor(Param1 / 128)
+			if (not self.Page[page]) then
+				self.Page[page] = {}
+				self.Page[page].Read  = 1
+				self.Page[page].Write = 1
+				self.Page[page].Execute = 1
+				self.Page[page].RunLevel = self.CurrentPage.RunLevel
+			end
+	
+			if (self.CurrentPage.RunLevel <= self.Page[page].RunLevel) then
+				if (Param2 == 0) then
+					self.Page[page].Read  = 0
+				elseif (Param2 == 1) then
+					self.Page[page].Write = 0
+				elseif (Param2 == 2) then
+					self.Page[page].Execute = 0
+				elseif (Param2 == 3) then
+					self.Page[page].RunLevel = 0
+				end
+			else
+				self:Interrupt(11,page)
+			end
+		end		
 	end
 	self.OpcodeTable[124] = function (Param1,Param2)	//SRL
-		local page = math.floor(Param1 / 128)
-		if (not self.Page[page]) then
-			self.Page[page] = {}
-			self.Page[page].Read  = 1
-			self.Page[page].Write = 1
-			self.Page[page].Execute = 1
-			self.Page[page].RunLevel = Param2
-		end
-
-		if (self.CurrentPage.RunLevel <= Page[page].RunLevel) then
-			self.Page[page].RunLevel = Param2
-		else
-			self:Interrupt(11,page)
-		end
+		if (self.BlockSize > 0) then
+			local addr = self.BlockStart
+			self.BlockSize = math.Clamp(self.BlockSize,0,8192)
+			while (addr < self.BlockStart + self.BlockSize) do
+				local page = math.floor(addr / 128)
+				if (not self.Page[page]) then
+					self.Page[page] = {}
+					self.Page[page].Read  = 1
+					self.Page[page].Write = 1
+					self.Page[page].Execute = 1
+					self.Page[page].RunLevel = self.CurrentPage.RunLevel
+				end
 		
+				if (self.CurrentPage.RunLevel <= self.Page[page].RunLevel) then
+					self.Page[page].RunLevel = Param2
+				else
+					self:Interrupt(11,page)
+					return
+				end
+				addr = addr + 128
+			end
+			self.BlockSize = 0
+		else
+			local page = math.floor(Param1 / 128)
+			if (not self.Page[page]) then
+				self.Page[page] = {}
+				self.Page[page].Read  = 1
+				self.Page[page].Write = 1
+				self.Page[page].Execute = 1
+				self.Page[page].RunLevel = self.CurrentPage.RunLevel
+			end
+	
+			if (self.CurrentPage.RunLevel <= self.Page[page].RunLevel) then
+				self.Page[page].RunLevel = Param2
+			else
+				self:Interrupt(11,page)
+			end
+		end
 	end
 	self.OpcodeTable[125] = function (Param1,Param2)	//GRL
 		local page = math.floor(Param2 / 128)
@@ -951,6 +1049,20 @@ function ENT:InitializeOpcodeTable()
 			return self.PrecompileData[self.XEIP]:EffectiveAddress2()
 		else
 			return Param2
+		end
+	end
+	self.OpcodeTable[127] = function (Param1,Param2)	//BLOCK
+		self.BlockStart = Param1
+		self.BlockSize = Param2
+	end
+	self.OpcodeTable[128] = function (Param1,Param2)	//CMPAND
+		if (self.CMPR ~= 0) then
+			self.CMPR = Param1 - Param2
+		end
+	end
+	self.OpcodeTable[129] = function (Param1,Param2)	//CMPOR
+		if (self.CMPR == 0) then
+			self.CMPR = Param1 - Param2
 		end
 	end
 	//------------------------------------------------------------

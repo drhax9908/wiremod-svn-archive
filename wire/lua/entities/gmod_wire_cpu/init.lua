@@ -34,8 +34,6 @@ function ENT:Initialize()
 
 	self.SerialNo = math.floor(math.random()*1000000)
 
-	self.IOBus = nil
-	self.MemBus = nil
 	self.UseROM = false
 
 	self.Clk = 0
@@ -151,11 +149,7 @@ function ENT:TriggerInput(iname, value)
 	elseif (iname == "Reset") then
 		if (value >= 1.0) then
 			self:Reset()
-		end		
-	elseif (iname == "MemBus") then
-		self.MemBus = self.Inputs.MemBus.Src /////////////
-	elseif (iname == "IOBus") then
-		self.IOBus = self.Inputs.IOBus.Src /////////////
+		end	
 	elseif (iname == "NMI") then
 		if (value >= 32) && (value < 256) then
 			if (self.Clk >= 1.0) then
