@@ -100,9 +100,9 @@ registerFunction("writeCell", "xwl:nn", "n", function(self, args)
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	local entity = checkEntity(rv1)
 	if(!entity or !entity.extended) then return 0 end
-	if !entity.writeCell then return 0 end
+	if !entity.WriteCell then return 0 end
 	
-	if entity:writeCell(rv2, rv3)
+	if entity:WriteCell(rv2, rv3)
 	   then return 1 else return 0 end
 end)
 
@@ -111,8 +111,8 @@ registerFunction("readCell", "xwl:n", "n", function(self, args)
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	local entity = checkEntity(rv1)
 	if(!entity or !entity.extended) then return 0 end
-	if !entity.readCell then return 0 end
+	if !entity.ReadCell then return 0 end
 	
-	local ret = entity:readCell(rv2)
+	local ret = entity:ReadCell(rv2)
 	if ret then return ret else return 0 end
 end)
