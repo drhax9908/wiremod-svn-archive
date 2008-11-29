@@ -41,7 +41,7 @@ registerFunction("isHiSpeed", "xwl:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	local entity = checkEntity(rv1)
-	if(entity and entity.extended and (entity.writeCell or entity.readCell)) then return 1 else return 0 end
+	if(entity and entity.extended and (entity.WriteCell or entity.ReadCell)) then return 1 else return 0 end
 end)
 
 registerFunction("entity", "xwl:", "e", function(self, args)
