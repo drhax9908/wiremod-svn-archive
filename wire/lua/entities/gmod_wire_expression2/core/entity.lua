@@ -5,6 +5,13 @@
 registerType("entity", "e", nil)
 
 /******************************************************************************/
+
+function checkEntity(entity)
+	if(!entity or type(entity)=="number" or !entity:IsValid()) then return nil end
+	return entity
+end
+
+/******************************************************************************/
 // Functions using operators
 
 registerOperator("ass", "e", "e", function(self, args)
@@ -33,6 +40,24 @@ registerOperator("neq", "ee", "n", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	if rv1 != rv2 then return 1 else return 0 end
+end)
+
+/******************************************************************************/
+
+registerFunction("entity", "n", "e", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self,op1)
+	local entity = checkEntity(ents.GetByIndex(rv1))
+	if !entity then return nil end
+	return entity
+end)
+
+registerFunction("id", "e:", "n", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self,op1)
+	local entity = checkEntity(rv1)
+	if !entity then return 0 end
+	return rv1:EntIndex()
 end)
 
 /******************************************************************************/
@@ -258,12 +283,6 @@ registerFunction("angles", "e:", "a", function(self, args)
 	entity = entity:GetAngles()
 	return {entity.p,entity.y,entity.r}
 end)
-
-function checkEntity(entity)
-	if(!entity or type(entity)=="number" or !entity:IsValid()) then return nil end
-	return entity
-end
-
 
 /******************************************************************************/
 /*
