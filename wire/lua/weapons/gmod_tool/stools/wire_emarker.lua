@@ -70,7 +70,7 @@ end
 if SERVER then
 
 	function MakeWireEmarker(pl, Pos, Ang, mark, Vel, aVel, frozen, nocollide )
-		if (!pl:CheckLimit("wire_markers")) then return end
+		if (!pl:CheckLimit("wire_emarkers")) then return end
 
 		local wire_emarker = ents.Create("gmod_wire_emarker")
 		wire_emarker:SetPos(Pos)
