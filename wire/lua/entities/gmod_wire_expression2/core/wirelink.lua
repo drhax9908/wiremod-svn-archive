@@ -137,6 +137,29 @@ registerFunction("entity", "xwl:s", "e", function(self, args)
 	return entity.Outputs[rv2].Value
 end)
 
+
+registerFunction("setXyz", "xwl:v", "", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local entity = checkEntity(rv1)
+	if(!entity or !entity.extended) then return end
+	if !entity.Inputs["X"] || !entity.Inputs["Y"] || !entity.Inputs["Z"] then return end
+	if entity.Inputs["X"].Type != "NORMAL" || entity.Inputs["Y"].Type != "NORMAL" || entity.Inputs["Z"].Type != "NORMAL" then return end
+	entity:TriggerInput("X", rv2[1])
+	entity:TriggerInput("Y", rv2[2])
+	entity:TriggerInput("Z", rv2[3])
+end)
+
+registerFunction("xyz", "xwl:", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local entity = checkEntity(rv1)
+	if(!entity or !entity.extended) then return {0,0,0} end
+	if !entity.Outputs["X"] || !entity.Outputs["Y"] || !entity.Outputs["Z"] then return {0,0,0} end
+	if entity.Outputs["X"].Type != "NORMAL" || entity.Outputs["Y"].Type != "NORMAL" || entity.Outputs["Z"].Type != "NORMAL" then return {0,0,0} end
+	return { entity.Outputs["X"].Value, entity.Outputs["Y"].Value, entity.Outputs["Z"].Value }
+end)
+
 /******************************************************************************/
 
 registerFunction("writeCell", "xwl:nn", "n", function(self, args)
