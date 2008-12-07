@@ -320,7 +320,7 @@ registerFunction("toAngle", "v:", "a", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	local angle = Vector(rv1[1], rv1[2], rv1[3]):Angle()
-	return { entity.p, entity.y, entity.r }
+	return { angle.p, angle.y, angle.r }
 end)
 
 registerFunction("toString", "v:", "s", function(self, args)
