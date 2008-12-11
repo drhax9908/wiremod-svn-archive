@@ -9,6 +9,7 @@ if (CLIENT) then
 	language.Add("Tool_wire_cpu_0", "Primary: Create empty CPU / Upload current program to it")//; Secondary: Debug the CPU
 	language.Add("sboxlimit_wire_cpu", "You've hit CPU limit!")
 	language.Add("undone_wirecpu", "Undone the wire CPU")
+	language.Add( "ToolWirecpu_Model", "Model:" )
 end
 
 if (SERVER) then
@@ -559,4 +560,14 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("Label", {
 		Text = "Loads online CPU documentation and tutorials"
 	})
+	panel:AddControl("ComboBox", {
+        Label = "#ToolWirecpu_Model",
+        Options = {
+            ["AMD64"]    	    = { wire_cpu_model = "models/cheeze/wires/cpu.mdl" },
+            ["AMD64 Mini"]    = { wire_cpu_model = "models/cheeze/wires/mini_cpu.mdl" },
+	    ["WireCPU"]    = { wire_cpu_model = "models/cheeze/wires/cpu2.mdl" },	    
+	    ["WireCPU Mini"]    = { wire_cpu_model = "models/cheeze/wires/mini_cpu2.mdl"},
+
+        }
+    })
 end
