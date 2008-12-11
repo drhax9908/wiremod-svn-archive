@@ -418,4 +418,24 @@
 		}
 	}
 
+
+	"INTeL"
+	{
+		"categories"	"gate,chip"
+		"model"			"models/cheeze/wires/cpu2.mdl"
+		"files"
+		{
+			"0"	"models/cheeze/wires/cpu.dx80.vtx"
+			"1"	"models/cheeze/wires/cpu.dx90.vtx"
+			"2"	"models/cheeze/wires/cpu.phy"
+			"3"	"models/cheeze/wires/cpu.sw.vtx"
+			"4"	"models/cheeze/wires/cpu.vvd"
+			"5"     "materials/models/cheeze/wires/pins.vmt"
+			"6"     "materials/models/cheeze/wires/pins.vtf"
+			"7"     "materials/models/cheeze/wires/x3_logo.vmt"
+			"8"     "materials/models/cheeze/wires/x3_logo.vtf"
+			"9"     "materials/models/cheeze/wires/x2_plain.vmt"
+			"10"     "materials/models/cheeze/wires/x2_plain.vtf"
+		}
+	}
 }
