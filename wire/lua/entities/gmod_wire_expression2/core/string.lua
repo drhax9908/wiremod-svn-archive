@@ -68,28 +68,35 @@ end)
 /******************************************************************************/
 
 registerFunction("toNumber", "s:", "n", function(self, args)
-	local op1 = args[2], args[3]
+	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	return tonumber(rv1)
 end)
 
 registerFunction("toString", "n", "s", function(self, args)
-	local op1 = args[2], args[3]
+	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	return tostring(rv1)
 end)
 
 registerFunction("toChar", "n", "s", function(self, args)
-	local op1 = args[2], args[3]
+	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	return string.char(string.Left(rv1, 1))
 end)
 
 registerFunction("toByte", "s", "n", function(self, args)
-	local op1 = args[2], args[3]
+	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
+	return string.byte(rv1, 1)
+end)
+
+registerFunction("toByte", "sn", "n", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	return string.byte(rv1, rv2)
 end)
+
 
 /******************************************************************************/
 
