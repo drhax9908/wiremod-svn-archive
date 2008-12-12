@@ -1664,10 +1664,11 @@ include("string.lua");
 include("angle.lua");
 include("entity.lua");
 include("player.lua");
+//include("table.lua");
 include("timer.lua");
 include("selfaware.lua");
 include("unitconv.lua");
 include("wirelink.lua");
 include("console.lua");
-
+include("find.lua");
 //include("quaternion.lua");
