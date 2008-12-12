@@ -79,13 +79,13 @@ registerFunction("toString", "n", "s", function(self, args)
 	return tostring(rv1)
 end)
 
-registerFunction("byteToChar", "n", "s", function(self, args)
+registerFunction("toChar", "n", "s", function(self, args)
 	local op1 = args[2], args[3]
 	local rv1 = op1[1](self, op1)
 	return string.char(string.Left(rv1, 1))
 end)
 
-registerFunction("charToByte", "s", "n", function(self, args)
+registerFunction("toByte", "s", "n", function(self, args)
 	local op1 = args[2], args[3]
 	local rv1 = op1[1](self, op1)
 	return string.byte(rv1, rv2)
