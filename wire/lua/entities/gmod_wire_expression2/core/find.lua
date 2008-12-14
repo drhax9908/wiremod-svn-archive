@@ -73,7 +73,7 @@ local function clipEntities(entity)
 		local entSteamId = nil
 		if ent:IsPlayer() then entSteamId = ent:SteamID() end
 		local entOwner = ent:GetOwner()
-		if entOwner != nil && entOwner:IsValid() then entOwner = entOwner:SteamID() end
+		if entOwner != nil && entOwner:IsValid() && entOwner:IsPlayer() then entOwner = entOwner:SteamID() end
 		local entModel = ent:GetModel()
 		if entModel != nil then
 			entModel = string.lower(entModel)
@@ -630,7 +630,7 @@ registerFunction("findResult","n","e", function(self,args)
 	local id = self.entity:EntIndex()
 	initTable(self.entity)
 	exp2Discoveries[id].lastAccess = CurTime()
-	if rv1 < 1 or rv1 > exp2Discoveries[id].entities:length() then return nil end
+	if rv1 < 1 or rv1 > #exp2Discoveries[id].entities then return nil end
 	return exp2Discoveries[id].entities[rv1]
 end)
 
