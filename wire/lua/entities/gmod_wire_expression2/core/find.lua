@@ -81,9 +81,10 @@ local function clipEntities(entity)
 		local entClass = string.lower(ent:GetClass())
 		local cont = true
 		local found = false
-		//ignore: the chip, held items, info entities, predicted entities, physgun_beam
-		if ent:EntIndex() == id || ent:IsPlayerHolding() || string.find(entClass,"info_") != nil 
-				|| string.find(entClass,"predicted") != nil || entClass == "physgun_beam" then 
+		//ignore: the chip, info entities, predicted entities, physgun_beam, prop_dynamic
+		if ent:EntIndex() == id || string.find(entClass,"info_") != nil 
+				|| string.find(entClass,"predicted") != nil || entClass == "physgun_beam" || entClass == "prop_dynamic" 
+				|| entClass == "player_manager" then 
 			table.remove(exp2Discoveries[id].entities, i - indexOffset)
 			indexOffset = indexOffset + 1
 		else
@@ -245,10 +246,10 @@ registerFunction("findPlayerByName", "s", "e", function(self,args)
 		local time = CurTime()
 		exp2Discoveries[id].lastFind = time
 		exp2LastPlayerFind[exp2Discoveries[id].playerId] = time
-		local ents = ents.FindByName(rv1)
+		local ents = ents.FindByClass("player")
 		exp2Discoveries[id].lastAccess = time
 		for _,ent in pairs(ents) do
-			if ent:IsPlayer() then return ent end
+			if string.find(ent:GetName(),rv1) != nil then return ent end
 		end
 	end
 	return nil
@@ -469,10 +470,10 @@ registerFunction("findIncludeClass","s","", function(self,args)
 end)
 
 local function somethingInWhiteList(id)
-	return exp2Discoveries[id].whitePlayerList:Length() > 0 or
-		exp2Discoveries[id].whitePropList:Length() > 0 or
-		exp2Discoveries[id].whiteModelList:Length() > 0 or
-		exp2Discoveries[id].whiteClassList:Length() > 0
+	return #exp2Discoveries[id].whitePlayerList > 0 or
+		#exp2Discoveries[id].whitePropList > 0 or
+		#exp2Discoveries[id].whiteModelList > 0 or
+		#exp2Discoveries[id].whiteClassList > 0
 end
 
 registerFunction("findDisallowPlayer","e","", function(self,args)
@@ -668,6 +669,8 @@ registerFunction("findSortByDistance","v","n", function(self,args)
 	exp2FindComparePoint = Vector(rv1[1],rv1[2],rv1[3])
 	exp2Discoveries[id].lastAccess = CurTime()
 	table.sort(exp2Discoveries[id].entities, function(a, b)
+		if a == nil || !a:IsValid() then return false end
+		if b == nil  || !b:IsValid() then return true end
 		return (a:GetPos() - exp2FindComparePoint):Length() < (b:GetPos() - exp2FindComparePoint):Length() end)
 	return table.Count(exp2Discoveries[id].entities)
 end)
