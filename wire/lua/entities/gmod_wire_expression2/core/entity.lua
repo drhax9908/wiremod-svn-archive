@@ -222,6 +222,16 @@ registerFunction("elevation", "e:v", "n", function(self, args)
 	return math.deg(math.asin(entity.z / len)) //changed to degress because it is used by most things
 end)
 
+registerFunction("mass", "e:", "n", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local entity = checkEntity(rv1)
+	if(!entity) then return 0 end
+	local phys = entity:GetPhysicsObject()
+	if phys == nil then return 0 end
+	return phys:GetMass()
+end)
+
 /******************************************************************************/
 // Functions getting boolean/number
 registerFunction("isPlayer", "e:", "n", function(self, args)

@@ -84,6 +84,7 @@ function ENT:Execute()
 end
 
 function ENT:OnRemove( )
+	exp2FindOnRemove(self.Entity)
 	if(self.script) then
 		for i,callback in ipairs(wire_expression_callbacks['destruct']) do
 			callback(self.context)
@@ -151,6 +152,9 @@ function ENT:Setup(buffer, restore)
 	self._inputs = { {}, {} }
 	self._outputs = { {}, {} }
 	self._vars = self.context.vars
+
+	if exp2Discoveries == nil then exp2Discoveries = {} end
+	exp2Discoveries[self.Entity:EntIndex()]=nil
 	
 	for k,v in pairs(self.inports[3]) do
 		self._inputs[1][#self._inputs[1] + 1] = k
