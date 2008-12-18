@@ -143,7 +143,7 @@ function ENT:Setup(buffer, restore)
 	self.context.vclk = {}
 	self.context.data = {}
 	self.context.entity = self
-	self.context.player = self.player
+	self.context.player = self:GetOwner()
 	
 	self._original = string.Replace(string.Replace(self.original,"\"","£"),"\n","€")
 	self._buffer = buffer
