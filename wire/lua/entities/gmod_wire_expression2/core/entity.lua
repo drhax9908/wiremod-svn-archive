@@ -79,7 +79,7 @@ registerFunction("model", "e:", "s", function(self, args)
 	return rv1:GetModel()
 end)
 
-registerFunction("owner", "e:", "s", function(self, args)
+registerFunction("owner", "e:", "e", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	local entity = checkEntity(rv1)
