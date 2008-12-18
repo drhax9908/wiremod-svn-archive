@@ -117,6 +117,54 @@ end)
 // TODO: is the shifting correct for rounding arbitrary decimals?
 // TODO: ceil, floor etc does not adhere to DELTA, should they?
 
+registerFunction("min", "nn", "n", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	if rv1 < rv2 then return rv1 else return rv2 end
+end)
+
+registerFunction("min", "nnn", "n", function(self, args)
+	local op1, op2, op3 = args[2], args[3], args[4]
+	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+	local val
+	if rv1 < rv2 then val = rv1 else val = rv2 end
+	if rv3 < val then return rv3 else return val end
+end)
+
+registerFunction("min", "nnnn", "n", function(self, args)
+	local op1, op2, op3, op4 = args[2], args[3], args[4], args[5]
+	local rv1, rv2, rv3, op4 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3), op4[1](self, op4)
+	local val
+	if rv1 < rv2 then val = rv1 else val = rv2 end
+	if rv3 < val then val = rv3 end
+	if rv4 < val then return rv4 else return val end
+end)
+
+registerFunction("max", "nn", "n", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	if rv1 > rv2 then return rv1 else return rv2 end
+end)
+
+registerFunction("max", "nnn", "n", function(self, args)
+	local op1, op2, op3 = args[2], args[3], args[4]
+	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+	local val
+	if rv1 > rv2 then val = rv1 else val = rv2 end
+	if rv3 > val then return rv3 else return val end
+end)
+
+registerFunction("max", "nnnn", "n", function(self, args)
+	local op1, op2, op3, op4 = args[2], args[3], args[4], args[5]
+	local rv1, rv2, rv3, op4 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3), op4[1](self, op4)
+	local val
+	if rv1 > rv2 then val = rv1 else val = rv2 end
+	if rv3 > val then val = rv3 end
+	if rv4 > val then return rv4 else return val end
+end)
+
+/******************************************************************************/
+
 registerFunction("abs", "n", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
