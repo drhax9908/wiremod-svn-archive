@@ -15,14 +15,14 @@ end)
 registerFunction("name", "e:", "s", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	if(!rv1 or !rv1:IsValid()) then return {0,0,0} end
+	if(!rv1 or !rv1:IsValid()) then return "" end
 	if(rv1:IsPlayer()) then return rv1:Name() else return "" end
 end)
 
 registerFunction("steamID", "e:", "s", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	if(!rv1 or !rv1:IsValid()) then return {0,0,0} end
+	if(!rv1 or !rv1:IsValid()) then return "" end
 	if(rv1:IsPlayer()) then return rv1:SteamID() else return "" end
 end)
 
