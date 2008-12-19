@@ -55,7 +55,10 @@ if SERVER then
 	
 	function WireLib.BuildDupeInfo(ent)
 		local info = _Wire_BuildDupeInfo(ent)
-		if ent.extended then info.extended = true end
+		if ent.extended then
+			if info == nil then info = {} end
+			info.extended = true
+		end
 		return info
 	end
 	
