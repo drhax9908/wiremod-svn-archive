@@ -79,7 +79,7 @@ if SERVER then
 		entity:SetPos(pos)
 		entity:Spawn()
 		entity:SetPlayer(player)
-		entity.player = player
+		table.Merge(entity:GetTable(), { player = player })
 		
 		buffer = string.Replace(string.Replace(buffer,"£","\""),"€","\n")
 		
