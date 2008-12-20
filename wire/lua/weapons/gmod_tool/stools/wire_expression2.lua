@@ -49,6 +49,7 @@ if SERVER then
 		entity:SetPos(pos)
 		entity:Spawn()
 		entity:SetPlayer(player)
+		entity.player = player
 		
 		if !entity then return false end
 		
@@ -79,7 +80,7 @@ if SERVER then
 		entity:SetPos(pos)
 		entity:Spawn()
 		entity:SetPlayer(player)
-		table.Merge(entity:GetTable(), { player = player })
+		entity.player = player
 		
 		buffer = string.Replace(string.Replace(buffer,"£","\""),"€","\n")
 		
