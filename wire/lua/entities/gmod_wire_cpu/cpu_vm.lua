@@ -680,9 +680,11 @@ function ENT:Execute()
 		end
 		self:PrintState()
 
-		Msg("Memory at opcode: ")
+		Msg("Memory at XEIP: ")
 		for i=self.XEIP,self.XEIP+6 do
-			local val = self:ReadCell(self.XEIP)
+			self.BusLock = 0
+			local val = self:ReadCell(i)
+			self.BusLock = 1
 			if (val) then
 				Msg("["..val.."] ")
 			end
