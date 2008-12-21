@@ -682,9 +682,10 @@ function ENT:Execute()
 
 		Msg("Memory at XEIP: ")
 		for i=self.XEIP,self.XEIP+6 do
+			local oldlock = self.BusLock
 			self.BusLock = 0
 			local val = self:ReadCell(i)
-			self.BusLock = 1
+			self.BusLock = oldlock
 			if (val) then
 				Msg("["..val.."] ")
 			end
