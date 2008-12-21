@@ -15,7 +15,7 @@ registerType("table", "t", {},
 		for k,v in pairs(input) do ret[k] = v end
 		return ret
 	end,
-	function(self, output) return output end,
+	function(self, output) return output end
 )
 
 /******************************************************************************/
