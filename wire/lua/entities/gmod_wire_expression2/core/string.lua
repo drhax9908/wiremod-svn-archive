@@ -21,7 +21,7 @@ registerType("string", "s", "")
 
 registerOperator("ass", "s", "s", function(self, args)
 	local op1, op2 = args[2], args[3]
-	local rv2 = op2[1](self, op2)
+	local      rv2 = op2[1](self, op2)
 	self.vars[op1] = rv2
 	self.vclk[op1] = true
 	return rv2
