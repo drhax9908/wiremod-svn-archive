@@ -196,7 +196,7 @@ function TOOL:Compile_End()
 
 	pl:ConCommand('wire_cpu_vgui_close')
 
-	if (self:GetClientInfo("dump_data") == "1") then
+	if ((self:GetClientInfo("dump_data") == "1") && (SinglePlayer())) then
 		pl:PrintMessage(HUD_PRINTCONSOLE,"ZyeliosASM: Dumping data\n")
 		local codedump = ""
 		for i = 0,ent.WIP do
@@ -205,6 +205,7 @@ function TOOL:Compile_End()
 			end
 		end
 		file.Write("cdump.txt",codedump)
+		file.Write("ldump.txt",ent.Dump)
 		pl:PrintMessage(HUD_PRINTCONSOLE,"ZyeliosASM: Dumped!\n")
 	end
 

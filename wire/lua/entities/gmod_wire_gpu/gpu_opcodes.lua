@@ -27,12 +27,12 @@ function ENT:InitializeGPUOpcodeNames()
 	self.DecodeOpcode["dmove"]	    = 219 //DMOVE X		: Set offset position to X				[2F]
 	//- Rendering opcodes -------------------------------------------------------------------------------------------------
 	self.DecodeOpcode["dvxdata_2f"]     = 220 //DVXDATA_2F X,Y	: Draw solid 2d polygon    (OFFSET,NUMVALUES)		[2F,INT]
-	self.DecodeOpcode["dvxpoly"]        = 220 //DVXPOLY = DVXDATA_2F
+	self.DecodeOpcode["dvxpoly"]        = 220 //
 	self.DecodeOpcode["dvxdata_2f_tex"] = 221 //DVXDATA_2F_TEX X,Y	: Draw textured 2d polygon (OFFSET,NUMVALUES)		[2F+UV,INT]
-	self.DecodeOpcode["dvxtexpoly"]     = 221 //DVXTEXPOLY = DVXDATA_2F_TEX
+	self.DecodeOpcode["dvxtexpoly"]     = 221 //
 	self.DecodeOpcode["dvxdata_3f"]     = 222 //DVXDATA_3F X,Y	: Draw solid 3d polygon    (OFFSET,NUMVALUES)		[3F,INT]
 	self.DecodeOpcode["dvxdata_3f_tex"] = 223 //DVXDATA_3F_TEX X,Y	: Draw textured 3d polygon (OFFSET,NUMVALUES)		[3F+UV,INT]
-//	self.DecodeOpcode[""]               = 224 //<reserved>
+	self.DecodeOpcode["dvxdata_wf"]     = 224 //DVXDATA_WF X,Y	: Draw wireframe 3d polygon    (OFFSET,NUMVALUES)	[3F,INT]
 	self.DecodeOpcode["drect"]          = 225 //DRECT X,Y		: Draw rectangle (XY1,XY2)				[2F,2F]
 	self.DecodeOpcode["dcircle"]        = 226 //DCIRCLE X,Y		: Draw circle (XY,R)					[2F,F]
 	self.DecodeOpcode["dline"]          = 227 //DLINE X,Y		: Draw line (XY1,XY2)					[2F,2F]
@@ -265,8 +265,11 @@ function ENT:InitializeGPUOpcodeTable()
 					end
 				end
 				if (Cull == false) then
+					Material("dummy_texture.vmt"):SetMaterialTexture(
+						Material(newtexture):GetMaterialTexture("$basetexture"))
+
 					surface.SetDrawColor(newcolor.x,newcolor.y,newcolor.z,newcolor.w)
-					surface.SetTexture(newtexture)
+				 	surface.SetTexture(surface.GetTextureID("dummy_texture.vmt"))
 					surface.DrawPoly(self.VertexBuffer[i])
 				end
 			end
@@ -316,7 +319,7 @@ function ENT:InitializeGPUOpcodeTable()
 
 	end
 	self.OpcodeTable[214] = function (Param1, Param2)	//DCLRSCR
-		local tcolor = self:TransformColor(self:Read3f(Param1))
+		local tcolor = self:TransformColor(self:Read4f(Param1))
 		self.CurColor = tcolor
 
  		surface.SetDrawColor(tcolor.x,tcolor.y,tcolor.z,tcolor.w)
@@ -328,7 +331,7 @@ function ENT:InitializeGPUOpcodeTable()
 		self.VertexBuffer[self.VertexBufferCount].SetColor = tcolor
 	end
 	self.OpcodeTable[215] = function (Param1, Param2)	//DCOLOR
-		local tcolor = self:TransformColor(self:Read3f(Param1))
+		local tcolor = self:TransformColor(self:Read4f(Param1))
 		self.CurColor = tcolor
 
  		surface.SetDrawColor(tcolor.x,tcolor.y,tcolor.z,tcolor.w)
@@ -343,11 +346,15 @@ function ENT:InitializeGPUOpcodeTable()
 			if (!self.StringCache[addr]) then
 				self.StringCache[addr] = self:ReadStr(addr)
 			end
-			self.CurrentTexture = surface.GetTextureID(self.StringCache[addr])
+			self.CurrentTexture = self.StringCache[addr]
 		else
-			self.CurrentTexture = surface.GetTextureID(self.ColorTexture)
+			self.CurrentTexture = self.ColorTexture
 		end
-	 	surface.SetTexture(self.CurrentTexture)
+
+		Material("dummy_texture.vmt"):SetMaterialTexture("$basetexture",
+			Material(self.CurrentTexture):GetMaterialTexture("$basetexture"))
+
+	 	surface.SetTexture(surface.GetTextureID("dummy_texture.vmt"))
 		if (!self.VertexBuffer[self.VertexBufferCount]) then
 			self.VertexBuffer[self.VertexBufferCount] = {}
 		end
