@@ -1664,7 +1664,7 @@ include("string.lua");
 include("angle.lua");
 include("entity.lua");
 include("player.lua");
-//include("table.lua");
+include("table.lua");
 include("timer.lua");
 include("selfaware.lua");
 include("unitconv.lua");
