@@ -138,6 +138,27 @@ registerFunction("entity", "xwl:s", "e", function(self, args)
 end)
 
 
+registerFunction("setString", "xwl:ss", "", function(self, args)
+    local op1, op2, op3 = args[2], args[3], args[4]
+    local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+    local entity = checkEntity(rv1)
+    if(!entity or !entity.extended) then return end
+    if !entity.Inputs[rv2] then return end
+    if entity.Inputs[rv2].Type != "STRING" then return end
+    entity:TriggerInput(rv2, rv3)
+end)
+
+registerFunction("string", "xwl:s", "s", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+    local entity = checkEntity(rv1)
+    if(!entity or !entity.extended) then return "" end
+    if !entity.Outputs[rv2] then return "" end
+    if entity.Outputs[rv2].Type != "STRING" then return "" end
+    return entity.Outputs[rv2].Value
+end)
+
+
 registerFunction("setXyz", "xwl:v", "", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
