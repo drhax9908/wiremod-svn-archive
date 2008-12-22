@@ -6,8 +6,10 @@ registerType("normal", "n", 0)
 
 /******************************************************************************/
 
-registerCallback("postexecute", function(self)
+registerCallback("preexecute", function(self)
 	if self.data['first'] == nil then
+		self.data['first'] = true
+	elseif self.data['first'] == true then
 		self.data['first'] = false
 	end
 end)
@@ -123,8 +125,8 @@ end)
 /******************************************************************************/
 
 registerFunction("first", "", "n", function(self, args)
-	if self.data['first'] == false
-	   then return 0 else return 1 end
+	if self.data['first'] == true
+	   then return 1 else return 0 end
 end)
 
 /******************************************************************************/
