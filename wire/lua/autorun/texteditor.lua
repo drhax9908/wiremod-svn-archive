@@ -473,6 +473,7 @@ function EDITOR:SetArea(selection, text, isundo, isredo, before, after)
 	for i=2,#rows do
 		table.insert(self.Rows, start[1] + i - 1, rows[i])
 		table.insert(self.PaintRows, start[1] + i - 1, false)
+		self.PaintRows = {} // TODO: fix for cache errors
 	end
 
 	local stop = { start[1] + #rows - 1, string.len(self.Rows[start[1] + #rows - 1]) + 1 }
@@ -484,6 +485,7 @@ function EDITOR:SetArea(selection, text, isundo, isredo, before, after)
 	if self.Rows[#self.Rows] != "" then
 		self.Rows[#self.Rows + 1] = ""
 		self.PaintRows[#self.Rows + 1] = false
+		self.PaintRows = {} // TODO: fix for cache errors
 	end
 	
 	self.ScrollBar:SetUp(self.Size[1], #self.Rows - 1)
