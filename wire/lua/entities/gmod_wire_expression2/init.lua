@@ -66,7 +66,15 @@ function ENT:OnRestore()
 end
 
 function ENT:Execute()
+	for i,callback in ipairs(wire_expression_callbacks['preexecute']) do
+		callback(self.context)
+	end
+
 	self.script[1](self.context, self.script)
+	
+	for i,callback in ipairs(wire_expression_callbacks['postexecute']) do
+		callback(self.context)
+	end
 	
 	self:TriggerOutputs()
 	

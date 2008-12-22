@@ -6,6 +6,14 @@ registerType("normal", "n", 0)
 
 /******************************************************************************/
 
+registerCallback("preexecute", function(self)
+	if self.data['first'] == nil then
+		self.data['first'] = false
+	end
+end)
+
+/******************************************************************************/
+
 registerOperator("ass", "n", "n", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local      rv2 = op2[1](self, op2)
@@ -110,6 +118,13 @@ end)
 registerOperator("mod", "nn", "n", function(self, args)
 	local op1, op2 = args[2], args[3]
 	return op1[1](self, op1) % op2[1](self, op2)
+end)
+
+/******************************************************************************/
+
+registerFunction("first", "", "n", function(self, args)
+	if self.data['first'] == false
+	   then return 0 else return 1 end
 end)
 
 /******************************************************************************/
