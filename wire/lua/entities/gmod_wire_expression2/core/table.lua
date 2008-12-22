@@ -108,7 +108,7 @@ end)
 registerFunction("setString", "t:ss", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
-	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
+	if rv3 == "" then rv3 = nil end
 	rv1["s" .. rv2] = rv3
 	//self.vclk[op1] = true
 end)
