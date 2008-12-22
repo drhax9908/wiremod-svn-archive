@@ -6,7 +6,7 @@ registerType("normal", "n", 0)
 
 /******************************************************************************/
 
-registerCallback("preexecute", function(self)
+registerCallback("postexecute", function(self)
 	if self.data['first'] == nil then
 		self.data['first'] = false
 	end
