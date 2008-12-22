@@ -295,13 +295,13 @@ registerFunction("angles", "e:", "a", function(self, args)
 end)
 
 /******************************************************************************/
-
+/*
 registerFunction("setColor", "e:nnn", "", function(self, args)
 	local op1, op2, op3, op4 = args[2], args[3], args[4], args[5]
 	local rv1, rv2, rv3, rv4 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3), op4[1](self, op4)
 	rv1:SetColor(math.Clamp(rv2, 0, 255), math.Clamp(rv3, 0, 255), math.Clamp(rv4, 0, 255), 255)
 end)
-
+*/
 /*
 // Functions getting color
 registerFunction("getColor", "e:", "c", function(self, args)
