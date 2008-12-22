@@ -48,7 +48,7 @@ end)
 registerFunction("count", "t:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	return #rv1["n" .. rv2]
+	return #rv1
 end)
 
 /******************************************************************************/
