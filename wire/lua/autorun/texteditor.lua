@@ -443,6 +443,7 @@ function EDITOR:SetArea(selection, text, isundo, isredo, before, after)
 		// add empty row at end of file (TODO!)
 		if self.Rows[#self.Rows] != "" then
 			self.Rows[#self.Rows + 1] = ""
+			self.PaintRows[#self.Rows + 1] = false
 		end
 	end
 	
@@ -482,6 +483,7 @@ function EDITOR:SetArea(selection, text, isundo, isredo, before, after)
 	// add empty row at end of file (TODO!)
 	if self.Rows[#self.Rows] != "" then
 		self.Rows[#self.Rows + 1] = ""
+		self.PaintRows[#self.Rows + 1] = false
 	end
 	
 	self.ScrollBar:SetUp(self.Size[1], #self.Rows - 1)
