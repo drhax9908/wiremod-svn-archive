@@ -83,7 +83,7 @@ registerFunction("owner", "e:", "e", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	local entity = checkEntity(rv1)
-	if(!entity) then return "" end
+	if(!entity) then return nil end
 	return rv1:GetOwner()
 end)
 
