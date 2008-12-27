@@ -150,7 +150,7 @@ end)
 
 registerFunction("min", "nnnn", "n", function(self, args)
 	local op1, op2, op3, op4 = args[2], args[3], args[4], args[5]
-	local rv1, rv2, rv3, op4 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3), op4[1](self, op4)
+	local rv1, rv2, rv3, rv4 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3), op4[1](self, op4)
 	local val
 	if rv1 < rv2 then val = rv1 else val = rv2 end
 	if rv3 < val then val = rv3 end
@@ -173,7 +173,7 @@ end)
 
 registerFunction("max", "nnnn", "n", function(self, args)
 	local op1, op2, op3, op4 = args[2], args[3], args[4], args[5]
-	local rv1, rv2, rv3, op4 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3), op4[1](self, op4)
+	local rv1, rv2, rv3, rv4 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3), op4[1](self, op4)
 	local val
 	if rv1 > rv2 then val = rv1 else val = rv2 end
 	if rv3 > val then val = rv3 end
