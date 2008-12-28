@@ -97,7 +97,6 @@ registerFunction("toByte", "sn", "n", function(self, args)
 	return string.byte(rv1, rv2)
 end)
 
-
 /******************************************************************************/
 
 registerFunction("index", "s:n", "s", function(self, args)
@@ -140,4 +139,30 @@ registerFunction("length", "s:", "n", function(self, args)
 	local op1 = args[2], args[3]
 	local rv1 = op1[1](self, op1)
 	return rv1:len()
+end)
+
+/******************************************************************************/
+
+registerFunction("find", "s:s", "n", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+    return string.find(rv1,rv2) or 0
+end)
+
+registerFunction("find", "s:sn", "n", function(self, args)
+    local op1, op2, op3 = args[2], args[3], args[4]
+    local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+    return string.find(rv1,rv2,rv3) or 0
+end)
+
+registerFunction("replace", "s:ss", "s", function(self, args)
+    local op1, op2, op3 = args[2], args[3], args[4]
+    local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+    return string.Replace(rv1,rv2,rv3)
+end)
+
+registerFunction("explode", "s:s", "t", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+    return string.Explode(rv2,rv1)
 end)
