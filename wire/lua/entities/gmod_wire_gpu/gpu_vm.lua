@@ -119,6 +119,8 @@ function ENT:GPUResetRegisters()
 	//[65478] - Circle start (rad)
 	//[65477] - Circle end (rad)
 	//[65476] - Line width (1)
+	//[65475] - Scale X
+	//[65474] - Scale Y
 
 	self.Memory[65485] = 32
 	self.Memory[65484] = 0
@@ -130,6 +132,8 @@ function ENT:GPUResetRegisters()
 	self.Memory[65478] = 0
 	self.Memory[65477] = 3.141592*2
 	self.Memory[65476] = 1
+	self.Memory[65475] = 1
+	self.Memory[65474] = 1
 
 
 	//=================================
@@ -314,8 +318,8 @@ function ENT:Transform(x,y)
 
 		atan = atan + self:ReadCell(65482)
 
-		transx = math.cos(atan) * vd * self:ReadCell(65481)+centerx
-		transy = math.sin(atan) * vd * self:ReadCell(65481)+centery
+		transx = math.cos(atan) * vd * self:ReadCell(65481) * self:ReadCell(65475) + centerx
+		transy = math.sin(atan) * vd * self:ReadCell(65481) * self:ReadCell(65474) + centery
 	end
 
 	transx = transx+self:ReadCell(65484)

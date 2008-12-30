@@ -562,7 +562,7 @@ function TOOL.BuildCPanel(panel)
 		Text = "Loads online CPU documentation and tutorials"
 	})
 	panel:AddControl("ComboBox", {
-        Label = "#ToolWirecpu_Model",
+        Label = "Model",
         Options = {
             ["AMD64"]    	    = { wire_cpu_model = "models/cheeze/wires/cpu.mdl" },
             ["AMD64 Mini"]    = { wire_cpu_model = "models/cheeze/wires/mini_cpu.mdl" },

@@ -28,22 +28,20 @@ function Wire_ReleaseInput(pl,cmd,args)
 end
 concommand.Add("wire_keyboard_releaseinput", Wire_ReleaseInput)
 
-function ENT:Initialize()
-	self.KeyEvents = {}
-end
+KeyEvents = {}
 
-function ENT:Think()
+function WireKeyboardThink()
 	for i=1,130 do
-		if(input.IsKeyDown(i) && !self.KeyEvents[i]) then 
+		if(input.IsKeyDown(i) && !KeyEvents[i]) then 
 			// The key has been pressed
-			self.KeyEvents[i] = true
-			LocalPlayer():ConCommand("wire_keyboard_press press "..i)
-		elseif(!input.IsKeyDown(i) && self.KeyEvents[i]) then 
+			KeyEvents[i] = true
+			LocalPlayer():ConCommand("wire_keyboard_press p "..i)
+		elseif(!input.IsKeyDown(i) && KeyEvents[i]) then 
 			// The key has been released
-			self.KeyEvents[i] = false
-			LocalPlayer():ConCommand("wire_keyboard_press release "..i)
+			KeyEvents[i] = false
+			LocalPlayer():ConCommand("wire_keyboard_press r "..i)
 		end
 	end
-
-	self.Entity:NextThink(CurTime()+0.05)
 end
+
+hook.Add("CalcView", "WireKeyboardThink", WireKeyboardThink)

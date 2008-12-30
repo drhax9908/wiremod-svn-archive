@@ -455,6 +455,7 @@ function ENT:Compile()
 						size = self:GetAlwaysValidValue(bword)
 						value = self:GetValidValue(cword)
 
+						self:AddLabel(aword)
 						for i=0,size-1 do
 							self:Write(value)
 						end
