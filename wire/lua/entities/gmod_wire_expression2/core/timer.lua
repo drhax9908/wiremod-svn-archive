@@ -26,14 +26,14 @@ end
 local function AddTimer(self, name, delay)
 	if delay < 10 then delay = 10 end
 	
-	self.data['timer'].timers[name] = true
-	
 	if runner == name then
 		timer.Adjust("e2_" .. self.data['timer'].timerid .. "_" .. name, delay/1000, 1, Execute, self, name)
 		timer.Start("e2_" .. self.data['timer'].timerid .. "_" .. name)
 	elseif !self.data['timer'].timers[name] then
 		timer.Create("e2_" .. self.data['timer'].timerid .. "_" .. name, delay/1000, 1, Execute, self, name)
 	end
+	
+	self.data['timer'].timers[name] = true
 end
 
 local function RemoveTimer(self, name)

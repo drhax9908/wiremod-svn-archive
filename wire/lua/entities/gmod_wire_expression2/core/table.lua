@@ -66,7 +66,7 @@ end)
 registerFunction("number", "t:s", "n", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	local ret = rv1["n" .. rv2]
+	local ret = rv1["n|" .. rv2]
 	if ret then return ret end
 	return 0
 end)
@@ -75,7 +75,7 @@ registerFunction("setNumber", "t:sn", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if rv3 == 0 then rv3 = nil end
-	rv1["n" .. rv2] = rv3
+	rv1["n|" .. rv2] = rv3
 	//self.vclk[op1] = true
 end)
 
@@ -83,7 +83,7 @@ end)
 registerFunction("vector", "t:s", "v", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	local ret = rv1["v" .. rv2]
+	local ret = rv1["v|" .. rv2]
 	if ret then return ret end
 	return { 0, 0, 0 }
 end)
@@ -92,7 +92,7 @@ registerFunction("setVector", "t:sv", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
-	rv1["v" .. rv2] = rv3
+	rv1["v|" .. rv2] = rv3
 	//self.vclk[op1] = true
 end)
 
@@ -100,7 +100,7 @@ end)
 registerFunction("string", "t:s", "s", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	local ret = rv1["s" .. rv2]
+	local ret = rv1["s|" .. rv2]
 	if ret then return ret end
 	return ""
 end)
@@ -109,6 +109,6 @@ registerFunction("setString", "t:ss", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if rv3 == "" then rv3 = nil end
-	rv1["s" .. rv2] = rv3
+	rv1["s|" .. rv2] = rv3
 	//self.vclk[op1] = true
 end)
