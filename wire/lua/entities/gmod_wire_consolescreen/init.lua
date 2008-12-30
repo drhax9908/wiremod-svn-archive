@@ -111,7 +111,7 @@ function ENT:WriteCell(Address, value)
 		self:ClientWriteCell(Address,value)
 		//end
 
-		if (Address >= 1080) or (self.Memory[Address] != value) then
+		//if (Address >= 1080) or (self.Memory[Address] != value) then
 			self.DataCache[self.DataCacheSize] = {}
 			self.DataCache[self.DataCacheSize].Address = Address
 			self.DataCache[self.DataCacheSize].Value = value
@@ -120,7 +120,7 @@ function ENT:WriteCell(Address, value)
 				self:FlushCache()
 				self.IgnoreDataTransfer = true
 			end
-		end
+		//end
 		self.Memory[Address] = value
 
 		//else

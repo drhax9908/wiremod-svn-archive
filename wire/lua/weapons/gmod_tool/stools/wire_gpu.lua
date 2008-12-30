@@ -217,6 +217,41 @@ function TOOL:Compile_End()
 	//	pl:PrintMessage(HUD_PRINTCONSOLE,"ZyeliosASM: Dumped!\n")
 	//end
 
+//	if (self:GetClientInfo("dump_data") == "1") then
+//		pl:PrintMessage(HUD_PRINTCONSOLE,"ZyeliosASM: Dumping data\n")
+//		local codedump = "db "
+//		for i = 0,ent.WIP do
+//			if (i % 16 == 15) then
+//				if (!ent.Memory[i]) then
+//					codedump = codedump.."0\ndb "
+//				else
+//					codedump = codedump..ent.Memory[i].."\ndb "
+//				end
+//			elseif (i % 16 == 14) then
+//				if (!ent.Memory[i]) then
+//					codedump = codedump..0
+//				else
+//					codedump = codedump..ent.Memory[i]
+//				end
+//			else
+//				if (!ent.Memory[i]) then
+//					codedump = codedump.."0, "
+//				else
+//					codedump = codedump..ent.Memory[i]..", "
+//				end
+//			end
+//		end
+//
+//		////if (!ent.Memory[i]) then
+//		//	codedump = codedump.."0\n"
+//		//else
+//		//	codedump = codedump..ent.Memory[ent.WIP].."\n"
+//		//end
+//		file.Write("cdump.txt",codedump)
+//		file.Write("ldump.txt",ent.Dump)
+//		pl:PrintMessage(HUD_PRINTCONSOLE,"ZyeliosASM: Dumped!\n")
+//	end
+
 	if (self:GetClientInfo("dump_data") == "1") then
 		pl:PrintMessage(HUD_PRINTCONSOLE,"ZyeliosASM: Dumping data\n")
 		local codedump = ""

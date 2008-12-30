@@ -29,6 +29,7 @@ function ENT:Initialize()
 	end
 
 	self.InUse = false
+	self.IgnoredFirstChar = false
 	self:SetOverlayText("Keyboard - not in use")
 end
 
@@ -48,7 +49,10 @@ function ENT:ReadCell(Address)
 end
 
 function ENT:WriteCell(Address, value)
-	if (Address >= 0) && (Address < 256) then
+	if (Address == 0) then
+		self.Buffer[0] = 0
+		return true
+	elseif (Address > 0) && (Address < 256) then
 		self:Switch(false,value)
 		return true
 	else
@@ -59,6 +63,7 @@ end
 function ENT:Use(pl)
 	if (!self.InUse) then
 		self.InUse = true
+		self.IgnoredFirstChar = false
 		self:SetOverlayText("Keyboard - In use by " .. pl:GetName())
 		pl:ConCommand("wire_keyboard_on "..self:EntIndex())
 	end
@@ -80,9 +85,11 @@ function ENT:Switch(on, key)
 
 	if ((key != 21) && (key != 16)) then
 		if (on == true) then
-			self.Buffer[0] = self.Buffer[0] + 1
-			self.Buffer[self.Buffer[0]] = key
-			Wire_TriggerOutput(self.Entity, "Memory", key)
+			if (self.InUse) then
+				self.Buffer[0] = self.Buffer[0] + 1
+				self.Buffer[self.Buffer[0]] = key
+				Wire_TriggerOutput(self.Entity, "Memory", key)
+			end
 		else
 			Wire_TriggerOutput(self.Entity, "Memory", 0)
 			for i = 1,self.Buffer[0] do
@@ -125,10 +132,10 @@ function Wire_KeyOn(pl, cmd, args)
 	local ent = ents.GetByIndex(KeyBoardPlayerKeys[pl:EntIndex()])
 	if (pl) && (pl:IsValid()) && (!ent.InUse) then
 		KeyBoardPlayerKeys[pl:EntIndex()] = args[1]
-	end
 
-	pl:ConCommand("wire_keyboard_blockinput")
-	pl:PrintMessage(HUD_PRINTTALK,"Wired keyboard turned on - press ALT to exit the mode!\n")
+		pl:ConCommand("wire_keyboard_blockinput")
+		pl:PrintMessage(HUD_PRINTTALK,"Wired keyboard turned on - press ALT to exit the mode!\n")
+	end
 end
 concommand.Add("wire_keyboard_on", Wire_KeyOn)
 
@@ -148,8 +155,6 @@ function Wire_KeyPressed(pl, cmd, args)
 		return
 	end
 
-	//Msg("Recieved key press for player "..pl:EntIndex()..", entity "..ent:EntIndex().."\n")	
-
 	//Get normalized/ASCII key
 	local nkey
 	if (Keyboard_ReMap[key]) then nkey = Keyboard_ReMap[key]
@@ -161,7 +166,14 @@ function Wire_KeyPressed(pl, cmd, args)
 		end
 	end
 
-	if (args[1] == "press") then
+	if (ent.IgnoredFirstChar == false) then
+		ent.IgnoredFirstChar = true
+		return
+	end
+
+	//Msg("Recieved key press ("..string.char(nkey)..") for player "..pl:EntIndex()..", entity "..ent:EntIndex().."\n")	
+
+	if (args[1] == "p") then
 		if (key == KEY_LCONTROL) || (key == KEY_RCONTROL) then ent:Switch(true,16) end
 		if (key == KEY_LSHIFT) || (key == KEY_RSHIFT) then ent:Switch(true,21) end
 

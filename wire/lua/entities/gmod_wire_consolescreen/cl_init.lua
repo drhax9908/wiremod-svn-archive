@@ -413,58 +413,18 @@ function ENT:Draw()
 				end
 			end
 
-//			for ty = 0, 17 do
-//				for tx = 0, 29 do
-//					local a = tx + ty*30
-//					local c1 = self.Memory1[2*a]
-//					local c2 = self.Memory1[2*a+1]
-//
-//					local cback = math.floor(c2 / 1000)
-//					local cfrnt = c2 - math.floor(c2 / 1000)*1000
-//
-//					local fb = 24*math.fmod(cfrnt,10) + self.Memory1[2036]
-//					local fg = 24*math.fmod(math.floor(cfrnt / 10),10) + self.Memory1[2036]
-//					local fr = 24*math.fmod(math.floor(cfrnt / 100),10) + self.Memory1[2036]
-//					local bb = 24*math.fmod(cback,10) + self.Memory1[2036]
-//					local bg = 24*math.fmod(math.floor(cback / 10),10) + self.Memory1[2036]
-//					local br = 24*math.fmod(math.floor(cback / 100),10) + self.Memory1[2036]
-//
-//					if (self.Flash == true) && (cback > 999) then
-//						fb,bb = bb,fb
-//						fg,bg = bg,fg
-//						fr,br = br,fr
-//					end
-//
-//					if (c1 > 255) then c1 = 0 end
-//					if (c1 < 0) then c1 = 0 end
-//
-//					if (c1 ~= 0) && (cfrnt ~= 0) then
-//						if (c1 <= 127) then
-//							draw.DrawText(string.char(c1),"WireGPU_ConsoleFont",
-//							tx*szx+szx/8+szx/2,ty*szy+szy/4+szy/2,
-// 							Color(math.Clamp(fr*self.Memory1[2028]*self.Memory1[2025],0,255),
-//							      math.Clamp(fg*self.Memory1[2027]*self.Memory1[2025],0,255),
-//							      math.Clamp(fb*self.Memory1[2026]*self.Memory1[2025],0,255),
-//							      255),0)
-//						else
-//							//self:DrawGraphicsChar(c1)
-//						end
-//					end
-//				end
-//			end
-
 			if (self.Memory1[2045] > 1080) then self.Memory1[2045] = 1080 end
 			if (self.Memory1[2045] < 0) then self.Memory1[2045] = 0 end
 			if (self.Memory1[2044] > 1) then self.Memory1[2044] = 1 end
 			if (self.Memory1[2044] < 0) then self.Memory1[2044] = 0 end
 
 			if (self.Memory1[2046] >= 1) then
-				if (Flash) then
+				if (self.Flash == true) then
 					local a = math.floor(self.Memory1[2045] / 2)
 	
 					local tx = a - math.floor(a / 30)*30
 					local ty = math.floor(a / 30)
-		
+
 					local c = self.Memory1[2*a+1]
 					local cback = 999-math.floor(c / 1000)
 					local bb = 24*math.fmod(cback,10)
@@ -475,7 +435,11 @@ function ENT:Draw()
 							     math.Clamp(bg*self.Memory1[2027]*self.Memory1[2025],0,255),
 							     math.Clamp(bb*self.Memory1[2026]*self.Memory1[2025],0,255),
 							     255)
-					surface.DrawRect(tx*szx+szx/2,ty*szy+szy*(1-self.Memory1[2044])+szy/2,szx*1.2,szy*1.2*self.Memory1[2044])
+					surface.DrawRect(
+						tx*szx+szx/2,
+						ty*szy+szy/2+szy*1.2*(1-self.Memory1[2044]),
+						szx*1.2,
+						szy*1.2*self.Memory1[2044])
 				end
 			end
 	 	cam.End2D()
