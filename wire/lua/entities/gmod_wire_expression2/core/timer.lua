@@ -31,7 +31,7 @@ local function AddTimer(self, name, delay)
 	if runner == name then
 		timer.Adjust("e2_" .. self.data['timer'].timerid .. "_" .. name, delay/1000, 1, Execute, self, name)
 		timer.Start("e2_" .. self.data['timer'].timerid .. "_" .. name)
-	else
+	elseif !self.data['timer'].timers[name] then
 		timer.Create("e2_" .. self.data['timer'].timerid .. "_" .. name, delay/1000, 1, Execute, self, name)
 	end
 end
