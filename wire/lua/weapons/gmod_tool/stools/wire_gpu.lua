@@ -375,6 +375,9 @@ if (CLIENT) then
 	local ProgressBar
 	local BGBar
 
+	GPU_Editor = vgui.Create( "Expression2EditorFrame")
+	GPU_Editor:Setup("GPU Editor <3","GPUChip")//,true)
+
 	local function VGUI_Open(pl, command, args)
 		if (Frame) then
 			Frame:SetVisible(false)
@@ -549,10 +552,24 @@ function TOOL.BuildCPanel(panel)
 		Name = "Load",
 		Command = "wire_gpu_load"
 	})
+	local New = vgui.Create("DButton" , panel)
+	panel:AddPanel(New)
+	New:SetText("New file")
+	New.DoClick = function(button)
+		GPU_Editor:Open()
+		GPU_Editor:SetCode("\n\n")
+	end
 
-	panel:AddControl("Label", {
-		Text = ""
-	})
+	panel:AddControl("Label", {Text = ""})
+
+	local OpenEditor = vgui.Create("DButton", panel)
+	panel:AddPanel(OpenEditor)
+	OpenEditor:SetText("Code Editor")
+	OpenEditor.DoClick = function(button)
+		GPU_Editor:Open()
+	end
+
+	panel:AddControl("Label", {Text = ""})
 
 	panel:AddControl("ComboBox", {
 		Label = "#WireThrusterTool_Model",
@@ -574,16 +591,9 @@ function TOOL.BuildCPanel(panel)
 		Text = ""
 	})
 	panel:AddControl("Button", {
-		Text = "Code editor"
-	})
-	panel:AddControl("Label", {
-		Text = "Opens code editor (ZASM)"
-	})
-
-	panel:AddControl("Button", {
 		Text = "ZGPU documentation (online)"
 	})
 	panel:AddControl("Label", {
-		Text = "Loads online GPU documentation and tutorials"
+		Text = "Loads online GPU documentation and tutorials (WILL WORK SOON)"
 	})
 end

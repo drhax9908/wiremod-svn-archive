@@ -385,6 +385,9 @@ SourcePrevCharRate = 0
 SourceTotalChars = 0
 SourceLoadedChars = 0
 
+CPU_Editor = vgui.Create( "Expression2EditorFrame")
+CPU_Editor:Setup("CPU Editor","CPUChip")//,true)
+
 function CPU_UploadProgram(pl)
 	local SendLinesMax = SourceLinesSent + pl:GetInfo("wire_cpu_packet_bandwidth")	
 	local TotalChars = 0
@@ -491,20 +494,33 @@ function TOOL.BuildCPanel(panel)
 	})
 
 	panel:AddControl("Button", {
-		Text = "Quick Load",
+		Text = "Load into compiler",
 		Name = "Load",
 		Command = "wire_cpu_load"
 	})
+	local New = vgui.Create("DButton" , panel)
+	panel:AddPanel(New)
+	New:SetText("New file")
+	New.DoClick = function(button)
+		CPU_Editor:Open()
+		CPU_Editor:SetCode("\n\n")
+	end
 
-/*	panel:AddControl("Button", {
-		Text = "Clear",
-		Name = "Clear",
-		Command = "wire_cpu_clear"
-	})*/
+	panel:AddControl("Label", {Text = ""})
 
-	panel:AddControl("Label", {
-		Text = ""
-	})
+	//panel:AddControl("Button", {
+	//	Text = "Code editor"
+	//})
+
+	local OpenEditor = vgui.Create("DButton", panel)
+	panel:AddPanel(OpenEditor)
+	OpenEditor:SetText("Code Editor")
+	OpenEditor.DoClick = function(button)
+		CPU_Editor:Open()
+	end
+
+	panel:AddControl("Label", {Text = ""})
+
 	panel:AddControl("Label", {
 		Text = "CPU settings:"
 	})
@@ -518,11 +534,19 @@ function TOOL.BuildCPanel(panel)
 		Text = "ROM data is saved with advanced duplicator and is stored between CPU resets"
 	})
 
+	panel:AddControl("ComboBox", {
+        Label = "CPU Model",
+        Options = {
+            ["AMD64"]    	    = { wire_cpu_model = "models/cheeze/wires/cpu.mdl" },
+            ["AMD64 Mini"]    = { wire_cpu_model = "models/cheeze/wires/mini_cpu.mdl" },
+	    ["WireCPU"]    = { wire_cpu_model = "models/cheeze/wires/cpu2.mdl" },	    
+	    ["WireCPU Mini"]    = { wire_cpu_model = "models/cheeze/wires/mini_cpu2.mdl"},
 
+        }
+    })
 
-	panel:AddControl("Label", {
-		Text = ""
-	})
+	panel:AddControl("Label", {Text = ""})
+
 	panel:AddControl("Label", {
 		Text = "These do not work yet:"
 	})
@@ -546,29 +570,9 @@ function TOOL.BuildCPanel(panel)
 
 
 	panel:AddControl("Button", {
-		Text = "Code editor"
-	})
-	panel:AddControl("Label", {
-		Text = "Opens code editor (ZASM)"
-	})
-	panel:AddControl("Label", {
-		Text = "Can be used for ZC code (requires ZCK addon)"
-	})
-
-	panel:AddControl("Button", {
 		Text = "ZCPU documentation (online)"
 	})
 	panel:AddControl("Label", {
 		Text = "Loads online CPU documentation and tutorials"
 	})
-	panel:AddControl("ComboBox", {
-        Label = "Model",
-        Options = {
-            ["AMD64"]    	    = { wire_cpu_model = "models/cheeze/wires/cpu.mdl" },
-            ["AMD64 Mini"]    = { wire_cpu_model = "models/cheeze/wires/mini_cpu.mdl" },
-	    ["WireCPU"]    = { wire_cpu_model = "models/cheeze/wires/cpu2.mdl" },	    
-	    ["WireCPU Mini"]    = { wire_cpu_model = "models/cheeze/wires/mini_cpu2.mdl"},
-
-        }
-    })
 end
