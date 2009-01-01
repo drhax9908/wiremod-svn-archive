@@ -450,6 +450,8 @@ function EDITOR:SetArea(selection, text, isundo, isredo, before, after)
 	
 	if !text or text == "" then
 		self.ScrollBar:SetUp(self.Size[1], #self.Rows - 1)
+		
+		self.PaintRows = {}
 	
 		if isredo then
 			self.Undo[#self.Undo + 1] = { { self:CopyPosition(start), self:CopyPosition(start) }, buffer, after, before }
