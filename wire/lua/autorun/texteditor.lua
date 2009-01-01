@@ -438,6 +438,7 @@ function EDITOR:SetArea(selection, text, isundo, isredo, before, after)
 		for i=start[1]+1,stop[1] do
 			table.remove(self.Rows, start[1] + 1)
 			table.remove(self.PaintRows, start[1] + 1)
+			self.PaintRows = {} // TODO: fix for cache errors
 		end
 		
 		// add empty row at end of file (TODO!)
@@ -489,6 +490,8 @@ function EDITOR:SetArea(selection, text, isundo, isredo, before, after)
 	end
 	
 	self.ScrollBar:SetUp(self.Size[1], #self.Rows - 1)
+	
+	self.PaintRows = {}
 	
 	if isredo then
 		self.Undo[#self.Undo + 1] = { { self:CopyPosition(start), self:CopyPosition(stop) }, buffer, after, before }
