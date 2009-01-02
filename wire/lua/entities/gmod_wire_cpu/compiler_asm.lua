@@ -154,6 +154,60 @@ function ENT:Compiler_Stage0(pl)
 	self.ReturnVariable = "eax"
 end
 
+function ENT:Compiler_SetExtraLabels()
+	self:SetLabel("__date_year__",	tonumber(os.date("%Y")))
+	self:SetLabel("__date_month__",	tonumber(os.date("%m")))
+	self:SetLabel("__date_day__",	tonumber(os.date("%d")))
+
+	self:SetLabel("__date_hour__",	tonumber(os.date("%H")))
+	self:SetLabel("__date_minute__",tonumber(os.date("%M")))
+	self:SetLabel("__date_second__",tonumber(os.date("%S")))
+
+	if (self.IsGPU) then
+		self:SetLabel("regclk",		65535)
+		self:SetLabel("regreset",	65534)
+		self:SetLabel("reghwclear",	65533)
+		self:SetLabel("regvertexmode",	65532)
+
+		self:SetLabel("reghscale",	65525)
+		self:SetLabel("regvscale",	65524)
+		self:SetLabel("reghwscale",	65523)
+		self:SetLabel("regrotation",	65522)
+		self:SetLabel("regsprsize",	65521)
+
+		self:SetLabel("regwidth",	65515)
+		self:SetLabel("regheight",	65514)
+		self:SetLabel("regratio",	65513)
+
+		self:SetLabel("regcursorx",	65505)
+		self:SetLabel("regcursory",	65504)
+		self:SetLabel("regcursor",	65503)
+
+		self:SetLabel("regbrightnessw",	65495)
+		self:SetLabel("regbrightnessr",	65494)
+		self:SetLabel("regbrightnessg",	65493)
+		self:SetLabel("regbrightnessb",	65492)
+		self:SetLabel("regcontrastw",	65491)
+		self:SetLabel("regcontrastr",	65490)
+		self:SetLabel("regcontrastg",	65489)
+		self:SetLabel("regcontrastb",	65488)
+
+		self:SetLabel("regcirclequality",65485)
+		self:SetLabel("regoffsetx",	65484)
+		self:SetLabel("regoffsety",	65483)
+		self:SetLabel("regrotation",	65482)
+		self:SetLabel("regscale",	65481)
+		self:SetLabel("regcenterx",	65480)
+		self:SetLabel("regcentery",	65479)
+		self:SetLabel("regcirclestart",	65478)
+		self:SetLabel("regcircleend",	65477)
+		self:SetLabel("reglinewidth",	65476)
+		self:SetLabel("regscalex",	65475)
+		self:SetLabel("regscaley",	65474)
+		self:SetLabel("regfontalign",	65473)
+	end
+end
+
 function ENT:Compiler_Stage1()
 	self.WIP = 0
 	self.OffsetWIP = 0
@@ -169,10 +223,12 @@ function ENT:Compiler_Stage1()
 	self.FileStartLine = 0
 
 	self:SetLabel("programsize",0)
+	self:Compiler_SetExtraLabels()	
 end
 
 function ENT:Compiler_Stage2()
 	self:SetLabel("programsize",self.WIP)
+	self:Compiler_SetExtraLabels()
 
 	self.WIP = 0
 	self.OffsetWIP = 0

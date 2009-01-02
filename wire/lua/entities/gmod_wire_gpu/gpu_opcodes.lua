@@ -734,7 +734,7 @@ function ENT:InitializeGPUOpcodeTable()
 			end
 		end		
 	end
-	self.OpcodeTable[246] = function (Param1, Param2)	//DWRITEFMT	
+	self.OpcodeTable[246] = function (Param1, Param2)	//DWRITEFMT string.format(
 		if (!self.StringCache[Param2]) then
 			self.StringCache[Param2] = self:ReadStr(Param2)
 		end
@@ -743,6 +743,7 @@ function ENT:InitializeGPUOpcodeTable()
 		local finaltext = ""
 
 		local inparam = false
+		local lengthmod = nil
 
 		while (text ~= "") do
 			local chr = string.sub(text,1,1)
@@ -755,12 +756,41 @@ function ENT:InitializeGPUOpcodeTable()
 					finaltext = finaltext .. chr
 				end
 			else
-				if (chr == "i") then
-					finaltext = finaltext .. math.floor(self:ReadCell(ptr))
+				if (chr == ".") then
+					chr = string.sub(text,1,1)
+					text = string.sub(text,2,512)
+
+					if (tonumber(chr)) then
+						lengthmod = tonumber(chr)
+					end
+				elseif (chr == "i") then
+					if (lengthmod) then
+						local digits = 0
+						local num =  math.floor(self:ReadCell(ptr))
+						local temp = num
+						while (temp > 0) do
+							digits = digits + 1
+							temp = math.floor(temp / 10)
+						end
+
+						local fnum = tostring(num)
+						while (digits < lengthmod) do
+							digits = digits + 1
+							fnum = "0"..fnum
+						end
+
+						finaltext = finaltext ..fnum
+					else
+						finaltext = finaltext .. math.floor(self:ReadCell(ptr))						
+					end
 					ptr = ptr + 1
+					inparam = false
+					lengthmod = nil
 				elseif (chr == "f") then
 					finaltext = finaltext .. self:ReadCell(ptr)
 					ptr = ptr + 1
+					inparam = false
+					lengthmod = nil
 				elseif (chr == "s") then
 					local addr = self:ReadCell(ptr)
 					if (!self.StringCache[addr]) then
@@ -769,14 +799,19 @@ function ENT:InitializeGPUOpcodeTable()
 					local str = self.StringCache[addr]
 					finaltext = finaltext .. str
 					ptr = ptr + 1
+					inparam = false
+					lengthmod = nil
 				elseif (chr == "t") then
-					while (string.len(finaltext) % 6 != 0) do
+					while (string.len(finaltext) % (lengthmod or 6) != 0) do
 						finaltext = finaltext.." "
 					end
+					inparam = false
+					lengthmod = nil
 				elseif (chr == "%") then
 					finaltext = finaltext .. "%"
+					inparam = false
+					lengthmod = nil
 				end
-				inparam = false
 			end
 		end		
 

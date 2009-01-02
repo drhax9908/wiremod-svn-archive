@@ -478,8 +478,6 @@ function GPU_UploadProgram(pl)
 end
 	
 function GPU_LoadProgram(pl, command, args) 
-	Msg("Executed!!! "..pl:GetInfo("wire_gpu_filename").."\n")
-
 	local fname = "GPUChip\\"..pl:GetInfo("wire_gpu_filename");
 	if (!file.Exists(fname)) then
 		fname = "GPUChip\\"..pl:GetInfo("wire_gpu_filename")..".txt";
