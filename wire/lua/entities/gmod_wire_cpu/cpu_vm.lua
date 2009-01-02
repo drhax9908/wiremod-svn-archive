@@ -32,7 +32,7 @@ function ENT:Reset()
 	
 	self.CMPR = 0	 //Compare register
 	self.XEIP = 0	 //Current instruction address register
-	self.LADD = 0	 //Last errorneous address
+	self.LADD = 0	 //Last interrupt parameter
 	self.LINT = 0	 //Last interrupt number
 	self.TMR = 0	 //Internal timer
 	self.TIMER = 0	 //Internal clock

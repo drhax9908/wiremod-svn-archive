@@ -85,6 +85,13 @@ function ENT:Think()
 		end
 	end
 
+	//Restore current page for external bus reading
+	self.CurrentPage = {}
+	self.CurrentPage.Read = 1
+	self.CurrentPage.Write = 1
+	self.CurrentPage.Execute = 1
+	self.CurrentPage.RunLevel = 1 //External reads have runlevel 1
+
 	if (self.Idle) then
 		self.Idle = false
 	end

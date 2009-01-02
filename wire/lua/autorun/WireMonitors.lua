@@ -25,8 +25,8 @@ WireGPU_AddMonitor("Monitor Small",	"models/kobilica/wiremonitorsmall.mdl",		0.3
 WireGPU_AddMonitor("LCD Monitor (4:3)",	"models/props/cs_office/computer_monitor.mdl",	3.7,	16.7,	2.4,	0.031,	-10.5,	 10.5, 	24.7, 	  8.6)
 WireGPU_AddMonitor("Monitor Big",	"models/kobilica/wiremonitorbig.mdl",		0.2,	13,	0.0,	0.045,	-11.5,	 11.6, 	24.5, 	  1.6)
 WireGPU_AddMonitor("Plasma TV (4:3)",	"models/blacknecro/tv_plasma_4_3.mdl",		0.1,	-0.5,	6.5,	0.082,	-27.87,	 27.87, 20.93,	  -20.93)
-WireGPU_AddMonitor("Plasma TV (16:10)",	"models/props/cs_office/TV_plasma.mdl",		6.1,	18.93,	11.0,	0.065,	-28.5,	 28.5,	36,	  2)
-WireGPU_AddMonitor("Billboard",		"models/props/cs_assault/Billboard.mdl",	1,	0,	52,	0.23,	-110.512, 110.512,57.647, -57.647)
+WireGPU_AddMonitor("Plasma TV (16:10)",	"models/props/cs_office/tv_plasma.mdl",		6.1,	18.93,	11.0,	0.065,	-28.5,	 28.5,	36,	  2)
+WireGPU_AddMonitor("Billboard",		"models/props/cs_assault/billboard.mdl",	1,	0,	52,	0.23,	-110.512, 110.512,57.647, -57.647)
 
 WireGPU_AddMonitor("LED Board (1:1)",	"models/blacknecro/ledboard60.mdl",		6.1,	18.5,	11.0,	0.065,	-60,	 60,	-60,	  60)
 WireGPU_AddMonitor("Cube 1x1x1",	"models/hunter/blocks/cube1x1x1.mdl",		24,	0,	0,	0.09,	-48,	 48,	-48,	  48)
