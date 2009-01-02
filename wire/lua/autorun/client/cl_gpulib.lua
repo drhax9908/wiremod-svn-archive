@@ -6,6 +6,7 @@ local RT_CACHE_SIZE = 16
 if (!RenderTargetCache) then
 	RenderTargetCache = {}
 	for i=1,RT_CACHE_SIZE do
+		resource.AddFile("settings/render_targets/WireGPU_RT_"..i..".txt")
 		RenderTargetCache[i] = {}
 		RenderTargetCache[i].Target = GetRenderTarget("WireGPU_RT_"..i, 512, 512)
 		RenderTargetCache[i].Used = nil
