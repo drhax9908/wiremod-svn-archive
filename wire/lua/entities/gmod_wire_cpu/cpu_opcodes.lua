@@ -156,6 +156,8 @@ function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode["cmpand"] = 128 //CMPAND X,Y : CMPR = CMPR AND (X - Y)   	6.00
 	self.DecodeOpcode["cmpor"]  = 129 //CMPOR X,Y  : CMPR = CMPR OR (X - Y)    	6.00
 	//-----------------------------------------------------------------------------------
+	self.DecodeOpcode["mshift"] = 130 //MSHIFT X   : SHIFT DATA (look in lua)	7.00
+	//-----------------------------------------------------------------------------------
 end
 
 function ENT:InitializeASMOpcodes()
@@ -187,6 +189,8 @@ function ENT:InitializeASMOpcodes()
 		elseif (i >= 110) && (i <= 119) then
 			self.OpcodeCount[i] = 0
 		elseif (i >= 120) && (i <= 129) then
+			self.OpcodeCount[i] = 2
+		elseif (i >= 130) && (i <= 139) then
 			self.OpcodeCount[i] = 2
 
 		//GPU OPCODES
@@ -614,9 +618,9 @@ function ENT:InitializeOpcodeTable()
 		for i = 1,math.Clamp(Param1,0,8192) do
 			local val
 			if (self.PrecompileData[self.XEIP]) then
-				val = self:ReadCell(self.ESI+self[self.PrecompileData[self.XEIP].Segment1])
+				val = self:ReadCell(self.ESI)
 				if (val == nil) then return end
-				if (self:WriteCell(self.EDI+self[self.PrecompileData[self.XEIP].Segment2],val) == false) then return end
+				if (self:WriteCell(self.EDI,val) == false) then return end
 			else
 				return
 			end
@@ -629,10 +633,10 @@ function ENT:InitializeOpcodeTable()
 		for i = 1,math.Clamp(Param1,0,8192) do
 			local val
 			if (self.PrecompileData[self.XEIP]) then
-				val1 = self:ReadCell(self.ESI+self[self.PrecompileData[self.XEIP].Segment1])
-				val2 = self:ReadCell(self.EDI+self[self.PrecompileData[self.XEIP].Segment2])
+				val1 = self:ReadCell(self.ESI)
+				val2 = self:ReadCell(self.EDI)
 				if (val1 == nil) || (val2 == nil) then return end
-				if (self:WriteCell(self.EDI+self[self.PrecompileData[self.XEIP].Segment2],val1) == false) || (self:WriteCell(self.ESI+self[self.PrecompileData[self.XEIP].Segment1],val2) == false) then return end
+				if (self:WriteCell(self.EDI,val1) == false) || (self:WriteCell(self.ESI,val2) == false) then return end
 			else
 				return
 			end
@@ -1064,6 +1068,46 @@ function ENT:InitializeOpcodeTable()
 		if (self.CMPR == 0) then
 			self.CMPR = Param1 - Param2
 		end
+	end
+	//------------------------------------------------------------
+	self.OpcodeTable[130] = function (Param1,Param2)	//MSHIFT
+		if (Param1 == 0) then return end
+
+		local Buffer = {}
+		local Count = math.Clamp(Param1,0,8192)-1
+
+		//0 1 2 3 4 5
+		//2 3 4 5 0 1
+		//
+		//0 5
+		//0 3
+		//4 5
+
+		//0 1 2 3 4 5
+		//4 5 0 1 2 3
+		//
+		//2 5
+		//0 1
+		if (Param2 > 0) then
+			for i = 0,Count-Param2 do //Shifted part
+				Buffer[i] = self:ReadCell(self.ESI+i+Param2)
+			end
+			for i = Count-Param2+1,Count do //Remaining part
+				Buffer[i] = self:ReadCell(self.ESI+i-(Count-Param2+1))
+			end
+		elseif (Param2 < 0) then
+			for i = Param2,Count do //Shifted part
+				Buffer[i] = self:ReadCell(self.ESI+i-Param2)
+			end
+			for i = 0,Param2-1 do //Remaining part
+				Buffer[i] = self:ReadCell(self.ESI+i+Count-Param2)
+			end
+		end
+
+		for i = 0,Count-1 do
+			self:WriteCell(self.ESI+i,Buffer[i])
+		end
+		self.ESI = self.ESI + math.Clamp(Param1,0,8192)
 	end
 	//------------------------------------------------------------
 end

@@ -58,12 +58,15 @@ end
 
 function ENT:TriggerInput(iname, value)
 	if (iname == "Channel") then
-	    Radio_TuneOut(self,self.Channel)
-	    self.Channel = math.floor(value)
-	    self:ReceiveRadio(Radio_Receive(self,self.Channel))
+	    	Radio_TuneOut(self,self.Channel)
+	    	self.Channel = math.floor(value)
+	   	self:ReceiveRadio(Radio_Receive(self,self.Channel))
+		for k,v in pairs(self.Inputs) do	
+			if k != "Channel" then self:Transmit( self.Channel, k, v.Value ) end
+		end
 	elseif (iname != nil && value != nil) then
-	    self.Inputs[iname].Value = value
-	    self:Transmit(self.Channel,iname,value)
+		self.Inputs[iname].Value = value
+		self:Transmit(self.Channel,iname,value)
 	end
 	self:ShowOutput()
 end

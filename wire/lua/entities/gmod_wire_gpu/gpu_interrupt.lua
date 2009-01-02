@@ -35,6 +35,7 @@ function ENT:InitializeErrors()
 	self.ErrorText[7]  = "memory read/write fault"
 	self.ErrorText[13] = "general processor fault"
 	self.ErrorText[15] = "addr space violation"
+	self.ErrorText[16] = "pants violation!!!"
 	self.ErrorText[23] = "string read error"
 	//                   |                      |
 end

@@ -61,6 +61,7 @@ function ENT:Interrupt(intnumber,intparam)
 	if (self.INTR == 1) then return end
 	self.INTR = 1
 	self.BusLock = 1
+	self.LINT = intnumber
 	if (intparam) then self.LADD = intparam else self.LADD = self.XEIP end
 
 	local fracparam = intparam

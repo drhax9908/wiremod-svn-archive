@@ -121,6 +121,7 @@ function ENT:GPUResetRegisters()
 	//[65476] - Line width (1)
 	//[65475] - Scale X
 	//[65474] - Scale Y
+	//[65473] - Font align
 
 	self.Memory[65485] = 32
 	self.Memory[65484] = 0
@@ -134,6 +135,7 @@ function ENT:GPUResetRegisters()
 	self.Memory[65476] = 1
 	self.Memory[65475] = 1
 	self.Memory[65474] = 1
+	self.Memory[65473] = 0
 
 
 	//=================================
@@ -570,7 +572,8 @@ function ENT:FontWrite(posaddr,text)
 	surface.CreateFont(self.FontNames[self.CurFont], self.CurFontSize, 800, true, false,
 			   "WireGPU_"..self.FontNames[self.CurFont]..self.CurFontSize)
 	draw.DrawText(text,"WireGPU_"..self.FontNames[self.CurFont]..self.CurFontSize,
-		      vertexbuf["x"],vertexbuf["y"],Color(self.CurColor.x,self.CurColor.y,self.CurColor.z,255),0)
+		      vertexbuf["x"],vertexbuf["y"],Color(self.CurColor.x,self.CurColor.y,self.CurColor.z,255),
+			self:ReadCell(65473))
 end
 
 function ENT:DrawLine(point1,point2)

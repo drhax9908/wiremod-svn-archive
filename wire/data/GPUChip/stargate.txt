@@ -6,12 +6,12 @@
 //Port1 to "Active"
 //Port2 to "Chevron"
 //Port3 to "Inbound"
+//Port4 to iris
 //
 //That's all!
 
-mov #65525,0.625; //Assure an 1:1 ratio
-
-mov #65485,24; //65485 is the circle quality register
+div #65525,1.33;
+mov #65485,16; //65485 is the circle quality register
 
 //24 means circles have 24 sides
 //You can have up to 128 sides, but that LAGS
@@ -55,6 +55,7 @@ mov #65485,24;
 dcolor stargate_out_ring;
 dcircle center,190;
 
+
 //= EH ================================
 dcolor black;
 dcircle center,180; //draw black hole instead of event horizon
@@ -77,18 +78,53 @@ mul ebx,1.01;
 add #eventhorizon_radius,ebx;
 div #eventhorizon_radius,2;
 
-//cmp #eventhorizon_radius,ebx; //This code resizes event horizon
-//sub #eventhorizon_radius,6;
-//jge _noadd;
-//  add #eventhorizon_radius,6;
-//_noadd:
-//180
 
 dshade eax;
 dcircle center,#eventhorizon_radius;
 
-//= Chevrons ==========================
+//= Iris ==============================
+mov edx,port4;
+neg edx; add edx,1;
 
+mov eax,#iris_status;
+sub eax,edx;
+fabs eax,eax;
+
+dmuldt ecx,8;
+
+cmp eax,0.02;
+jl _donothing;
+  cmp #iris_status,edx;
+  jl _lower;
+    sub #iris_status,ecx;
+  jmp _donothing;
+  _lower:
+    add #iris_status,ecx;
+_donothing:
+
+mov #iris1.y,#iris_status;
+mul #iris1.y,#iris2.y;
+
+dmove center;
+
+mov ecx,12;
+_iris:
+  fsin ebx,ecx; fabs ebx,ebx; div ebx,10; add ebx,0.7;
+
+  mov eax,ecx; mul eax,0.490; add eax,0.01; //0.697
+  add eax,#iris_status;
+
+  drotatescale eax,1;
+
+  dcolor iris_color;
+  dshade ebx;
+
+  drect iris1,iris2;
+loop _iris;
+
+dmove 0;
+
+//= Chevrons ==========================
 mov eax,1; //Chevron ID
 in ebx,2;
 dmove center;
@@ -151,15 +187,20 @@ color stargate_middle_ring, 93 , 85, 60;
 color stargate_inner_ring,  138,137,108;
 color stargate_eventhorizon, 93,114,162;
 color stargate_chevron,     250,162, 54;
+color iris_color,           192,192,192;
 
 color black,0,0,0;
 
 vector2f center,256,256;
 
+vector2f iris1,-44,0;
+vector2f iris2,44,175;
+
 vector2f chevcenter,-16,-256;
 vector2f chevsize,32,32;
 
 float eventhorizon_radius;
+float iris_status;
 
 //raw chevron poly data
 //format: <x> <y>
