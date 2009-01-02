@@ -1,6 +1,23 @@
 AddCSLuaFile( "autorun/client/cl_wirelib.lua" )
 AddCSLuaFile( "autorun/client/cl_gpulib.lua" )
 
+resource.AddFile("settings/render_targets/WireGPU_RT_1.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_2.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_3.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_4.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_5.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_6.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_7.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_8.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_9.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_10.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_11.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_12.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_13.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_14.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_15.txt")
+resource.AddFile("settings/render_targets/WireGPU_RT_16.txt")
+
 WireLib = {}
 
 -- Compatibility Global
