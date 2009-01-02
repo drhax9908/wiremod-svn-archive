@@ -772,6 +772,9 @@ function ENT:InitializeGPUOpcodeTable()
 							digits = digits + 1
 							temp = math.floor(temp / 10)
 						end
+						if (num == 0) then
+							digits = 1
+						end
 
 						local fnum = tostring(num)
 						while (digits < lengthmod) do

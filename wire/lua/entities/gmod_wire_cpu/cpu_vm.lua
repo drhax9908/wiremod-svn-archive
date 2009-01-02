@@ -601,6 +601,19 @@ function ENT:PrintState()
 	Msg(" LS="..self.LS.."\n")
 end
 
+function ENT:SetCurrentPage(address)
+	self.CPAGE = math.floor(address / 128)
+
+	if (not self.Page[self.CPAGE]) then
+		self.Page[self.CPAGE] = {}
+		self.Page[self.CPAGE].Read = 1
+		self.Page[self.CPAGE].Write = 1
+		self.Page[self.CPAGE].Execute = 1
+		self.Page[self.CPAGE].RunLevel = 0
+	end
+	self.CurrentPage = self.Page[self.CPAGE]
+end
+
 function ENT:Execute()
 	self.DeltaTime = CurTime()-(self.PrevTime or CurTime())
 	self.PrevTime = (self.PrevTime or CurTime())+self.DeltaTime
@@ -621,16 +634,7 @@ function ENT:Execute()
 	end
 
 	self.XEIP = self.IP+self.CS
-	self.CPAGE = math.floor(self.XEIP / 128)
-
-	if (not self.Page[self.CPAGE]) then
-		self.Page[self.CPAGE] = {}
-		self.Page[self.CPAGE].Read = 1
-		self.Page[self.CPAGE].Write = 1
-		self.Page[self.CPAGE].Execute = 1
-		self.Page[self.CPAGE].RunLevel = 0
-	end
-	self.CurrentPage = self.Page[self.CPAGE]
+	self:SetCurrentPage(self.XEIP)
 
 	if (self.CurrentPage.Execute == 0) then
 		self:Interrupt(14,self.CPAGE)

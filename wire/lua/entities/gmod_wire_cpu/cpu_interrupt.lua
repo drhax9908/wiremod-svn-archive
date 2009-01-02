@@ -108,10 +108,12 @@ function ENT:Interrupt(intnumber,intparam)
 				local intaddress = self.IDTR + intnumber*4
 
 				self.BusLock = 0
+				self:SetCurrentPage(intaddress)
 				local int_ip    = 		       self:ReadCell(intaddress+0)
 				local int_cs    = 		       self:ReadCell(intaddress+1)
 				local int_      = 		       self:ReadCell(intaddress+2)
 				local int_flags = self:IntegerToBinary(self:ReadCell(intaddress+3))
+				self:SetCurrentPage(self.XEIP)
 				self.BusLock = 1
 
 				//Flags:
