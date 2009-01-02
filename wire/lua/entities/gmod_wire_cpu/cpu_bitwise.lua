@@ -2,7 +2,7 @@
 // Rewrote most of operations to be at least a little bit faster, and work with custom amount of bits
 
 function ENT:ForceInteger(n)
-	return math.floor(n)
+	return math.floor(n or 0)
 end
 
 function ENT:Is48bitInteger(n)
