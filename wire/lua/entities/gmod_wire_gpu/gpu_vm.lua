@@ -122,6 +122,7 @@ function ENT:GPUResetRegisters()
 	//[65475] - Scale X
 	//[65474] - Scale Y
 	//[65473] - Font align
+	//[65472] - ZOffset
 
 	self.Memory[65485] = 32
 	self.Memory[65484] = 0
@@ -136,6 +137,7 @@ function ENT:GPUResetRegisters()
 	self.Memory[65475] = 1
 	self.Memory[65474] = 1
 	self.Memory[65473] = 0
+	self.Memory[65472] = 0
 
 
 	//=================================
@@ -360,6 +362,14 @@ end
 //FIXME: I can do faster vertex transform...
 function ENT:VertexTransform(coord) //FIXME: coord can have UV
 	local resultcoord = coord
+
+	if (!coord["x"]) then coord["x"] = 0 end
+	if (!coord["y"]) then coord["y"] = 0 end
+	if (!coord["z"]) then coord["z"] = 0 end
+	if (!coord["w"]) then coord["w"] = 1 end
+
+	coord["z"] = coord["z"] + self:ReadCell(65472)
+
 	resultcoord.trans = {} //Transformed 3d point
 	resultcoord.trans.x = 0
 	resultcoord.trans.y = 0
@@ -368,33 +378,17 @@ function ENT:VertexTransform(coord) //FIXME: coord can have UV
 	if (!coord) then return end
 
 	if (self.VertexPipe == 0) then
-		if (!coord["x"]) then coord["x"] = 0 end
-		if (!coord["y"]) then coord["y"] = 0 end
-
 		resultcoord = self:Transform(coord["x"],coord["y"])
 	elseif (self.VertexPipe == 1) then
-		if (!coord["y"]) then coord["y"] = 0 end
-		if (!coord["z"]) then coord["z"] = 0 end
-
 		resultcoord = self:Transform(coord["y"],coord["z"])
 	elseif (self.VertexPipe == 2) then
-		if (!coord["x"]) then coord["x"] = 0 end
-		if (!coord["z"]) then coord["z"] = 0 end
-
 		resultcoord = self:Transform(coord["x"],coord["z"])
 	elseif (self.VertexPipe == 3) then
-		if (!coord["x"]) then coord["x"] = 0 end
-		if (!coord["y"]) then coord["y"] = 0 end
-		if (!coord["z"]) then coord["z"] = 0 end
-
-		local transx = (coord["x"]+coord["z"]+self:ReadCell(65512))/(coord["z"]+self:ReadCell(65512))
-		local transy = (coord["y"]+coord["z"]+self:ReadCell(65512))/(coord["z"]+self:ReadCell(65512))
+		local transx = (coord["x"]+self:ReadCell(65512))/(coord["z"]+self:ReadCell(65512))
+		local transy = (coord["y"]+self:ReadCell(65512))/(coord["z"]+self:ReadCell(65512))
 
 		resultcoord = self:Transform(transx,transy)
 	elseif (self.VertexPipe == 4) then
-		if (!coord["x"]) then coord["x"] = 0 end
-		if (!coord["y"]) then coord["y"] = 0 end
-
 		local transx = self.TransformMatrix[0*4+0] * coord["x"] +
 			       self.TransformMatrix[0*4+1] * coord["y"] +
 			       self.TransformMatrix[0*4+2] * 0 +
@@ -407,11 +401,6 @@ function ENT:VertexTransform(coord) //FIXME: coord can have UV
 
 		resultcoord = self:Transform(transx,transy)
 	elseif (self.VertexPipe == 5) then //3d matrix transformation
-		if (!coord["x"]) then coord["x"] = 0 end
-		if (!coord["y"]) then coord["y"] = 0 end
-		if (!coord["z"]) then coord["z"] = 0 end
-		if (!coord["w"]) then coord["w"] = 1 end
-
 		local tmp = {}
 		local invW
 
