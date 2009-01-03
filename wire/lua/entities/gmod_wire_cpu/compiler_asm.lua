@@ -205,6 +205,7 @@ function ENT:Compiler_SetExtraLabels()
 		self:SetLabel("regscalex",	65475)
 		self:SetLabel("regscaley",	65474)
 		self:SetLabel("regfontalign",	65473)
+		self:SetLabel("regzoffset",	65472)
 	end
 end
 
