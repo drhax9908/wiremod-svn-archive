@@ -367,7 +367,7 @@ function ENT:InitializeOpcodeTable()
 			self.Page[page].Execute = 1
 			self.Page[page].RunLevel = self.CurrentPage.RunLevel
 		else
-			if (self.CurrentPage.RunLevel <= Page[page].RunLevel) then
+			if (self.CurrentPage.RunLevel <= self.Page[page].RunLevel) then
 				self.Page[page].Read  = 1
 				self.Page[page].Write = 0
 			else
@@ -384,7 +384,7 @@ function ENT:InitializeOpcodeTable()
 			self.Page[page].Execute = 1
 			self.Page[page].RunLevel = self.CurrentPage.RunLevel
 		else
-			if (self.CurrentPage.RunLevel <= Page[page].RunLevel) then
+			if (self.CurrentPage.RunLevel <= self.Page[page].RunLevel) then
 				self.Page[page].Read  = 1
 				self.Page[page].Write = 1
 			else
