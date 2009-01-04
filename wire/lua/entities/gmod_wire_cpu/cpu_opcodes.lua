@@ -1109,6 +1109,9 @@ function ENT:InitializeOpcodeTable()
 		end
 		self.ESI = self.ESI + math.Clamp(Param1,0,8192)
 	end
+	self.OpcodeTable[139] = function (Param1,Param2)	//CLD
+		self.Debug = false
+	end
 	//------------------------------------------------------------
 end
 
