@@ -39,7 +39,7 @@ function ENT:Setup(Player,Static)
 	   cam:Spawn()
 	
 	   self.CamEnt = cam
-        self.Inputs = Wire_CreateInputs(self.Entity, {"Activated","Zoom","X","Y","Z","Pitch","Yaw","Roll"})
+        self.Inputs = WireLib.CreateSpecialInputs(self.Entity, {"Activated","Zoom","X","Y","Z","Pitch","Yaw","Roll","Vector"},{"NORMAL","NORMAL","NORMAL","NORMAL","NORMAL","NORMAL","NORMAL","NORMAL","VECTOR"})
 	else
 	   self.Inputs = Wire_CreateInputs(self.Entity, {"Activated","Zoom"})
 	   self.Static = 1
@@ -132,6 +132,8 @@ function ENT:TriggerInput(iname, value)
         local camAng = self.CamEnt:GetAngles()
         camAng.r = value
         self.CamEnt:RecieveInfo(self.CamEnt.IdealPos,camAng)
+	elseif(iname == "Vector")then
+		self.CamEnt:RecieveInfo(value,self.CamEnt.IdealAng)
     end
 end
 
