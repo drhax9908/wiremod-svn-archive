@@ -739,12 +739,12 @@ function EDITOR:_OnKeyCodeTyped(code)
 			if self:HasSelection() then
 				self:SetSelection()
 			else
-				local buffer = self:GetArea({{self.Caret[1], self.Caret[2] + 4}, {self.Caret[1], 1}})
-				if string.rep(" ", string.len(buffer)) == buffer and self.Caret[2] % 4 == 1 then
-					self:SetCaret(self:SetArea({self.Caret, self:MovePosition(self.Caret, 4)}))
-				else
+				//local buffer = self:GetArea({{self.Caret[1], self.Caret[2] + 4}, {self.Caret[1], 1}})
+				//if string.rep(" ", string.len(buffer)) == buffer and self.Caret[2] % 4 == 1 then
+				//	self:SetCaret(self:SetArea({self.Caret, self:MovePosition(self.Caret, 4)}))
+				//else
 					self:SetCaret(self:SetArea({self.Caret, self:MovePosition(self.Caret, 1)}))
-				end
+				//end
 			end
 		elseif code == KEY_TAB then
 			if self:HasSelection() then
