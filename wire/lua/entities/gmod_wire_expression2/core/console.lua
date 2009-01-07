@@ -17,11 +17,15 @@ end)
 registerFunction("convar", "s", "s", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	self.player:GetInfo(rv1) 
+	local ret = self.player:GetInfo(rv1) 
+	if ret == nil then return "" end
+	return ret
 end)
 
 registerFunction("convarnum", "s", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	self.player:GetInfoNum(rv1) 
+	local ret = self.player:GetInfoNum(rv1)
+	if ret == nil then return 0 end
+	return ret
 end)
