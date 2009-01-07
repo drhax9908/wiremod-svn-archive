@@ -291,7 +291,7 @@ registerFunction("writeString","xwl:snn", "n", function(self,args)
     local entity = checkEntity(rv1)
     if(!entity or !entity.extended) then return 0 end
     if !entity.WriteCell then return 0 end
-    rv5 = tostring(0) rv6 = tostring(0) rv7 = tostring(0)
+    rv5 = tostring(999) rv6 = tostring(0) rv7 = tostring(0)
     if (rv7:len() > 1) then rv7 = rv7:sub(1,1) end
     while rv5:len() < 3 do
         rv5 = tostring(0) .. rv5
