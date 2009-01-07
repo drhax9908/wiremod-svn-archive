@@ -1,3 +1,5 @@
+AddCSLuaFile('init.lua')
+
 /******************************************************************************\
   Expression 2 for Garry's Mod
   Andreas "Syranide" Svensson, me@syranide.com
@@ -1673,4 +1675,5 @@ include("unitconv.lua");
 include("wirelink.lua");
 include("console.lua");
 include("find.lua");
+include("custom.lua");
 //include("quaternion.lua");

@@ -1,3 +1,6 @@
+AddCSLuaFile('find.lua')
+
+
 exp2Discoveries = {}
 
 exp2LastPlayerFind = {}
