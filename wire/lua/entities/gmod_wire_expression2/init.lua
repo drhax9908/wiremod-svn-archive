@@ -107,6 +107,14 @@ function ENT:Error(message)
 	error(message, 0)
 end
 
+local function copytype(var)
+	if type(var) == "table" then
+		return table.Copy(var)
+	else
+		return var
+	end
+end
+
 function ENT:Setup(buffer, restore)
 	self.original = buffer
 	if self.script then
@@ -167,17 +175,17 @@ function ENT:Setup(buffer, restore)
 	for k,v in pairs(self.inports[3]) do
 		self._inputs[1][#self._inputs[1] + 1] = k
 		self._inputs[2][#self._inputs[2] + 1] = v
-		self.context.vars[k] = wire_expression_types[v][2]
+		self.context.vars[k] = copytype(wire_expression_types[v][2])
 	end
 	
 	for k,v in pairs(self.outports[3]) do
 		self._outputs[1][#self._outputs[1] + 1] = k
 		self._outputs[2][#self._outputs[2] + 1] = v
-		self.context.vars[k] = wire_expression_types[v][2]
+		self.context.vars[k] = copytype(wire_expression_types[v][2])
 	end
 	
 	for k,v in pairs(self.persists[3]) do
-		self.context.vars[k] = wire_expression_types[v][2]
+		self.context.vars[k] = copytype(wire_expression_types[v][2])
 	end
 	
 	for k,v in pairs(self.Inputs) do
