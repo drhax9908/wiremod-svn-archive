@@ -7,6 +7,7 @@ TOOL.ClientConVar = {
 	model    = "models/expression 2/cpu_expression.mdl",
 	size     = "",
 	select   = "",
+	protect  = "1"
 }
 
 if CLIENT then
@@ -17,6 +18,7 @@ if CLIENT then
 	language.Add("Undone_wire_expression2",    "Undone Expression 2")
 else
 	CreateConVar('sbox_maxwire_expressions', 20)
+	CreateConVar('wire_expression2_protected', 1)
 end
 
 cleanup.Register("wire_gate_expressions")
@@ -31,7 +33,7 @@ if SERVER then
 		local ang = trace.HitNormal:Angle()
 		ang.pitch = ang.pitch + 90
 		
-		if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_expression2" && trace.Entity:GetPlayer() == player) then
+		if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_expression2" && (trace.Entity:GetPlayer() == player || GetConVarNumber('wire_expression2_protected') == 0)) then
 			trace.Entity:Prepare(player)
 			player:SendLua("wire_expression2_upload()")
 			return true
@@ -108,7 +110,7 @@ if SERVER then
 		
 		local player = self:GetOwner()
 		
-		if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_expression2" && trace.Entity:GetPlayer() == player) then
+		if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_expression2" && (trace.Entity:GetPlayer() == player || GetConVarNumber('wire_expression2_protected') == 0)) then
 			trace.Entity:SendCode(player)
 			trace.Entity:Prepare(player)
 			return true
