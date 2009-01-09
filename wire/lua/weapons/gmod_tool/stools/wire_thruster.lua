@@ -335,7 +335,7 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("Slider", {
 		Label = "#WireThrusterTool_force_min",
 		Type = "Float",
-		Min = "0",
+		Min = "-10000",
 		Max = "10000",
 		Command = "wire_thruster_force_min"
 	})
@@ -343,7 +343,7 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("Slider", {
 		Label = "#WireThrusterTool_force_max",
 		Type = "Float",
-		Min = "0",
+		Min = "-10000",
 		Max = "10000",
 		Command = "wire_thruster_force_max"
 	})
