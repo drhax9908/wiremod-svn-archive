@@ -89,15 +89,6 @@ function ENT:WriteCell(Address, value)
 	end
 end
 
-function ENT:Think()
-	for k,v in pairs(self.Inputs) do	
-		if k != "Channel" then self:Transmit(self.Channel, k, v.Value) end
-	end
-
-	self.Entity:NextThink(CurTime()+0.02)
-	return true
-end
-
 function ENT:Transmit(channel,k,v)
 	Radio_Transmit(self,self.Channel,k,v)
 end
