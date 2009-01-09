@@ -143,12 +143,10 @@ function ENT:InitializeGPUOpcodeTable()
 	end
 	self.OpcodeTable[202] = function (Param1, Param2)	//DCLR
  		surface.SetDrawColor(0,0,0,255)
-		self:BindColor()
  		surface.DrawRect(0,0,512,512) 
 	end
 	self.OpcodeTable[203] = function (Param1, Param2)	//DCLRTEX
  		surface.SetDrawColor(255,255,255,255)
-		self:BindTexture(self.CurrentTexture)
  		surface.DrawTexturedRect(0,0,512,512) 
 	end
 
@@ -302,7 +300,6 @@ function ENT:InitializeGPUOpcodeTable()
 		local tcolor = self:TransformColor(self:Read4f(Param1))
 		self.CurColor = tcolor
 
-		self:BindColor()
  		surface.SetDrawColor(tcolor.x,tcolor.y,tcolor.z,tcolor.w)
  		surface.DrawRect(0,0,512,512)
 
@@ -373,9 +370,9 @@ function ENT:InitializeGPUOpcodeTable()
 		end
 
 		if (self.VertexBufEnabled ~= true) then
-			self:BindColor()
+			surface.SetTexture(self.ColorTexture)
 			surface.DrawPoly(vertexbuf)
-			self:BindTexture(self.CurrentTexture)
+		 	surface.SetTexture(self.CurrentTexture)
 		end
 	end
 	self.OpcodeTable[221] = function (Param1, Param2)	//DVXDATA_2F_TEX
@@ -428,9 +425,9 @@ function ENT:InitializeGPUOpcodeTable()
 			end
 		end
 		if (self.VertexBufEnabled ~= true) then
-			self:BindColor()
+			surface.SetTexture(self.ColorTexture)
 			surface.DrawPoly(vertexbuf)
-			self:BindTexture(self.CurrentTexture)
+		 	surface.SetTexture(self.CurrentTexture)
 		end
 	end
 	self.OpcodeTable[223] = function (Param1, Param2)	//DVXDATA_3F_TEX
@@ -506,9 +503,9 @@ function ENT:InitializeGPUOpcodeTable()
 			vertexbuf[3] = self:VertexTransform(vertexbuf[3])
 			vertexbuf[4] = self:VertexTransform(vertexbuf[4])
 
-			self:BindColor()
+ 			surface.SetTexture(self.ColorTexture)
 			surface.DrawPoly(vertexbuf)
-			self:BindTexture(self.CurrentTexture)
+		 	surface.SetTexture(self.CurrentTexture)
 		end
 	end
 	self.OpcodeTable[226] = function (Param1, Param2)	//DCIRCLE
@@ -547,9 +544,9 @@ function ENT:InitializeGPUOpcodeTable()
 				vertexbuf[2] = self:VertexTransform(vertexbuf[2])
 				vertexbuf[3] = self:VertexTransform(vertexbuf[3])
 
-				self:BindColor()
+ 				surface.SetTexture(self.ColorTexture)
 				surface.DrawPoly(vertexbuf)
-				self:BindTexture(self.CurrentTexture)
+			 	surface.SetTexture(self.CurrentTexture)
 			end
 		end
 
@@ -592,9 +589,9 @@ function ENT:InitializeGPUOpcodeTable()
 			vertexbuf[3] = self:VertexTransform(vertexbuf[3])
 			vertexbuf[4] = self:VertexTransform(vertexbuf[4])
 
-			self:BindColor()
+ 			surface.SetTexture(self.ColorTexture)
 			surface.DrawPoly(vertexbuf)
-			self:BindTexture(self.CurrentTexture)
+		 	surface.SetTexture(self.CurrentTexture)
 		end
 	end
 	self.OpcodeTable[229] = function (Param1, Param2)	//DTRECTWH
