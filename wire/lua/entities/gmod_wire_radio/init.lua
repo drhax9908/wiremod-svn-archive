@@ -71,6 +71,33 @@ function ENT:TriggerInput(iname, value)
 	self:ShowOutput()
 end
 
+function ENT:ReadCell(Address)
+	if (Address >= 0) && (Address < self.Values) then
+		return 	self.Inputs[tostring(Address)].Value
+	else
+		return nil
+	end
+end
+
+function ENT:WriteCell(Address, value)
+	if (Address >= 0) && (Address < self.Values) then
+		self:Transmit(self.Channel, tostring(Address), value)
+		self.Inputs[tostring(Address)].Value = value
+		return true
+	else
+		return false
+	end
+end
+
+function ENT:Think()
+	for k,v in pairs(self.Inputs) do	
+		if k != "Channel" then self:Transmit(self.Channel, k, v.Value) end
+	end
+
+	self.Entity:NextThink(CurTime()+0.02)
+	return true
+end
+
 function ENT:Transmit(channel,k,v)
 	Radio_Transmit(self,self.Channel,k,v)
 end

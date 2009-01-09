@@ -1,3 +1,5 @@
+include('cpu_advmath.lua')
+
 function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode = {}
 
@@ -158,6 +160,8 @@ function ENT:InitializeOpcodeNames()
 	//-----------------------------------------------------------------------------------
 	self.DecodeOpcode["mshift"] = 130 //MSHIFT X   : SHIFT DATA (look in lua)	7.00
 	//-----------------------------------------------------------------------------------
+
+	self:InitializeAdvMathASMOpcodes()
 end
 
 function ENT:InitializeASMOpcodes()
@@ -1113,12 +1117,14 @@ function ENT:InitializeOpcodeTable()
 		self.Debug = false
 	end
 	//------------------------------------------------------------
+
+	self:InitializeAdvMathOpcodeTable()
 end
 
 function ENT:InitializeOpcodeRunlevels()
 	self.OpcodeRunlevel = {}
 
-	for i=0,130 do
+	for i=0,511 do
 		self.OpcodeRunLevel[i] = 1
 	end
 
