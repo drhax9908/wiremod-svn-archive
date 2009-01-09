@@ -1662,6 +1662,7 @@ end
 // TODO: matrices as well, they seem fairly cheap? any use though?
 
 include("core.lua");
+include("array.lua");
 include("number.lua");
 include("vector.lua");
 include("string.lua");
@@ -1677,3 +1678,9 @@ include("console.lua");
 include("find.lua");
 include("custom.lua");
 //include("quaternion.lua");
+
+local list = file.FindInLua("entities/gmod_wire_expression2/core/custom/*.lua")
+for _, file in pairs(list) do 
+	include("custom/" .. file)
+	AddCSLuaFile("custom/" .. file)
+end
