@@ -34,6 +34,8 @@ if SERVER then
 		ang.pitch = ang.pitch + 90
 		
 		if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_expression2" && (trace.Entity:GetPlayer() == player || GetConVarNumber('wire_expression2_protected') == 0)) then
+			trace.Entity:SetPlayer(player)
+			trace.Entity.player = player
 			trace.Entity:Prepare(player)
 			player:SendLua("wire_expression2_upload()")
 			return true
