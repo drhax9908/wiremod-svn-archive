@@ -40,6 +40,7 @@ function ENT:Reset()
 
 	self.BPREC = 48	 //Binary precision for integer emulation mode
 	self.IPREC = 48	 //Integer precision
+	self.VMODE = 2	 //Vector mode (2D)
 
 	self.CODEBYTES = 0 //Executed size of code
 
@@ -120,6 +121,7 @@ function ENT:InitializeCPUVariableSet()
 	self.CPUVariable[52] = "NIDT"
 	self.CPUVariable[53] = "BlockStart"
 	self.CPUVariable[54] = "BlockSize"
+	self.CPUVariable[55] = "VMODE"
 end
 
 function ENT:InitializeLookupTables()

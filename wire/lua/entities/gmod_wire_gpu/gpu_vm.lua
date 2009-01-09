@@ -42,6 +42,19 @@ function ENT:GPUFrameReset()
 	//Initialize GPU
 	self:GPUResetRegisters()
 	self:GPUMathReset()
+	self:BindColor()
+end
+
+function ENT:BindTexture(texname)
+	//if (self.curtex == texname) then return nil end
+	//self.curtex = texname
+	//Material("dummy_texture.vmt"):SetMaterialTexture("$basetexture",
+	//	Material(texname):GetMaterialTexture("$basetexture"))
+	//surface.SetTexture(surface.GetTextureID("dummy_texture.vmt"))
+end
+
+function ENT:BindColor()
+	//self:BindTexture(self.ColorTexture)
 end
 
 function ENT:GPUResetRegisters()
@@ -233,6 +246,7 @@ end
 function ENT:GPUMathReset()
 	self.CurrentTexture = "models/duckeh/buttons/1"
 	self.ColorTexture = "models/duckeh/buttons/1"
+	self.curtex = ""
 
 	self.StringCache = {}
 
@@ -266,8 +280,6 @@ function ENT:GPUMathReset()
 
 	self.CVertexPipe = 0
 	self.VertexPipe = 0
-
-	self.VectorMode = 2	//2=2f; 3=3f
 
 	self.VertexBufEnabled = false
 	self.VertexBufZSort = false
@@ -447,86 +459,6 @@ function ENT:TransformColor(color)
 	tcolor.z = color.z * self:ReadCell(65495) * self:ReadCell(65492)
 	tcolor.w = color.w
 	return tcolor
-end
-
-function ENT:Read2f(addr)
-	local resultcoord = {}
-	if (addr == 0) then
-		resultcoord.x = 0
-		resultcoord.y = 0
-		resultcoord.z = 0
-		resultcoord.w = 0
-	else
-		resultcoord.x = self:ReadCell(addr+0)
-		resultcoord.y = self:ReadCell(addr+1)
-		resultcoord.z = 0
-		resultcoord.w = 0
-	end
-	return resultcoord
-end
-
-function ENT:Read3f(addr)
-	local resultcoord = {}
-	if (addr == 0) then
-		resultcoord.x = 0
-		resultcoord.y = 0
-		resultcoord.z = 0
-		resultcoord.w = 0
-	else
-		resultcoord.x = self:ReadCell(addr+0)
-		resultcoord.y = self:ReadCell(addr+1)
-		resultcoord.z = self:ReadCell(addr+2)
-		resultcoord.w = 0
-	end
-	return resultcoord
-end
-
-function ENT:Read4f(addr)
-	local resultcoord = {}
-	if (addr == 0) then
-		resultcoord.x = 0
-		resultcoord.y = 0
-		resultcoord.z = 0
-		resultcoord.w = 0
-	else
-		resultcoord.x = self:ReadCell(addr+0)
-		resultcoord.y = self:ReadCell(addr+1)
-		resultcoord.z = self:ReadCell(addr+2)
-		resultcoord.w = self:ReadCell(addr+3)
-	end
-	return resultcoord
-end
-
-function ENT:ReadMatrix(addr)
-	local resultmx = {}
-	for i=0,15 do
-		resultmx[i] = self:ReadCell(addr+i)
-	end
-	return resultmx
-end
-
-function ENT:WriteMatrix(addr,resultmx)
-	for i=0,15 do
-		self:WriteCell(addr+i,resultmx[i])
-	end
-end
-
-function ENT:Write2f(addr,coord)
-	self:WriteCell(addr+0,coord.x)
-	self:WriteCell(addr+1,coord.y)
-end
-
-function ENT:Write3f(addr,coord)
-	self:WriteCell(addr+0,coord.x)
-	self:WriteCell(addr+1,coord.y)
-	self:WriteCell(addr+2,coord.z)
-end
-
-function ENT:Write4f(addr,coord)
-	self:WriteCell(addr+0,coord.x)
-	self:WriteCell(addr+1,coord.y)
-	self:WriteCell(addr+2,coord.z)
-	self:WriteCell(addr+3,coord.w)
 end
 
 function ENT:ReadStr(addr)
