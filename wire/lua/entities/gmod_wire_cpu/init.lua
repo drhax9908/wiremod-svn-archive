@@ -110,7 +110,7 @@ function ENT:BuildDupeInfo()
 	if (self.UseROM) then
 		info.Memory = {}
 		for i=0,65535 do
-			if (self.ROMMemory[i]) then
+			if ((self.ROMMemory[i]) && (self.ROMMemory[i] ~= 0)) then
 				info.Memory[i] = self.ROMMemory[i]
 			end
 		end

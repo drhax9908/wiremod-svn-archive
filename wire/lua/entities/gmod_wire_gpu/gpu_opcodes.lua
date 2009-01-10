@@ -66,7 +66,6 @@ function ENT:InitializeGPUOpcodeNames()
 	//- Misc --------------------------------------------------------------------------------------------------------------
 	self.DecodeOpcode["mload"]          = 271 //MLOAD X		: Load matrix X into view matrix			[MATRIX]
 	self.DecodeOpcode["mread"]          = 272 //MREAD X		: Write view matrix into matrix X			[MATRIX]
-	self.DecodeOpcode["vmode"]          = 273 //VMODE X		: Vector mode = Y					[INT]
 	self.DecodeOpcode["dt"]             = 274 //DT X		: X -> Frame DeltaTime					[F]
 	self.DecodeOpcode["dstrprecache"]   = 275 //DSTRPRECACHE X	: Read and cache string					[STRING]
 	self.DecodeOpcode["dshade"]         = 276 //DSHADE X		: COLOR = COLOR * X					[F]
@@ -809,9 +808,6 @@ function ENT:InitializeGPUOpcodeTable()
 	end
 	self.OpcodeTable[272] = function (Param1, Param2) 	//MREAD
 		self:WriteMatrix(Param1,self.TransformMatrix)
-	end
-	self.OpcodeTable[273] = function (Param1, Param2) 	//VMODE
-		self.VMODE = math.Clamp(math.floor(Param1),2,3)
 	end
 	self.OpcodeTable[274] = function (Param1, Param2)	//DT
 		self.Result = self.DeltaTime
