@@ -73,7 +73,13 @@ end
 
 function ENT:ReadCell(Address)
 	if (Address >= 0) && (Address < self.Values) then
-		return 	self.Inputs[tostring(Address)].Value
+		if (self.Outputs[tostring(Address+1)] != nil) then
+//			Msg("Reading output "..Address.." = "..(self.Outputs[tostring(Address+1)].Value or 0).."\n")
+			return self.Outputs[tostring(Address+1)].Value or 0
+		else
+//			Msg("Reading 0..\n")
+			return 0
+		end
 	else
 		return nil
 	end
@@ -81,8 +87,7 @@ end
 
 function ENT:WriteCell(Address, value)
 	if (Address >= 0) && (Address < self.Values) then
-		self:Transmit(self.Channel, tostring(Address), value)
-		self.Inputs[tostring(Address)].Value = value
+		self:Transmit(self.Channel, tostring(Address+1), value)
 		return true
 	else
 		return false
@@ -98,7 +103,14 @@ function ENT:ReceiveRadio(values)
 	local i = 1
 	for k,o in pairs(values) do
 		Wire_TriggerOutput(self,k,o)
-		if (i >= self.Values) then self:ShowOutput() return end
+		//print("RADIO "..k.." = "..o)
+		if (i >= self.Values) then 
+//			if (self.Outputs != nil) then 
+//				PrintTable(self.Outputs)
+//			end
+			self:ShowOutput() 
+			return 
+		end
 		i = i + 1
 	end
 	self:ShowOutput()
