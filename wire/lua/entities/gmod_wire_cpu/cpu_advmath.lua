@@ -20,6 +20,7 @@ function ENT:InitializeAdvMathASMOpcodes()
 	self.DecodeOpcode["mmov"]           = 268 //MMOV X,Y		: X = Y							[MATRIX,MATRIX]	7.00
 	self.DecodeOpcode["vlen"]           = 269 //VLEN X,Y		: X = Sqrt(Y . Y)					[F,MODEF]	7.00
 	self.DecodeOpcode["mident"]         = 270 //MIDENT X		: Load identity matrix into X				[MATRIX]	7.00
+	self.DecodeOpcode["vmode"]          = 273 //VMODE X		: Vector mode = Y					[INT]
 	//---------------------------------------------------------------------------------------------------------------------
 end
 
@@ -355,10 +356,10 @@ function ENT:InitializeAdvMathOpcodeTable()
 	self.OpcodeTable[269] = function (Param1, Param2) 	//VLEN
 		if (self.VMODE == 2) then
 			local vec = self:Read2f(Param2)
-			self:WriteCell(Param1,(vec.x * vec.x + vec.y * vec.y)^(0.5))
+			return (vec.x * vec.x + vec.y * vec.y)^(0.5)
 		else
 			local vec = self:Read3f(Param2)
-			self:WriteCell(Param1,(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z)^(0.5))
+			return (vec.x * vec.x + vec.y * vec.y + vec.z * vec.z)^(0.5)
 		end
 	end
 	self.OpcodeTable[270] = function (Param1, Param2) 	//MIDENT
@@ -385,6 +386,9 @@ function ENT:InitializeAdvMathOpcodeTable()
 		rm[15] = 1
 
 		self:WriteMatrix(Param1,rm)		
+	end
+	self.OpcodeTable[273] = function (Param1, Param2) 	//VMODE
+		self.VMODE = math.Clamp(math.floor(Param1),2,3)
 	end
 end
 

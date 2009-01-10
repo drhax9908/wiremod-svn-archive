@@ -465,7 +465,7 @@ function ENT:ReadStr(addr)
 	local str = ""
 	local cnt = 0
 	local chr = 255
-	while ((cnt < 255) && (chr != 0)) do
+	while (chr != 0) do//(cnt < 2048) && (
 		chr = self:ReadCell(addr+cnt)
 		if ((chr > 0) && (chr < 256)) then
 			str = str..string.char(chr)
@@ -476,7 +476,7 @@ function ENT:ReadStr(addr)
 			end
 		end
 		cnt = cnt + 1
-		if (cnt > 512) then
+		if (cnt > 8192) then
 			self:Interrupt(23,addr)
 			return ""
 		end
