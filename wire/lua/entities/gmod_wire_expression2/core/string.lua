@@ -163,8 +163,8 @@ registerFunction("replace", "s:ss", "s", function(self, args)
     return string.Replace(rv1,rv2,rv3)
 end)
 
-/*registerFunction("explode", "s:s", "t", function(self, args)
+registerFunction("explode", "s:s", "r", function(self, args)
     local op1, op2 = args[2], args[3]
     local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
     return string.Explode(rv2,rv1)
-end)*/
+end)
