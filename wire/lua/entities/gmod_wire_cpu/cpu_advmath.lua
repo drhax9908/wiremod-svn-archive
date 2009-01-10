@@ -87,11 +87,11 @@ function ENT:InitializeAdvMathOpcodeTable()
 	end
 	self.OpcodeTable[256] = function (Param1, Param2)	//VNORM
 		if (self.VMODE == 2) then
-			local vec = self:Read2f(Param1)
+			local vec = self:Read2f(Param2)
 			local d = Sqrt(vec.x * vec.x + vec.y * vec.y) + 10e-9
 			self:Write2f(Param1,{x = vec.x / d, y = vec.y / d})
 		else
-			local vec = self:Read3f(Param1)
+			local vec = self:Read3f(Param2)
 			local d = Sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z) + 10e-9
 			self:Write3f(Param1,{x = vec.x / d, y = vec.y / d, z = vec.z / d})
 		end
@@ -354,10 +354,10 @@ function ENT:InitializeAdvMathOpcodeTable()
 	end
 	self.OpcodeTable[269] = function (Param1, Param2) 	//VLEN
 		if (self.VMODE == 2) then
-			local vec = self:Read2f(Param1)
+			local vec = self:Read2f(Param2)
 			self:WriteCell(Param1,(vec.x * vec.x + vec.y * vec.y)^(0.5))
 		else
-			local vec = self:Read3f(Param1)
+			local vec = self:Read3f(Param2)
 			self:WriteCell(Param1,(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z)^(0.5))
 		end
 	end
