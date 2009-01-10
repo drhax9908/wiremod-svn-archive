@@ -113,3 +113,25 @@ registerFunction("setString", "r:ns", "", function(self, args)
 	rv1[rv2] = rv3
 	//self.vclk[op1] = true
 end)
+
+/******************************************************************************/
+
+registerFunction("sum", "r:", "n", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local out = 0
+	for _,value in ipairs(rv1) do
+		out = out + tonumber(value)
+	end
+	return out
+end)
+
+registerFunction("concat", "r:", "s", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local out = ""
+	for value in ipairs(rv1) do
+		out = out .. tostring(value)
+	end
+	return out
+end)
