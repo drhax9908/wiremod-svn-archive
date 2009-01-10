@@ -52,13 +52,12 @@ function ENT:TriggerInput( inputname, value, iter )
 		
 	// store float values.
 	elseif ( inputname == "Vector" ) and ( type(value) == "Vector" ) then
-		self.Entity:SetNetworkedFloat( X, value.x );
-		self.Entity:SetNetworkedFloat( Y, value.y );
-		self.Entity:SetNetworkedFloat( Z, value.z );
+		self.Entity:SetNetworkedFloat( "X", value.x );
+		self.Entity:SetNetworkedFloat( "Y", value.y );
+		self.Entity:SetNetworkedFloat( "Z", value.z );
 		
 	else
-		self.Entity:SetNetworkedFloat( inputname, value );
-		
+		self.Entity:SetNetworkedFloat( inputname, value );		
 	end
 end
 
