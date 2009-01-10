@@ -234,6 +234,27 @@ registerFunction("mass", "e:", "n", function(self, args)
 	return phys:GetMass()
 end)
 
+registerFunction("massCenter", "e:", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local entity = checkEntity(rv1)
+	if(!entity) then return {0,0,0} end
+	if(entity:GetPhysicsObject()) then entity = entity:GetPhysicsObject() end
+	local offset = entity:GetMassCenter()
+	local pos = entity:LocalToWorld(offset)
+	return {pos.x,pos.y,pos.z}
+end)
+
+registerFunction("massCenterL", "e:", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local entity = checkEntity(rv1)
+	if(!entity) then return {0,0,0} end
+	if(entity:GetPhysicsObject()) then entity = entity:GetPhysicsObject() end
+	entity = entity:GetMassCenter()
+	return {entity.x,entity.y,entity.z}
+end)
+
 /******************************************************************************/
 // Functions getting boolean/number
 registerFunction("isPlayer", "e:", "n", function(self, args)
