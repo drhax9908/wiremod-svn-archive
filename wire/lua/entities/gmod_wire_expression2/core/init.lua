@@ -1676,6 +1676,7 @@ include("unitconv.lua");
 include("wirelink.lua");
 include("console.lua");
 include("find.lua");
+include("globalvars.lua");
 include("custom.lua");
 //include("quaternion.lua");
 
