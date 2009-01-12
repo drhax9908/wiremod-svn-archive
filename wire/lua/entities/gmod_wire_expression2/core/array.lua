@@ -127,11 +127,13 @@ registerFunction("sum", "r:", "n", function(self, args)
 end)
 
 registerFunction("concat", "r:", "s", function(self, args)
-	local op1 = args[2]
-	local rv1 = op1[1](self, op1)
-	local out = ""
-	for value in ipairs(rv1) do
-		out = out .. tostring(value)
-	end
-	return out
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    return table.concat(rv1)
+end)
+
+registerFunction("concat", "r:s", "s", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+    return table.concat(rv1,rv2)
 end)
