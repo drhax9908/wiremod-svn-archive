@@ -130,7 +130,7 @@ registerFunction("concat", "r:", "s", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	local out = ""
-	for value in ipairs(rv1) do
+	for _,value in ipairs(rv1) do
 		out = out .. tostring(value)
 	end
 	return out
