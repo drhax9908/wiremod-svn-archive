@@ -1,7 +1,7 @@
 AddCSLuaFile('globalvars.lua')
 
 /******************************************************************************\
-  Global variable support v1.31
+  Global variable support v1.32
 \******************************************************************************/
 
 
@@ -208,10 +208,10 @@ function gGroupGet(self, ply)
 		local T = _G[ply:UniqueID()]["Tdefault"]
 		T["s"] = {}
 		T["n"] = {}
-		return T
+		return "default"
 	end
 	local group = _G[ply:UniqueID()]["Group"..self:EntIndex( )]
-	return string.Right(group, string.Len(group)-1)
+	return string.Right(group, string.len(group)-1)
 end
 
 function gGroupSet(name, self, ply)
