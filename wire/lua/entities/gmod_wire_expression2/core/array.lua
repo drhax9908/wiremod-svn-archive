@@ -135,3 +135,13 @@ registerFunction("concat", "r:", "s", function(self, args)
 	end
 	return out
 end)
+
+registerFunction("concat", "r:s", "s", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+    local out = ""
+    for _,value in ipairs(rv1) do
+        out = out .. tostring(value) .. tostring(rv2)
+    end
+    return string.Left(out, string.len(out) - string.len(tostring(rv2)))
+end
