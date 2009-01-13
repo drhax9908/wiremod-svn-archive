@@ -144,4 +144,4 @@ registerFunction("concat", "r:s", "s", function(self, args)
         out = out .. tostring(value) .. tostring(rv2)
     end
     return string.Left(out, string.len(out) - string.len(tostring(rv2)))
-end
+end)
