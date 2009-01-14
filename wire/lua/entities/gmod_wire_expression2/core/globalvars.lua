@@ -1,7 +1,7 @@
 AddCSLuaFile('globalvars.lua')
 
 /******************************************************************************\
-  Global variable support v1.34
+  Global variable support v1.36
 \******************************************************************************/
 
 
@@ -12,18 +12,18 @@ AddCSLuaFile('globalvars.lua')
 registerFunction("gSetStr", "s", "", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 	T["xs"] = rv1
 end)
 
 registerFunction("gGetStr", "", "s", function(self, args)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 		if T["xs"]==nil then return "" end
 	return T["xs"]
 end)
 
 registerFunction("gDeleteStr", "", "s", function(self, args)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 		if T["xs"]==nil then return "" end
 	local value = T["xs"]
 	T["xs"] = nil
@@ -33,14 +33,14 @@ end)
 registerFunction("gSetStr", "ss", "", function(self, args)
     local op1, op2 = args[2], args[3]
     local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 	T["s"][rv1] = rv2
 end)
 
 registerFunction("gGetStr", "s", "s", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 		if T["s"][rv1]==nil then return "" end
 	return T["s"][rv1]
 end)
@@ -48,7 +48,7 @@ end)
 registerFunction("gDeleteStr", "s", "s", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 		if T["s"][rv1]==nil then return "" end
 	local value = T["s"][rv1]
 	T["s"][rv1] = nil
@@ -58,14 +58,14 @@ end)
 registerFunction("gSetStr", "ns", "", function(self, args)
     local op1, op2 = args[2], args[3]
     local rv1, rv2 = math.floor(op1[1](self, op1)), op2[1](self, op2)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 	T["s"][rv1] = rv2
 end)
 
 registerFunction("gGetStr", "n", "s", function(self, args)
     local op1 = args[2]
     local rv1 = math.floor(op1[1](self, op1))
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 		if T["s"][rv1]==nil then return "" end
 	return T["s"][rv1]
 end)
@@ -73,7 +73,7 @@ end)
 registerFunction("gDeleteStr", "n", "s", function(self, args)
     local op1 = args[2]
     local rv1 = math.floor(op1[1](self, op1))
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 		if T["s"][rv1]==nil then return "" end
 	local value = T["s"][rv1]
 	T["s"][rv1] = nil
@@ -87,18 +87,18 @@ end)
 registerFunction("gSetNum", "n", "", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 	T["xn"] = rv1
 end)
 
 registerFunction("gGetNum", "", "n", function(self, args)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 		if T["xn"]==nil then return 0 end
 	return T["xn"]
 end)
 
 registerFunction("gDeleteNum", "", "n", function(self, args)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 		if T["xn"]==nil then return 0 end
 	local value = T["xn"]
 	T["xn"] = nil
@@ -108,14 +108,14 @@ end)
 registerFunction("gSetNum", "sn", "", function(self, args)
     local op1, op2 = args[2], args[3]
     local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 	T["n"][rv1] = rv2
 end)
 
 registerFunction("gGetNum", "s", "n", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 		if T["n"][rv1]==nil then return 0 end
 	return T["n"][rv1]
 end)
@@ -123,7 +123,7 @@ end)
 registerFunction("gDeleteNum", "s", "n", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 		if T["n"][rv1]==nil then return 0 end
 	local value = T["n"][rv1]
 	T["n"][rv1] = nil
@@ -133,14 +133,14 @@ end)
 registerFunction("gSetNum", "nn", "", function(self, args)
     local op1, op2 = args[2], args[3]
     local rv1, rv2 = math.floor(op1[1](self, op1)), op2[1](self, op2)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 	T["n"][rv1] = rv2
 end)
 
 registerFunction("gGetNum", "n", "n", function(self, args)
     local op1 = args[2]
     local rv1 = math.floor(op1[1](self, op1))
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 		if T["n"][rv1]==nil then return 0 end
 	return T["n"][rv1]
 end)
@@ -148,7 +148,7 @@ end)
 registerFunction("gDeleteNum", "n", "n", function(self, args)
     local op1 = args[2]
     local rv1 = math.floor(op1[1](self, op1))
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 		if T["n"][rv1]==nil then return 0 end
 	local value = T["n"][rv1]
 	T["n"][rv1] = nil
@@ -160,7 +160,7 @@ end)
 //-----------------//
 
 registerFunction("gDeleteAll", "", "", function(self, args)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 	T["xs"] = nil
 	T["xn"] = nil
 	T["s"] = nil
@@ -170,14 +170,14 @@ registerFunction("gDeleteAll", "", "", function(self, args)
 end)
 
 registerFunction("gDeleteAllStr", "", "", function(self, args)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 	T["s"] = nil
 	T["s"] = {}
 	T["xs"] = nil
 end)
 
 registerFunction("gDeleteAllNum", "", "", function(self, args)
-	local T = glTid(self.data['globavars'],self.player)
+	local T = glTid(self)
 	T["n"] = nil
 	T["n"] = {}
 	T["xn"] = nil
@@ -190,7 +190,6 @@ end)
 registerFunction("gSetGroup", "s", "", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
-	if !self.data then self.data = {} end
 	self.data['globavars'] = "T"..rv1
 	local group = self.data['globavars']
 	if _G[self.player:UniqueID()][group]==nil then _G[self.player:UniqueID()][group] = {} end
@@ -200,20 +199,11 @@ registerFunction("gSetGroup", "s", "", function(self, args)
 end)
 
 registerFunction("gGetGroup", "", "s", function(self, args)
-	if !self.data then self.data = {} end
 	local group = self.data['globavars']
-	if _G[self.player:UniqueID()][group]==nil then
-		_G[self.player:UniqueID()]["Tdefault"] = {}
-		local T = _G[self.player:UniqueID()]["Tdefault"]
-		T["s"] = {}
-		T["n"] = {}
-		return "default"
-	end
 	return string.Right(group, string.len(group)-1)
 end)
 
 registerFunction("gResetGroup", "", "", function(self, args)
-	if !self.data then self.data = {} end
 	self.data['globavars'] = "Tdefault"
 	local group = self.data['globavars']
 	if !_G[self.player:UniqueID()][group] then _G[self.player:UniqueID()][group] = {} end
@@ -225,21 +215,27 @@ end)
 /******************************************************************************/
 
 registerCallback("construct", function(self)
+	if self.data['globavars'] != "Tdefault" then
 	self.data['globavars'] = "Tdefault"
+	end
 end)
 
 registerCallback("postexecute", function(self)
+	if self.data['globavars'] != "Tdefault" then
 	self.data['globavars'] = "Tdefault"
+	end
 end)
 
 //--------------------------//
 //--Client Functions--//
 //--------------------------//
 
-function glTid(group, ply)
+function glTid(self)
+	local group = self.data['globavars']
+	local ply = self.player
 	if !_G[ply:UniqueID()][group] then
-		_G[ply:UniqueID()]["Tdefault"] = {}
-		local T = _G[ply:UniqueID()]["Tdefault"]
+		_G[ply:UniqueID()][group] = {}
+		local T = _G[ply:UniqueID()][group]
 		T["s"] = {}
 		T["n"] = {}
 		return T
