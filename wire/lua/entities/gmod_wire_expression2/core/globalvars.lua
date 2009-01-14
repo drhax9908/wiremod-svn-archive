@@ -4,7 +4,6 @@ AddCSLuaFile('globalvars.lua')
   Global variable support v1.36
 \******************************************************************************/
 
-
 //--------------//
 //--Strings--//
 //--------------//
@@ -57,14 +56,16 @@ end)
 
 registerFunction("gSetStr", "ns", "", function(self, args)
     local op1, op2 = args[2], args[3]
-    local rv1, rv2 = math.floor(op1[1](self, op1)), op2[1](self, op2)
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	rv1 = rv1 - rv1 % 1
 	local T = glTid(self)
 	T["s"][rv1] = rv2
 end)
 
 registerFunction("gGetStr", "n", "s", function(self, args)
     local op1 = args[2]
-    local rv1 = math.floor(op1[1](self, op1))
+    local rv1 = op1[1](self, op1)
+	rv1 = rv1 - rv1 % 1
 	local T = glTid(self)
 		if T["s"][rv1]==nil then return "" end
 	return T["s"][rv1]
@@ -72,7 +73,8 @@ end)
 
 registerFunction("gDeleteStr", "n", "s", function(self, args)
     local op1 = args[2]
-    local rv1 = math.floor(op1[1](self, op1))
+    local rv1 = op1[1](self, op1)
+	rv1 = rv1 - rv1 % 1
 	local T = glTid(self)
 		if T["s"][rv1]==nil then return "" end
 	local value = T["s"][rv1]
@@ -132,14 +134,16 @@ end)
 
 registerFunction("gSetNum", "nn", "", function(self, args)
     local op1, op2 = args[2], args[3]
-    local rv1, rv2 = math.floor(op1[1](self, op1)), op2[1](self, op2)
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	rv1 = rv1 - rv1 % 1
 	local T = glTid(self)
 	T["n"][rv1] = rv2
 end)
 
 registerFunction("gGetNum", "n", "n", function(self, args)
     local op1 = args[2]
-    local rv1 = math.floor(op1[1](self, op1))
+    local rv1 = op1[1](self, op1)
+	rv1 = rv1 - rv1 % 1
 	local T = glTid(self)
 		if T["n"][rv1]==nil then return 0 end
 	return T["n"][rv1]
@@ -147,7 +151,8 @@ end)
 
 registerFunction("gDeleteNum", "n", "n", function(self, args)
     local op1 = args[2]
-    local rv1 = math.floor(op1[1](self, op1))
+    local rv1 = op1[1](self, op1)
+	rv1 = rv1 - rv1 % 1
 	local T = glTid(self)
 		if T["n"][rv1]==nil then return 0 end
 	local value = T["n"][rv1]
@@ -190,10 +195,11 @@ end)
 registerFunction("gSetGroup", "s", "", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
+	local uid = self.data['globaply']
 	self.data['globavars'] = "T"..rv1
 	local group = self.data['globavars']
-	if _G[self.player:UniqueID()][group]==nil then _G[self.player:UniqueID()][group] = {} end
-	local T = _G[self.player:UniqueID()][group]
+	if _G[uid][group]==nil then _G[uid][group] = {} end
+	local T = _G[uid][group]
 	if T["s"]==nil then T["s"] = {} end
 	if T["n"]==nil then T["n"] = {} end
 end)
@@ -204,10 +210,11 @@ registerFunction("gGetGroup", "", "s", function(self, args)
 end)
 
 registerFunction("gResetGroup", "", "", function(self, args)
+	local uid = self.data['globaply']
 	self.data['globavars'] = "Tdefault"
 	local group = self.data['globavars']
-	if !_G[self.player:UniqueID()][group] then _G[self.player:UniqueID()][group] = {} end
-	local T = _G[self.player:UniqueID()][group]
+	if !_G[uid][group] then _G[uid][group] = {} end
+	local T = _G[uid][group]
 	if !T["s"] then T["s"] = {} end
 	if !T["n"] then T["n"] = {} end
 end)
@@ -218,6 +225,7 @@ registerCallback("construct", function(self)
 	if self.data['globavars'] != "Tdefault" then
 	self.data['globavars'] = "Tdefault"
 	end
+	self.data['globaply'] = self.player:UniqueID()
 end)
 
 registerCallback("postexecute", function(self)
@@ -232,15 +240,15 @@ end)
 
 function glTid(self)
 	local group = self.data['globavars']
-	local ply = self.player
-	if !_G[ply:UniqueID()][group] then
-		_G[ply:UniqueID()][group] = {}
-		local T = _G[ply:UniqueID()][group]
+	local uid = self.data['globaply']
+	if !_G[uid][group] then
+		_G[uid][group] = {}
+		local T = _G[uid][group]
 		T["s"] = {}
 		T["n"] = {}
 		return T
 	end
-	return _G[ply:UniqueID()][group]
+	return _G[uid][group]
 end
 
 //-----------------------//
