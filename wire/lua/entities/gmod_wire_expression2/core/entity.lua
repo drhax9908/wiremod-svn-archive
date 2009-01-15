@@ -335,3 +335,30 @@ registerFunction("getColor", "e:", "c", function(self, args)
 	return rv1:GetColor()
 end)
 */
+
+/******************************************************************************/
+
+registerFunction("applyForce", "e:v", "", function(self,args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
+	local entity = checkEntity(rv1)
+	if(!entity) then return end
+	if(entity != self.entity) then return end
+	if(entity:GetMoveType() != 6) then return end
+	if(entity:GetPhysicsObject()) then entity = entity:GetPhysicsObject() else return end
+	local Vec = Vector(rv2[1],rv2[2],rv2[3])
+	entity:ApplyForceCenter(Vec)
+end)
+
+registerFunction("applyOffsetForce", "e:vv", "", function(self,args)
+	local op1, op2, op3 = args[2], args[3], args[4]
+	local rv1, rv2, rv3 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3)
+	local entity = checkEntity(rv1)
+	if(!entity) then return end
+	if(entity != self.entity) then return end
+	if(entity:GetMoveType() != 6) then return end
+	if(entity:GetPhysicsObject()) then entity = entity:GetPhysicsObject() else return end
+	local Vec1 = Vector(rv2[1],rv2[2],rv2[3])
+	local Vec2 = Vector(rv3[1],rv3[2],rv3[3])
+	entity:ApplyForceOffset(Vec1,Vec2)
+end)
