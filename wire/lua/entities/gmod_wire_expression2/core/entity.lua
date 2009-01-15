@@ -338,7 +338,21 @@ end)
 
 /******************************************************************************/
 
-registerFunction("applyForce", "e:v", "", function(self,args)
+registerFunction("applyForce", "v", "", function(self,args)
+	local op1 = args[2]
+	local rv1 = op1[1](self,op1)
+	local phys = self.entity:GetPhysicsObject()
+	phys:ApplyForceCenter(Vector(rv2[1],rv2[2],rv2[3]))
+end)
+
+registerFunction("applyOffsetForce", "vv", "", function(self,args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
+	local phys = self.entity:GetPhysicsObject()
+	entity:ApplyForceOffset(Vector(rv2[1],rv2[2],rv2[3]), Vector(rv3[1],rv3[2],rv3[3]))
+end)
+
+/*registerFunction("applyForce", "e:v", "", function(self,args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
 	local entity = checkEntity(rv1)
@@ -361,4 +375,4 @@ registerFunction("applyOffsetForce", "e:vv", "", function(self,args)
 	local Vec1 = Vector(rv2[1],rv2[2],rv2[3])
 	local Vec2 = Vector(rv3[1],rv3[2],rv3[3])
 	entity:ApplyForceOffset(Vec1,Vec2)
-end)
+end)*/
