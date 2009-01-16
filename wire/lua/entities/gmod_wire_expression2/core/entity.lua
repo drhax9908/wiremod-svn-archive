@@ -376,3 +376,33 @@ registerFunction("applyOffsetForce", "e:vv", "", function(self,args)
 	local Vec2 = Vector(rv3[1],rv3[2],rv3[3])
 	entity:ApplyForceOffset(Vec1,Vec2)
 end)*/
+
+/******************************************************************************/
+
+registerFunction("passenger", "e:", "e", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local entity = checkEntity(rv1)
+	if(!entity) then return nil end
+        if(entity:GetPassenger == nil || !entity:GetPassenger():IsValid()) then return nil end
+	return entity:GetPassenger()
+end)
+
+registerFunction("hint", "sn", "", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	self.player:SendLua("GAMEMODE:AddNotify(\"" .. rv1 .. "\", NOTIFY_GENERIC ," .. math.Clamp(rv2,0.7,7) .. ");")
+end)
+
+registerFunction("hintDriver", "e:sn", "n", function(self, args)
+    local op1, op2, op3 = args[2], args[3], args[4]
+    local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+	local entity = checkEntity(rv1)
+	if(!entity) then return 0 end
+	if(!entity:IsVehicle()) then return 0 end
+	if(entity:GetOwner() != self.entity:GetOwner()) then return 0 end
+	local driver = checkEntity(entity:GetDriver())
+	if (!driver) then return 0 end
+	driver:SendLua("GAMEMODE:AddNotify(\"" .. rv2 .. "\", NOTIFY_GENERIC ," .. math.Clamp(rv3,0.7,7) .. ");")
+    return 1
+end)
