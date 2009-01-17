@@ -2,9 +2,21 @@
 -- phenex: Start radio mod.
 local radio_channels = {}
 local radio_sets = {}
+local radio_num = {}
 
 function Radio_Register( o )
 	table.insert( radio_sets, o )
+end
+
+function Radio_TuneIn(ent,ch)
+	if (ent.Secure == true) then
+		if (radio_channels[ent.pl:SteamID()] == nil) then
+			radio_num[ent.pl:SteamID()] = {}
+		end
+		radio_num[ent.pl:SteamID()][ch] = (radio_num[ent.pl:SteamID()][ch] or 0) + 1
+	else
+		radio_num[ch] = (radio_num[ch] or 0) + 1
+	end
 end
 
 function Radio_TuneOut(ent,ch)
@@ -12,9 +24,16 @@ function Radio_TuneOut(ent,ch)
 		if (radio_channels[ent.pl:SteamID()] == nil) then
 			radio_channels[ent.pl:SteamID()] = {}
 		end
-		radio_channels[ent.pl:SteamID()][ch] = {}
+		radio_num[ent.pl:SteamID()][ch] = (radio_num[ent.pl:SteamID()][ch] or 0) - 1
+		if (radio_num[ent.pl:SteamID()][ch] == 0) then
+			radio_channels[ent.pl:SteamID()][ch] = {}
+		end
 	else
-		radio_channels[ch] = {}
+		radio_num[ch] = (radio_num[ch] or 0) - 1
+		if (radio_num[ch] == 0) then
+//			Msg("  Clear radio channels "..ch.."\n")
+			radio_channels[ch] = {}
+		end
 	end
 
 	for i, o in ipairs( radio_sets ) do
@@ -22,7 +41,13 @@ function Radio_TuneOut(ent,ch)
 	        table.remove(radio_sets, i)
 	    elseif (o.Channel == ch && o.Entity:EntIndex() != ent:EntIndex()) then
 		local retable = {}
-		for i=1,20 do retable[tostring(i)] = 0 end
+		if (radio_channels[ch]) then
+			retable = radio_channels[ch]
+			for i=1,20 do if (!radio_channels[ch][tostring(i)]) then retable[tostring(i)] = 0 end end
+		else
+			for i=1,20 do retable[tostring(i)] = 0 end
+		end
+
 		o:ReceiveRadio(retable)
 	    end
 	end
@@ -58,7 +83,7 @@ function Radio_Receive(ent, ch)
 		if (radio_channels[ent.pl:SteamID()] == nil) then return {} end
 		if (type(radio_channels[ent.pl:SteamID()][ch]) == "table") then
 			local retable = radio_channels[ent.pl:SteamID()][ch]
-			for i=1,20 do if (!radio_channels[ent.pl:SteamID()][ch][i]) then retable[tostring(i)] = 0 end end
+			for i=1,20 do if (!radio_channels[ent.pl:SteamID()][ch][tostring(i)]) then retable[tostring(i)] = 0 end end
 			return retable //Nothing fancy needed :P
 		else
 			local retable = {}
@@ -68,7 +93,8 @@ function Radio_Receive(ent, ch)
 	else
 		if (type(radio_channels[ch]) == "table") then
 			local retable = radio_channels[ch]
-			for i=1,20 do if (!radio_channels[ch][i]) then retable[tostring(i)] = 0 end end
+			for i=1,20 do if (!radio_channels[ch][tostring(i)]) then retable[tostring(i)] = 0 end end
+
 			return retable //Nothing fancy needed :P
 		else
 			local retable = {}
