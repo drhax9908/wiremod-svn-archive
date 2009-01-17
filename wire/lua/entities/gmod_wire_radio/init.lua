@@ -62,20 +62,37 @@ function ENT:Setup(channel,values,secure)
 	table.insert(onames,"Channel")
 	Wire_AdjustInputs(self,onames)
 	
+//	print("radio setup to channel "..self.Channel)
 	self:ReceiveRadio(Radio_Receive(self,self.Channel))
 end
 
 function ENT:TriggerInput(iname, value)
 	if (iname == "Channel") then
 	    	Radio_TuneOut(self,self.Channel)
-		Radio_TuneIn(self,value)
 	    	self.Channel = math.floor(value)
 
-	   	self:ReceiveRadio(Radio_Receive(self,self.Channel))
+//		print("STARTING SWITCH TO "..value.." here are the values BEFORE SWITCH:")
+//		PrintTable(self.ValuesTable)
 
-//		for k,v in pairs(self.Inputs) do	
-//			if k != "Channel" then self:Transmit(self.Channel, k, v.Value) end
-//		end
+		if (Radio_ChannelOccupied(self,self.Channel)) then
+		   	self:ReceiveRadio(Radio_Receive(self,self.Channel))
+		end
+
+//		print("Switched to channel "..value.." here are the values:")
+//		PrintTable(self.ValuesTable)
+
+		if (not Radio_ChannelOccupied(self,self.Channel)) then
+//			print("Sending values")
+			for j=1,20 do
+				if (self.ValuesTable[j]) then
+					Wire_TriggerOutput(self,tostring(j),self.ValuesTable[j])
+//					Msg(j.." << "..self.ValuesTable[j].."\n")
+					self:Transmit(self.Channel, tostring(j), self.ValuesTable[j])
+				end
+			end
+		end
+
+		Radio_TuneIn(self,value)
 	elseif (iname != nil && value != nil) then
 		self.ValuesTable[tonumber(iname)] = value
 		self.Inputs[iname].Value = value
@@ -85,8 +102,9 @@ function ENT:TriggerInput(iname, value)
 end
 
 function ENT:ReadCell(Address)
-//	print("==================== read "..Address)
+//	print("==================== read "..Address.." (chan "..self.Channel..")")
 //	print(self.ValuesTable[Address+1])
+//	PrintTable(self.ValuesTable)
 	if (Address >= 0) && (Address < self.Values) then
 		return self.ValuesTable[Address+1]
 	else

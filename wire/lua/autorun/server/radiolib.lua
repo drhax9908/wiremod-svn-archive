@@ -25,11 +25,11 @@ function Radio_TuneOut(ent,ch)
 			radio_channels[ent.pl:SteamID()] = {}
 		end
 		radio_num[ent.pl:SteamID()][ch] = (radio_num[ent.pl:SteamID()][ch] or 0) - 1
-		if (radio_num[ent.pl:SteamID()][ch] == 0) then
+		if ((radio_num[ent.pl:SteamID()][ch] or 0) == 0) then
 			radio_channels[ent.pl:SteamID()][ch] = {}
 		end
 	else
-		radio_num[ch] = (radio_num[ch] or 0) - 1
+		radio_num[ch] = (radio_num[ch] or 1) - 1
 		if (radio_num[ch] == 0) then
 //			Msg("  Clear radio channels "..ch.."\n")
 			radio_channels[ch] = {}
@@ -40,13 +40,14 @@ function Radio_TuneOut(ent,ch)
 	    if (not IsEntity(o.Entity)) then
 	        table.remove(radio_sets, i)
 	    elseif (o.Channel == ch && o.Entity:EntIndex() != ent:EntIndex()) then
-		local retable = {}
-		if (radio_channels[ch]) then
-			retable = radio_channels[ch]
-			for i=1,20 do if (!radio_channels[ch][tostring(i)]) then retable[tostring(i)] = 0 end end
-		else
-			for i=1,20 do retable[tostring(i)] = 0 end
+		if (radio_channels[ch] == null) then
+			radio_channels[ch] = {}
 		end
+
+		local retable  = radio_channels[ch]
+		for i=1,20 do if (!radio_channels[ch][tostring(i)]) then retable[tostring(i)] = 0 end end
+
+//		Msg("Tune out: notifying a radio on channel "..ch.."\n")
 
 		o:ReceiveRadio(retable)
 	    end
@@ -76,6 +77,23 @@ function Radio_Transmit(ent,ch,k,v)
 			end
 		end
 	end
+end
+
+function Radio_ChannelOccupied(ent,ch)
+	if (ent.Secure == true) then
+		if (radio_channels[ent.pl:SteamID()] == nil) then
+			radio_num[ent.pl:SteamID()] = {}
+		end
+		if ((radio_num[ent.pl:SteamID()][ch] or 0) ~= 0) then
+			return true
+		end
+	else
+//		print("is occupied "..ch.." = "..radio_num[ch] or 0)
+		if ((radio_num[ch] or 0) ~= 0) then
+			return true
+		end
+	end
+	return false
 end
 
 function Radio_Receive(ent, ch)
