@@ -349,7 +349,7 @@ registerFunction("applyOffsetForce", "vv", "", function(self,args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
 	local phys = self.entity:GetPhysicsObject()
-	entity:ApplyForceOffset(Vector(rv1[1],rv1[2],rv1[3]), Vector(rv2[1],rv2[2],rv2[3]))
+	phys:ApplyForceOffset(Vector(rv1[1],rv1[2],rv1[3]), Vector(rv2[1],rv2[2],rv2[3]))
 end)
 
 /*registerFunction("applyForce", "e:v", "", function(self,args)
@@ -384,7 +384,7 @@ registerFunction("passenger", "e:", "e", function(self, args)
 	local rv1 = op1[1](self, op1)
 	local entity = checkEntity(rv1)
 	if(!entity) then return nil end
-        if(entity:GetPassenger == nil || !entity:GetPassenger():IsValid()) then return nil end
+        if(entity.GetPassenger == nil || !entity:GetPassenger():IsValid()) then return nil end
 	return entity:GetPassenger()
 end)
 
