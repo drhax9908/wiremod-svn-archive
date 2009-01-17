@@ -391,12 +391,14 @@ end)
 registerFunction("hint", "sn", "", function(self, args)
     local op1, op2 = args[2], args[3]
     local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	if (string.find(rv1,string.char(34)) != nil) then return end
 	self.player:SendLua("GAMEMODE:AddNotify(\"" .. rv1 .. "\", NOTIFY_GENERIC ," .. math.Clamp(rv2,0.7,7) .. ");")
 end)
 
 registerFunction("hintDriver", "e:sn", "n", function(self, args)
     local op1, op2, op3 = args[2], args[3], args[4]
     local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+	if (string.find(rv2,string.char(34)) != nil) then return 0 end
 	local entity = checkEntity(rv1)
 	if(!entity) then return 0 end
 	if(!entity:IsVehicle()) then return 0 end
