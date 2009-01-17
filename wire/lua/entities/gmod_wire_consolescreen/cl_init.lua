@@ -38,8 +38,8 @@ function ENT:Initialize()
 	//[2036] - Brightness (additive)
 	//
 	//Control registers:
-	//[2037] - Shift cells -OBSOLETE-
-	//[2038] - Shift rows (number of rows, >0 shift down, <0 shift up)
+	//[2037] - Shift cells (number of cells, >0 right, <0 left)
+	//[2038] - Shift rows (number of rows, >0 shift up, <0 shift down)
 	//[2039] - Hardware Clear Row (Writing clears row)
 	//[2040] - Hardware Clear Column (Writing clears column)
 	//[2041] - Hardware Clear Screen

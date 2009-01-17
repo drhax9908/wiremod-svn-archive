@@ -39,23 +39,16 @@ function ENT:Initialize()
 	self.OF = CreateClientConVar("gpu_of",0,false,false)
 	self.OR = CreateClientConVar("gpu_or",0,false,false)
 	self.OU = CreateClientConVar("gpu_ou",0,false,false)
-	self.Scale = CreateClientConVar("gpu_scale",0,false,false)
+	self.Scale = CreateClientConVar("gpu_scale",1,false,false)
 	self.Ratio = CreateClientConVar("gpu_ratio",1,false,false)
+	self.Rot90 = CreateClientConVar("gpu_rot90",0,false,false)
 	self.MinFrameRateRatio = CreateClientConVar("wire_gpu_frameratio",4,false,false)
-end
 
-function ENT:OnUse()
-	//if (WireGPU_HookedGPU == self) then
-	//	WireGPU_HookedGPU = nil
-	//else
-	//	WireGPU_HookedGPU = self
-	//end
-	self:DoCall(2,4000)
+	self.DoNormalDraw = function() end
 end
 
 function ENT:OnRemove()
 	WireGPU_ReturnRenderTarget(self:EntIndex())
-//	WireGPU_ReturnRenderTarget(10002*(2*self:EntIndex()+1))
 end
 
 function DebugMessage(msg)
@@ -91,8 +84,6 @@ function ENT:SVN_Version()
 end
 
 function ENT:DoCall(callid,calldepth)
-	if (callid != 0) then Msg("Call "..callid.."\n") end
-
 	if ((self.EntryPoint) && (self.EntryPoint[callid])) then
 		self:GPUFrameReset()
 
@@ -129,9 +120,7 @@ function ENT:OutputError(intnumber,intparam)
 	"WireGPU_ConsoleFont",64+4,128+4,Color(255,255,255,255),0)
 end
 
-function ENT:Draw()
-	self.Entity:DrawModel()
-
+function ENT:RenderGPU(clearbg)
 	local DeltaTime = CurTime()-(self.PrevTime or CurTime())
 	self.PrevTime = (self.PrevTime or CurTime())+DeltaTime
 	self.DeltaTime = DeltaTime
@@ -151,8 +140,8 @@ function ENT:Draw()
 		local NewRT = self.FrameBuffer
 	 	render.SetRenderTarget(NewRT) 
 	 	render.SetViewPort(0,0,512,512)
-	 	cam.Start2D() 
-			if (self:ReadCell(65533) == 1) then
+	 	cam.Start2D()
+			if ((self:ReadCell(65533) == 1) && (clearbg == true)) then
 		 		surface.SetDrawColor(0,0,0,255)
 		 		surface.DrawRect(0,0,512,512)
 			end
@@ -164,9 +153,21 @@ function ENT:Draw()
 				end
 			end
 	 	cam.End2D()
+
 	 	render.SetViewPort(0,0,oldw,oldh)
 	 	render.SetRenderTarget(OldRT) 
 	end
+end
+
+function ENT:Draw()
+	self.Entity:DrawModel()
+
+	if (WireGPU_HookedGPU == self) then
+		Wire_Render(self.Entity)
+		return
+	end
+
+	self:RenderGPU(true)
 
 	if (WireGPU_Monitors[self.Entity:GetModel()]) && (WireGPU_Monitors[self.Entity:GetModel()].OF) then
 		OF = WireGPU_Monitors[self.Entity:GetModel()].OF
@@ -183,12 +184,13 @@ function ENT:Draw()
 		OR = self.OR:GetFloat() or 0
 		Res = self.Scale:GetFloat() or 1
 		RatioX = self.Ratio:GetFloat() or 1
+		Rot90 = self.Rot90:GetBool() or 0
 	end
 	
 	local ang = self.Entity:GetAngles()
 	local rot = Vector(-90,90,0)
 	if (Rot90) then
-		rot = Vector(180,90,0)
+		rot = Vector(0,90,0)
 	end
 
 	ang:RotateAroundAxis(ang:Right(), 	rot.x)
@@ -199,6 +201,7 @@ function ENT:Draw()
 
 	local OldTex = WireGPU_matScreen:GetMaterialTexture("$basetexture")
 	WireGPU_matScreen:SetMaterialTexture("$basetexture",self.FrameBuffer)
+	WireGPU_projScreen:SetMaterialTexture("$basetexture",self.FrameBuffer)
 
 	cam.Start3D2D(pos,ang,Res)
 		local w = 512*math.Clamp(self:ReadCell(65525),0,1)
@@ -241,37 +244,34 @@ function ENT:Draw()
 	Wire_Render(self.Entity)
 end
 
-//function drawBrickTexture()
-//	//local mat = Material("models\duckeh\buttons\0")
-//	//local tex = surface.GetTextureID("models\duckeh\buttons\0")
-//
-//	//local OldTex = WireGPU_matScreen:GetMaterialTexture("$basetexture")
-//	//WireGPU_matScreen:SetMaterialTexture("$basetexture","phoenix_storms/wire/pcb_green")
-//
-//	surface.SetDrawColor(255,255,255,255)
-//	surface.SetTexture(surface.GetTextureID(""))
-//	surface.DrawTexturedRect(ScrW()*0.5-256,ScrH()*0.5-256,512,512)
-//
-//	//WireGPU_matScreen:SetMaterialTexture("$basetexture",OldTex)
-//
-//	if (WireGPU_HookedGPU) then
-//		local OldTex = WireGPU_matScreen:GetMaterialTexture("$basetexture")
-//		WireGPU_matScreen:SetMaterialTexture("$basetexture",WireGPU_HookedGPU.FrameBuffer)
-//
-//		local w = 512*math.Clamp(WireGPU_HookedGPU:ReadCell(65525),0,1)
-//		local h = 512*math.Clamp(WireGPU_HookedGPU:ReadCell(65524),0,1)
-//		local x = -w/2
-//		local y = -h/2
-//
-//		surface.SetDrawColor(255,255,255,255)
-//		surface.SetTexture(WireGPU_texScreen)
-//		WireGPU_DrawScreen(x,y,w/RatioX,h,WireGPU_HookedGPU:ReadCell(65522),WireGPU_HookedGPU:ReadCell(65523))
-//
-//		WireGPU_matScreen:SetMaterialTexture("$basetexture",OldTex)
-//	end
-//end
-//hook.Add("HUDPaint","DrawTheBricks",drawBrickTexture) 
+function drawGPUHUD()
+	if (WireGPU_HookedGPU) then
+		Msg("Render GPU\n")
+
+		if (!WireGPU_HookedGPU.RenderGPU) then
+			WireGPU_HookedGPU = nil
+			return
+		end
+
+		WireGPU_HookedGPU:RenderGPU(false)
+
+		local OldTex = WireGPU_matScreen:GetMaterialTexture("$basetexture")
+		WireGPU_matScreen:SetMaterialTexture("$basetexture",WireGPU_HookedGPU.FrameBuffer)
+
+		local w = ScrW()*math.Clamp(WireGPU_HookedGPU:ReadCell(65525),0,1)
+		local h = ScrH()*math.Clamp(WireGPU_HookedGPU:ReadCell(65524),0,1)
+		local x = 0
+		local y = 0
+
+		surface.SetDrawColor(255,255,255,255)
+		surface.SetTexture(WireGPU_texScreen)
+		WireGPU_DrawScreen(x,y,w,h,WireGPU_HookedGPU:ReadCell(65522),WireGPU_HookedGPU:ReadCell(65523))
+
+		WireGPU_matScreen:SetMaterialTexture("$basetexture",OldTex)
+	end
+end
+//hook.Add("HUDPaint","drawGPUHUD",drawGPUHUD) 
 
 function ENT:IsTranslucent()
-	return true
+	return false
 end

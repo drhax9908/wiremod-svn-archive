@@ -16,33 +16,34 @@ function ENT:Initialize()
 	self.Inputs = Wire_CreateInputs(self, { "Channel"})
 	self.Outputs = Wire_CreateOutputs(self, { "ERRORS!!!" })
 	
-	self.Channel = 1
-	self.Transmitting = 0
-	self.ValuesTable = {}
+	self.Channel = 0
+	self.Values = 4
+	self.RecievedData = {}
+	for i=0,31 do
+		self.RecievedData[i] = {}
+		self.RecievedData[i].Owner = nil
+		self.RecievedData[i].Data = 0
+	end
+	self.SentData = {}
+	for i=0,31 do
+		self.SentData[i] = 0
+	end
 	
 	Radio_Register(self)
-	Radio_TuneIn(self,self.Channel)
+	Radio_RecieveData(self)
 end
 
 function ENT:Setup(channel,values,secure)
 	channel = math.floor(tonumber(channel) or 0)
-	Radio_TuneOut(self,self.Channel)
-	self.Channel = channel
-	Radio_TuneIn(self,self.Channel)
 	self.Secure = secure
 	self.Old = false
 	if (tonumber(values) == nil) then
 		values = 4
 		self.Old = true
 	else
-		values = math.Round(values)
-		if (values > 20) then
-			values = 20
-		end
-		if (values < 1) then
-			values = 1
-		end
+		values = math.Clamp(math.floor(values),1,32)
 	end
+
 	self.Values = values
 	local onames = {}
 	if (self.Old == false) then
@@ -53,60 +54,44 @@ function ENT:Setup(channel,values,secure)
 		onames = {"A","B","C","D"}
 	end
 
-	self.ValuesTable = {}
-	for i=1,values do
-		self.ValuesTable[i] = 0
-	end
-	
 	Wire_AdjustOutputs(self,onames)
 	table.insert(onames,"Channel")
 	Wire_AdjustInputs(self,onames)
-	
-//	print("radio setup to channel "..self.Channel)
-	self:ReceiveRadio(Radio_Receive(self,self.Channel))
+
+	self.Channel = channel
+	Radio_ChangeChannel(self)
 end
 
 function ENT:TriggerInput(iname, value)
 	if (iname == "Channel") then
-	    	Radio_TuneOut(self,self.Channel)
 	    	self.Channel = math.floor(value)
+		Radio_ChangeChannel(self)
 
-//		print("STARTING SWITCH TO "..value.." here are the values BEFORE SWITCH:")
-//		PrintTable(self.ValuesTable)
-
-		if (Radio_ChannelOccupied(self,self.Channel)) then
-		   	self:ReceiveRadio(Radio_Receive(self,self.Channel))
-		end
-
-//		print("Switched to channel "..value.." here are the values:")
-//		PrintTable(self.ValuesTable)
-
-		if (not Radio_ChannelOccupied(self,self.Channel)) then
-//			print("Sending values")
-			for j=1,20 do
-				if (self.ValuesTable[j]) then
-					Wire_TriggerOutput(self,tostring(j),self.ValuesTable[j])
-//					Msg(j.." << "..self.ValuesTable[j].."\n")
-					self:Transmit(self.Channel, tostring(j), self.ValuesTable[j])
-				end
-			end
-		end
-
-		Radio_TuneIn(self,value)
 	elseif (iname != nil && value != nil) then
-		self.ValuesTable[tonumber(iname)] = value
-		self.Inputs[iname].Value = value
-		self:Transmit(self.Channel,iname,value)
+		if (self.Old == true) then
+			if (iname == "A") then
+				Radio_SendData(self,self.Channel,0,value)
+			elseif (iname == "B") then
+				Radio_SendData(self,self.Channel,1,value)
+			elseif (iname == "C") then
+				Radio_SendData(self,self.Channel,2,value)
+			elseif (iname == "D") then
+				Radio_SendData(self,self.Channel,3,value)
+			end
+		else
+			Radio_SendData(self,tonumber(iname)-1,value)
+		end
 	end
 	self:ShowOutput()
 end
 
+function ENT:NotifyDataRecieved(subch)
+	Wire_TriggerOutput(self,tostring(subch+1),self.RecievedData[subch].Data)
+end
+
 function ENT:ReadCell(Address)
-//	print("==================== read "..Address.." (chan "..self.Channel..")")
-//	print(self.ValuesTable[Address+1])
-//	PrintTable(self.ValuesTable)
 	if (Address >= 0) && (Address < self.Values) then
-		return self.ValuesTable[Address+1]
+		return self.RecievedData[Address].Data
 	else
 		return nil
 	end
@@ -114,51 +99,29 @@ end
 
 function ENT:WriteCell(Address, value)
 	if (Address >= 0) && (Address < self.Values) then
-		self:Transmit(self.Channel, tostring(Address+1), value)
+		Radio_SendData(self,Address,value)
 		return true
 	else
 		return false
 	end
 end
 
-function ENT:Transmit(channel,k,v)
-	Radio_Transmit(self,self.Channel,k,v)
-	self.ValuesTable[tonumber(k)] = v
-end
-
-function ENT:ReceiveRadio(values) //FIXME: horrible code, needs cleanup. it's only a temp fix...
-	if (values == nil) then return end
-//	print("recieve radio:")
-	//for k,o in pairs(values) do
-	for j=1,20 do
-		if (values[tostring(j)]) then
-			Wire_TriggerOutput(self,tostring(j),values[tostring(j)])
-			self.ValuesTable[j] = values[tostring(j)]
-//			Msg(j.." = "..values[tostring(j)].."\n")
-		end
-	end
-	self:ShowOutput()
-end
-function ENT:SReceiveRadio(k,v)
-	if (k == nil || v == nil) then return end
-	Wire_TriggerOutput(self,k,v)
-	self.ValuesTable[tonumber(k)] = v
-	self:ShowOutput()
-end
 function ENT:ShowOutput()
 	if (self.Old == true) then
 		self:SetOverlayText( "(Channel " .. self.Channel .. ") Transmit A: " .. (self.Inputs.A.Value or 0) .. " B: " .. (self.Inputs.B.Value or 0) ..  " C: " .. (self.Inputs.C.Value or 0) ..  " D: " .. (self.Inputs.D.Value or 0) .. "\nReceive A: " .. (self.Outputs.A.Value or 0) .. " B: " .. (self.Outputs.B.Value or 0) ..  " C: " .. (self.Outputs.C.Value or 0) ..  " D: " .. (self.Outputs.D.Value or 0) )
 	else
 		local overlay = "(Channel " .. self.Channel .. ") Transmit"
 		for i=1,self.Values do
-			if (k!= "Channel") then if (self.Outputs[tostring(i)] != nil) then overlay = overlay .. " " .. (tostring(i) or "Error") .. ":" .. math.Round((self.Inputs[tostring(i)].Value or 0)*1000)/1000 end end
+			overlay = overlay .. " " .. i .. ":" .. 
+				math.Round((self.SentData[i-1])*1000)/1000
 		end
 		overlay = overlay .. "\nReceive"
 		for i=1,self.Values do
-			if (self.Outputs[tostring(i)] != nil) then overlay = overlay .. " " .. (tostring(i) or "Error") .. ":" .. math.Round((self.Outputs[tostring(i)].Value or 0)*1000)/1000 end
+			overlay = overlay .. " " .. i .. ":" .. 
+				math.Round((self.RecievedData[i-1].Data)*1000)/1000
 		end
 		if (self.Secure == true) then overlay = overlay .. "\nSecured" end
-		self:SetOverlayText( overlay )
+		self:SetOverlayText(overlay)
 	end
 end
 
@@ -169,5 +132,5 @@ end
 
 function ENT:OnRemove()
 	if (!self.Channel) then return end
-	Radio_TuneOut(self,self.Channel)
+	Radio_Unregister(self)
 end
