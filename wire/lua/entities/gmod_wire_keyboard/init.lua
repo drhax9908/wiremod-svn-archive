@@ -17,7 +17,8 @@ function ENT:Initialize()
 	self.Entity:SetSolid(SOLID_VPHYSICS)
 	
 	self.On = {}
-	self.Outputs = Wire_CreateOutputs(self.Entity, { "Memory" })
+	self.Inputs = Wire_CreateInputs(self.Entity, { "Kick the bastard out of keyboard" })
+	self.Outputs = WireLib.CreateSpecialOutputs(self.Entity, { "Memory", "User" }, { "NORMAL", "ENTITY" })
 
 	for i = 0,223 do
 		self.On[i] = 0
@@ -64,8 +65,19 @@ function ENT:Use(pl)
 	if (!self.InUse) then
 		self.InUse = true
 		self.IgnoredFirstChar = false
+		self.InUseBy = pl
+		Wire_TriggerOutput(self.Entity, "User", pl.Entity)
+
 		self:SetOverlayText("Keyboard - In use by " .. pl:GetName())
 		pl:ConCommand("wire_keyboard_on "..self:EntIndex())
+	end
+end
+
+function ENT:TriggerInput(iname, value)
+	if (iname == "Kick the bastard out of keyboard") then
+		if ((self.InUse == true) && (self.InUseBy:IsValid())) then
+			self.InUseBy:ConCommand("wire_keyboard_off")
+		end
 	end
 end
 
@@ -118,6 +130,7 @@ end
 function Wire_KeyOff (pl, cmd, args)
 	local ent = ents.GetByIndex(KeyBoardPlayerKeys[pl:EntIndex()])
 	if (ent) && (ent:IsValid()) && (ent.InUse) then
+		Wire_TriggerOutput(ent.Entity, "User", pl.Entity)
 		ent.InUse = false
 		ent:SetOverlayText("Keyboard - not in use")
 	end
