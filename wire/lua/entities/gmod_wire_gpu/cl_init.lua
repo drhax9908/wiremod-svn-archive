@@ -9,6 +9,8 @@ ENT.RenderGroup 		= RENDERGROUP_BOTH
 
 WireGPU_HookedGPU = nil
 
+WireGPU_projScreen 	= Material("effects/flashlight/tech")
+
 function ENT:Initialize()
 	self.IsGPU = true
 	self.PrevTime = CurTime()
