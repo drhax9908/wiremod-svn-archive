@@ -20,7 +20,8 @@ function ENT:InitializeAdvMathASMOpcodes()
 	self.DecodeOpcode["mmov"]           = 268 //MMOV X,Y		: X = Y							[MATRIX,MATRIX]	7.00
 	self.DecodeOpcode["vlen"]           = 269 //VLEN X,Y		: X = Sqrt(Y . Y)					[F,MODEF]	7.00
 	self.DecodeOpcode["mident"]         = 270 //MIDENT X		: Load identity matrix into X				[MATRIX]	7.00
-	self.DecodeOpcode["vmode"]          = 273 //VMODE X		: Vector mode = Y					[INT]
+	self.DecodeOpcode["vmode"]          = 273 //VMODE X		: Vector mode = Y					[INT]		7.00
+	self.DecodeOpcode["vdiv"]           = 295 //VDIV X,Y		: X = X / Y						[MODEF,MODEF]	7.00
 	//---------------------------------------------------------------------------------------------------------------------
 end
 
@@ -28,73 +29,87 @@ function ENT:InitializeAdvMathOpcodeTable()
 	//------------------------------------------------------------
 	self.OpcodeTable[250] = function (Param1, Param2)	//VADD
 		if (self.VMODE == 2) then
-			local vec1 = self:Read2f(Param1)
-			local vec2 = self:Read2f(Param2)
-			self:Write2f(Param1,{x = vec1.x + vec2.x, y = vec1.y + vec2.y, z = 0})
+			local vec1 = self:Read2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+			local vec2 = self:Read2f(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
+			self:Write2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1],
+				{x = vec1.x + vec2.x, y = vec1.y + vec2.y, z = 0})
 		else
-			local vec1 = self:Read3f(Param1)
-			local vec2 = self:Read3f(Param2)
-			self:Write3f(Param1,{x = vec1.x + vec2.x, y = vec1.y + vec2.y, z = vec1.z + vec2.z})
+			local vec1 = self:Read3f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+			local vec2 = self:Read3f(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
+			self:Write3f(Param1 + self[self.PrecompileData[self.XEIP].Segment2],
+				{x = vec1.x + vec2.x, y = vec1.y + vec2.y, z = vec1.z + vec2.z})
 		end
 	end
 	self.OpcodeTable[251] = function (Param1, Param2)	//VSUB
 		if (self.VMODE == 2) then
-			local vec1 = self:Read2f(Param1)
-			local vec2 = self:Read2f(Param2)
-			self:Write2f(Param1,{x = vec1.x - vec2.x, y = vec1.y - vec2.y, z = 0})
+			local vec1 = self:Read2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+			local vec2 = self:Read2f(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
+			self:Write2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1],
+				{x = vec1.x - vec2.x, y = vec1.y - vec2.y, z = 0})
 		else
-			local vec1 = self:Read3f(Param1)
-			local vec2 = self:Read3f(Param2)
-			self:Write3f(Param1,{x = vec1.x - vec2.x, y = vec1.y - vec2.y, z = vec1.z - vec2.z})
+			local vec1 = self:Read3f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+			local vec2 = self:Read3f(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
+			self:Write3f(Param1 + self[self.PrecompileData[self.XEIP].Segment2],
+				{x = vec1.x - vec2.x, y = vec1.y - vec2.y, z = vec1.z - vec2.z})
 		end
 	end
 	self.OpcodeTable[252] = function (Param1, Param2)	//VMUL
 		if (self.VMODE == 2) then
-			local vec = self:Read3f(Param1)
-			self:Write2f(Param1,{x = vec.x*Param2, y = vec.y*Param2, z = 0})
+			local vec = self:Read3f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+			self:Write2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1],
+				{x = vec.x*Param2, y = vec.y*Param2, z = 0})
 		else
-			local vec = self:Read3f(Param1)
-			self:Write3f(Param1,{x = vec.x*Param2, y = vec.y*Param2, z = vec.z*Param2})
+			local vec = self:Read3f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+			self:Write3f(Param1 + self[self.PrecompileData[self.XEIP].Segment2],
+				{x = vec.x*Param2, y = vec.y*Param2, z = vec.z*Param2})
 		end
 	end
 	self.OpcodeTable[253] = function (Param1, Param2)	//VDOT
 		if (self.VMODE == 2) then
-			local v1 = self:Read2f(Param1)
-			local v2 = self:Read2f(Param2)
-			self:WriteCell(Param1,v1.x * v2.x + v1.y * v2.y)
+			local v1 = self:Read2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+			local v2 = self:Read2f(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
+			self:WriteCell(Param1 + self[self.PrecompileData[self.XEIP].Segment1],
+				v1.x * v2.x + v1.y * v2.y)
 		else
-			local v1 = self:Read3f(Param1)
-			local v2 = self:Read3f(Param2)
-			self:WriteCell(Param1,v1.x*v2.x + v1.y*v2.y + v1.z*v2.z)
+			local v1 = self:Read3f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+			local v2 = self:Read3f(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
+			self:WriteCell(Param1 + self[self.PrecompileData[self.XEIP].Segment2],
+				v1.x*v2.x + v1.y*v2.y + v1.z*v2.z)
 		end
 	end
 	self.OpcodeTable[254] = function (Param1, Param2)	//VCROSS
 		if (self.VMODE == 2) then
-			local v1 = self:Read2f(Param1)
-			local v2 = self:Read2f(Param2)
-			self:WriteCell(Param1,v1.x * v2.y - v1.y * v2.x)
+			local v1 = self:Read2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+			local v2 = self:Read2f(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
+			self:WriteCell(Param1 + self[self.PrecompileData[self.XEIP].Segment1],
+				v1.x * v2.y - v1.y * v2.x)
 		else
-			local vec1 = self:Read3f(Param1)
-			local vec2 = self:Read3f(Param2)
-			self:Write3f(Param1,{x = v1.y * v2.z - v1.z * v2.y, y = v1.z * v2.x - v1.x * v2.z, z = v1.x * v2.y - v1.y * v2.x})
+			local vec1 = self:Read3f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+			local vec2 = self:Read3f(Param2 + self[self.PrecompileData[self.XEIP].Segment1])
+			self:Write3f(Param1 + self[self.PrecompileData[self.XEIP].Segment2],
+				{x = v1.y * v2.z - v1.z * v2.y, y = v1.z * v2.x - v1.x * v2.z, z = v1.x * v2.y - v1.y * v2.x})
 		end
 	end
 	self.OpcodeTable[255] = function (Param1, Param2)	//VMOV
 		if (self.VMODE == 2) then
-			self:Write2f(Param1,self:Read2f(Param2))
+			self:Write2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1],
+				self:Read2f(Param2 + self[self.PrecompileData[self.XEIP].Segment1]))
 		else
-			self:Write3f(Param1,self:Read3f(Param2))
+			self:Write3f(Param1 + self[self.PrecompileData[self.XEIP].Segment2],
+				self:Read3f(Param2 + self[self.PrecompileData[self.XEIP].Segment2]))
 		end
 	end
 	self.OpcodeTable[256] = function (Param1, Param2)	//VNORM
 		if (self.VMODE == 2) then
-			local vec = self:Read2f(Param2)
-			local d = Sqrt(vec.x * vec.x + vec.y * vec.y) + 10e-9
-			self:Write2f(Param1,{x = vec.x / d, y = vec.y / d})
+			local vec = self:Read2f(Param2 + self[self.PrecompileData[self.XEIP].Segment1])
+			local d = (vec.x * vec.x + vec.y * vec.y)^0.5 + 10e-9
+			self:Write2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1],
+				{x = vec.x / d, y = vec.y / d})
 		else
-			local vec = self:Read3f(Param2)
-			local d = Sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z) + 10e-9
-			self:Write3f(Param1,{x = vec.x / d, y = vec.y / d, z = vec.z / d})
+			local vec = self:Read3f(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
+			local d = (vec.x * vec.x + vec.y * vec.y + vec.z * vec.z)^0.5 + 10e-9
+			self:Write3f(Param1 + self[self.PrecompileData[self.XEIP].Segment2],
+				{x = vec.x / d, y = vec.y / d, z = vec.z / d})
 		end
 	end
 	self.OpcodeTable[257] = function (Param1, Param2)	//VCOLORNORM
@@ -102,32 +117,32 @@ function ENT:InitializeAdvMathOpcodeTable()
 	end
 	//------------------------------------------------------------
 	self.OpcodeTable[260] = function (Param1, Param2)	//MADD
-		local mx1 = self:ReadMatrix(Param1)
-		local mx2 = self:ReadMatrix(Param2)
+		local mx1 = self:ReadMatrix(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+		local mx2 = self:ReadMatrix(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
 		local rmx = {}
 
 		for i=0,15 do
 			rmx[i] = mx1[i] + mx2[i]
 		end
 
-		self:WriteMatrix(Param1,rmx)		
+		self:WriteMatrix(Param1 + self[self.PrecompileData[self.XEIP].Segment1],rmx)		
 
 	end
 	self.OpcodeTable[261] = function (Param1, Param2) 	//MSUB
-		local mx1 = self:ReadMatrix(Param1)
-		local mx2 = self:ReadMatrix(Param2)
+		local mx1 = self:ReadMatrix(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+		local mx2 = self:ReadMatrix(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
 		local rmx = {}
 
 		for i=0,15 do
 			rmx[i] = mx1[i] - mx2[i]
 		end
 
-		self:WriteMatrix(Param1,rmx)		
+		self:WriteMatrix(Param1 + self[self.PrecompileData[self.XEIP].Segment1],rmx)		
 
 	end
 	self.OpcodeTable[262] = function (Param1, Param2) 	//MMUL
-		local mx1 = self:ReadMatrix(Param1)
-		local mx2 = self:ReadMatrix(Param2)
+		local mx1 = self:ReadMatrix(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+		local mx2 = self:ReadMatrix(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
 		local rmx = {}
 
 		for i=0,3 do
@@ -139,11 +154,11 @@ function ENT:InitializeAdvMathOpcodeTable()
 			end
 		end
 
-		self:WriteMatrix(Param1,rmx)		
+		self:WriteMatrix(Param1 + self[self.PrecompileData[self.XEIP].Segment1],rmx)		
 
 	end
 	self.OpcodeTable[263] = function (Param1, Param2) 	//MROTATE
-		local vec = self:Read4f(Param2)
+		local vec = self:Read4f(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
 		local rm = {}
 
 		local axis = {}
@@ -187,11 +202,11 @@ function ENT:InitializeAdvMathOpcodeTable()
 		rm[14] = 0
 		rm[15] = 1
 
-		self:WriteMatrix(Param1,rm)		
+		self:WriteMatrix(Param1 + self[self.PrecompileData[self.XEIP].Segment1],rm)		
 
 	end
 	self.OpcodeTable[264] = function (Param1, Param2) 	//MSCALE
-		local vec = self:Read3f(Param2)
+		local vec = self:Read3f(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
 		local rm = {}
 
 
@@ -215,11 +230,11 @@ function ENT:InitializeAdvMathOpcodeTable()
 		rm[14] = 0
 		rm[15] = 1
 
-		self:WriteMatrix(Param1,rm)		
+		self:WriteMatrix(Param1 + self[self.PrecompileData[self.XEIP].Segment1],rm)		
 
 	end
 	self.OpcodeTable[265] = function (Param1, Param2) 	//MPERSPECTIVE
-		local vec = self:Read4f(Param2)
+		local vec = self:Read4f(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
 		local rm = {}		
 
 		local sine
@@ -253,10 +268,10 @@ function ENT:InitializeAdvMathOpcodeTable()
 		rm[2*4+3] = -1;
 		rm[3*4+3] = 0;
 
-		self:WriteMatrix(Param1,rm)
+		self:WriteMatrix(Param1 + self[self.PrecompileData[self.XEIP].Segment1],rm)
 	end
 	self.OpcodeTable[266] = function (Param1, Param2) 	//MTRANSLATE
-		local vec = self:Read3f(Param2)
+		local vec = self:Read3f(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
 		local rm = {}
 
 
@@ -280,12 +295,12 @@ function ENT:InitializeAdvMathOpcodeTable()
 		rm[14] = 0
 		rm[15] = 1
 
-		self:WriteMatrix(Param1,rm)
+		self:WriteMatrix(Param1 + self[self.PrecompileData[self.XEIP].Segment1],rm)
 	end
 	self.OpcodeTable[267] = function (Param1, Param2) 	//MLOOKAT
-		local eye = self:Read3f(Param2+0)
-		local center = self:Read3f(Param2+3)
-		local up = self:Read3f(Param2+6)
+		local eye = self:Read3f(Param2 + self[self.PrecompileData[self.XEIP].Segment2]+0)
+		local center = self:Read3f(Param2 + self[self.PrecompileData[self.XEIP].Segment2]+3)
+		local up = self:Read3f(Param2 + self[self.PrecompileData[self.XEIP].Segment2]+6)
 		local rm = {}
 
 		local x = {}
@@ -348,17 +363,18 @@ function ENT:InitializeAdvMathOpcodeTable()
 
 		rm[3*4+0] = 0.0;	rm[3*4+1] = 0.0;  rm[3*4+2] = 0.0; rm[3*4+3] = 1.0;
 
-		self:WriteMatrix(Param1,rm)
+		self:WriteMatrix(Param1 + self[self.PrecompileData[self.XEIP].Segment1],rm)
 	end
 	self.OpcodeTable[268] = function (Param1, Param2) 	//MMOV
-		self:WriteMatrix(Param1,self:ReadMatrix(Param2))
+		self:WriteMatrix(Param1 + self[self.PrecompileData[self.XEIP].Segment1],
+			self:ReadMatrix(Param2 + self[self.PrecompileData[self.XEIP].Segment2]))
 	end
 	self.OpcodeTable[269] = function (Param1, Param2) 	//VLEN
 		if (self.VMODE == 2) then
-			local vec = self:Read2f(Param2)
+			local vec = self:Read2f(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
 			return (vec.x * vec.x + vec.y * vec.y)^(0.5)
 		else
-			local vec = self:Read3f(Param2)
+			local vec = self:Read3f(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
 			return (vec.x * vec.x + vec.y * vec.y + vec.z * vec.z)^(0.5)
 		end
 	end
@@ -389,6 +405,21 @@ function ENT:InitializeAdvMathOpcodeTable()
 	end
 	self.OpcodeTable[273] = function (Param1, Param2) 	//VMODE
 		self.VMODE = math.Clamp(math.floor(Param1),2,3)
+	end
+	self.OpcodeTable[295] = function (Param1, Param2)	//VDIV
+		if (math.abs(Param2) < 1e-12) then
+			self:Interrupt(3,0)
+		else
+			if (self.VMODE == 2) then
+				local vec = self:Read3f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+				self:Write2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1],
+					{x = vec.x/Param2, y = vec.y/Param2, z = 0})
+			else
+				local vec = self:Read3f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+				self:Write3f(Param1 + self[self.PrecompileData[self.XEIP].Segment2],
+					{x = vec.x/Param2, y = vec.y/Param2, z = vec.z/Param2})
+			end
+		end
 	end
 end
 

@@ -17,7 +17,7 @@ end
 
 TOOL.ClientConVar["model"] 		= "models/props_lab/monitor01b.mdl"
 TOOL.ClientConVar["filename"] 		= ""
-TOOL.ClientConVar["packet_bandwidth"] 	= 300
+TOOL.ClientConVar["packet_bandwidth"] 	= 60
 TOOL.ClientConVar["packet_rate_sp"] 	= 0.05
 TOOL.ClientConVar["packet_rate_mp"] 	= 0.4
 TOOL.ClientConVar["compile_rate"] 	= 0.05
