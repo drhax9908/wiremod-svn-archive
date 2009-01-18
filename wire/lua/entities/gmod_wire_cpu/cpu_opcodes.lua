@@ -36,9 +36,9 @@ function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode["neg"]    = 22  //NEG X      : X = -X
 	self.DecodeOpcode["rand"]   = 23  //RAND X     : X = Random(0..1)
 	self.DecodeOpcode["loop"]   = 24  //LOOP X     : IF ECX ~= 0 THEN JUMP X    	2.00
-	self.DecodeOpcode["loopa"]  = 25  //LOOP X     : IF EAX ~= 0 THEN JUMP X    	2.00
-	self.DecodeOpcode["loopb"]  = 26  //LOOP X     : IF EBX ~= 0 THEN JUMP X    	2.00
-	self.DecodeOpcode["loopd"]  = 27  //LOOP X     : IF EDX ~= 0 THEN JUMP X    	2.00
+	self.DecodeOpcode["loopa"]  = 25  //LOOPA X    : IF EAX ~= 0 THEN JUMP X    	2.00
+	self.DecodeOpcode["loopb"]  = 26  //LOOPB X    : IF EBX ~= 0 THEN JUMP X    	2.00
+	self.DecodeOpcode["loopd"]  = 27  //LOOPD X    : IF EDX ~= 0 THEN JUMP X    	2.00
 	self.DecodeOpcode["spg"]    = 28  //SPG X      : PAGE(X) = READ ONLY	    	2.00
 	self.DecodeOpcode["cpg"]    = 29  //CPG X      : PAGE(X) = READ AND WRITE   	2.00
 	//-----------------------------------------------------------------------------------
@@ -339,27 +339,27 @@ function ENT:InitializeOpcodeTable()
 		return math.random()
 	end
 	self.OpcodeTable[24] = function (Param1,Param2)	//LOOP
+		self.ECX = self.ECX-1
 		if (self.ECX ~= 0) then
 			self.IP = Param1
-			self.ECX = self.ECX-1
 		end
 	end
 	self.OpcodeTable[25] = function (Param1,Param2)	//LOOPA
+		self.EAX = self.EAX-1
 		if (self.EAX ~= 0) then
 			self.IP = Param1
-			self.EAX = self.EAX-1
 		end
 	end
 	self.OpcodeTable[26] = function (Param1,Param2)	//LOOPB
+		self.EBX = self.EBX-1
 		if (self.EBX ~= 0) then
 			self.IP = Param1
-			self.EBX = self.EBX-1
 		end
 	end
 	self.OpcodeTable[27] = function (Param1,Param2)	//LOOPD
+		self.EDX = self.EDX-1
 		if (self.EDX ~= 0) then
 			self.IP = Param1
-			self.EDX = self.EDX-1
 		end
 	end
 	self.OpcodeTable[28] = function (Param1,Param2)	//SPG
