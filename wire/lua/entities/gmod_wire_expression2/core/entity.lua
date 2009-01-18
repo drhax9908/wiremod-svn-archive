@@ -86,9 +86,9 @@ registerFunction("owner", "e:", "e", function(self, args)
 	local rv1 = op1[1](self, op1)
 	local entity = checkEntity(rv1)
 	if(!entity) then return nil end
-	if(!rv1.OnDieFunctions) then return nil end
-	if(!rv1.OnDieFunctions.GetCountUpdate) then return nil end
-	if(!rv1.OnDieFunctions.GetCountUpdate.Args) then return nil end
+	if(rv1.OnDieFunctions == nil) then return nil end
+	if(rv1.OnDieFunctions.GetCountUpdate == nil) then return nil end
+	if(rv1.OnDieFunctions.GetCountUpdate.Args == nil) then return nil end
 	return rv1.OnDieFunctions.GetCountUpdate.Args[1]
 end)
 
