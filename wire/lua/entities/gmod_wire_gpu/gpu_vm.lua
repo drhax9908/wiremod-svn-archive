@@ -8,17 +8,20 @@ include('gpu_interrupt.lua')				//Own GPU interrupts
 function ENT:GPUHardReset()
 	self.HandleError = 0
 	self:GPUFrameReset()
-	//for i = 0, 63487 do
-	//	if (self.ROMMemory[i]) then
-	//		self:WriteCell(i,self.ROMMemory[i])
-	//	end
-	//end
-	//self:GPUFrameReset()
+	
+//	for i = 0, 63487 do
+		//if (self.ROMMemory[i]) then
+		//self:WriteCell(i,0)//self.ROMMemory[i])
+		//end
+//	end
+//	self.Memory = {}
+	self:GPUFrameReset()
 
 	self.EntryPoint = {}
 	self.EntryPoint[0] = 0
 
 	self.Memory[65533] = 1
+	self.Memory[65531] = 0
 end
 
 function ENT:GPUFrameReset()
@@ -65,11 +68,13 @@ function ENT:GPUResetRegisters()
 	//[65534] - RESET
 	//[65533] - HARDWARE CLEAR
 	//[65532] - Vertex mode (render vertex instead of RT)
+	//[65531] - HALT
 
 	self.Memory[65535] = 1
 	self.Memory[65534] = 0
 	//self.Memory[65533] = 1
 	self.Memory[65532] = 0
+	//self.Memory[65531] = 0
 
 	//Image control:
 	//[65525] - Horizontal image scale
