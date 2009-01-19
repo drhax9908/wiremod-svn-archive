@@ -129,16 +129,16 @@ registerOperator("mul", "an", "a", function(self, args)
 	return { rv1[1] * rv2, rv1[2] * rv2, rv1[3] * rv2 }
 end)
 
-registerOperator("div", "av", "a", function(self, args)
-	local op1, op2 = args[2], args[3]
-	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	return { rv1 / rv2[1], rv1 / rv2[2], rv1 / rv2[3] }
+registerOperator("div", "na", "a", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+    return { rv1 / rv2[1], rv1 / rv2[2], rv1 / rv2[3] }
 end)
 
-registerOperator("div", "va", "a", function(self, args)
-	local op1, op2 = args[2], args[3]
-	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	return { rv1[1] / rv2, rv1[2] / rv2, rv1[3] / rv2 }
+registerOperator("div", "an", "a", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+    return { rv1[1] / rv2, rv1[2] / rv2, rv1[3] / rv2 }
 end)
 
 /******************************************************************************/
