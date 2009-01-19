@@ -168,6 +168,7 @@ function ENT:Compiler_SetExtraLabels()
 		self:SetLabel("regreset",	65534)
 		self:SetLabel("reghwclear",	65533)
 		self:SetLabel("regvertexmode",	65532)
+		self:SetLabel("reghalt",	65531)
 
 		self:SetLabel("reghscale",	65525)
 		self:SetLabel("regvscale",	65524)

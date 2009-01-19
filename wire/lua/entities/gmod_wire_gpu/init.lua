@@ -7,6 +7,9 @@ AddCSLuaFile("gpu_clientbus.lua")
 AddCSLuaFile("entities/gmod_wire_cpu/cpu_opcodes.lua")
 AddCSLuaFile("entities/gmod_wire_cpu/cpu_vm.lua")
 AddCSLuaFile("entities/gmod_wire_cpu/cpu_bitwise.lua")
+AddCSLuaFile("entities/gmod_wire_cpu/cpu_advmath.lua")
+
+AddCSLuaFile("entities/gmod_wire_cpu/compiler_asm.lua")
 
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
@@ -14,6 +17,7 @@ AddCSLuaFile("shared.lua")
 include('shared.lua')
 include('entities/gmod_wire_cpu/compiler_asm.lua')	//Include ZASM
 include('entities/gmod_wire_cpu/cpu_opcodes.lua')	//Include ZCPU opcodes
+include('entities/gmod_wire_cpu/cpu_advmath.lua')	//Include vector and matrix math
 include('gpu_serverbus.lua')				//Include ZGPU serverside bus
 include('gpu_opcodes.lua')				//Include ZGPU opcodes for ZASM
 
@@ -53,6 +57,29 @@ function ENT:Initialize()
 	self:InitializeBus()
 end
 
+//function ENT:Use(pl)
+//	//if (!self.Using) then
+//	//	self.Using = true
+//	//	self.Entity:NextThink(CurTime()+0.4)
+//
+//		local rp = RecipientFilter()
+//		rp:AddPlayer(pl)
+//	
+//		Msg("Binding GPU (server)\n")
+//	
+//		umsg.Start("wiregpu_onuse", rp)
+//			umsg.Long(self:EntIndex())
+//		umsg.End()
+//	//end
+//end
+//
+//function ENT:Think()
+//	self.BaseClass.Think(self)
+//
+//	//self.Using = nil
+//	//return false
+//end
+//
 function ENT:GPU_ResendData(pl)
 	//FIXME
 	//self:FlushCache()

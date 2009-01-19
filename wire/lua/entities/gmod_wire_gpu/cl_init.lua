@@ -45,8 +45,6 @@ function ENT:Initialize()
 	self.Ratio = CreateClientConVar("gpu_ratio",1,false,false)
 	self.Rot90 = CreateClientConVar("gpu_rot90",0,false,false)
 	self.MinFrameRateRatio = CreateClientConVar("wire_gpu_frameratio",4,false,false)
-
-	self.DoNormalDraw = function() end
 end
 
 function ENT:OnRemove()
@@ -130,7 +128,7 @@ function ENT:RenderGPU(clearbg)
 	self.FrameBuffer = WireGPU_GetMyRenderTarget(self:EntIndex())
 	//self.SpriteBuffer = WireGPU_GetMyRenderTarget(10002*(2*self:EntIndex()+1))
 
-	local FrameRate = self.MinFrameRateRatio:GetFloat() or 2//self.FrameRateRatio
+	local FrameRate = self.MinFrameRateRatio:GetFloat() or 4//self.FrameRateRatio
 	self.FramesSinceRedraw = self.FramesSinceRedraw + 1
 	self.FrameInstructions = 0
 	if (self.FramesSinceRedraw >= FrameRate) then
@@ -143,15 +141,17 @@ function ENT:RenderGPU(clearbg)
 	 	render.SetRenderTarget(NewRT) 
 	 	render.SetViewPort(0,0,512,512)
 	 	cam.Start2D()
-			if ((self:ReadCell(65533) == 1) && (clearbg == true)) then
-		 		surface.SetDrawColor(0,0,0,255)
-		 		surface.DrawRect(0,0,512,512)
-			end
-			if (self:ReadCell(65535) == 1) then
-				if (self.EntryPoint[3]) && (self.HandleError == 1) then
-					self:DoCall(3,FrameRate*600)
-				else
-					self:DoCall(0,FrameRate*600)
+			if (self:ReadCell(65531) == 0) then
+				if ((self:ReadCell(65533) == 1) && (clearbg == true)) then
+			 		surface.SetDrawColor(0,0,0,255)
+			 		surface.DrawRect(0,0,512,512)
+				end
+				if (self:ReadCell(65535) == 1) then
+					if (self.EntryPoint[3]) && (self.HandleError == 1) then
+						self:DoCall(3,FrameRate*600)
+					else
+						self:DoCall(0,FrameRate*600)
+					end
 				end
 			end
 	 	cam.End2D()
@@ -162,6 +162,8 @@ function ENT:RenderGPU(clearbg)
 end
 
 function ENT:Draw()
+	self.DoNormalDraw = function() end
+	self.DrawEntityOutline = function() end
 	self.Entity:DrawModel()
 
 	if (WireGPU_HookedGPU == self) then
