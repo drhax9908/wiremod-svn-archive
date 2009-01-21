@@ -8,6 +8,19 @@ registerType("entity", "e", nil)
 
 /******************************************************************************/
 
+function validEntity(entity)
+	return (entity and !type(entity)=="number" and entity:IsValid())
+end
+
+function validPhysics(entity)
+	if (entity and !type(entity)=="number" and entity:IsValid()) then
+		local phys = entity:GetPhysicsObject()
+		return (phys and phys:IsValid())
+	end
+	return false
+end
+
+// compatibility
 function checkEntity(entity)
 	if(!entity or type(entity)=="number" or !entity:IsValid()) then return nil end
 	return entity
@@ -29,7 +42,7 @@ end)
 registerOperator("is", "e", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	if checkEntity(rv1) then return 1 else return 0 end
+	if validEntity(rv1) then return 1 else return 0 end
 end)
 
 registerOperator("eq", "ee", "n", function(self, args)
@@ -49,16 +62,15 @@ end)
 registerFunction("entity", "n", "e", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self,op1)
-	local entity = checkEntity(ents.GetByIndex(rv1))
-	if !entity then return nil end
+	local ent = ents.GetByIndex(rv1)
+	if(!validEntity(ent)) then return 0 end
 	return entity
 end)
 
 registerFunction("id", "e:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self,op1)
-	local entity = checkEntity(rv1)
-	if !entity then return 0 end
+	if(!validEntity(rv1)) then return 0 end
 	return rv1:EntIndex()
 end)
 
@@ -68,24 +80,21 @@ end)
 registerFunction("type", "e:", "s", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return "" end
+	if(!validEntity(rv1)) then return "" end
 	return rv1:GetClass()
 end)
 
 registerFunction("model", "e:", "s", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return "" end
+	if(!validEntity(rv1)) then return "" end
 	return rv1:GetModel()
 end)
 
 registerFunction("owner", "e:", "e", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return nil end
+	if(!validEntity(rv1)) then return nil end
 	if(rv1.OnDieFunctions == nil) then return nil end
 	if(rv1.OnDieFunctions.GetCountUpdate == nil) then return nil end
 	if(rv1.OnDieFunctions.GetCountUpdate.Args == nil) then return nil end
@@ -97,70 +106,58 @@ end)
 registerFunction("pos", "e:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return {0,0,0} end
-	entity = entity:GetPos()
-	return {entity.x,entity.y,entity.z}
+	if(!validEntity(rv1)) then return {0,0,0} end
+	local vec = rv1:GetPos()
+	return {vec.x,vec.y,vec.z}
 end)
 
 registerFunction("forward", "e:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return {0,0,0} end
-	entity = entity:GetForward()
-	return {entity.x,entity.y,entity.z}
+	if(!validEntity(rv1)) then return {0,0,0} end
+	local vec = rv1:GetForward()
+	return {vec.x,vec.y,vec.z}
 end)
 
 registerFunction("right", "e:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return {0,0,0} end
-	entity = rv1:GetRight()
-	return {entity.x,entity.y,entity.z}
+	if(!validEntity(rv1)) then return {0,0,0} end
+	local vec = rv1:GetRight()
+	return {vec.x,vec.y,vec.z}
 end)
 
 registerFunction("up", "e:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return {0,0,0} end
-	entity = entity:GetUp()
-	return {entity.x,entity.y,entity.z}
+	if(!validEntity(rv1)) then return {0,0,0} end
+	local vec = rv1:GetUp()
+	return {vec.x,vec.y,vec.z}
 end)
 
 registerFunction("vel", "e:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return {0,0,0} end
-	if(entity:GetPhysicsObject()) then entity = entity:GetPhysicsObject() end
-	entity = entity:GetVelocity()
-	return {entity.x,entity.y,entity.z}
+	if(!validEntity(rv1)) then return {0,0,0} end
+	local vec = rv1:GetVelocity()
+	return {vec.x,vec.y,vec.z}
 end)
 
 registerFunction("velL", "e:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return {0,0,0} end
-	if(entity:GetPhysicsObject()) then entity = entity:GetPhysicsObject() end
-	local vel = entity:GetVelocity()
-	local angle = entity:GetAngles()
-	vel = Vector(vel.x,vel.y,vel.z)
-	vel:Rotate(Angle(-angle.p,-angle.y,-angle.r))
-	return {vel.x,vel.y,vel.z}
+	if(!validEntity(rv1)) then return {0,0,0} end
+	local vec = rv1:WorldToLocal(rv1:GetVelocity())
+	return {vec.x,vec.y,vec.z}
 end)
 
 registerFunction("angVel", "e:", "a", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return {0,0,0} end
-	if(entity:GetPhysicsObject()) then entity = entity:GetPhysicsObject() else return {0,0,0} end
-	local entity = entity:GetAngleVelocity()
-	return {entity.y,entity.z,entity.x}
+	if(!validPhysics(rv1)) then return {0,0,0} end
+	local phys = rv1:GetPhysicsObject()
+	local vec = phys:GetAngleVelocity()
+	return {vec.y,vec.z,vec.x}
 end)
 
 
@@ -169,19 +166,17 @@ end)
 registerFunction("toWorld", "e:v", "v", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	local entity = checkEntity(rv1)
-	if(!entity) then return {0,0,0} end
-	entity = entity:LocalToWorld(Vector(rv2[1],rv2[2],rv2[3]))
-	return {entity.x,entity.y,entity.z}
+	if(!validEntity(rv1)) then return {0,0,0} end
+	local vec = rv1:LocalToWorld(Vector(rv2[1],rv2[2],rv2[3]))
+	return {vec.x,vec.y,vec.z}
 end)
 
 registerFunction("toLocal", "e:v", "v", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	local entity = checkEntity(rv1)
-	if(!entity) then return {0,0,0} end
-	entity = entity:WorldToLocal(Vector(rv2[1],rv2[2],rv2[3]))
-	return {entity.x,entity.y,entity.z}
+	if(!validEntity(rv1)) then return {0,0,0} end
+	local vec = rv1:WorldToLocal(Vector(rv2[1],rv2[2],rv2[3]))
+	return {vec.x,vec.y,vec.z}
 end)
 
 /******************************************************************************/
@@ -189,29 +184,26 @@ end)
 registerFunction("health", "e:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return 0 end
+	if(!validEntity(rv1)) then return 0 end
 	return rv1:Health()
 end)
 
 registerFunction("radius", "e:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return 0 end
-	return rv1:BoundingRadius( )
+	if(!validEntity(rv1)) then return 0 end
+	return rv1:BoundingRadius()
 end)
 
 // bearing & elevation thanks to Gwahir
 registerFunction("bearing", "e:v", "n", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self,op2)
-	local entity = checkEntity(rv1)
-	if(!entity) then return 0 end
-	entity = entity:WorldToLocal(Vector(rv2[1],rv2[2],rv2[3]))
-	if(math.abs(entity.x) < delta) then return 0 end
-	local ret = math.atan(entity.y / entity.x)
-	if(entity.x < 0) then if(ret < 0) then ret = -math.pi - ret else ret = math.pi - ret end
+	if(!validEntity(rv1)) then return 0 end
+	rv1 = rv1:WorldToLocal(Vector(rv2[1],rv2[2],rv2[3]))
+	if(math.abs(rv1.x) < delta) then return 0 end
+	local ret = math.atan(rv1.y / rv1.x)
+	if(rv1.x < 0) then if(ret < 0) then ret = -math.pi - ret else ret = math.pi - ret end
 	else ret = -ret end
 	return math.deg(ret) //changed to degress because it is used by most things
 end)
@@ -219,43 +211,38 @@ end)
 registerFunction("elevation", "e:v", "n", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self,op2)
-	local entity = checkEntity(rv1)
-	if(!entity) then return {0,0,0} end
-	entity = entity:WorldToLocal(Vector(rv2[1],rv2[2],rv2[3]))
-	local len = math.sqrt(entity.x*entity.x + entity.y*entity.y + entity.z*entity.z)
+	if(!validEntity(rv1)) then return 0 end
+	rv1 = rv1:WorldToLocal(Vector(rv2[1],rv2[2],rv2[3]))
+	local len = math.sqrt(rv1.x*rv1.x + rv1.y*rv1.y + rv1.z*rv1.z)
 	if(len < delta) then return 0 end
-	return math.deg(math.asin(entity.z / len)) //changed to degress because it is used by most things
+	return math.deg(math.asin(rv1.z / len)) //changed to degress because it is used by most things
 end)
 
 registerFunction("mass", "e:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return 0 end
-	local phys = entity:GetPhysicsObject()
-	if phys == nil then return 0 end
+	if(!validPhysics(rv1)) then return 0 end
+	local phys = rv1:GetPhysicsObject()
 	return phys:GetMass()
 end)
 
 registerFunction("massCenter", "e:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return {0,0,0} end
-	if(entity:GetPhysicsObject()) then entity = entity:GetPhysicsObject() end
-	local offset = entity:GetMassCenter()
-	local pos = entity:LocalToWorld(offset)
-	return {pos.x,pos.y,pos.z}
+	if(!validPhysics(rv1)) then return {0,0,0} end
+	local phys = rv1:GetPhysicsObject()
+	local offset = phys:GetMassCenter()
+	local vec = rv1:LocalToWorld(offset)
+	return {vec.x,vec.y,vec.z}
 end)
 
 registerFunction("massCenterL", "e:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return {0,0,0} end
-	if(entity:GetPhysicsObject()) then entity = entity:GetPhysicsObject() end
-	entity = entity:GetMassCenter()
-	return {entity.x,entity.y,entity.z}
+	if(!validPhysics(rv1)) then return {0,0,0} end
+	local phys = rv1:GetPhysicsObject()
+	local vec = phys:GetMassCenter()
+	return {vec.x,vec.y,vec.z}
 end)
 
 /******************************************************************************/
@@ -263,48 +250,42 @@ end)
 registerFunction("isPlayer", "e:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return 0 end
+	if(!validEntity(rv1)) then return 0 end
 	if rv1:IsPlayer() then return 1 else return 0 end
 end)
 
 registerFunction("isNPC", "e:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return 0 end
+	if(!validEntity(rv1)) then return 0 end
 	if rv1:IsNPC() then return 1 else return 0 end
 end)
 
 registerFunction("isVehicle", "e:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return 0 end
+	if(!validEntity(rv1)) then return 0 end
 	if rv1:IsVehicle() then return 1 else return 0 end
 end)
 
 registerFunction("isWorld", "e:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return 0 end
+	if(!validEntity(rv1)) then return 0 end
 	if rv1:IsWorld() then return 1 else return 0 end
 end)
 
 registerFunction("isOnGround", "e:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return 0 end
+	if(!validEntity(rv1)) then return 0 end
 	if rv1:IsOnGround() then return 1 else return 0 end
 end)
 
 registerFunction("isUnderWater", "e:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return 0 end
+	if(!validEntity(rv1)) then return 0 end
 	if rv1:WaterLevel() > 0 then return 1 else return 0 end
 end)
 
@@ -314,10 +295,9 @@ end)
 registerFunction("angles", "e:", "a", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return {0,0,0} end
-	entity = entity:GetAngles()
-	return {entity.p,entity.y,entity.r}
+	if(!validEntity(rv1)) then return {0,0,0} end
+	local ang = rv1:GetAngles()
+	return {ang.p,ang.y,ang.r}
 end)
 
 /******************************************************************************/
@@ -385,10 +365,11 @@ end)*/
 registerFunction("passenger", "e:", "e", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local entity = checkEntity(rv1)
-	if(!entity) then return nil end
-        if(entity.GetPassenger == nil || !entity:GetPassenger():IsValid()) then return nil end
-	return entity:GetPassenger()
+	if(!validEntity(rv1)) then return nil end
+    if(rv1.GetPassenger == nil) then return nil end
+	local passenger = rv1:GetPassenger()
+	if(!validEntity(passenger)) then return nil end
+	return passenger
 end)
 
 registerFunction("hint", "sn", "", function(self, args)
@@ -402,12 +383,11 @@ registerFunction("hintDriver", "e:sn", "n", function(self, args)
     local op1, op2, op3 = args[2], args[3], args[4]
     local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if (string.find(rv2,string.char(34)) != nil) then return 0 end
-	local entity = checkEntity(rv1)
-	if(!entity) then return 0 end
-	if(!entity:IsVehicle()) then return 0 end
-	if(entity:GetOwner() != self.entity:GetOwner()) then return 0 end
-	local driver = checkEntity(entity:GetDriver())
-	if (!driver) then return 0 end
+	if(!validEntity(rv1)) then return nil end
+	if(!rv1:IsVehicle()) then return 0 end
+	if(rv1:GetOwner() != self.entity:GetOwner()) then return 0 end
+	local driver = rv1:GetDriver()
+	if(!validEntity(driver)) then return nil end
 	driver:SendLua("GAMEMODE:AddNotify(\"" .. rv2 .. "\", NOTIFY_GENERIC ," .. math.Clamp(rv3,0.7,7) .. ");")
     return 1
 end)
