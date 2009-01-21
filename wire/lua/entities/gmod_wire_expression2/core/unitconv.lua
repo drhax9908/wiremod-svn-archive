@@ -33,32 +33,33 @@ local speed = {
 	["ft/s"]  = 1 / 12,
 	["yd/s"]  = 1 / 36,
 	["mi/s"]  = 1 / 63360,
-	["nmi/s"] = 1143 / 23150,
+	["nmi/s"] = 127 / 9260000,
 	
-	["mm/m"]  = 25.4 / 60,
-	["cm/m"]  = 2.54 / 60,
-	["dm/m"]  = 0.254 / 60,
-	["m/m"]   = 0.0254 / 60,
-	["km/m"]  = 0.0000254 / 60,
-	["in/m"]  = 1 / 60,
-	["ft/m"]  = 1 / 720,
-	["yd/m"]  = 1 / 2160,
-	["mi/m"]  = 1 / 3801600,
-	["nmi/m"] = 381 / 463000,
+	["mm/m"]  = 60 * 25.4,
+	["cm/m"]  = 60 * 2.54,
+	["dm/m"]  = 60 * 0.254,
+	["m/m"]   = 60 * 0.0254,
+	["km/m"]  = 60 * 0.0000254,
+	["in/m"]  = 60,
+	["ft/m"]  = 60 / 12,
+	["yd/m"]  = 60 / 36,
+	["mi/m"]  = 60 / 63360,
+	["nmi/m"] = 60 * 127 / 9260000,
 	
-	["mm/h"]  = 25.4 / 3600,
-	["cm/h"]  = 2.54 / 3600,
-	["dm/h"]  = 0.254 / 3600,
-	["m/h"]   = 0.0254 / 3600,
-	["km/h"]  = 0.0000254 / 3600,
-	["in/h"]  = 1 / 3600,
-	["ft/h"]  = 1 / 43200,
-	["yd/h"]  = 1 / 129600,
-	["mi/h"]  = 1 / 228096000,
-	["nmi/h"] = 127 / 9260000,
+	["mm/h"]  = 3600 * 25.4,
+	["cm/h"]  = 3600 * 2.54,
+	["dm/h"]  = 3600 * 0.254,
+	["m/h"]   = 3600 * 0.0254,
+	["km/h"]  = 3600 * 0.0000254,
+	["in/h"]  = 3600,
+	["ft/h"]  = 3600 / 12,
+	["yd/h"]  = 3600 / 36,
+	["mi/h"]  = 3600 / 63360,
+	["nmi/h"] = 3600 * 127 / 9260000,
 	
-	["knots"] = 127 / 9260000,
-	["mach"]  = 1 / 1127,
+	["mph"]   = 3600 / 63360,
+	["knots"] = 3600 * 127 / 9260000,
+	["mach"]  = 1 / 13510,
 }
 
 local length = {
@@ -117,11 +118,11 @@ registerFunction("convertUnit", "ssn", "n", function(self, args)
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	
 	if speed[rv1] and speed[rv2] then
-		return rv3 * speed[rv2] / speed[rv1]
+		return rv3 * (speed[rv2] / speed[rv1])
 	elseif length[rv1] and length[rv2] then
-		return rv3 * length[rv2] / length[rv1]
+		return rv3 * (length[rv2] / length[rv1])
 	elseif weight[rv1] and weight[rv2] then
-		return rv3 * weight[rv2] / weight[rv1]
+		return rv3 * (weight[rv2] / weight[rv1])
 	end
 	
 	return -1
