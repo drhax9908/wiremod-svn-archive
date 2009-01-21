@@ -9,11 +9,11 @@ registerType("entity", "e", nil)
 /******************************************************************************/
 
 function validEntity(entity)
-	return (entity and !type(entity)=="number" and entity:IsValid())
+	return (entity and type(entity)!="number" and entity:IsValid())
 end
 
 function validPhysics(entity)
-	if (entity and !type(entity)=="number" and entity:IsValid()) then
+	if (entity and type(entity)!="number" and entity:IsValid()) then
 		local phys = entity:GetPhysicsObject()
 		return (phys and phys:IsValid())
 	end
