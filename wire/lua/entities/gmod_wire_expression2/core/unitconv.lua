@@ -76,9 +76,9 @@ local length = {
 }
 
 local weight = {
-	["g"]  = 0.001,
+	["g"]  = 1000,
 	["kg"] = 1,
-	["t"]  = 1000,
+	["t"]  = 0.001,
 	["oz"] = 1 / 0.028349523125,
 	["lb"] = 1 / 0.45359237,
 }
@@ -105,7 +105,7 @@ registerFunction("fromUnit", "sn", "n", function(self, args)
 	if speed[rv1] then
 		return rv2 / speed[rv1]
 	elseif length[rv1] then
-		return rv2  / length[rv1]
+		return rv2 / length[rv1]
 	elseif weight[rv1] then
 		return rv2 / weight[rv1]
 	end
