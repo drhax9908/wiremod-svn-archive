@@ -64,7 +64,7 @@ registerFunction("entity", "n", "e", function(self, args)
 	local rv1 = op1[1](self,op1)
 	local ent = ents.GetByIndex(rv1)
 	if(!validEntity(ent)) then return 0 end
-	return entity
+	return ent
 end)
 
 registerFunction("id", "e:", "n", function(self, args)
