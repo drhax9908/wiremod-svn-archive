@@ -75,7 +75,7 @@ end)
 registerFunction("isAlive", "e:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	iif(!validEntity(rv1)) then return 0 end
+	if(!validEntity(rv1)) then return 0 end
 	if(rv1:IsPlayer() and rv1:Alive()) then return 1 end
 	if(rv1:IsNPC() and rv1:Health() > 0) then return 1 end
 	return 0
