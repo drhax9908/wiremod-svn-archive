@@ -204,7 +204,7 @@ function ENT:Setup(buffer, restore)
 		callback(self.context)
 	end
 	
-	if !restore then self:Execute() end
+	self:Execute()
 end
 
 function ENT:TriggerInput(key, value)
