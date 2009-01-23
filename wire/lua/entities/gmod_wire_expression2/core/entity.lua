@@ -372,6 +372,16 @@ registerFunction("passenger", "e:", "e", function(self, args)
 	return passenger
 end)
 
+registerFunction("driver", "e:", "e", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!validEntity(rv1)) then return nil end
+    if(rv1.GetDriver == nil) then return nil end
+	local driver = rv1:GetDriver()
+	if(!validEntity(driver)) then return nil end
+	return driver
+end)
+
 registerFunction("hint", "sn", "", function(self, args)
     local op1, op2 = args[2], args[3]
     local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
