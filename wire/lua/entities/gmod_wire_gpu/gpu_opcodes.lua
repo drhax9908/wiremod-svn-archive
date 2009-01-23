@@ -714,6 +714,8 @@ function ENT:InitializeGPUOpcodeTable()
 		end
 		local text = self.StringCache[Param2]
 		local ptr = Param2 + string.len(text) + 2
+		local ptr2 = self:ReadCell(65512)
+		if (ptr2 ~= 0) then ptr = ptr2 end
 		local finaltext = ""
 
 		local inparam = false
@@ -721,7 +723,7 @@ function ENT:InitializeGPUOpcodeTable()
 
 		while (text ~= "") do
 			local chr = string.sub(text,1,1)
-			text = string.sub(text,2,512)
+			text = string.sub(text,2,65536)
 
 			if (inparam == false) then
 				if (chr == "%") then
@@ -732,7 +734,7 @@ function ENT:InitializeGPUOpcodeTable()
 			else
 				if (chr == ".") then
 					chr = string.sub(text,1,1)
-					text = string.sub(text,2,512)
+					text = string.sub(text,2,65536)
 
 					if (tonumber(chr)) then
 						lengthmod = tonumber(chr)

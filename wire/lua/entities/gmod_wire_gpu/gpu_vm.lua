@@ -93,10 +93,12 @@ function ENT:GPUResetRegisters()
 	//[65515] - Image width (800)
 	//[65514] - Image height (600)
 	//[65513] - Real screen ratio
+	//[65512] - Parameter list address (for dwritefmt)
 
 	self.Memory[65515] = 800
 	self.Memory[65514] = 600
 	//self.Memory[65513] = 0
+	self.Memory[65512] = 0
 
 	//Cursor control:
 	//[65505] - Cursor X (0..1)
