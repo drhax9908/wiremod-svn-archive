@@ -114,7 +114,7 @@ function ENT:InitializeCPUVariableSet()
 	self.CPUVariable[46] = "Idle"
 	self.CPUVariable[47] = "INTR"
 
-	self.CPUVariable[48] = "SERIAL"		self.CPUVariableReadonly[48] = true
+	self.CPUVariable[48] = "SerialNo"	self.CPUVariableReadonly[48] = true
 	self.CPUVariable[49] = "CODEBYTES"	self.CPUVariableReadonly[49] = true
 	self.CPUVariable[50] = "BPREC"
 	self.CPUVariable[51] = "IPREC"

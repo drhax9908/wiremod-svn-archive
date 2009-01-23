@@ -179,6 +179,7 @@ function ENT:Compiler_SetExtraLabels()
 		self:SetLabel("regwidth",	65515)
 		self:SetLabel("regheight",	65514)
 		self:SetLabel("regratio",	65513)
+		self:SetLabel("regparamlist",	65512)
 
 		self:SetLabel("regcursorx",	65505)
 		self:SetLabel("regcursory",	65504)
