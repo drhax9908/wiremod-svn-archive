@@ -362,24 +362,18 @@ end)*/
 
 /******************************************************************************/
 
-registerFunction("passenger", "e:", "e", function(self, args)
-	local op1 = args[2]
-	local rv1 = op1[1](self, op1)
-	if(!validEntity(rv1)) then return nil end
-    if(rv1.GetPassenger == nil) then return nil end
-	local passenger = rv1:GetPassenger()
-	if(!validEntity(passenger)) then return nil end
-	return passenger
-end)
-
 registerFunction("driver", "e:", "e", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	if(!validEntity(rv1)) then return nil end
-    if(rv1.GetDriver == nil) then return nil end
-	local driver = rv1:GetDriver()
-	if(!validEntity(driver)) then return nil end
-	return driver
+	if(!validEntity(rv1) || !rv1:IsVehicle()) then return nil end
+	return rv1:GetDriver()
+end)
+
+registerFunction("passenger", "e:", "e", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!validEntity(rv1) || !rv1:IsVehicle()) then return nil end
+	return rv1:GetPassenger()
 end)
 
 registerFunction("hint", "sn", "", function(self, args)

@@ -60,9 +60,9 @@ local function canFindByTime(id)
 	if exp2Discoveries[id] == nil then return end
 	local time = CurTime()
 	local entFindRate = GetConVarNumber("wire_exp2_entFindRate")
-	local playerFindRate = GetConVarNumber("wire_exp2_playerFindRate")
-	return time - exp2Discoveries[id].lastFind >= entFindRate and
-		time - exp2LastPlayerFind[exp2Discoveries[id].playerId] >= playerFindRate
+	//local playerFindRate = GetConVarNumber("wire_exp2_playerFindRate")
+	return time - exp2Discoveries[id].lastFind >= entFindRate// and
+	//	time - exp2LastPlayerFind[exp2Discoveries[id].playerId] >= playerFindRate
 end
 
 local function clipEntities(entity)
@@ -272,8 +272,12 @@ end)
 registerFunction("findExcludePlayer","s","", function(self,args)
 	local op1 = args[2]
 	local rv1 = op1[1](self,op1)
-	rv1 = ents.FindByName(rv1)
-	if rv1 != nil then rv1 = rv1[1] else return end
+	local plyr = ents.FindByName(rv1)
+	if plyr != nil then rv1 = plyr[1] else 
+		for _,player  in pairs(ents.FindByClass("player")) do
+			if string.find(player:GetName(),rv1) != nil then rv1 = player break end
+		end
+	end
 	if !rv1:IsValid() then return end
 	initTable(self.entity)
 	local id = self.entity:EntIndex()
@@ -296,8 +300,12 @@ end)
 registerFunction("findExcludePlayerProps","s","", function(self,args)
 	local op1 = args[2]
 	local rv1 = op1[1](self,op1)
-	rv1 = ents.FindByName(rv1)
-	if rv1 != nil then rv1 = rv1[1] else return end
+	local plyr = ents.FindByName(rv1)
+	if plyr != nil then rv1 = plyr[1] else 
+		for _,player  in pairs(ents.FindByClass("player")) do
+			if string.find(player:GetName(),rv1) != nil then rv1 = player break end
+		end
+	end
 	if !rv1:IsValid() || !rv1:IsPlayer() then return end
 	initTable(self.entity)
 	local id = self.entity:EntIndex()
@@ -413,8 +421,12 @@ end)
 registerFunction("findIncludePlayer","s","", function(self,args)
 	local op1 = args[2]
 	local rv1 = op1[1](self,op1)
-	rv1 = ents.FindByName(rv1)
-	if rv1 != nil then rv1 = rv1[1] else return end
+	local plyr = ents.FindByName(rv1)
+	if plyr != nil then rv1 = plyr[1] else 
+		for _,player  in pairs(ents.FindByClass("player")) do
+			if string.find(player:GetName(),rv1) != nil then rv1 = player break end
+		end
+	end
 	if !rv1:IsValid() || !rv1:IsPlayer() then return end
 	initTable(self.entity)
 	local id = self.entity:EntIndex()
@@ -439,8 +451,12 @@ end)
 registerFunction("findIncludePlayerProps","s","", function(self,args)
 	local op1 = args[2]
 	local rv1 = op1[1](self,op1)
-	rv1 = ents.FindByName(rv1)
-	if rv1 != nil then rv1 = rv1[1] else return end
+	local plyr = ents.FindByName(rv1)
+	if plyr != nil then rv1 = plyr[1] else 
+		for _,player  in pairs(ents.FindByClass("player")) do
+			if string.find(player:GetName(),rv1) != nil then rv1 = player break end
+		end
+	end
 	if !rv1:IsValid() || !rv1:IsPlayer() then return end
 	initTable(self.entity)
 	local id = self.entity:EntIndex()
@@ -785,3 +801,42 @@ registerFunction("findClipFromName","s","n", function(self,args)
 	end
 	return table.Count(exp2Discoveries[id].entities)
 end)
+
+registerFunction("findClipFromSphere","vn","n", function(self,args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self,op1),op2[1](self,op2)
+	local id = self.entity:EntIndex()
+	local refPoint = Vector(rv1[1],rv1[2],rv1[3])
+	initTable(self.entity)
+	local indexOffset = 0
+	local i,count=1,1
+	for i = 1, table.Count(exp2Discoveries[id].entities), 1 do
+		local ent = exp2Discoveries[id].entities[i - indexOffset]
+		if ent != nil && (ent:GetPos() - refPoint):Length() + ent:BoundingRadius() <= rv2 then
+			table.remove(exp2Discoveries[id].entities, i - indexOffset)
+			indexOffset = indexOffset + 1
+		end
+	end
+	return table.Count(exp2Discoveries[id].entities)
+end)
+
+registerFunction("findClipToRegion","vv","n", function(self,args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self,op1),op2[1](self,op2)
+	local id = self.entity:EntIndex()
+	
+	local planeVec = Vector(rv2[1],rv2[2],rv2[3])
+	local relPos = Vector(rv1[1],rv1[2],rv1[3]):Dot(planeVec)
+	initTable(self.entity)
+	local indexOffset = 0
+	local i,count=1,1
+	for i = 1, table.Count(exp2Discoveries[id].entities), 1 do
+		local ent = exp2Discoveries[id].entities[i - indexOffset]
+		if ent != nil && (ent:GetPos():Dot(planeVec) - relPos) < 0 then
+			table.remove(exp2Discoveries[id].entities, i - indexOffset)
+			indexOffset = indexOffset + 1
+		end
+	end
+	return table.Count(exp2Discoveries[id].entities)
+end)
+
