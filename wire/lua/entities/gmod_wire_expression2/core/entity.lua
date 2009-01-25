@@ -147,7 +147,9 @@ registerFunction("velL", "e:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	if(!validEntity(rv1)) then return {0,0,0} end
-	local vec = rv1:WorldToLocal(rv1:GetVelocity())
+	local angle = entity:GetAngles()
+	local vec = entity:GetVelocity()
+	vec:Rotate(Angle(-angle.p,-angle.y,-angle.r))
 	return {vec.x,vec.y,vec.z}
 end)
 
@@ -394,4 +396,48 @@ registerFunction("hintDriver", "e:sn", "n", function(self, args)
 	if(!validEntity(driver)) then return nil end
 	driver:SendLua("GAMEMODE:AddNotify(\"" .. rv2 .. "\", NOTIFY_GENERIC ," .. math.Clamp(rv3,0.7,7) .. ");")
     return 1
+end)
+
+/******************************************************************************/
+
+registerFunction("isPlayerHolding", "e:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1)) then return 0 end
+    if rv1:IsPlayerHolding() then return 1 else return 0 end
+end)
+ 
+registerFunction("isOnFire", "e:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1)) then return 0 end
+    if rv1:IsOnFire() then return 1 else return 0 end
+end)
+ 
+registerFunction("isOnGround", "e:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1)) then return 0 end
+    if rv1:IsOnGround() then return 1 else return 0 end
+end)
+ 
+registerFunction("isWeapon", "e:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1)) then return 0 end
+    if rv1:IsWeapon() then return 1 else return 0 end
+end)
+ 
+registerFunction("inVehicle", "e:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1)) then return 0 end
+    if(rv1:IsPlayer() and rv1:InVehicle()) then return 1 else return 0 end
+end)
+ 
+registerFunction("timeConnected", "e:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1)) then return 0 end
+    if(rv1:IsPlayer()) then return rv1:TimeConnected() else return 0 end
 end)
