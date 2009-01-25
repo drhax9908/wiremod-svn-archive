@@ -852,7 +852,7 @@ function ENT:InitializeGPUOpcodeTable()
 	end
 	//------------------------------------------------------------
 	self.OpcodeTable[294] = function (Param1, Param2)	//DMULDT	
-		return Param2*0.005//*self.DeltaTime
+		return Param2*self.DeltaTime
 	end
 	//------------------------------------------------------------
 
