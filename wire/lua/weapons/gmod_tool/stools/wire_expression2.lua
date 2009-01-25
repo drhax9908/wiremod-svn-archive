@@ -4,10 +4,9 @@ TOOL.Command 		= nil
 TOOL.ConfigName 	= ""
 
 TOOL.ClientConVar = {
-	model    = "models/expression 2/cpu_expression.mdl",
+	model    = "models/beer/wiremod/gate_e2.mdl",
 	size     = "",
 	select   = "",
-	protect  = "1"
 }
 
 if CLIENT then
@@ -223,6 +222,7 @@ if CLIENT then
 			Stretch = false,
 			ConVar = "wire_expression2_select",
 			Options = {
+				["Modern"] =     { wire_expression2_select = "Modern",     Value = "Modern",     Material = "beer/wiremod/gate_e2",        wire_expression2_model = "models/beer/wiremod/gate_e2.mdl" },
 				["Expression"] = { wire_expression2_select = "Expression", Value = "Expression", Material = "models/expression 2/exprssn", wire_expression2_model = "models/expression 2/cpu_expression.mdl" },
 				["Microchip"] =  { wire_expression2_select = "Microchip",  Value = "Microchip",  Material = "models/expression 2/mcrochp", wire_expression2_model = "models/expression 2/cpu_microchip.mdl" },
 				["Interface"] =  { wire_expression2_select = "Interface",  Value = "Interface",  Material = "models/expression 2/intrfce", wire_expression2_model = "models/expression 2/cpu_interface.mdl" },
