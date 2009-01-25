@@ -122,7 +122,7 @@ end
 
 function ENT:RenderGPU(clearbg)
 	local DeltaTime = CurTime()-(self.PrevTime or CurTime())
-	self.PrevTime = (self.PrevTime or CurTime())+DeltaTime
+	self.PrevTime = CurTime()//(self.PrevTime or CurTime())+DeltaTime
 	self.DeltaTime = DeltaTime
 
 	self.FrameBuffer = WireGPU_GetMyRenderTarget(self:EntIndex())
