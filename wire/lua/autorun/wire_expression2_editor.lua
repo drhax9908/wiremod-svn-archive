@@ -256,6 +256,22 @@ function Editor:InitComponents()
 	self.C['ConBut'] 	= self:addComponent(vgui.Create( "Button", self )					, -62,   4,  18,  18)	// Control panel open/close
 	self.C['Control']	= self:addComponent(vgui.Create( "Panel", self )					,-210,  52, 200, 150)	// Control Panel
 	self.C['Credit'] 	= self:addComponent(vgui.Create( "TextEntry", self )				,-160,  52, 150,  60)	// Credit box
+	/*self.C['CtC']       = self:addComponent(vgui.Create( "Button", self )                   ,-105,  30, -71,  20)   // Copy to Clipboard button
+	
+	self.C['CtC'].panel:SetText("")
+    self.C['CtC'].panel.Font = "E2SmallFont"
+    self.C['CtC'].panel.Paint = function(button) 
+        local w,h = button:GetSize()
+        draw.RoundedBox(1, 0, 0, w, h, self.colors.col_FL)
+        if ( button.Hovered ) then draw.RoundedBox(0, 1, 1, w - 2, h - 2, Color(0,0,0,192)) end
+        surface.SetFont(button.Font)
+        surface.SetTextPos( 3, 4 )
+        surface.SetTextColor( 255, 255, 255, 255 )
+        surface.DrawText(" Copy")
+    end
+    self.C['CtC'].panel.DoClick = function( button ) 
+        SetClipboardText(string.gsub(self.C['Editor'].panel:GetValue(),"\n", "\r\n"))
+    end*/
 	
 	// extra component options
  	self.C['Close'].panel:SetType( "close" ) 
