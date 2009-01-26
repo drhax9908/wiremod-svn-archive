@@ -530,7 +530,7 @@ function EDITOR:_OnTextChanged()
 	self.TextEntry:SetText("")
 
 	if input.IsKeyDown(KEY_LCONTROL) or input.IsKeyDown(KEY_RCONTROL) then
-		if !input.IsKeyDown(KEY_LALT) and !input.IsKeyDown(KEY_RALT) then
+		if !input.IsKeyDown(KEY_LALT) and !input.IsKeyDown(KEY_RALT) and !input.IsKeyDown(KEY_V) then
 			return
 		end
 	end
@@ -599,16 +599,18 @@ function EDITOR:_OnKeyCodeTyped(code)
 		elseif code == KEY_X then
 			if self:HasSelection() then
 				self.clipboard = self:GetSelection()
+				SetClipboardText(self.clipboard)
 				self:SetSelection()
 			end
 		elseif code == KEY_C then
 			if self:HasSelection() then
 				self.clipboard = self:GetSelection()
+				SetClipboardText(self.clipboard)
 			end
 		elseif code == KEY_V then
-			if self.clipboard then
-				self:SetSelection(self.clipboard)
-			end
+			//if self.clipboard then
+			//	self:SetSelection(self.clipboard)
+			//end
 		elseif code == KEY_UP then
 			self.Scroll[1] = self.Scroll[1] - 1
 			if self.Scroll[1] < 1 then self.Scroll[1] = 1 end
