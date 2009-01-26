@@ -626,7 +626,10 @@ function EDITOR:_OnKeyCodeTyped(code)
 	else
 	
 		if code == KEY_ENTER then
-			self:SetSelection("\n")
+			local row = self.Rows[self.Caret[1]]
+			local diff = string.len(row) - string.len(string.TrimRight(string.reverse(row)))
+			local tabs = string.rep("    ", math.floor(diff / 4))
+			self:SetSelection("\n" .. tabs)
 		elseif code == KEY_UP then
 			if self.Caret[1] > 1 then
 				self.Caret[1] = self.Caret[1] - 1
@@ -731,7 +734,7 @@ function EDITOR:_OnKeyCodeTyped(code)
 				self:SetSelection()
 			else
 				local buffer = self:GetArea({self.Caret, {self.Caret[1], 1}})
-				if string.len(buffer) > 0 and string.rep(" ", string.len(buffer)) == buffer and self.Caret[2] % 4 == 1 then
+				if self.Caret[2] % 4 == 1 and string.len(buffer) > 0 and string.rep(" ", string.len(buffer)) == buffer then
 					self:SetCaret(self:SetArea({self.Caret, self:MovePosition(self.Caret, -4)}))
 				else
 					self:SetCaret(self:SetArea({self.Caret, self:MovePosition(self.Caret, -1)}))
@@ -741,16 +744,16 @@ function EDITOR:_OnKeyCodeTyped(code)
 			if self:HasSelection() then
 				self:SetSelection()
 			else
-				//local buffer = self:GetArea({{self.Caret[1], self.Caret[2] + 4}, {self.Caret[1], 1}})
-				//if string.rep(" ", string.len(buffer)) == buffer and self.Caret[2] % 4 == 1 then
-				//	self:SetCaret(self:SetArea({self.Caret, self:MovePosition(self.Caret, 4)}))
-				//else
+				local buffer = self:GetArea({{self.Caret[1], self.Caret[2] + 4}, {self.Caret[1], 1}})
+				if self.Caret[2] % 4 == 1 and string.rep(" ", string.len(buffer)) == buffer and string.len(self.Rows[self.Caret[1]]) >= self.Caret[2] + 4 - 1 then
+					self:SetCaret(self:SetArea({self.Caret, self:MovePosition(self.Caret, 4)}))
+				else
 					self:SetCaret(self:SetArea({self.Caret, self:MovePosition(self.Caret, 1)}))
-				//end
+				end
 			end
 		elseif code == KEY_TAB then
 			if self:HasSelection() then
-				
+				//self:SetSelection("    " .. string.Implode("\n    ", string.Explode("\n", self:GetSelection())))
 			else 
 				local count = (self.Caret[2] + 2) % 4 + 1
 				self:SetSelection(string.rep(" ", count))

@@ -76,11 +76,11 @@ function Editor:PaintOver()
 	surface.SetTextColor( 255, 255, 255, 255 )
 	surface.SetTextPos( 10, 6 )
 	surface.DrawText(self.Title .. self.subTitle)
-	if(self.E2) then
+	/*if(self.E2) then
 	surface.SetTexture(self.logo) 
 	surface.SetDrawColor( 255, 255, 255, 128 )
 	surface.DrawTexturedRect( w-148, h-158, 128, 128)
-	end
+	end*/
 	surface.SetDrawColor( 255, 255, 255, 255 )
 	surface.SetTextPos(0,0)
 	surface.SetFont("Default")
