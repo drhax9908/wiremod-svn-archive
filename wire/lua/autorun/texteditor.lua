@@ -599,12 +599,14 @@ function EDITOR:_OnKeyCodeTyped(code)
 		elseif code == KEY_X then
 			if self:HasSelection() then
 				self.clipboard = self:GetSelection()
+				self.clipboard = string.Replace(self.clipboard, "\n", "\r\n")
 				SetClipboardText(self.clipboard)
 				self:SetSelection()
 			end
 		elseif code == KEY_C then
 			if self:HasSelection() then
 				self.clipboard = self:GetSelection()
+				self.clipboard = string.Replace(self.clipboard, "\n", "\r\n")
 				SetClipboardText(self.clipboard)
 			end
 		elseif code == KEY_V then
