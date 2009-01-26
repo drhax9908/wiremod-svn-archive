@@ -147,8 +147,8 @@ registerFunction("velL", "e:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	if(!validEntity(rv1)) then return {0,0,0} end
-	local angle = entity:GetAngles()
-	local vec = entity:GetVelocity()
+	local angle = rv1:GetAngles()
+	local vec = rv1:GetVelocity()
 	vec:Rotate(Angle(-angle.p,-angle.y,-angle.r))
 	return {vec.x,vec.y,vec.z}
 end)
