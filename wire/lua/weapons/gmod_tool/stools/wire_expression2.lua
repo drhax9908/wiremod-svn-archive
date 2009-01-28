@@ -111,7 +111,7 @@ if SERVER then
 		
 		local player = self:GetOwner()
 		
-		if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_expression2" && (trace.Entity:GetPlayer() == player || GetConVarNumber('wire_expression2_protected') == 0)) then
+		if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_expression2" && (trace.Entity:GetPlayer() == player || GetConVarNumber('wire_expression2_protected') == 0 || GetConVarNumber('wire_expression2_protected') == 2)) then
 			trace.Entity:SendCode(player)
 			trace.Entity:Prepare(player)
 			return true
