@@ -840,3 +840,11 @@ registerFunction("findClipToRegion","vv","n", function(self,args)
 	return table.Count(exp2Discoveries[id].entities)
 end)
 
+registerFunction("findToArray","","r", function(self,args)
+	initTable(self.entity)
+	local id = self.entity:EntIndex()
+	local ret = {}
+	for i,e in ipairs(exp2Discoveries[id].entities) do ret[i] = e end
+	return ret
+end)
+
