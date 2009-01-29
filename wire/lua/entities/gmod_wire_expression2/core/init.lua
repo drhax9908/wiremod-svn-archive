@@ -1678,6 +1678,7 @@ include("console.lua");
 include("find.lua");
 include("globalvars.lua");
 include("ranger.lua");
+include("sound.lua");
 include("custom.lua");
 //include("quaternion.lua");
 
