@@ -20,6 +20,13 @@ function validPhysics(entity)
 	return false
 end
 
+function getOwner(entity)
+	if(entity.OnDieFunctions == nil) then return nil end
+	if(entity.OnDieFunctions.GetCountUpdate == nil) then return nil end
+	if(entity.OnDieFunctions.GetCountUpdate.Args == nil) then return nil end
+	return entity.OnDieFunctions.GetCountUpdate.Args[1]
+end
+
 // compatibility
 function checkEntity(entity)
 	if(!entity or type(entity)=="number" or !entity:IsValid()) then return nil end
@@ -95,10 +102,8 @@ registerFunction("owner", "e:", "e", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	if(!validEntity(rv1)) then return nil end
-	if(rv1.OnDieFunctions == nil) then return nil end
-	if(rv1.OnDieFunctions.GetCountUpdate == nil) then return nil end
-	if(rv1.OnDieFunctions.GetCountUpdate.Args == nil) then return nil end
-	return rv1.OnDieFunctions.GetCountUpdate.Args[1]
+	if(rv1 == self.entity) then return self.player end
+	return getOwner(rv1)
 end)
 
 /******************************************************************************/
@@ -302,10 +307,54 @@ end)
 
 /******************************************************************************/
 
+registerFunction("isPlayerHolding", "e:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1)) then return 0 end
+    if rv1:IsPlayerHolding() then return 1 else return 0 end
+end)
+ 
+registerFunction("isOnFire", "e:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1)) then return 0 end
+    if rv1:IsOnFire() then return 1 else return 0 end
+end)
+ 
+registerFunction("isOnGround", "e:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1)) then return 0 end
+    if rv1:IsOnGround() then return 1 else return 0 end
+end)
+ 
+registerFunction("isWeapon", "e:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1)) then return 0 end
+    if rv1:IsWeapon() then return 1 else return 0 end
+end)
+ 
+registerFunction("inVehicle", "e:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1)) then return 0 end
+    if(rv1:IsPlayer() and rv1:InVehicle()) then return 1 else return 0 end
+end)
+ 
+registerFunction("timeConnected", "e:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1)) then return 0 end
+    if(rv1:IsPlayer()) then return rv1:TimeConnected() else return 0 end
+end)
+
+/******************************************************************************/
+
 registerFunction("setColor", "e:nnn", "", function(self, args)
 	local op1, op2, op3, op4 = args[2], args[3], args[4], args[5]
 	local rv1, rv2, rv3, rv4 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3), op4[1](self, op4)
-	if self.player != rv1:GetOwner() then return end
+	if(self.player != getOwner(rv1)) then return end
 	rv1:SetColor(math.Clamp(rv2, 0, 255), math.Clamp(rv3, 0, 255), math.Clamp(rv4, 0, 255), 255)
 end)
 
@@ -379,7 +428,7 @@ end)
 registerFunction("hint", "sn", "", function(self, args)
     local op1, op2 = args[2], args[3]
     local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	if (string.find(rv1,string.char(34)) != nil) then return end
+	if(string.find(rv1,string.char(34)) != nil) then return end
 	self.player:SendLua("GAMEMODE:AddNotify(\"" .. rv1 .. "\", NOTIFY_GENERIC ," .. math.Clamp(rv2,0.7,7) .. ");")
 end)
 
@@ -389,53 +438,9 @@ registerFunction("hintDriver", "e:sn", "n", function(self, args)
 	if (string.find(rv2,string.char(34)) != nil) then return 0 end
 	if(!validEntity(rv1)) then return nil end
 	if(!rv1:IsVehicle()) then return 0 end
-	if(rv1:GetOwner() != self.entity:GetOwner()) then return 0 end
+	if(self.player != getOwner(rv1)) then return 0 end
 	local driver = rv1:GetDriver()
 	if(!validEntity(driver)) then return nil end
 	driver:SendLua("GAMEMODE:AddNotify(\"" .. rv2 .. "\", NOTIFY_GENERIC ," .. math.Clamp(rv3,0.7,7) .. ");")
     return 1
-end)
-
-/******************************************************************************/
-
-registerFunction("isPlayerHolding", "e:", "n", function(self, args)
-    local op1 = args[2]
-    local rv1 = op1[1](self, op1)
-    if(!validEntity(rv1)) then return 0 end
-    if rv1:IsPlayerHolding() then return 1 else return 0 end
-end)
- 
-registerFunction("isOnFire", "e:", "n", function(self, args)
-    local op1 = args[2]
-    local rv1 = op1[1](self, op1)
-    if(!validEntity(rv1)) then return 0 end
-    if rv1:IsOnFire() then return 1 else return 0 end
-end)
- 
-registerFunction("isOnGround", "e:", "n", function(self, args)
-    local op1 = args[2]
-    local rv1 = op1[1](self, op1)
-    if(!validEntity(rv1)) then return 0 end
-    if rv1:IsOnGround() then return 1 else return 0 end
-end)
- 
-registerFunction("isWeapon", "e:", "n", function(self, args)
-    local op1 = args[2]
-    local rv1 = op1[1](self, op1)
-    if(!validEntity(rv1)) then return 0 end
-    if rv1:IsWeapon() then return 1 else return 0 end
-end)
- 
-registerFunction("inVehicle", "e:", "n", function(self, args)
-    local op1 = args[2]
-    local rv1 = op1[1](self, op1)
-    if(!validEntity(rv1)) then return 0 end
-    if(rv1:IsPlayer() and rv1:InVehicle()) then return 1 else return 0 end
-end)
- 
-registerFunction("timeConnected", "e:", "n", function(self, args)
-    local op1 = args[2]
-    local rv1 = op1[1](self, op1)
-    if(!validEntity(rv1)) then return 0 end
-    if(rv1:IsPlayer()) then return rv1:TimeConnected() else return 0 end
 end)
