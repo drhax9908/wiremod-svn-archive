@@ -18,6 +18,7 @@ if CLIENT then
 else
 	CreateConVar('sbox_maxwire_expressions', 20)
 	CreateConVar('wire_expression2_protected', 1)
+	CreateConVar('wire_expression2_restricted', 1)
 end
 
 cleanup.Register("wire_gate_expressions")
