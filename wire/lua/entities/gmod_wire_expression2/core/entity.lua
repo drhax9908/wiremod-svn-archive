@@ -24,7 +24,11 @@ function getOwner(entity)
 	if(entity.OnDieFunctions == nil) then return nil end
 	if(entity.OnDieFunctions.GetCountUpdate == nil) then return nil end
 	if(entity.OnDieFunctions.GetCountUpdate.Args == nil) then return nil end
-	return entity.OnDieFunctions.GetCountUpdate.Args[1]
+	if(entity.OnDieFunctions.GetCountUpdate.Args[1] != nil) then return entity.OnDieFunctions.GetCountUpdate.Args[1] end
+	if(entity.OnDieFunctions.undo1 == nil) then return nil end
+	if(entity.OnDieFunctions.undo1.Args == nil) then return nil end
+	if(entity.OnDieFunctions.undo1.Args[2] != nil) then return entity.OnDieFunctions.undo1.Args[2] end
+	return nil
 end
 
 // compatibility
