@@ -1,7 +1,7 @@
 AddCSLuaFile('sound.lua')
 
 /******************************************************************************\
-  Built-in Sound support v1.16
+  Built-in Sound support v1.17
 \******************************************************************************/
 
 //--------------------------//
@@ -11,6 +11,7 @@ AddCSLuaFile('sound.lua')
 local function soundCreate(self, entity, index, time, path, fade)
 	local data = self.data['currentsound']
 	if table.Count(data)>GetConVarNumber("wire_expression2_maxsounds") then return end
+	path = string.Trim(path)
 	local sound = CreateSound(entity, path)
 	if type(index)=="number" then index = index - index % 1 end
 	if data[index] then data[index]:Stop() end
