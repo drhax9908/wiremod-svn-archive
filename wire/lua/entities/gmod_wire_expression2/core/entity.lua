@@ -408,6 +408,38 @@ end)
 
 /******************************************************************************/
 
+registerFunction("lockPod", "e:n", "", function(self,args)
+    local op1, op2 = args[2]
+    local rv1, rv2 = op1[1](self,op1)
+    if(!validEntity(rv1) || !rv1:IsVehicle()) then return end
+	rv1:Fire("Lock", "", 0)
+end)
+
+registerFunction("unlockPod", "e:", "", function(self,args)
+    local op1, op2 = args[2]
+    local rv1, rv2 = op1[1](self,op1)
+    if(!validEntity(rv1) || !rv1:IsVehicle()) then return end
+	rv1:Fire("Unlock", "", 0)
+end)
+
+registerFunction("killPod", "e:", "", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1) || !rv1:IsVehicle()) then return end
+    local ply = rv1:GetDriver()
+    if(ply:IsValid()) then ply:Kill() end
+end)
+
+registerFunction("ejectPod", "e:", "", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1) || !rv1:IsVehicle()) then return end
+    local ply = rv1:GetDriver()
+    if(ply:IsValid()) then ply:ExitVehicle() end
+end)
+
+/******************************************************************************/
+
 registerFunction("driver", "e:", "e", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
