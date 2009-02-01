@@ -409,17 +409,14 @@ end)
 /******************************************************************************/
 
 registerFunction("lockPod", "e:n", "", function(self,args)
-    local op1, op2 = args[2]
-    local rv1, rv2 = op1[1](self,op1)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
     if(!validEntity(rv1) || !rv1:IsVehicle()) then return end
-	rv1:Fire("Lock", "", 0)
-end)
-
-registerFunction("unlockPod", "e:", "", function(self,args)
-    local op1, op2 = args[2]
-    local rv1, rv2 = op1[1](self,op1)
-    if(!validEntity(rv1) || !rv1:IsVehicle()) then return end
-	rv1:Fire("Unlock", "", 0)
+    if(rv2 != 0) then
+		rv1:Fire("Lock", "", 0)
+    else
+		rv1:Fire("Unlock", "", 0)
+    end
 end)
 
 registerFunction("killPod", "e:", "", function(self, args)
