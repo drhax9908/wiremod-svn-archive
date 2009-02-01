@@ -1,8 +1,26 @@
 AddCSLuaFile('globalvars.lua')
 
 /******************************************************************************\
-  Global variable support v1.36
+  Global variable support v1.37
 \******************************************************************************/
+
+//--------------------------//
+//--Client Functions--//
+//--------------------------//
+
+local function glTid(self)
+	local group = self.data['globavars']
+	local uid = "exp2globalshare"
+	if self.data['globashare']==0 then uid = self.data['globaply'] end
+	if !_G[uid][group] then
+		_G[uid][group] = {}
+		local T = _G[uid][group]
+		T["s"] = {}
+		T["n"] = {}
+		return T
+	end
+	return _G[uid][group]
+end
 
 //--------------//
 //--Strings--//
@@ -188,6 +206,17 @@ registerFunction("gDeleteAllNum", "", "", function(self, args)
 	T["xn"] = nil
 end)
 
+//---------------//
+//--Sharing--//
+//---------------//
+
+registerFunction("gShare", "n", "", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	if rv1==0 then self.data['globashare'] = 0
+	else self.data['globashare'] = 1 end
+end)
+
 //------------------------------//
 //--Group Commands--//
 //------------------------------//
@@ -195,8 +224,9 @@ end)
 registerFunction("gSetGroup", "s", "", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
-	local uid = self.data['globaply']
-	self.data['globavars'] = "T"..rv1
+	local uid = "exp2globalshare"
+	if self.data['globashare']==0 then uid = self.data['globaply'] end
+	self.data['globavars'] = rv1
 	local group = self.data['globavars']
 	if _G[uid][group]==nil then _G[uid][group] = {} end
 	local T = _G[uid][group]
@@ -210,8 +240,9 @@ registerFunction("gGetGroup", "", "s", function(self, args)
 end)
 
 registerFunction("gResetGroup", "", "", function(self, args)
-	local uid = self.data['globaply']
-	self.data['globavars'] = "Tdefault"
+	local uid = "exp2globalshare"
+	if self.data['globashare']==0 then uid = self.data['globaply'] end
+	self.data['globavars'] = "default"
 	local group = self.data['globavars']
 	if !_G[uid][group] then _G[uid][group] = {} end
 	local T = _G[uid][group]
@@ -222,40 +253,25 @@ end)
 /******************************************************************************/
 
 registerCallback("construct", function(self)
-	if self.data['globavars'] != "Tdefault" then
-	self.data['globavars'] = "Tdefault"
+	if self.data['globavars'] != "default" then
+	self.data['globavars'] = "default"
 	end
 	self.data['globaply'] = self.player:UniqueID()
+	self.data['globashare'] = 0
 end)
 
 registerCallback("postexecute", function(self)
-	if self.data['globavars'] != "Tdefault" then
-	self.data['globavars'] = "Tdefault"
+	if self.data['globavars'] != "default" then
+	self.data['globavars'] = "default"
 	end
 end)
-
-//--------------------------//
-//--Client Functions--//
-//--------------------------//
-
-function glTid(self)
-	local group = self.data['globavars']
-	local uid = self.data['globaply']
-	if !_G[uid][group] then
-		_G[uid][group] = {}
-		local T = _G[uid][group]
-		T["s"] = {}
-		T["n"] = {}
-		return T
-	end
-	return _G[uid][group]
-end
 
 //-----------------------//
 //--Server Hooks--//
 //-----------------------//
 
 if(SERVER) then
+_G["exp2globalshare"] = {}
 function Egateglobalvardisconnect( ply )
 	local T = _G[ply:UniqueID()]
 	for i=0, table.Count(T)  do
