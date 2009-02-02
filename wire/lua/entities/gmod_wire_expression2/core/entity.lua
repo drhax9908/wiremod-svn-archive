@@ -20,7 +20,12 @@ function validPhysics(entity)
 	return false
 end
 
-function getOwner(entity)
+function isOwner(self, entity)
+	return (getOwner(self, entity) == self.player || GetConVarNumber("wire_expression2_restricted") == 0)
+end
+
+function getOwner(self, entity)
+	if(entity == self.entity) then return self.player end
 	if(entity.OnDieFunctions == nil) then return nil end
 	if(entity.OnDieFunctions.GetCountUpdate == nil) then return nil end
 	if(entity.OnDieFunctions.GetCountUpdate.Args == nil) then return nil end
@@ -106,8 +111,7 @@ registerFunction("owner", "e:", "e", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	if(!validEntity(rv1)) then return nil end
-	if(rv1 == self.entity) then return self.player end
-	return getOwner(rv1)
+	return getOwner(self, rv1)
 end)
 
 /******************************************************************************/
@@ -358,7 +362,7 @@ end)
 registerFunction("setColor", "e:nnn", "", function(self, args)
 	local op1, op2, op3, op4 = args[2], args[3], args[4], args[5]
 	local rv1, rv2, rv3, rv4 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3), op4[1](self, op4)
-	if(self.player != getOwner(rv1)) then return end
+	if(!isOwner(self, rv1)) then return end
 	rv1:SetColor(math.Clamp(rv2, 0, 255), math.Clamp(rv3, 0, 255), math.Clamp(rv4, 0, 255), 255)
 end)
 
@@ -392,8 +396,7 @@ registerFunction("applyForce", "e:v", "", function(self,args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
 	if(!validPhysics(rv1)) then return nil end
-////if(!isOwner(self, rv1)) then return nil end             --Not working, needs function
-	if(self.player!=getOwner(rv1)) then return nil end          //Temporary replacement
+	if(!isOwner(self, rv1)) then return nil end             --Not working, needs function
 	local phys = rv1:GetPhysicsObject()
 	phys:ApplyForceCenter(Vector(rv2[1],rv2[2],rv2[3]))
 end)
@@ -402,7 +405,7 @@ registerFunction("applyOffsetForce", "e:vv", "", function(self,args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3)
 	if(!validPhysics(rv1)) then return nil end
-////if(!isOwner(self, rv1)) then return nil end               --Not working, needs function
+	if(!isOwner(self, rv1)) then return nil end               --Not working, needs function
 	if(self.player!=getOwner(rv1)) then return nil end          //Temporary replacement
 	local phys = rv1:GetPhysicsObject()
 	rv1:ApplyForceOffset(Vector(rv2[1],rv2[2],rv2[3]), Vector(rv3[1],rv3[2],rv3[3]))
@@ -466,7 +469,7 @@ registerFunction("hintDriver", "e:sn", "n", function(self, args)
 	if (string.find(rv2,string.char(34)) != nil) then return 0 end
 	if(!validEntity(rv1)) then return nil end
 	if(!rv1:IsVehicle()) then return 0 end
-	if(self.player != getOwner(rv1)) then return 0 end
+	if(!isOwner(self, rv1)) then return 0 end
 	local driver = rv1:GetDriver()
 	if(!validEntity(driver)) then return nil end
 	driver:SendLua("GAMEMODE:AddNotify(\"" .. rv2 .. "\", NOTIFY_GENERIC ," .. math.Clamp(rv3,0.7,7) .. ");")
