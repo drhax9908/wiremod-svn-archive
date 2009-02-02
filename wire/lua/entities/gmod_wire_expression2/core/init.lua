@@ -1679,6 +1679,7 @@ include("find.lua");
 include("globalvars.lua");
 include("ranger.lua");
 include("sound.lua");
+include("color.lua");
 include("custom.lua");
 //include("quaternion.lua");
 
