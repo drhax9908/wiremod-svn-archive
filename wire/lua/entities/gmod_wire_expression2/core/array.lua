@@ -364,6 +364,91 @@ registerFunction("sum", "r:", "n", function(self, args)
 	return out
 end)
 
+registerFunction("average", "r:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    local totalValue = 0
+    local totalIndex = 0
+    local averageValue = 0
+    for k,v in ipairs(rv1) do
+        if type( v ) == "number" then
+            totalValue = totalValue + rv1[k]
+            totalIndex = totalIndex + 1
+        end
+    end
+    averageValue = totalValue / totalIndex
+    return averageValue
+end)
+
+
+registerFunction("min", "r:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    local min = nil
+    for k,v in ipairs(rv1) do
+        if type( v ) == "number" then
+            if min == nil || v < min then
+                min = rv1[k]
+            end
+        end
+    end
+    if min == nil then min = 0 end
+    local ret = min
+    min = nil
+    return ret
+end)
+ 
+registerFunction("minIndex", "r:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    local minIndex = 0
+    local min = nil
+    for k,v in ipairs(rv1) do
+        if type( v ) == "number" then
+            if min == nil || v < min then
+                min = rv1[k]
+                minIndex = k
+            end
+        end
+    end
+    if min == nil then min = 0 end
+    local ret = minIndex
+    min = nil
+    return ret
+end)
+ 
+registerFunction("max", "r:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    local ret = 0
+    for k,v in ipairs(rv1) do
+        if type( v ) == "number" then
+            if v > ret then
+                ret = rv1[k]
+            end
+        end
+    end
+    return ret
+end)
+ 
+registerFunction("maxIndex", "r:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    local retIndex = 0
+    local ret = 0
+    for k,v in ipairs(rv1) do
+        if type( v ) == "number" then
+            if v > ret then
+                ret = rv1[k]
+                retIndex = k
+            end
+        end
+    end
+    return retIndex
+end)
+
+/******************************************************************************/
+
 registerFunction("concat", "r:", "s", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
