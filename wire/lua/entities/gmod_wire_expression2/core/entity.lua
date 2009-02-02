@@ -377,7 +377,7 @@ registerFunction("applyForce", "e:v", "", function(self,args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
 	if(!validPhysics(rv1)) then return nil end
-	if(!isOwner(self, rv1)) then return nil end             --Not working, needs function
+	if(!isOwner(self, rv1)) then return nil end
 	local phys = rv1:GetPhysicsObject()
 	phys:ApplyForceCenter(Vector(rv2[1],rv2[2],rv2[3]))
 end)
@@ -386,8 +386,7 @@ registerFunction("applyOffsetForce", "e:vv", "", function(self,args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3)
 	if(!validPhysics(rv1)) then return nil end
-	if(!isOwner(self, rv1)) then return nil end               --Not working, needs function
-	if(self.player!=getOwner(rv1)) then return nil end          //Temporary replacement
+	if(!isOwner(self, rv1)) then return nil end
 	local phys = rv1:GetPhysicsObject()
 	rv1:ApplyForceOffset(Vector(rv2[1],rv2[2],rv2[3]), Vector(rv3[1],rv3[2],rv3[3]))
 end)
