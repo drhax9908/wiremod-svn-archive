@@ -388,7 +388,7 @@ registerFunction("applyOffsetForce", "e:vv", "", function(self,args)
 	if(!validPhysics(rv1)) then return nil end
 	if(!isOwner(self, rv1)) then return nil end
 	local phys = rv1:GetPhysicsObject()
-	rv1:ApplyForceOffset(Vector(rv2[1],rv2[2],rv2[3]), Vector(rv3[1],rv3[2],rv3[3]))
+	phys:ApplyForceOffset(Vector(rv2[1],rv2[2],rv2[3]), Vector(rv3[1],rv3[2],rv3[3]))
 end)
 
 /******************************************************************************/
