@@ -82,7 +82,7 @@ if SERVER then
 		
 		wire_emarker:SetPlayer(pl)
 		
-		if ( nocollide == true ) then wire_light:GetPhysicsObject():EnableCollisions( false ) end
+		if ( nocollide == true ) then wire_emarker:GetPhysicsObject():EnableCollisions( false ) end
 		
 		local ttable = {
 			pl			= pl,
