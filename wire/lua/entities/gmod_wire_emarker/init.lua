@@ -41,8 +41,7 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 			self.mark = ents.GetByIndex(info.Mark)
 		end
 		if(self.mark) then
-			Wire_TriggerOutput(self.Entity, "Entity", self.mark)
-			self:SetOverlayText( "Mark - " .. self.mark:GetClass() )
+			self:Setup(self.mark)
 		end
 	end
 end 
