@@ -32,7 +32,8 @@ function TOOL:LeftClick(trace)
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_emarker = MakeWireEmarker( ply, trace.HitPos, Ang, mark )
+	local wire_emarker = MakeWireEmarker( ply, trace.HitPos, Ang)
+	wire_emarker:Setup(mark)
 
 	local min = wire_emarker:OBBMins()
 	wire_emarker:SetPos( trace.HitPos - trace.HitNormal * (min.z) )
@@ -69,7 +70,7 @@ end
 
 if SERVER then
 
-	function MakeWireEmarker(pl, Pos, Ang, mark, Vel, aVel, frozen, nocollide )
+	function MakeWireEmarker(pl, Pos, Ang, Vel, aVel, frozen, nocollide )
 		if (!pl:CheckLimit("wire_emarkers")) then return end
 
 		local wire_emarker = ents.Create("gmod_wire_emarker")
@@ -78,7 +79,6 @@ if SERVER then
 		wire_emarker:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )
 		wire_emarker:Spawn()
 		wire_emarker:Activate()
-		wire_emarker:Setup(mark)
 		
 		wire_emarker:SetPlayer(pl)
 		
@@ -95,7 +95,7 @@ if SERVER then
 		return wire_emarker
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_emarker", MakeWireEmarker, "Pos", "Ang", "mark", "Vel", "aVel", "frozen", "nocollide")
+	duplicator.RegisterEntityClass("gmod_wire_emarker", MakeWireEmarker, "Pos", "Ang", "Vel", "aVel", "frozen", "nocollide")
 
 end
 
