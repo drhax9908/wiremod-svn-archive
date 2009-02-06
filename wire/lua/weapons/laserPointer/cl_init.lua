@@ -17,18 +17,8 @@ end
 
 function SWEP:ViewModelDrawn()
 	if(self.Weapon:GetNWBool("Active")) then
-	--[[
-	    local pos = self.Owner:GetShootPos()
-	    local tracedata = {}
-			tracedata.start = pos
-			tracedata.endpos = pos + self.Owner:GetAimVector() * 100000
-			tracedata.filter = self.Owner
-	    local trace = util.TraceLine(tracedata)
-		]]--
         //Draw the laser beam.
         render.SetMaterial( LASER )
-	    //render.DrawBeam(trace.StartPos, trace.HitPos, 6, 0, 10, Color(255,0,0,255))
 		render.DrawBeam(self.VM:GetAttachment(self.Attach).Pos, self.Owner:GetEyeTrace().HitPos, 2, 0, 12.5, Color(255, 0, 0, 255))
-        //Msg("Laser\n")
     end
 end
