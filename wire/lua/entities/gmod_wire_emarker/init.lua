@@ -19,29 +19,46 @@ function ENT:Initialize()
 	self:SetOverlayText( "No Mark selected" )
 end
 
-function ENT:Setup(mark)
-	self.mark = mark
+function ENT:LinkEMarker(mark)
+	if mark then self.mark = mark end
+	if (!self.mark || !self.mark:IsValid()) then self:SetOverlayText( "No Mark selected" )	return end
 	Wire_TriggerOutput(self.Entity, "Entity", self.mark)
 	self:SetOverlayText( "Mark - " .. self.mark:GetClass() )
 end
 
+function ENT:UnLinkEMarker()
+	self.mark = nil
+	Wire_TriggerOutput(self.Entity, "Entity", nil)
+	self:SetOverlayText( "No Mark selected" )
+end
+
+function ENT:Think()
+	// Check in case linked entity no longer exists, keeps overlay text up to date
+	if ( !self.mark || !self.mark:IsValid() ) then
+		self:SetOverlayText( "No Mark selected" )
+	end
+	self.Entity:NextThink(CurTime() + 0.2)
+	return true
+end
+
+// Advanced Duplicator Support
+
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
-	if(self.mark && self.mark:IsValid())then
-		info.Mark = self.mark:EntIndex()
+	if ( self.mark ) and ( self.mark:IsValid() ) then
+	    info.mark = self.mark:EntIndex()
 	end
 	return info
-end 
+end
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
-	if (info.Mark) then
-		self.mark = GetEntByID(info.Mark)
+
+	if (info.mark) then
+		self.mark = GetEntByID(info.mark)
 		if (!self.mark) then
-			self.mark = ents.GetByIndex(info.Mark)
-		end
-		if(self.mark) then
-			self:Setup(self.mark)
+			self.mark = ents.GetByIndex(info.mark)
 		end
 	end
-end 
+	self:LinkEMarker()
+end
