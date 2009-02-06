@@ -147,6 +147,37 @@ end)
 
 /******************************************************************************/
 
+registerFunction("repeat", "s:n", "s", function(self,args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1),op2[1](self, op2)
+	return string.rep(rv1,rv2)
+end)
+
+registerFunction("trim", "s:", "s", function(self,args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	return string.Trim(rv1)
+end)
+
+registerFunction("trimLeft", "s:", "s", function(self,args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local find = string.find(rv1," ")
+	while find == 1 do
+		rv1 = string.Right(rv1,rv1:len()-1)
+		find = string.find(rv1," ")
+	end
+	return rv1
+end)
+
+registerFunction("trimRight", "s:", "s", function(self,args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	return string.TrimRight(rv1)
+end)
+
+/******************************************************************************/
+
 registerFunction("find", "s:s", "n", function(self, args)
     local op1, op2 = args[2], args[3]
     local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
