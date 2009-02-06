@@ -13,7 +13,7 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
-	self.Outputs = Wire_CreateOutputs(self.Entity,{"X","Y","Z","Active"})
+	self.Outputs = WireLib.CreateSpecialOutputs(self.Entity,{"X","Y","Z","Active","Pos"},{"NORMAL","NORMAL","NORMAL","NORMAL","VECTOR"})
 	self.VPos = Vector(0,0,0)
 end
 
