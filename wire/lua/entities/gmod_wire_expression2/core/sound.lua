@@ -1,7 +1,7 @@
 AddCSLuaFile('sound.lua')
 
 /******************************************************************************\
-  Built-in Sound support v1.17
+  Built-in Sound support v1.18
 \******************************************************************************/
 
 //--------------------------//
@@ -64,7 +64,7 @@ registerFunction("soundPlay", "e:nns", "", function(self, args)
     local rv1, rv2, rv3, rv4 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4)
 	local entity = checkEntity(rv1)
 	if(!entity) then return end
-	if entity!=self.entity && GetConVarNumber("wire_expression2_soundrestriction")!=0 then return end
+	if !isOwner(self, entity) then return end
 	soundCreate(self,entity,rv2,rv3,rv4,0)
 end)
 
@@ -73,7 +73,7 @@ registerFunction("soundPlay", "e:sns", "", function(self, args)
     local rv1, rv2, rv3, rv4 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4)
 	local entity = checkEntity(rv1)
 	if(!entity) then return end
-	if entity!=self.entity && GetConVarNumber("wire_expression2_soundrestriction")!=0 then return end
+	if !isOwner(self, entity) then return end
 	soundCreate(self,entity,rv2,rv3,rv4,0)
 end)
 
@@ -94,7 +94,7 @@ registerFunction("soundPlay", "e:nnsn", "", function(self, args)
     local rv1, rv2, rv3, rv4, rv5 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4), op5[1](self,op5)
 	local entity = checkEntity(rv1)
 	if(!entity) then return end
-	if entity!=self.entity && GetConVarNumber("wire_expression2_soundrestriction")!=0 then return end
+	if !isOwner(self, entity) then return end
 	soundCreate(self,entity,rv2,rv3,rv4,rv5)
 end)
 
@@ -103,7 +103,7 @@ registerFunction("soundPlay", "e:snsn", "", function(self, args)
     local rv1, rv2, rv3, rv4, rv5 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4), op5[1](self,op5)
 	local entity = checkEntity(rv1)
 	if(!entity) then return end
-	if entity!=self.entity && GetConVarNumber("wire_expression2_soundrestriction")!=0 then return end
+	if !isOwner(self, entity) then return end
 	soundCreate(self,entity,rv2,rv3,rv4,rv5)
 end)
 
@@ -202,5 +202,4 @@ end)
 
 if (SERVER) then
 	CreateConVar( "wire_expression2_maxsounds", 8 )
-	CreateConVar( "wire_expression2_soundrestriction", 1)
 end
