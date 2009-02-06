@@ -71,7 +71,7 @@ registerFunction("setNumber", "t:sn", "", function(self, args)
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if rv3 == 0 then rv3 = nil end
 	rv1["n" .. rv2] = rv3
-	//self.vclk[op1] = true
+	self.vclk[op1] = true
 end)
 
 
@@ -88,7 +88,24 @@ registerFunction("setVector", "t:sv", "", function(self, args)
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
 	rv1["v" .. rv2] = rv3
-	//self.vclk[op1] = true
+	self.vclk[op1] = true
+end)
+
+
+registerFunction("angle", "t:s", "a", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local ret = rv1["a" .. rv2]
+	if ret then return ret end
+	return { 0, 0, 0 }
+end)
+
+registerFunction("setAngle", "t:sa", "", function(self, args)
+	local op1, op2, op3 = args[2], args[3], args[4]
+	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
+	rv1["a" .. rv2] = rv3
+	self.vclk[op1] = true
 end)
 
 
@@ -105,7 +122,7 @@ registerFunction("setString", "t:ss", "", function(self, args)
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if rv3 == "" then rv3 = nil end
 	rv1["s" .. rv2] = rv3
-	//self.vclk[op1] = true
+	self.vclk[op1] = true
 end)
 
 registerFunction("entity", "t:s", "e", function(self, args)
@@ -120,5 +137,5 @@ registerFunction("setEntity", "t:se", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	rv1["s" .. rv2] = rv3
-	//self.vclk[op1] = true
+	self.vclk[op1] = true
 end)

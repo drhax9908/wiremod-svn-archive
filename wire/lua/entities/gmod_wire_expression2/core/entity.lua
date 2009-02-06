@@ -258,6 +258,26 @@ registerFunction("massCenterL", "e:", "v", function(self, args)
 	return {vec.x,vec.y,vec.z}
 end)
 
+registerFunction("setMass", "n", "", function(self,args)
+	local op1 = args[2]
+	local rv1 = op1[1](self,op1)
+	if(!validPhysics(self.entity)) then return end
+	local mass = math.Clamp(rv1, 0.001, 50000)
+	local phys = self.entity:GetPhysicsObject()
+	phys:SetMass(mass)
+end)
+
+registerFunction("setMass", "e:n", "", function(self,args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
+	if(!validPhysics(rv1)) then return end
+	if(!isOwner(self, rv1)) then return end
+	if(rv1:IsPlayer()) then return end
+	local mass = math.Clamp(rv2, 0.001, 50000)
+	local phys = rv1:GetPhysicsObject()
+	phys:SetMass(mass)
+end)
+
 /******************************************************************************/
 // Functions getting boolean/number
 registerFunction("isPlayer", "e:", "n", function(self, args)
@@ -419,6 +439,29 @@ registerFunction("ejectPod", "e:", "", function(self, args)
     local ply = rv1:GetDriver()
     if(ply:IsValid()) then ply:ExitVehicle() end
 end)
+
+/******************************************************************************/
+
+registerFunction("aimEntity", "e:", "e", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!validEntity(rv1)) then return nil end
+	if(rv1:IsPlayer()) then
+		local ent = rv1:GetEyeTrace().Entity
+		if (ent:IsValid()) then return ent end
+	else return nil end
+end)
+
+registerFunction("aimPos", "e:", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!validEntity(rv1)) then return {0,0,0} end
+	if(rv1:IsPlayer()) then
+		local vec = rv1:GetEyeTrace().HitPos
+		return vec
+	else return {0,0,0} end
+end)
+
 
 /******************************************************************************/
 

@@ -75,7 +75,7 @@ registerFunction("setNumber", "r:nn", "", function(self, args)
 	if(rv2 >= E2_MAX_ARRAY_SIZE) then return end
 	if rv3 == 0 then rv3 = nil end
 	rv1[rv2] = rv3
-	//self.vclk[op1] = true
+	self.vclk[op1] = true
 end)
 
 
@@ -93,7 +93,25 @@ registerFunction("setVector", "r:nv", "", function(self, args)
 	if(rv2 >= E2_MAX_ARRAY_SIZE) then return end
 	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
 	rv1[rv2] = rv3
-	//self.vclk[op1] = true
+	self.vclk[op1] = true
+end)
+
+
+registerFunction("angle", "r:n", "a", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local ret = rv1[rv2]
+	if type(ret) == "table" and table.getn(ret) == 3 then return ret end
+	return { 0, 0, 0 }
+end)
+
+registerFunction("setAngle", "r:na", "", function(self, args)
+	local op1, op2, op3 = args[2], args[3], args[4]
+	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+	if(rv2 >= E2_MAX_ARRAY_SIZE) then return end
+	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
+	rv1[rv2] = rv3
+	self.vclk[op1] = true
 end)
 
 
@@ -111,7 +129,7 @@ registerFunction("setString", "r:ns", "", function(self, args)
 	if(rv2 >= E2_MAX_ARRAY_SIZE) then return end
 	if rv3 == "" then rv3 = nil end
 	rv1[rv2] = rv3
-	//self.vclk[op1] = true
+	self.vclk[op1] = true
 end)
 
 registerFunction("entity", "r:n", "e", function(self, args)
@@ -127,6 +145,7 @@ registerFunction("setEntity", "r:ne", "", function(self, args)
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if(rv2 >= E2_MAX_ARRAY_SIZE) then return end
 	rv1[rv2] = rv3
+	self.vclk[op1] = true
 end)
 
 /******************************************************************************/
