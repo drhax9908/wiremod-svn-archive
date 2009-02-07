@@ -128,7 +128,7 @@ end)
 registerFunction("entity", "t:s", "e", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	local ret = rv1["s" .. rv2]
+	local ret = rv1["e" .. rv2]
 	if validEntity(ret) then return ret end
 	return nil
 end)
@@ -136,6 +136,6 @@ end)
 registerFunction("setEntity", "t:se", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
-	rv1["s" .. rv2] = rv3
+	rv1["e" .. rv2] = rv3
 	self.vclk[op1] = true
 end)
