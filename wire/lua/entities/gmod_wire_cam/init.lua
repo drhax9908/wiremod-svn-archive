@@ -24,11 +24,32 @@ function ENT:Think()
     self:NextThink(CurTime()+0.1)
 end
 
-function ENT:RecieveInfo(Pos,Ang)
-    self.IdealPos = Pos
-    self:SetPos(Pos)
-    self.IdealAng = Ang
-    self:SetAngles(Ang)
+function ENT:RecieveInfo(In,Val)
+	if(In == "X")then
+		self.IdealPos.x = Val
+		self:SetPos(self.IdealPos)
+	elseif(In == "Y")then
+		self.IdealPos.y = Val
+		self:SetPos(self.IdealPos)
+	elseif(In == "Z")then
+		self.IdealPos.z = Val
+		self:SetPos(self.IdealPos)
+	elseif(In == "Position")then
+		self.IdealPos = Val
+		self:SetPos(self.IdealPos)
+	elseif(In == "Pitch")then
+		self.IdealAng.p = Val
+		self:SetAngles(self.IdealAng)
+	elseif(In == "Roll")then
+		self.IdealAng.r = Val
+		self:SetAngles(self.IdealAng)
+	elseif(In == "Yaw")then
+		self.IdealAng.y = Val
+		self:SetAngles(self.IdealAng)
+	elseif(In == "Direction")then
+		self.IdealAng = Val:Normalize():Angle()
+		self:SetAngles(self.IdealAng)
+	end    
 end
 
 function ENT:OnRemove()
