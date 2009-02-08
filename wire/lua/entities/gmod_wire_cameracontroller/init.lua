@@ -109,7 +109,7 @@ function ENT:TriggerInput(iname, value)
 		  self.CamPlayer:SetFOV(self.ZoomAmount,0.01)
 	   end
     else
-		if(CamEnt)then
+		if(self.CamEnt)then
 			self.CamEnt:RecieveInfo(iname,value)
 		end
     end
