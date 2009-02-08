@@ -39,7 +39,7 @@ function ENT:Setup(Player,Static)
 	   cam:Spawn()
 	
 	   self.CamEnt = cam
-        self.Inputs = WireLib.CreateSpecialInputs(self.Entity, {"Activated","Zoom","X","Y","Z","Pitch","Yaw","Roll","Vector"},{"NORMAL","NORMAL","NORMAL","NORMAL","NORMAL","NORMAL","NORMAL","NORMAL","VECTOR"})
+       self.Inputs = WireLib.CreateSpecialInputs(self.Entity, {"Activated","Zoom","X","Y","Z","Pitch","Yaw","Roll","Position","Direction"},{"NORMAL","NORMAL","NORMAL","NORMAL","NORMAL","NORMAL","NORMAL","NORMAL","VECTOR","VECTOR"})
 	else
 	   self.Inputs = Wire_CreateInputs(self.Entity, {"Activated","Zoom"})
 	   self.Static = 1
@@ -108,32 +108,10 @@ function ENT:TriggerInput(iname, value)
 	   if(self.Active == 1)then
 		  self.CamPlayer:SetFOV(self.ZoomAmount,0.01)
 	   end
-    elseif(iname == "X")then
-        local camPos = self.CamEnt:GetPos()
-        camPos.x = value
-        self.CamEnt:RecieveInfo(camPos,self.CamEnt.IdealAng)
-    elseif(iname == "Y")then
-        local camPos = self.CamEnt:GetPos()
-        camPos.y = value
-        self.CamEnt:RecieveInfo(camPos,self.CamEnt.IdealAng)
-    elseif(iname == "Z")then
-        local camPos = self.CamEnt:GetPos()
-        camPos.z = value
-        self.CamEnt:RecieveInfo(camPos,self.CamEnt.IdealAng)
-    elseif(iname == "Pitch")then
-        local camAng = self.CamEnt:GetAngles()
-        camAng.p = value
-        self.CamEnt:RecieveInfo(self.CamEnt.IdealPos,camAng)
-    elseif(iname == "Yaw")then
-        local camAng = self.CamEnt:GetAngles()
-        camAng.y = value
-        self.CamEnt:RecieveInfo(self.CamEnt.IdealPos,camAng)
-    elseif(iname == "Roll")then
-        local camAng = self.CamEnt:GetAngles()
-        camAng.r = value
-        self.CamEnt:RecieveInfo(self.CamEnt.IdealPos,camAng)
-	elseif(iname == "Vector")then
-		self.CamEnt:RecieveInfo(value,self.CamEnt.IdealAng)
+    else
+		if(CamEnt)then
+			self.CamEnt:RecieveInfo(iname,value)
+		end
     end
 end
 
