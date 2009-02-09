@@ -335,6 +335,17 @@ end)
 
 /******************************************************************************/
 
+registerFunction("setMaterial", "e:s", "", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2)
+    local entity = checkEntity(rv1)
+    if(!entity || !rv1:IsValid()) then return end
+        rv1:SetMaterial(rv2)
+    return
+end)
+
+/******************************************************************************/
+
 registerFunction("isPlayerHolding", "e:", "n", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
