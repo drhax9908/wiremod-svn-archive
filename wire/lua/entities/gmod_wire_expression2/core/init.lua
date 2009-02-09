@@ -1680,6 +1680,7 @@ include("globalvars.lua");
 include("ranger.lua");
 include("sound.lua");
 include("color.lua");
+include("serverinfo.lua");
 include("custom.lua");
 //include("quaternion.lua");
 
