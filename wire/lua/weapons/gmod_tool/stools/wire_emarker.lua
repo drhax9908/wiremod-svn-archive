@@ -21,6 +21,23 @@ cleanup.Register( "wire_emarkers" )
 // Variable "marker" refers to the entity marker
 // Variable "mark" refers to the linked entity
 
+local EntityMarkers = {}
+
+function Add_EntityMarker( r )
+	table.insert( EntityMarkers, r )
+end
+
+function EntityMarker_Removed(entity)
+	for i, o in ipairs( EntityMarkers ) do
+		if !IsEntity(o.Entity) then
+			table.remove(EntityMarkers, i)
+		elseif o.mark==entity then
+			o:UnLinkEMarker()
+		end
+	end
+end
+hook.Add("EntityRemoved","EntityMarkerEntRemoved",EntityMarker_Removed)
+
 function TOOL:LeftClick(trace)
 	if (!trace.HitPos) then return false end
 	if (trace.Entity:IsPlayer()) then return false end
@@ -65,7 +82,6 @@ function TOOL:LeftClick(trace)
 end
 
 function TOOL:RightClick(trace)
-
 	if (!trace.HitPos) then return false end
 	if (trace.Entity:IsPlayer()) then return false end
 	if ( CLIENT ) then return true end
@@ -89,6 +105,10 @@ function TOOL:RightClick(trace)
 end
 
 function TOOL:Reload(trace)
+	if (!trace.HitPos) then return false end
+	if (trace.Entity:IsPlayer()) then return false end
+	if ( CLIENT ) then return true end
+
 	self:SetStage(0)
 	local marker = trace.Entity
 	if (!marker || !marker:IsValid()) then return false end
