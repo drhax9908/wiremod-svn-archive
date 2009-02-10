@@ -13,7 +13,9 @@ function validEntity(entity)
 end
 
 function validPhysics(entity)
-	if (entity and type(entity)!="number" and entity:IsValid()) then
+	if (entity and type(entity)!="number" and entity:IsValid() and !entity:IsWorld()) then
+	local MoveType = 
+		if ( !ent:IsWorld() && ent:GetMoveType() != MOVETYPE_VPHYSICS ) then return false 
 		local phys = entity:GetPhysicsObject()
 		return (phys and phys:IsValid())
 	end
@@ -340,8 +342,7 @@ registerFunction("setMaterial", "e:s", "", function(self, args)
     local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2)
     local entity = checkEntity(rv1)
     if(!entity || !rv1:IsValid()) then return end
-        rv1:SetMaterial(rv2)
-    return
+    rv1:SetMaterial(rv2)
 end)
 
 /******************************************************************************/
