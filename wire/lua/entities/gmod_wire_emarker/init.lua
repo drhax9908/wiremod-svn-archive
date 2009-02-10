@@ -14,6 +14,7 @@ function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
+	Add_EntityMarker(self.Entity)
 	
 	self.Outputs = WireLib.CreateSpecialOutputs(self.Entity, { "Entity" }, { "ENTITY" })
 	self:SetOverlayText( "No Mark selected" )
@@ -27,18 +28,9 @@ function ENT:LinkEMarker(mark)
 end
 
 function ENT:UnLinkEMarker()
-	self.mark = nil
-	Wire_TriggerOutput(self.Entity, "Entity", nil)
+	self.mark = null
+	Wire_TriggerOutput(self.Entity, "Entity", null)
 	self:SetOverlayText( "No Mark selected" )
-end
-
-function ENT:Think()
-	// Check in case linked entity no longer exists, keeps overlay text up to date
-	if ( !self.mark || !self.mark:IsValid() ) then
-		self:SetOverlayText( "No Mark selected" )
-	end
-	self.Entity:NextThink(CurTime() + 0.2)
-	return true
 end
 
 // Advanced Duplicator Support
