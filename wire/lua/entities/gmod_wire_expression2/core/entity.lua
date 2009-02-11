@@ -15,7 +15,7 @@ end
 function validPhysics(entity)
 	if (entity and type(entity)!="number" and entity:IsValid() and !entity:IsWorld()) then
 		local phys = entity:GetPhysicsObject()
-		return (phys and phys:IsValid() and ent:GetMoveType() == MOVETYPE_VPHYSICS)
+		return (phys and phys:IsValid() and entity:GetMoveType() == MOVETYPE_VPHYSICS)
 	end
 	return false
 end
