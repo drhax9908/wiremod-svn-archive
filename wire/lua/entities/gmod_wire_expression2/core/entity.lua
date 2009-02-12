@@ -25,7 +25,7 @@ function isOwner(self, entity)
 end
 
 function getOwner(self, entity)
-	if(entity == self.entity) then return self.player end
+	if(entity == self.entity || entity == self.player) then return self.player end
 	if(entity.OnDieFunctions == nil) then return nil end
 	if(entity.OnDieFunctions.GetCountUpdate == nil) then return nil end
 	if(entity.OnDieFunctions.GetCountUpdate.Args == nil) then return nil end
@@ -338,8 +338,8 @@ end)
 registerFunction("setMaterial", "e:s", "", function(self, args)
     local op1, op2 = args[2], args[3]
     local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2)
-    local entity = checkEntity(rv1)
-    if(!entity || !rv1:IsValid()) then return end
+    if(!validEntity(rv1) || !rv1:IsValid()) then return end
+	if(!isOwner(self, rv1)) then return end
     rv1:SetMaterial(rv2)
 end)
 
@@ -427,6 +427,7 @@ registerFunction("lockPod", "e:n", "", function(self,args)
     local op1, op2 = args[2], args[3]
     local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
     if(!validEntity(rv1) || !rv1:IsVehicle()) then return end
+	if(!isOwner(self, rv1)) then return end
     if(rv2 != 0) then
 		rv1:Fire("Lock", "", 0)
     else
@@ -438,6 +439,7 @@ registerFunction("killPod", "e:", "", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
     if(!validEntity(rv1) || !rv1:IsVehicle()) then return end
+	if(!isOwner(self, rv1)) then return end
     local ply = rv1:GetDriver()
     if(ply:IsValid()) then ply:Kill() end
 end)
@@ -446,6 +448,7 @@ registerFunction("ejectPod", "e:", "", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
     if(!validEntity(rv1) || !rv1:IsVehicle()) then return end
+	if(!isOwner(self, rv1)) then return end
     local ply = rv1:GetDriver()
     if(ply:IsValid()) then ply:ExitVehicle() end
 end)
