@@ -411,6 +411,13 @@ registerFunction("applyOffsetForce", "vv", "", function(self,args)
 	phys:ApplyForceOffset(Vector(rv1[1],rv1[2],rv1[3]), Vector(rv2[1],rv2[2],rv2[3]))
 end)
 
+registerFunction("applyAngVel", "a", "", function(self,args)
+    local op1 = args[2]
+    local rv1 = op1[1](self,op1)
+    local phys = self.entity:GetPhysicsObject()
+    phys:AddAngleVelocity(Angle(rv1[3],rv1[1],rv1[2]))
+end)
+
 registerFunction("applyForce", "e:v", "", function(self,args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
@@ -428,6 +435,16 @@ registerFunction("applyOffsetForce", "e:vv", "", function(self,args)
 	local phys = rv1:GetPhysicsObject()
 	phys:ApplyForceOffset(Vector(rv2[1],rv2[2],rv2[3]), Vector(rv3[1],rv3[2],rv3[3]))
 end)
+
+registerFunction("applyAngVel", "e:a", "", function(self,args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
+    if(!validPhysics(rv1)) then return end
+    if(!isOwner(self, rv1)) then return nil end
+    local phys = rv1:GetPhysicsObject()
+    phys:AddAngleVelocity(Angle(rv2[3],rv2[1],rv2[2]))
+end)
+
 
 /******************************************************************************/
 
