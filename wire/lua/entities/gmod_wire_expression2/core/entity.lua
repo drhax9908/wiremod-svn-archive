@@ -373,6 +373,14 @@ registerFunction("isWeapon", "e:", "n", function(self, args)
     if rv1:IsWeapon() then return 1 else return 0 end
 end)
  
+registerFunction("isFrozen", "e:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1)) then return 0 end
+    local phys = rv1:GetPhysicsObject()
+    if phys:IsMoveable() then return 0 else return 1 end
+end)
+ 
 registerFunction("inVehicle", "e:", "n", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
