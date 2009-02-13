@@ -19,26 +19,26 @@
 //----------------------------------------------------------------------
 
 function ENT:NMIInterrupt(intnumber)
-	if ((self.IF == 1) &&
-	     self:Push(self.LS) &&
-	     self:Push(self.KS) &&
-	     self:Push(self.ES) &&
-	     self:Push(self.GS) &&
-    	     self:Push(self.FS) &&
-    	     self:Push(self.DS) &&
-	     self:Push(self.SS) &&
-	     self:Push(self.CS) &&
+	if ((self.IF == 1) && 
+	     self:Push(self.LS) && 
+	     self:Push(self.KS) && 
+	     self:Push(self.ES) && 
+	     self:Push(self.GS) && 
+    	     self:Push(self.FS) && 
+    	     self:Push(self.DS) && 
+	     self:Push(self.SS) && 
+	     self:Push(self.CS) && 
 
-	     self:Push(self.EDI) &&
-	     self:Push(self.ESI) &&
-	     self:Push(self.ESP) &&
-	     self:Push(self.EBP) &&
-	     self:Push(self.EDX) &&
-	     self:Push(self.ECX) &&
-	     self:Push(self.EBX) &&
-	     self:Push(self.EAX) &&
+	     self:Push(self.EDI) && 
+	     self:Push(self.ESI) && 
+	     self:Push(self.ESP) && 
+	     self:Push(self.EBP) && 
+	     self:Push(self.EDX) && 
+	     self:Push(self.ECX) && 
+	     self:Push(self.EBX) && 
+	     self:Push(self.EAX) && 
 
-	     self:Push(self.CMPR) &&
+	     self:Push(self.CMPR) && 
 	     self:Push(self.IP)) then
 			self:Interrupt(intnumber,0)
 	end
@@ -172,7 +172,7 @@ function ENT:Interrupt(intnumber,intparam)
 					   (intnumber == 10) then
 						self:Push(self.LADD)
 					end
-					if (intnumber == 4 ) ||
+					if (intnumber == 4 ) || 
 					   (intnumber == 31) then //If wrong opcode or debug trap, then store
 						self:Push(self.ILTC)
 					end

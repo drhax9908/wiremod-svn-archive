@@ -58,6 +58,10 @@ function ENT:Message(msg)
 end
 
 function ENT:Error(msg)
+	if (EmuFox) then //Override for EmuFox
+		print("-> Error at line "..self.Line..": "..msg)
+	end
+
 	if (self.CurrentFile == "") then
 		self.Player:PrintMessage(HUD_PRINTCONSOLE,"-> Error at line "..self.Line..": "..msg)
 	else
@@ -69,7 +73,7 @@ function ENT:Error(msg)
 end
 
 function ENT:_whitespace()
-	while ((string.sub(self.CurrentLine,1,1) == " ") ||
+	while ((string.sub(self.CurrentLine,1,1) == " ") || 
 	       (string.sub(self.CurrentLine,1,1) == "	")) do
 		self.CurrentLine = string.sub(self.CurrentLine,2,9999)
 	end
@@ -110,21 +114,21 @@ end
 
 function ENT:_word()
 	local word = ""
-	while ((self.CurrentLine ~= "") &&
+	while ((self.CurrentLine ~= "") && 
 	      (string.sub(self.CurrentLine,1,1) ~= " ") && 
-	      (string.sub(self.CurrentLine,1,1) ~= "(") &&
-	      (string.sub(self.CurrentLine,1,1) ~= ")") &&
-	      (string.sub(self.CurrentLine,1,1) ~= ";") &&
-	      (string.sub(self.CurrentLine,1,1) ~= "#") &&
-	      (string.sub(self.CurrentLine,1,1) ~= ":") &&
-	      (string.sub(self.CurrentLine,1,1) ~= ",") &&
-	      (string.sub(self.CurrentLine,1,1) ~= "'") &&
-	      (string.sub(self.CurrentLine,1,1) ~= "\"") &&
-	      (string.sub(self.CurrentLine,1,1) ~= "!") &&
-	      (string.sub(self.CurrentLine,1,1) ~= "%") &&
-	      (string.sub(self.CurrentLine,1,1) ~= "^") &&
-	      (string.sub(self.CurrentLine,1,1) ~= "&") &&
-	      (string.sub(self.CurrentLine,1,1) ~= "*") &&
+	      (string.sub(self.CurrentLine,1,1) ~= "(") && 
+	      (string.sub(self.CurrentLine,1,1) ~= ")") && 
+	      (string.sub(self.CurrentLine,1,1) ~= ";") && 
+	      (string.sub(self.CurrentLine,1,1) ~= "#") && 
+	      (string.sub(self.CurrentLine,1,1) ~= ":") && 
+	      (string.sub(self.CurrentLine,1,1) ~= ",") && 
+	      (string.sub(self.CurrentLine,1,1) ~= "'") && 
+	      (string.sub(self.CurrentLine,1,1) ~= "\"") && 
+	      (string.sub(self.CurrentLine,1,1) ~= "!") && 
+	      (string.sub(self.CurrentLine,1,1) ~= "%") && 
+	      (string.sub(self.CurrentLine,1,1) ~= "^") && 
+	      (string.sub(self.CurrentLine,1,1) ~= "&") && 
+	      (string.sub(self.CurrentLine,1,1) ~= "*") && 
 	      (string.sub(self.CurrentLine,1,1) ~= "	")) do //FIXME: isalphanum
 		word = word .. string.sub(self.CurrentLine,1,1)
 		self.CurrentLine = string.sub(self.CurrentLine,2,9999)
@@ -246,6 +250,10 @@ function ENT:Compiler_Stage2()
 end
 
 function ENT:ParseProgram_ASM(programtext,programline)
+	if (programtext == "") then
+		return
+	end
+
 	self.CurrentLine = programtext
 	self.Line = programline
 
@@ -996,7 +1004,8 @@ end
 
 function ENT:GetLabel(labelname)
 	local foundlabel = nil
-	for labelk,labelv in pairs(self.Labels) do
+	//for labelk,labelv in pairs(self.Labels) do
+	iterator = function (labelk,labelv)
 		if (labelk == labelname) then
 			if (labelv.Local == true) then
 				if (math.abs(self.WIP - labelv.WIP) < self.LocalVarRange) then
@@ -1009,6 +1018,7 @@ function ENT:GetLabel(labelname)
 			end
 		end
 	end
+	table.foreach(self.Labels,iterator)
 	return foundlabel
 end
 
@@ -1077,7 +1087,7 @@ end
 
 function ENT:AddFunctionArgument(functionname,labelname,argno)
 	if (self.FirstPass) then
-		if (!self:GetLabel(functionname)) then
+		if (not self:GetLabel(functionname)) then
 			self:Error("Internal error - report to black phoenix! (code AF8828Z8A)")
 		end
 

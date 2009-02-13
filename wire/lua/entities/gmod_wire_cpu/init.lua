@@ -1,14 +1,23 @@
-AddCSLuaFile("cl_init.lua")
-AddCSLuaFile("shared.lua")
-include('shared.lua')
-include('compiler_asm.lua')
+if (EmuFox) then
+	include('gmod_wire_cpu/compiler_asm.lua')
+	
+	include('gmod_wire_cpu/cpu_bitwise.lua')
+	include('gmod_wire_cpu/cpu_vm.lua')
+	include('gmod_wire_cpu/cpu_opcodes.lua')
+	include('gmod_wire_cpu/cpu_bus.lua')
+	include('gmod_wire_cpu/cpu_interrupt.lua')
+else
+	AddCSLuaFile("cl_init.lua")
+	AddCSLuaFile("shared.lua")
 
-include('cpu_bitwise.lua')
-include('cpu_vm.lua')
-include('cpu_opcodes.lua')
-include('cpu_bus.lua')
-include('cpu_interrupt.lua')
-
+	include('shared.lua')
+	include('compiler_asm.lua')
+	include('cpu_bitwise.lua')
+	include('cpu_vm.lua')
+	include('cpu_opcodes.lua')
+	include('cpu_bus.lua')
+	include('cpu_interrupt.lua')
+end
 ENT.WireDebugName = "CPU"
 
 function ENT:Initialize()
@@ -75,7 +84,7 @@ end
 
 function ENT:Think()
 	local Iterations = self.ThinkTime*0.5
-	while (Iterations > 0) && (self.Clk >= 1.0) && (!self.Idle) do
+	while (Iterations > 0) && (self.Clk >= 1.0) && (self.Idle == 0) do
 		self:Execute()
 		if (self.SkipIterations == true) then
 			self.SkipIterations = false
@@ -92,8 +101,8 @@ function ENT:Think()
 	self.CurrentPage.Execute = 1
 	self.CurrentPage.RunLevel = 1 //External reads have runlevel 1
 
-	if (self.Idle) then
-		self.Idle = false
+	if (self.Idle == 1) then
+		self.Idle = 0
 	end
 
 	if (self.Clk >= 1.0) then
@@ -146,7 +155,7 @@ function ENT:TriggerInput(iname, value)
 
 		self.Entity:NextThink(CurTime())
 	elseif (iname == "Frequency") then
-		if (!SinglePlayer() && (value > 120000)) then 
+		if (not SinglePlayer() && (value > 120000)) then 
 			self.ThinkTime = 1200
 			return
 		end

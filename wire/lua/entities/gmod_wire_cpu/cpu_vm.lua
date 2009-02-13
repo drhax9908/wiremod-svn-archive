@@ -55,7 +55,7 @@ function ENT:Reset()
 
 	self.Clk = self.InputClk
 
-	if (!self.IsGPU) then
+	if (not self.IsGPU) then
 		if (self.UseROM == true) then
 			for i = 0, 65535 do
 				if (self.ROMMemory[i]) then
@@ -68,7 +68,7 @@ function ENT:Reset()
 	self.HaltPort = -1
 
 	if (self.Debug) then DebugMessage("CPU RESET") end
-	if (!self.IsGPU) then Wire_TriggerOutput(self.Entity, "Error", 0.0) end
+	if (not self.IsGPU) then Wire_TriggerOutput(self.Entity, "Error", 0.0) end
 end
 
 function ENT:InitializeCPUVariableSet()
@@ -508,7 +508,7 @@ function ENT:Precompile(IP)
 		self.PrecompileData[IP].Param1 = Param1
 		self.PrecompileData[IP].EffectiveAddress1 = self.EffectiveAddress1[dRM1]
 
-		if (!Param1) then
+		if (not Param1) then
 			if (self.Debug) then Msg("Precompile failed (Parameter 1 calling function invalid)\n") end
 			self.PrecompileData[IP].Valid = false
 			return
@@ -520,7 +520,7 @@ function ENT:Precompile(IP)
 		self.PrecompileData[IP].Param2 = Param2
 		self.PrecompileData[IP].EffectiveAddress2 = self.EffectiveAddress2[dRM2]
 
-		if (!Param2) then
+		if (not Param2) then
 			if (self.Debug) then Msg("Precompile failed (Parameter 2 calling function invalid)\n") end
 			self.PrecompileData[IP].Valid = false
 			return
@@ -535,7 +535,7 @@ function ENT:Precompile(IP)
 					if (self.PrecompileData[self.XEIP].Param2) then
 						local param1 = tonumber(self.PrecompileData[self.XEIP].Param1())
 						local param2 = tonumber(self.PrecompileData[self.XEIP].Param2())
-						if (param1 && param2) then
+						if (param1 and param2) then
 							return self.OpcodeTable[self.PrecompileData[self.XEIP].Opcode](param1,param2)
 						else
 							return "Read error"
@@ -629,7 +629,7 @@ function ENT:Execute()
 		end
 	end
 
-	if (!self.IP) then
+	if (not self.IP) then
 		self:Reset()
 		Wire_TriggerOutput(self.Entity, "Error", 5.0)
 		return

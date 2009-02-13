@@ -1,4 +1,8 @@
-include('cpu_advmath.lua')
+if (EmuFox) then
+	include('gmod_wire_cpu/cpu_advmath.lua')
+else
+	include('cpu_advmath.lua')
+end
 
 function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode = {}
@@ -497,7 +501,7 @@ function ENT:InitializeOpcodeTable()
 		end
 	end
 	self.OpcodeTable[52] = function (Param1,Param2)	//XOR
-		if ((Param1 > 0) && (Param2 <= 0)) ||
+		if ((Param1 > 0) && (Param2 <= 0)) || 
 		   ((Param1 <= 0) && (Param2 > 0)) then
 			return 1
 		else
@@ -568,7 +572,7 @@ function ENT:InitializeOpcodeTable()
 	end
 	//------------------------------------------------------------
 	self.OpcodeTable[70] = function (Param1,Param2)	//NMIINT
-		self.NMIInterrupt(math.floor(Param1))	
+		self:NMIInterrupt(math.floor(Param1))	
 	end
 	self.OpcodeTable[71] = function (Param1,Param2)	//CNE
 		if (self.CMPR ~= 0) then
@@ -865,7 +869,7 @@ function ENT:InitializeOpcodeTable()
 		newval = self:Pop() if (newval) then self.LS = newval else return end
 	end
 	self.OpcodeTable[111] = function (Param1,Param2)	//IDLE
-		self.Idle = true
+		self.Idle = 1
 	end
 	self.OpcodeTable[112] = function (Param1,Param2)	//NOP
 	end
