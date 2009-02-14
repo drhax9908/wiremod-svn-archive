@@ -35,17 +35,24 @@ function ENT:Setup(TextList, chrPl, textJust, tRed, tGreen, tBlue, numInputs, de
 	self.tGreen = tGreen
 	self.tBlue = tBlue
 	self.currentLine = 0
+	self.StringNum = 1
+	self.String = self.TextList[1]
+	self.StringClk = 0
 	
 	--setup input with required number of value inputs
 	valInputs = {}
 	self.Val = {}
+	local SpecialInputs = {}
+	SpecialInputTypes = {"NORMAL", "NORMAL", "NORMAL", "STRING", "NORMAL"}
 	for n=1, numInputs do
 		table.insert(self.Val, 0)
 		table.insert(valInputs, "Value "..n)
+		table.insert(SpecialInputTypes, "NORMAL")
 	end
-	inputTable = {"Clk", "Text"}
+	inputTable = {"Clk", "Text", "StringNum", "String", "StringClk"}
 	table.Add(inputTable, valInputs)
 	self.Inputs = Wire_CreateInputs(self.Entity, inputTable)
+	WireLib.AdjustSpecialInputs(self.Entity, inputTable, SpecialInputTypes)
 
 	self.defaultOn = defaultOn
 	
@@ -65,9 +72,22 @@ function ENT:Setup(TextList, chrPl, textJust, tRed, tGreen, tBlue, numInputs, de
 	end
 end
 
+local function UpdateValuesCheck(self)
+	if (self.StringClk==1) then
+		if (self.TextList[self.StringNum]!=self.String) then
+			self.TextList[self.StringNum] = self.String
+			if (self.StringNum==self.currentTextnum) then
+			self:UpdateScreen()
+			end
+		end
+	end
+end
+
 --wire input routine
 function ENT:TriggerInput(iname, value)
-	if (iname == "Text") then
+	if (!iname) then
+		//do nothing, this prevents the next line from erroring
+	elseif (iname == "Text") then
 		self.currentTextnum = math.abs(value)
 		self:UpdateScreen()
 	elseif (iname == "Clk") then
@@ -76,6 +96,22 @@ function ENT:TriggerInput(iname, value)
 			self:UpdateScreen()
 		else
 			self.clock = false
+		end
+	elseif (iname == "StringNum") then
+		if (value<=12 && value>=1) then
+		value = value - value % 1
+		end
+		self.StringNum = value
+		UpdateValuesCheck(self)
+	elseif (iname == "String") then
+		self.String = value
+		UpdateValuesCheck(self)
+	elseif (iname == "StringClk") then
+		if (value==1) then
+			self.StringClk=1
+			UpdateValuesCheck(self)
+		else
+			self.StringClk=0
 		end
 	elseif (string.sub(iname, 1, 6) == "Value ") then
 		self.Val[tonumber(string.sub(iname, 7, -1))] = math.abs(value)
