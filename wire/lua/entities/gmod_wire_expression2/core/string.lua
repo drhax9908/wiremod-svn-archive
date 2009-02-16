@@ -72,7 +72,9 @@ end)
 registerFunction("toNumber", "s:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	return tonumber(rv1)
+	local ret = tonumber(rv1)
+	if ret == nil then return 0 end
+	return ret
 end)
 
 registerFunction("toString", "n", "s", function(self, args)
