@@ -1,108 +1,14 @@
 AddCSLuaFile('ranger.lua')
 
 /******************************************************************************\
-  Built-in Ranger support v1.6
+  Built-in Ranger support v1.7
 \******************************************************************************/
 
-registerType("ranger", "xrd", {})
-
-/******************************************************************************/
-
-registerOperator("ass", "xrd", "xrd", function(self, args)
-	local op1, op2 = args[2], args[3]
-	local      rv2 = op2[1](self, op2)
-	self.vars[op1] = rv2
-	self.vclk[op1] = true
-	return rv2
-end)
-
-/******************************************************************************/
-
-registerFunction("ranger", "n", "xrd", function(self, args)
-    local op1 = args[2]
-    local rv1 = op1[1](self, op1)
-    return ranger(self, 0, rv1, 0, 0)
-end)
-
-registerFunction("ranger", "nnn", "xrd", function(self, args)
-    local op1, op2, op3 = args[2], args[3], args[4]
-    local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
-    return ranger(self, 0, rv1, rv2, rv3)
-end)
-
-registerFunction("rangerAngle", "nnn", "xrd", function(self, args)
-    local op1, op2, op3 = args[2], args[3], args[4]
-    local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
-    return ranger(self, 1, rv1, rv2, rv3)
-end)
-
-registerFunction("rangerOffset", "vv", "xrd", function(self, args)
-    local op1, op2 = args[2], args[3]
-    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-    return ranger(self, 2, 0, rv1, rv2)
-end)
-
-registerFunction("rangerOffset", "nvv", "xrd", function(self, args)
-    local op1, op2, op3 = args[2], args[3], args[4]
-    local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
-    return ranger(self, 3, rv1, rv2, rv3)
-end)
-
-registerFunction("rangerHitWater", "n", "", function(self, args)
-    local op1 = args[2]
-    local rv1 = op1[1](self, op1)
-    if rv1!=0 then self.data['rangerwater']=1 end
-end)
-
-registerFunction("rangerIgnoreWorld", "n", "", function(self, args)
-    local op1 = args[2]
-    local rv1 = op1[1](self, op1)
-    if rv1!=0 then self.data['rangerworld']=1 end
-end)
-
-registerFunction("rangerDefaultZero", "n", "", function(self, args)
-    local op1 = args[2]
-    local rv1 = op1[1](self, op1)
-    if rv1!=0 then self.data['rangerdefault']=0 end
-end)
-
-registerFunction("distance","xrd:","n", function(self, args)
-    local op1 = args[2]
-    local rv1 = op1[1](self, op1)
-    return rv1[1]
-end)
-
-registerFunction("position", "xrd:", "v", function(self, args)
-    local op1 = args[2]
-    local rv1 = op1[1](self, op1)
-    return rv1[2]
-end)
-
-registerFunction("entity", "xrd:", "e", function(self, args)
-    local op1 = args[2]
-    local rv1 = op1[1](self, op1)
-    return rv1[3]
-end)
-
-registerFunction("hit", "xrd:", "n", function(self, args)
-    local op1 = args[2]
-    local rv1 = op1[1](self, op1)
-    return rv1[4]
-end)
-
-/******************************************************************************/
-
-registerCallback("construct", function(self)
-	self.data['rangerwater'] = 0
-	self.data['rangerworld'] = 0
-	self.data['rangerdefault'] = 1
-end)
-
-//---------------//
+//----------------//
 //--Function--//
-//---------------//
+//----------------//
 
-function ranger(self, type, range, p1, p2)
+local function ranger(self, type, range, p1, p2)
 	local trace = {}
 	local default = self.data['rangerdefault']
 	self.data['rangerdefault'] = 1
@@ -161,3 +67,106 @@ function ranger(self, type, range, p1, p2)
 		return {range*default,HitPos,Entity,Hit}
 	end
 end
+
+/******************************************************************************/
+
+registerType("ranger", "xrd", {})
+
+/******************************************************************************/
+
+registerOperator("ass", "xrd", "xrd", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local      rv2 = op2[1](self, op2)
+	self.vars[op1] = rv2
+	self.vclk[op1] = true
+	return rv2
+end)
+
+/******************************************************************************/
+
+registerFunction("rangerHitWater", "n", "", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if rv1!=0 then self.data['rangerwater']=1 end
+end)
+
+registerFunction("rangerIgnoreWorld", "n", "", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if rv1!=0 then self.data['rangerworld']=1 end
+end)
+
+registerFunction("rangerDefaultZero", "n", "", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if rv1!=0 then self.data['rangerdefault']=0 end
+end)
+
+
+registerFunction("ranger", "n", "xrd", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    return ranger(self, 0, rv1, 0, 0)
+end)
+
+registerFunction("ranger", "nnn", "xrd", function(self, args)
+    local op1, op2, op3 = args[2], args[3], args[4]
+    local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+    return ranger(self, 0, rv1, rv2, rv3)
+end)
+
+registerFunction("rangerAngle", "nnn", "xrd", function(self, args)
+    local op1, op2, op3 = args[2], args[3], args[4]
+    local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+    return ranger(self, 1, rv1, rv2, rv3)
+end)
+
+registerFunction("rangerOffset", "vv", "xrd", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+    return ranger(self, 2, 0, rv1, rv2)
+end)
+
+registerFunction("rangerOffset", "nvv", "xrd", function(self, args)
+    local op1, op2, op3 = args[2], args[3], args[4]
+    local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+    return ranger(self, 3, rv1, rv2, rv3)
+end)
+
+registerFunction("distance","xrd:","n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    return rv1[1]
+end)
+
+registerFunction("position", "xrd:", "v", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    return rv1[2]
+end)
+
+registerFunction("entity", "xrd:", "e", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    return rv1[3]
+end)
+
+registerFunction("hit", "xrd:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    return rv1[4]
+end)
+
+/******************************************************************************/
+
+registerCallback("construct", function(self)
+	self.data['rangerwater'] = 0
+	self.data['rangerworld'] = 0
+	self.data['rangerdefault'] = 1
+end)
+
+registerCallback("postexecute", function(self)
+	if (self.data['rangerwater'] != 0) then self.data['rangerwater'] = 0 end
+	if (self.data['rangerworld'] != 0) then self.data['rangerworld'] = 0 end
+	if (self.data['rangerdefault'] != 1) then self.data['rangerdefault'] = 1 end
+end)

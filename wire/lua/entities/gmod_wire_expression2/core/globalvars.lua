@@ -1,7 +1,7 @@
 AddCSLuaFile('globalvars.lua')
 
 /******************************************************************************\
-  Global variable support v1.37
+  Global variable support v1.4
 \******************************************************************************/
 
 //--------------------------//
@@ -183,13 +183,12 @@ end)
 //-----------------//
 
 registerFunction("gDeleteAll", "", "", function(self, args)
-	local T = glTid(self)
-	T["xs"] = nil
-	T["xn"] = nil
-	T["s"] = nil
-	T["s"] = {}
-	T["n"] = nil
-	T["n"] = {}
+	local group = self.data['globavars']
+	local uid = "exp2globalshare"
+	if self.data['globashare']==0 then uid = self.data['globaply'] end
+	if _G[uid][group] then
+		_G[uid][group] = nil
+	end
 end)
 
 registerFunction("gDeleteAllStr", "", "", function(self, args)
@@ -235,8 +234,7 @@ registerFunction("gSetGroup", "s", "", function(self, args)
 end)
 
 registerFunction("gGetGroup", "", "s", function(self, args)
-	local group = self.data['globavars']
-	return string.Right(group, string.len(group)-1)
+	return self.data['globavars']
 end)
 
 registerFunction("gResetGroup", "", "", function(self, args)
