@@ -840,6 +840,7 @@ function AdvDupe.GetPlayersFolder(pl)
 	
 	if (!SinglePlayer()) then
 		local name = dupeshare.ReplaceBadChar(tostring(pl:SteamID()))
+		name = string.gsub(name, "STEAM_1", "STEAM_0")
 		
 		if (name == "STEAM_ID_LAN") or (name == "UNKNOWN") or (name == "STEAM_ID_PENDING") then
 			name = dupeshare.GetPlayerName(pl) or "unknown"
