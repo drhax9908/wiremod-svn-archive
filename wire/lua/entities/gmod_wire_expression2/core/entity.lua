@@ -337,7 +337,7 @@ end)
 
 registerFunction("setMaterial", "e:s", "", function(self, args)
     local op1, op2 = args[2], args[3]
-    local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2)
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
     if(!validEntity(rv1) || !rv1:IsValid()) then return end
 	if(!isOwner(self, rv1)) then return end
     rv1:SetMaterial(rv2)
@@ -393,6 +393,14 @@ registerFunction("timeConnected", "e:", "n", function(self, args)
     local rv1 = op1[1](self, op1)
     if(!validEntity(rv1)) then return 0 end
     if(rv1:IsPlayer()) then return rv1:TimeConnected() else return 0 end
+end)
+
+/******************************************************************************/
+
+registerFunction("isInWorld", "v:", "n", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if util.IsInWorld(Vector(rv1[1], rv1[2], rv1[3])) then return 1 else return 0 end
 end)
 
 /******************************************************************************/
