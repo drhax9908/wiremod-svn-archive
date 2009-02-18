@@ -4,7 +4,7 @@
 	"version"			"0.9.6"
 	"up_date"			"25st March 2007"
 	"author_name"			"Wire Team"
-	"author_email"			"ErkleMad@gmail.com"
+	"author_email"			""
 	"author_url"			"http://www.wiremod.com/"
 	"info"				"A set of SEnts and STools that communicate through wires."
 }
