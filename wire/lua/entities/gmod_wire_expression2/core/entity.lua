@@ -445,6 +445,50 @@ registerFunction("applyAngVel", "e:a", "", function(self,args)
     phys:AddAngleVelocity(Angle(rv2[3],rv2[1],rv2[2]))
 end)
 
+registerFunction("applyAngForce", "a", "", function(self,args)
+	local op1 = args[2]
+	local rv1 = op1[1](self,op1)
+	local ent = self.entity
+	local phys = ent:GetPhysicsObject()
+	//assign vectors
+	local pos = ent:LocalToWorld(phys:GetMassCenter())
+	local up = ent:GetUp()
+	local right = ent:GetRight()
+	local forward = ent:GetForward()
+	//apply pitch force
+	phys:ApplyForceOffset( forward, pos + up * rv1[1]/2 )
+	phys:ApplyForceOffset( forward * -1, pos - up * rv1[1]/2 )
+	//apply yaw force
+	phys:ApplyForceOffset( right, pos - forward * rv1[2]/2 )
+	phys:ApplyForceOffset( right * -1, pos + forward * rv1[2]/2 )
+	//apply roll force
+	phys:ApplyForceOffset( up, pos - right * rv1[3]/2 )
+	phys:ApplyForceOffset( up * -1, pos + right * rv1[3]/2 )
+end)
+
+registerFunction("applyAngForce", "e:a", "", function(self,args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
+	if(!validPhysics(rv1)) then return nil end
+	if(!isOwner(self, rv1)) then return nil end
+	local phys = rv1:GetPhysicsObject()
+	//assign vectors
+	local pos = rv1:LocalToWorld(phys:GetMassCenter())
+	local up = rv1:GetUp()
+	local right = rv1:GetRight()
+	local forward = rv1:GetForward()
+	//apply pitch force
+	phys:ApplyForceOffset( forward, pos + up * rv2[1]/2 )
+	phys:ApplyForceOffset( forward * -1, pos - up * rv2[1]/2 )
+	//apply yaw force
+	phys:ApplyForceOffset( right, pos - forward * rv2[2]/2 )
+	phys:ApplyForceOffset( right * -1, pos + forward * rv2[2]/2 )
+	//apply roll force
+	phys:ApplyForceOffset( up, pos - right * rv2[3]/2 )
+	phys:ApplyForceOffset( up * -1, pos + right * rv2[3]/2 )
+end)
+
+
 
 /******************************************************************************/
 
