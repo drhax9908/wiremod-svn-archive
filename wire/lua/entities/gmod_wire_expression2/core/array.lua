@@ -78,7 +78,6 @@ registerFunction("setNumber", "r:nn", "", function(self, args)
 	self.vclk[op1] = true
 end)
 
-
 registerFunction("vector", "r:n", "v", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
@@ -96,7 +95,6 @@ registerFunction("setVector", "r:nv", "", function(self, args)
 	self.vclk[op1] = true
 end)
 
-
 registerFunction("angle", "r:n", "a", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
@@ -113,7 +111,6 @@ registerFunction("setAngle", "r:na", "", function(self, args)
 	rv1[rv2] = rv3
 	self.vclk[op1] = true
 end)
-
 
 registerFunction("string", "r:n", "s", function(self, args)
 	local op1, op2 = args[2], args[3]
@@ -177,6 +174,23 @@ registerFunction("pushVector", "r:v", "", function(self, args)
 end)
 
 registerFunction("popVector", "r:", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local ret = table.remove(rv1)
+	if type(ret) == "table" and table.getn(ret) == 3 then return ret end
+	return { 0, 0, 0 }
+end)
+
+registerFunction("pushAngle", "r:a", "", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
+	if rv2[1] == 0 and rv2[2] == 0 and rv2[3] == 0 then rv2 = nil end
+	table.insert(rv1,rv2)
+	return
+end)
+
+registerFunction("popAngle", "r:", "a", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	local ret = table.remove(rv1)
@@ -250,6 +264,22 @@ registerFunction("insertVector", "r:nv", "", function(self, args)
 end)
 
 registerFunction("removeVector", "r:n", "v", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local ret = table.remove(rv1,rv2)
+	if type(ret) == "table" and table.getn(ret) == 3 then return ret end
+	return { 0, 0, 0 }
+end)
+
+registerFunction("insertAngle", "r:na", "", function(self, args)
+	local op1, op2, op3 = args[2], args[3], args[4]
+	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
+	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
+	table.insert(rv1,rv2,rv3)
+end)
+
+registerFunction("removeAngle", "r:n", "a", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	local ret = table.remove(rv1,rv2)
@@ -331,6 +361,23 @@ registerFunction("shiftVector", "r:", "v", function(self, args)
 	return { 0, 0, 0 }
 end)
 
+registerFunction("unshiftAngle", "r:a", "", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
+	if rv2[1] == 0 and rv2[2] == 0 and rv2[3] == 0 then rv2 = nil end
+	table.insert(rv1,1,rv2)
+	return
+end)
+
+registerFunction("shiftAngle", "r:", "a", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local ret = table.remove(rv1,1)
+	if type(ret) == "table" and table.getn(ret) == 3 then return ret end
+	return { 0, 0, 0 }
+end)
+
 registerFunction("unshiftString", "r:s", "", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
@@ -398,7 +445,6 @@ registerFunction("average", "r:", "n", function(self, args)
     averageValue = totalValue / totalIndex
     return averageValue
 end)
-
 
 registerFunction("min", "r:", "n", function(self, args)
     local op1 = args[2]
