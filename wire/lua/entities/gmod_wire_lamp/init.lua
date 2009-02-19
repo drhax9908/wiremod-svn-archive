@@ -99,11 +99,12 @@ function ENT:TriggerInput(iname, value)
 		self:SetLightColor( self.lightr, self.lightg, value )
 	elseif (iname == "On") then
 		if value > 0 then
-			self:TurnOn()
-		else
+			if !self.flashlight then self:TurnOn() end
+		elseif self.flashlight then
 			self:TurnOff()
 		end
 	end
+
 	
 end
 
