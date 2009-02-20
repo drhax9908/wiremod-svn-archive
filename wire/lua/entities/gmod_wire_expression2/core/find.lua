@@ -704,7 +704,7 @@ registerFunction("findClipToClass","s","n", function(self,args)
 	//for i,ent in ipairs(exp2Discoveries[id].entities) do
 	for i = 1, table.Count(exp2Discoveries[id].entities), 1 do
 		local ent = exp2Discoveries[id].entities[i - indexOffset]
-		if ent != nil && string.find(string.lower(ent:GetClass()), rv1) == nil then
+		if ent != nil && ent:IsValid() && string.find(string.lower(ent:GetClass()), rv1) == nil then
 			table.remove(exp2Discoveries[id].entities, i - indexOffset)
 			indexOffset = indexOffset + 1
 		end
@@ -722,7 +722,7 @@ registerFunction("findClipFromClass","s","n", function(self,args)
 	//for i,ent in ipairs(exp2Discoveries[id].entities) do
 	for i = 1, table.Count(exp2Discoveries[id].entities), 1 do
 		local ent = exp2Discoveries[id].entities[i - indexOffset]
-		if ent != nil && string.find(string.lower(ent:GetClass()), rv1) != nil then
+		if ent != nil && ent:IsValid() && string.find(string.lower(ent:GetClass()), rv1) != nil then
 			table.remove(exp2Discoveries[id].entities, i - indexOffset)
 			indexOffset = indexOffset + 1
 		end
@@ -740,7 +740,7 @@ registerFunction("findClipToModel","s","n", function(self,args)
 	//for i,ent in ipairs(exp2Discoveries[id].entities) do
 	for i = 1, table.Count(exp2Discoveries[id].entities), 1 do
 		local ent = exp2Discoveries[id].entities[i - indexOffset]
-		if ent != nil && string.find(string.lower(ent:GetModel()), rv1) == nil then
+		if ent != nil && ent:IsValid() && string.find(string.lower(ent:GetModel()), rv1) == nil then
 			table.remove(exp2Discoveries[id].entities, i - indexOffset)
 			indexOffset = indexOffset + 1
 		end
@@ -758,7 +758,7 @@ registerFunction("findClipFromModel","s","n", function(self,args)
 	//for i,ent in ipairs(exp2Discoveries[id].entities) do
 	for i = 1, table.Count(exp2Discoveries[id].entities), 1 do
 		local ent = exp2Discoveries[id].entities[i - indexOffset]
-		if ent != nil && string.find(string.lower(ent:GetModel()), rv1) != nil then
+		if ent != nil && ent:IsValid() && string.find(string.lower(ent:GetModel()), rv1) != nil then
 			table.remove(exp2Discoveries[id].entities, i - indexOffset)
 			indexOffset = indexOffset + 1
 		end
@@ -776,7 +776,7 @@ registerFunction("findClipToName","s","n", function(self,args)
 	//for i,ent in ipairs(exp2Discoveries[id].entities) do
 	for i = 1, table.Count(exp2Discoveries[id].entities), 1 do
 		local ent = exp2Discoveries[id].entities[i - indexOffset]
-		if ent != nil && string.find(string.lower(ent:GetName()), rv1) == nil then
+		if ent != nil && ent:IsValid() && string.find(string.lower(ent:GetName()), rv1) == nil then
 			table.remove(exp2Discoveries[id].entities, i - indexOffset)
 			indexOffset = indexOffset + 1
 		end
@@ -794,7 +794,7 @@ registerFunction("findClipFromName","s","n", function(self,args)
 	//for i,ent in ipairs(exp2Discoveries[id].entities) do
 	for i = 1, table.Count(exp2Discoveries[id].entities), 1 do
 		local ent = exp2Discoveries[id].entities[i - indexOffset]
-		if ent != nil && string.find(string.lower(ent:GetName()), rv1) != nil then
+		if ent != nil && ent:IsValid() && string.find(string.lower(ent:GetName()), rv1) != nil then
 			table.remove(exp2Discoveries[id].entities, i - indexOffset)
 			indexOffset = indexOffset + 1
 		end
@@ -812,7 +812,7 @@ registerFunction("findClipFromSphere","vn","n", function(self,args)
 	local i,count=1,1
 	for i = 1, table.Count(exp2Discoveries[id].entities), 1 do
 		local ent = exp2Discoveries[id].entities[i - indexOffset]
-		if ent != nil && (ent:GetPos() - refPoint):Length() + ent:BoundingRadius() <= rv2 then
+		if ent != nil && ent:IsValid() && (ent:GetPos() - refPoint):Length() + ent:BoundingRadius() <= rv2 then
 			table.remove(exp2Discoveries[id].entities, i - indexOffset)
 			indexOffset = indexOffset + 1
 		end
@@ -832,7 +832,7 @@ registerFunction("findClipToRegion","vv","n", function(self,args)
 	local i,count=1,1
 	for i = 1, table.Count(exp2Discoveries[id].entities), 1 do
 		local ent = exp2Discoveries[id].entities[i - indexOffset]
-		if ent != nil && (ent:GetPos():Dot(planeVec) - relPos) < 0 then
+		if ent != nil && ent:IsValid() && (ent:GetPos():Dot(planeVec) - relPos) < 0 then
 			table.remove(exp2Discoveries[id].entities, i - indexOffset)
 			indexOffset = indexOffset + 1
 		end
@@ -848,3 +848,6 @@ registerFunction("findToArray","","r", function(self,args)
 	return ret
 end)
 
+registerFunction("findCanQuery","","n", function(self,args)
+	if canFindByTime(self.entity:EntIndex()) then return 1 else return 0 end
+end)
