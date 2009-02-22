@@ -6,6 +6,12 @@ TOOL.ConfigName		= ""
 TOOL.ClientConVar[ "material" ] = "cable/rope"
 TOOL.ClientConVar[ "width" ] = "3"
 TOOL.ClientConVar[ "fixed" ] = "0"
+TOOL.ClientConVar[ "model" ] = "models/beer/wiremod/hydraulic.mdl"
+TOOL.ClientConVar[ "modelsize" ] = ""
+
+if SERVER then
+	ModelPlug_Register("Hydraulic")
+end
 
 if CLIENT then
     language.Add( "Tool_wire_hydraulic_name", "Hydraulic Tool (Wire)" )
@@ -46,10 +52,23 @@ function TOOL:LeftClick( trace )
 			return
 		end
 		
+		local model = self:GetClientInfo( "model" )
+		local modelsize = self:GetClientInfo( "modelsize" )
+
+		if (modelsize!="") then
+			local test = string.sub(model, 1, -5) .. modelsize .. string.sub(model, -4)
+			if ( util.IsValidModel( test ) || util.IsValidProp( test ) ) then
+				model = test
+			end
+		end
+
+		if ( !util.IsValidModel( model ) ) then return false end
+		if ( !util.IsValidProp( model ) ) then return false end
+
 		// Attach our Controller to the Elastic constraint
 		local Ang = trace.HitNormal:Angle()
 		Ang.pitch = Ang.pitch + 90
-		local controller = MakeWireHydraulicController(ply, trace.HitPos, Ang, nil, const, rope)
+		local controller = MakeWireHydraulicController(ply, trace.HitPos, Ang, nil, model, const, rope)
 		
 		local min = controller:OBBMins()
 		controller:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -229,7 +248,7 @@ if SERVER then
 	//need for the const to find the controler after being duplicator pasted
 	WireHydraulicTracking = {}
 	
-	function MakeWireHydraulicController( pl, Pos, Ang, MyEntId, const, rope )
+	function MakeWireHydraulicController( pl, Pos, Ang, MyEntId, model, const, rope )
 		local controller = ents.Create("gmod_wire_hydraulic")
 		
 		controller:SetPos( Pos )
@@ -245,6 +264,11 @@ if SERVER then
 			controller:SetConstraint( const ) 
 			controller:DeleteOnRemove( const )
 		end
+		if(!model) then
+			controller:SetModel( Model("models/jaanus/wiretool/wiretool_siren.mdl") )  //For older contraptions
+		else
+			controller:SetModel( Model(model) )  //Here we use it, looks nice
+		end
 		if (rope) then
 			controller:SetRope( rope )
 			controller:DeleteOnRemove( rope )
@@ -255,7 +279,7 @@ if SERVER then
 		return controller
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_hydraulic", MakeWireHydraulicController, "Pos", "Ang", "MyId")
+	duplicator.RegisterEntityClass("gmod_wire_hydraulic", MakeWireHydraulicController, "Pos", "Ang", "MyId", "model")
 	
 	function MakeWireHydraulic( pl, Ent1, Ent2, Bone1, Bone2, LPos1, LPos2, width, material, fixed, MyCrtl )
 		if ( !constraint.CanConstrain( Ent1, Bone1 ) ) then return false end
@@ -333,6 +357,17 @@ function TOOL:Reload( trace )
 end
 
 function TOOL.BuildCPanel(panel)
+	panel:AddControl("Label", {Text = "Model Size (if available)"})
+	panel:AddControl("ComboBox", {
+		Label = "Model Size",
+		MenuButton = 0,
+		Options = {
+				["normal"] = { wire_hydraulic_modelsize = "" },
+				["mini"] = { wire_hydraulic_modelsize = "_mini" },
+				["nano"] = { wire_hydraulic_modelsize = "_nano" }
+			}
+	})
+	ModelPlug_AddToCPanel(panel, "Hydraulic", "wire_hydraulic", "#ToolWireIndicator_Model")
 	panel:AddControl("CheckBox", {
 		Label = "#WireHydraulicTool_fixed",
 		Command = "wire_hydraulic_fixed"

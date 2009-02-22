@@ -14,11 +14,13 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_outputs', 10)
+	ModelPlug_Register("Numpad")
 end
 
 TOOL.ClientConVar[ "keygroup" ] = "1"
-
-TOOL.Model = "models/jaanus/wiretool/wiretool_output.mdl"
+TOOL.ClientConVar[ "model" ] = "models/beer/wiremod/numpad.mdl"
+TOOL.ClientConVar[ "modelsize" ] = ""
+local ModelInfo = {"","",""}
 
 cleanup.Register( "wire_outputs" )
 
@@ -40,13 +42,13 @@ function TOOL:LeftClick( trace )
 
 	if ( !self:GetSWEP():CheckLimit( "wire_outputs" ) ) then return false end
 
-	if (not util.IsValidModel(self.Model)) then return false end
-	if (not util.IsValidProp(self.Model)) then return false end		// Allow ragdolls to be used?
+	if ( !util.IsValidModel( ModelInfo[3] ) ) then return false end
+	if ( !util.IsValidProp( ModelInfo[3] ) ) then return false end
 
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_output = MakeWireOutput( ply, Ang, trace.HitPos, key )
+	local wire_output = MakeWireOutput( ply, Ang, trace.HitPos, key, ModelInfo[3] )
 
 	local min = wire_output:OBBMins()
 	wire_output:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -66,7 +68,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireOutput( pl, Ang, Pos, key, nocollide, Vel, aVel, frozen )
+	function MakeWireOutput( pl, Ang, Pos, key, model, nocollide, Vel, aVel, frozen )
 		if (numpad.GetModifiedKey) then key = numpad.GetModifiedKey(pl, key) end
 
 		if ( !pl:CheckLimit( "wire_outputs" ) ) then return false end
@@ -76,7 +78,11 @@ if (SERVER) then
 
 		wire_output:SetAngles( Ang )
 		wire_output:SetPos( Pos )
-		wire_output:SetModel( Model("models/jaanus/wiretool/wiretool_output.mdl") )
+		if(!model) then
+			wire_output:SetModel( Model("models/jaanus/wiretool/wiretool_output.mdl") )
+		else
+			wire_output:SetModel( Model(model) )
+		end
 		wire_output:Spawn()
 
 		wire_output:SetPlayer(pl)
@@ -94,7 +100,7 @@ if (SERVER) then
 		return wire_output
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_output", MakeWireOutput, "Ang", "Pos", "key", "nocollide", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_output", MakeWireOutput, "Ang", "Pos", "key", "model", "nocollide", "Vel", "aVel", "frozen")
 
 end
 
@@ -123,20 +129,51 @@ function TOOL:UpdateGhostWireOutput( ent, player )
 
 end
 
+function TOOL:GetModel()
+	local model = self:GetClientInfo("model")
+	local size = self:GetClientInfo("modelsize")
+if (model=="models/jaanus/wiretool/wiretool_output.mdl") then return model end
+if (model && size) then
+	if (size!="") then
+		return string.sub(model, 1, -5) .. size .. string.sub(model, -4)
+	end
+	return model
+end
+end
 
 function TOOL:Think()
-
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if ModelInfo[1]!= self:GetClientInfo( "model" ) || ModelInfo[2]!= self:GetClientInfo( "modelsize" ) then
+		ModelInfo[1] = self:GetClientInfo( "model" )
+		ModelInfo[2] = self:GetClientInfo( "modelsize" )
+		ModelInfo[3] = ModelInfo[1]
+		if (ModelInfo[1] && ModelInfo[2] && ModelInfo[2]!="") then
+			local test = string.sub(ModelInfo[1], 1, -5) .. ModelInfo[2] .. string.sub(ModelInfo[1], -4)
+			if (util.IsValidModel(test) && util.IsValidProp(test)) then
+				ModelInfo[3] = test
+			end
+		end
+		self:MakeGhostEntity( ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
 	end
-
+	if !self.GhostEntity || !self.GhostEntity:IsValid() || !self.GhostEntity:GetModel() then
+		self:MakeGhostEntity( ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
+	end
 	self:UpdateGhostWireOutput( self.GhostEntity, self:GetOwner() )
-
 end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_output_name", Description = "#Tool_wire_output_desc" })
 	
+	panel:AddControl("Label", {Text = "Model Size (if available)"})
+	panel:AddControl("ComboBox", {
+		Label = "Model Size",
+		MenuButton = 0,
+		Options = {
+				["normal"] = { wire_output_modelsize = "" },
+				["mini"] = { wire_output_modelsize = "_mini" },
+				["nano"] = { wire_output_modelsize = "_nano" }
+			}
+	})
+	ModelPlug_AddToCPanel(panel, "Numpad", "wire_output", "#ToolWireIndicator_Model")
 	panel:AddControl("Numpad", {
 		Label = "#WireOutput_keygroup",
 		Command = "wire_output_keygroup",

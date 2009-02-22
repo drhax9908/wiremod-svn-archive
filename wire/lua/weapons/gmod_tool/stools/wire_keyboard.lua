@@ -12,10 +12,11 @@ if ( CLIENT ) then
 end
 
 if (SERVER) then
+	ModelPlug_Register("Keyboard")
 	CreateConVar('sbox_maxwire_keyboards', 20)
 end
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_input.mdl"
+TOOL.ClientConVar[ "model" ] = "models/beer/wiremod/keyboard.mdl"
 
 cleanup.Register( "wire_keyboards" )
 
@@ -31,11 +32,16 @@ function TOOL:LeftClick( trace )
 	end
 	
 	if ( !self:GetSWEP():CheckLimit( "wire_keyboards" ) ) then return false end
+
+	local model = self:GetClientInfo( "model" )
+
+	if ( !util.IsValidModel( model ) ) then return false end
+	if ( !util.IsValidProp( model ) ) then return false end
 	
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 	
-	local wire_keyboard = MakeWireKeyboard( ply, trace.HitPos, Ang, _toggle, _value_off, _value_on )
+	local wire_keyboard = MakeWireKeyboard( ply, trace.HitPos, Ang, model )
 	
 	local min = wire_keyboard:OBBMins()
 	wire_keyboard:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -56,7 +62,7 @@ end
 
 if (SERVER) then
 	
-	function MakeWireKeyboard( pl, Pos, Ang, Vel, aVel, frozen )
+	function MakeWireKeyboard( pl, Pos, Ang, model, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_keyboards" ) ) then return false end
 		
 		local wire_keyboard = ents.Create( "gmod_wire_keyboard" )
@@ -64,7 +70,11 @@ if (SERVER) then
 		
 		wire_keyboard:SetAngles( Ang )
 		wire_keyboard:SetPos( Pos )
-		wire_keyboard:SetModel( Model("models/jaanus/wiretool/wiretool_input.mdl") )
+		if(!model) then
+			wire_keyboard:SetModel( Model("models/jaanus/wiretool/wiretool_input.mdl") )
+		else
+			wire_keyboard:SetModel( Model(model) )
+		end
 		wire_keyboard:Spawn()
 		
 		wire_keyboard:SetPlayer( pl )
@@ -75,7 +85,7 @@ if (SERVER) then
 		return wire_keyboard
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_keyboard", MakeWireKeyboard, "Pos", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_keyboard", MakeWireKeyboard, "Pos", "Ang", "model", "Vel", "aVel", "frozen")
 	
 end
 
@@ -103,15 +113,13 @@ function TOOL:UpdateGhostWireKeyboard( ent, player )
 end
 
 function TOOL:Think()
-
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self:GetClientInfo( "model" ) ) then
+		self:MakeGhostEntity( self:GetClientInfo( "model" ), Vector(0,0,0), Angle(0,0,0) )
 	end
-
 	self:UpdateGhostWireKeyboard( self.GhostEntity, self:GetOwner() )
-
 end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_keyboard_name", Description = "#Tool_wire_keyboard_desc" })
+	ModelPlug_AddToCPanel(panel, "Keyboard", "wire_keyboard", "#ToolWireIndicator_Model")
 end

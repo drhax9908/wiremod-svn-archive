@@ -16,13 +16,15 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_numpads', 20)
+	ModelPlug_Register("Numpad")
 end
 
 TOOL.ClientConVar[ "toggle" ] = "0"
 TOOL.ClientConVar[ "value_off" ] = "0"
 TOOL.ClientConVar[ "value_on" ] = "1"
-
-TOOL.Model = "models/jaanus/wiretool/wiretool_input.mdl"
+TOOL.ClientConVar[ "model" ] = "models/beer/wiremod/numpad.mdl"
+TOOL.ClientConVar[ "modelsize" ] = ""
+local ModelInfo = {"","",""}
 
 cleanup.Register( "wire_numpads" )
 
@@ -47,11 +49,14 @@ function TOOL:LeftClick( trace )
 	end
 	
 	if ( !self:GetSWEP():CheckLimit( "wire_numpads" ) ) then return false end
+
+	if ( !util.IsValidModel( ModelInfo[3] ) ) then return false end
+	if ( !util.IsValidProp( ModelInfo[3] ) ) then return false end
 	
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 	
-	local wire_numpad = MakeWireNumpad( ply, trace.HitPos, Ang, _toggle, _value_off, _value_on )
+	local wire_numpad = MakeWireNumpad( ply, trace.HitPos, Ang, _toggle, _value_off, _value_on, ModelInfo[3] )
 	
 	local min = wire_numpad:OBBMins()
 	wire_numpad:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -72,7 +77,7 @@ end
 
 if (SERVER) then
 	
-	function MakeWireNumpad( pl, Pos, Ang, toggle, value_off, value_on, Vel, aVel, frozen )
+	function MakeWireNumpad( pl, Pos, Ang, toggle, value_off, value_on, model, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_numpads" ) ) then return false end
 		
 		local wire_numpad = ents.Create( "gmod_wire_numpad" )
@@ -80,7 +85,11 @@ if (SERVER) then
 		
 		wire_numpad:SetAngles( Ang )
 		wire_numpad:SetPos( Pos )
-		wire_numpad:SetModel( Model("models/jaanus/wiretool/wiretool_input.mdl") )
+		if(!model) then
+			wire_numpad:SetModel( Model("models/jaanus/wiretool/wiretool_input.mdl") )
+		else
+			wire_numpad:SetModel( Model(model) )
+		end
 		wire_numpad:Spawn()
 		
 		wire_numpad:Setup(toggle, value_off, value_on )
@@ -104,10 +113,10 @@ if (SERVER) then
 		return wire_numpad
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_numpad", MakeWireNumpad, "Pos", "Ang", "toggle", "value_off", "value_on", "Vel", "aVel", "frozen")
-	
-end
+	duplicator.RegisterEntityClass("gmod_wire_numpad", MakeWireNumpad, "Pos", "Ang", "toggle", "value_off", "value_on", "model", "Vel", "aVel", "frozen")
 
+end //end server if
+	
 function TOOL:UpdateGhostWireNumpad( ent, player )
 	
 	if ( !ent || !ent:IsValid() ) then return end
@@ -132,18 +141,38 @@ function TOOL:UpdateGhostWireNumpad( ent, player )
 end
 
 function TOOL:Think()
-
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if ModelInfo[1]!= self:GetClientInfo( "model" ) || ModelInfo[2]!= self:GetClientInfo( "modelsize" ) then
+		ModelInfo[1] = self:GetClientInfo( "model" )
+		ModelInfo[2] = self:GetClientInfo( "modelsize" )
+		ModelInfo[3] = ModelInfo[1]
+		if (ModelInfo[1] && ModelInfo[2] && ModelInfo[2]!="") then
+			local test = string.sub(ModelInfo[1], 1, -5) .. ModelInfo[2] .. string.sub(ModelInfo[1], -4)
+			if (util.IsValidModel(test) && util.IsValidProp(test)) then
+				ModelInfo[3] = test
+			end
+		end
+		self:MakeGhostEntity( ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
 	end
-
+	if !self.GhostEntity || !self.GhostEntity:IsValid() || !self.GhostEntity:GetModel() then
+		self:MakeGhostEntity( ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
+	end
 	self:UpdateGhostWireNumpad( self.GhostEntity, self:GetOwner() )
-
 end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_numpad_name", Description = "#Tool_wire_numpad_desc" })
 	
+	panel:AddControl("Label", {Text = "Model Size (if available)"})
+	panel:AddControl("ComboBox", {
+		Label = "Model Size",
+		MenuButton = 0,
+		Options = {
+				["normal"] = { wire_numpad_modelsize = "" },
+				["mini"] = { wire_numpad_modelsize = "_mini" },
+				["nano"] = { wire_numpad_modelsize = "_nano" }
+			}
+	})
+	ModelPlug_AddToCPanel(panel, "Numpad", "wire_numpad", "#ToolWireIndicator_Model")
 	panel:AddControl("ComboBox", {
 		Label = "#Presets",
 		MenuButton = "1",

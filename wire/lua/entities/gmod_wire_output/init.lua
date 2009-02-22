@@ -5,12 +5,9 @@ include('shared.lua')
 
 ENT.WireDebugName = "Output"
 
-local MODEL = Model("models/jaanus/wiretool/wiretool_output.mdl")
-
 local keylist = {"0","1","2","3","4","5","6","7","8","9",".","Enter","+","-","*","/"}
 
 function ENT:Initialize()
-	self.Entity:SetModel( MODEL )
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )

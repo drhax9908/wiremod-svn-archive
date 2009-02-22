@@ -21,9 +21,9 @@ WireToolHelpers.BaseLang("Adv. Inputs")
 
 if SERVER then
   CreateConVar('sbox_maxwire_adv_inputs',20)
+  ModelPlug_Register("Numpad")
 end
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_input.mdl"
 TOOL.ClientConVar = {
 	keymore = "3",
 	keyless = "1",
@@ -31,10 +31,43 @@ TOOL.ClientConVar = {
 	value_min = "0",
 	value_max = "10",
 	value_start = "5",
-	speed = "1"
+	speed = "1",
+	model = "models/beer/wiremod/numpad.mdl",
+	modelsize = ""
 }
+TOOL.ModelInfo = {"","",""}
+
+function TOOL:Think()
+	if self.ModelInfo[1]!= self:GetClientInfo( "model" ) || self.ModelInfo[2]!= self:GetClientInfo( "modelsize" ) then
+		self.ModelInfo[1] = self:GetClientInfo( "model" )
+		self.ModelInfo[2] = self:GetClientInfo( "modelsize" )
+		self.ModelInfo[3] = self.ModelInfo[1]
+		if (self.ModelInfo[1] && self.ModelInfo[2] && self.ModelInfo[2]!="") then
+			local test = string.sub(self.ModelInfo[1], 1, -5) .. self.ModelInfo[2] .. string.sub(self.ModelInfo[1], -4)
+			if (util.IsValidModel(test) && util.IsValidProp(test)) then
+				self.ModelInfo[3] = test
+			end
+		end
+		self:MakeGhostEntity( self.ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
+	end
+	if !self.GhostEntity || !self.GhostEntity:IsValid() || !self.GhostEntity:GetModel() then
+		self:MakeGhostEntity( self.ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
+	end
+	self:UpdateGhost( self.GhostEntity )
+end
 
 function TOOL.BuildCPanel( CPanel )
+	CPanel:AddControl("Label", {Text = "Model Size (if available)"})
+	CPanel:AddControl("ComboBox", {
+		Label = "Model Size",
+		MenuButton = 0,
+		Options = {
+				["normal"] = { wire_adv_input_modelsize = "" },
+				["mini"] = { wire_adv_input_modelsize = "_mini" },
+				["nano"] = { wire_adv_input_modelsize = "_nano" }
+			}
+	})
+	ModelPlug_AddToCPanel(CPanel, "Numpad", "wire_adv_input", "#ToolWireIndicator_Model")
 	CPanel:AddControl( "Numpad", {Label = "#WireAdvInputTool_keymore", Command = "wire_adv_input_keymore"})
 	CPanel:AddControl( "Numpad", {Label = "#WireAdvInputTool_keyless", Command = "wire_adv_input_keyless"})
 	CPanel:CheckBox("#WireAdvInputTool_toggle", "wire_adv_input_toggle")
@@ -134,7 +167,7 @@ end
 
 
 
---wire_adv_input
+--wire_dual_input
 WireToolSetup.open( "dual_input", "Dual Input", "gmod_wire_dual_input", WireToolMakeDualInput )
 
 if CLIENT then
@@ -156,21 +189,54 @@ WireToolHelpers.BaseLang("Dual Inputs")
 
 if SERVER then
 	CreateConVar('sbox_maxwire_dual_inputs', 20)
+	ModelPlug_Register("Numpad")
 end
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_input.mdl"
 TOOL.ClientConVar = {
 	keygroup = 7,
 	keygroup2 = 4,
 	toggle = 0,
 	value_off = 0,
 	value_on = 1,
-	value_on2 = -1
+	value_on2 = -1,
+	model = "models/beer/wiremod/numpad.mdl",
+	modelsize = ""
 }
+TOOL.ModelInfo = {"","",""}
+
+function TOOL:Think()
+	if self.ModelInfo[1]!= self:GetClientInfo( "model" ) || self.ModelInfo[2]!= self:GetClientInfo( "modelsize" ) then
+		self.ModelInfo[1] = self:GetClientInfo( "model" )
+		self.ModelInfo[2] = self:GetClientInfo( "modelsize" )
+		self.ModelInfo[3] = self.ModelInfo[1]
+		if (self.ModelInfo[1] && self.ModelInfo[2] && self.ModelInfo[2]!="") then
+			local test = string.sub(self.ModelInfo[1], 1, -5) .. self.ModelInfo[2] .. string.sub(self.ModelInfo[1], -4)
+			if (util.IsValidModel(test) && util.IsValidProp(test)) then
+				self.ModelInfo[3] = test
+			end
+		end
+		self:MakeGhostEntity( self.ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
+	end
+	if !self.GhostEntity || !self.GhostEntity:IsValid() || !self.GhostEntity:GetModel() then
+		self:MakeGhostEntity( self.ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
+	end
+	self:UpdateGhost( self.GhostEntity )
+end
 
 function TOOL.BuildCPanel(panel)
 	WireToolHelpers.MakePresetControl(panel, "wire_dual_input")
 	
+	panel:AddControl("Label", {Text = "Model Size (if available)"})
+	panel:AddControl("ComboBox", {
+		Label = "Model Size",
+		MenuButton = 0,
+		Options = {
+				["normal"] = { wire_dual_input_modelsize = "" },
+				["mini"] = { wire_dual_input_modelsize = "_mini" },
+				["nano"] = { wire_dual_input_modelsize = "_nano" }
+			}
+	})
+	ModelPlug_AddToCPanel(panel, "Numpad", "wire_dual_input", "#ToolWireIndicator_Model")
 	panel:AddControl("Numpad", {
 		Label = "#WireDualInputTool_keygroup",
 		Command = "wire_dual_input_keygroup"
@@ -207,18 +273,51 @@ WireToolHelpers.BaseLang("Inputs")
 
 if SERVER then
 	CreateConVar('sbox_maxwire_inputs', 20)
+	ModelPlug_Register("Numpad")
 end
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_input.mdl"
 TOOL.ClientConVar = {
 	keygroup = 7,
 	toggle = 0,
 	value_off = 0,
-	value_on = 1
+	value_on = 1,
+	model = "models/beer/wiremod/numpad.mdl",
+	modelsize = ""
 }
+TOOL.ModelInfo = {"","",""}
+
+function TOOL:Think()
+	if self.ModelInfo[1]!= self:GetClientInfo( "model" ) || self.ModelInfo[2]!= self:GetClientInfo( "modelsize" ) then
+		self.ModelInfo[1] = self:GetClientInfo( "model" )
+		self.ModelInfo[2] = self:GetClientInfo( "modelsize" )
+		self.ModelInfo[3] = self.ModelInfo[1]
+		if (self.ModelInfo[1] && self.ModelInfo[2] && self.ModelInfo[2]!="") then
+			local test = string.sub(self.ModelInfo[1], 1, -5) .. self.ModelInfo[2] .. string.sub(self.ModelInfo[1], -4)
+			if (util.IsValidModel(test) && util.IsValidProp(test)) then
+				self.ModelInfo[3] = test
+			end
+		end
+		self:MakeGhostEntity( self.ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
+	end
+	if !self.GhostEntity || !self.GhostEntity:IsValid() || !self.GhostEntity:GetModel() then
+		self:MakeGhostEntity( self.ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
+	end
+	self:UpdateGhost( self.GhostEntity )
+end
 
 function TOOL.BuildCPanel(panel)
 	WireToolHelpers.MakePresetControl(panel, "wire_input")
+	panel:AddControl("Label", {Text = "Model Size (if available)"})
+	panel:AddControl("ComboBox", {
+		Label = "Model Size",
+		MenuButton = 0,
+		Options = {
+				["normal"] = { wire_input_modelsize = "" },
+				["mini"] = { wire_input_modelsize = "_mini" },
+				["nano"] = { wire_input_modelsize = "_nano" }
+			}
+	})
+	ModelPlug_AddToCPanel(panel, "Numpad", "wire_input", "#ToolWireIndicator_Model")
 	panel:AddControl("Numpad", {
 		Label = "#WireInputTool_keygroup",
 		Command = "wire_input_keygroup"

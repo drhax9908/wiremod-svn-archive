@@ -6,10 +6,7 @@ ENT.WireDebugName = "Adv. Input"
 ENT.OverlayDelay = 0.1
 ENT.OverlayRandom = 0.025
 
-local MODEL = Model("models/jaanus/wiretool/wiretool_input.mdl")
-
 function ENT:Initialize()
-	self.Entity:SetModel( MODEL )
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
@@ -98,7 +95,7 @@ numpad.Register( "WireAdvInput_On",On)
 numpad.Register( "WireAdvInput_Off",Off)
 
 
-function MakeWireAdvInput( pl, Pos, Ang, keymore, keyless, toggle, value_min, value_max, value_start, speed, Vel, aVel, frozen )
+function MakeWireAdvInput( pl, Pos, Ang, keymore, keyless, toggle, value_min, value_max, value_start, speed, model, Vel, aVel, frozen )
 	if ( !pl:CheckLimit( "wire_adv_inputs" ) ) then return false end
 
 	local wire_adv_input = ents.Create( "gmod_wire_adv_input" )
@@ -106,7 +103,7 @@ function MakeWireAdvInput( pl, Pos, Ang, keymore, keyless, toggle, value_min, va
 
 	wire_adv_input:SetAngles( Ang )
 	wire_adv_input:SetPos( Pos )
-	wire_adv_input:SetModel( Model("models/jaanus/wiretool/wiretool_input.mdl") )
+	wire_adv_input:SetModel( model or Model("models/jaanus/wiretool/wiretool_input.mdl") )
 	wire_adv_input:Spawn()
 
 	if wire_adv_input:GetPhysicsObject():IsValid() then
@@ -129,4 +126,4 @@ function MakeWireAdvInput( pl, Pos, Ang, keymore, keyless, toggle, value_min, va
 	return wire_adv_input
 end
 
-duplicator.RegisterEntityClass("gmod_wire_adv_input", MakeWireAdvInput, "Pos", "Ang", "keymore", "keyless", "toggle", "value_min", "value_max", "value_start", "speed", "Vel", "aVel", "frozen")
+duplicator.RegisterEntityClass("gmod_wire_adv_input", MakeWireAdvInput, "Pos", "Ang", "keymore", "keyless", "toggle", "value_min", "value_max", "value_start", "speed", "model", "Vel", "aVel", "frozen")
