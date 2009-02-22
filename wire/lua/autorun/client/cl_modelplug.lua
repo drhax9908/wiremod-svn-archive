@@ -129,3 +129,31 @@ for k,v in pairs(JaanusThrusters) do
 		list.Set( "ThrusterModels", v, {} )
 	end
 end
+
+//Beer's models
+MsgN("\tBeer's Model pack")
+
+//Keyboard
+list.Set( "Wire_Keyboard_Models", "models/beer/wiremod/keyboard.mdl", {} )
+list.Set( "Wire_Keyboard_Models", "models/jaanus/wiretool/wiretool_input.mdl", {} )
+
+//Hydraulic
+list.Set( "Wire_Hydraulic_Models", "models/beer/wiremod/hydraulic.mdl", {} )
+list.Set( "Wire_Hydraulic_Models", "models/jaanus/wiretool/wiretool_siren.mdl", {} )
+
+//GPS
+list.Set( "Wire_GPS_Models", "models/beer/wiremod/gps.mdl", {} )
+list.Set( "Wire_GPS_Models", "models/jaanus/wiretool/wiretool_speed.mdl", {} )
+
+//Numpad
+list.Set( "Wire_Numpad_Models", "models/beer/wiremod/numpad.mdl", {} )
+list.Set( "Wire_Numpad_Models", "models/jaanus/wiretool/wiretool_input.mdl", {} )
+list.Set( "Wire_Numpad_Models", "models/jaanus/wiretool/wiretool_output.mdl", {} )
+
+//Water Sensor
+list.Set( "Wire_WaterSensor_Models", "models/beer/wiremod/watersensor.mdl", {} )
+list.Set( "Wire_WaterSensor_Models", "models/jaanus/wiretool/wiretool_range.mdl", {} )
+
+//Target Finder
+list.Set( "Wire_TargetFinder_Models", "models/beer/wiremod/targetfinder.mdl", {} )
+list.Set( "Wire_TargetFinder_Models", "models/props_lab/powerbox02d.mdl", {} )

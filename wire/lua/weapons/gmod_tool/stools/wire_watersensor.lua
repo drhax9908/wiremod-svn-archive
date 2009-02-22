@@ -14,9 +14,12 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_watersensors', 20)
+	ModelPlug_Register("WaterSensor")
 end
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
+TOOL.ClientConVar[ "model" ] = "models/beer/wiremod/watersensor.mdl"
+TOOL.ClientConVar[ "modelsize" ] = ""
+local ModelInfo = {"","",""}
 
 cleanup.Register( "wire_watersensors" )
 
@@ -33,10 +36,13 @@ function TOOL:LeftClick( trace )
 
 	if ( !self:GetSWEP():CheckLimit( "wire_watersensors" ) ) then return false end
 
+	if ( !util.IsValidModel( ModelInfo[3] ) ) then return false end
+	if ( !util.IsValidProp( ModelInfo[3] ) ) then return false end
+
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_watersensor = MakeWireWatersensor( ply, trace.HitPos, Ang )
+	local wire_watersensor = MakeWireWatersensor( ply, trace.HitPos, Ang, ModelInfo[3] )
 
 	local min = wire_watersensor:OBBMins()
 	wire_watersensor:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -56,7 +62,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireWatersensor( pl, Pos, Ang )
+	function MakeWireWatersensor( pl, Pos, Ang, model )
 		if ( !pl:CheckLimit( "wire_watersensors" ) ) then return false end
 	
 		local wire_watersensor = ents.Create( "gmod_wire_watersensor" )
@@ -64,7 +70,11 @@ if (SERVER) then
 
 		wire_watersensor:SetAngles( Ang )
 		wire_watersensor:SetPos( Pos )
-		wire_watersensor:SetModel( Model("models/jaanus/wiretool/wiretool_range.mdl") )
+		if(!model) then
+			wire_watersensor:SetModel( Model("models/jaanus/wiretool/wiretool_range.mdl") )
+		else
+			wire_watersensor:SetModel( Model(model) )
+		end
 		wire_watersensor:Spawn()
 
 		wire_watersensor:SetPlayer( pl )
@@ -75,7 +85,7 @@ if (SERVER) then
 		return wire_watersensor
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_watersensor", MakeWireWatersensor, "Pos", "Ang", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_watersensor", MakeWireWatersensor, "Pos", "Ang", "model", "Vel", "aVel", "frozen")
 
 end
 
@@ -101,13 +111,35 @@ function TOOL:UpdateGhostWireWatersensor( ent, player )
 end
 
 function TOOL:Think()
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if ModelInfo[1]!= self:GetClientInfo( "model" ) || ModelInfo[2]!= self:GetClientInfo( "modelsize" ) then
+		ModelInfo[1] = self:GetClientInfo( "model" )
+		ModelInfo[2] = self:GetClientInfo( "modelsize" )
+		ModelInfo[3] = ModelInfo[1]
+		if (ModelInfo[1] && ModelInfo[2] && ModelInfo[2]!="") then
+			local test = string.sub(ModelInfo[1], 1, -5) .. ModelInfo[2] .. string.sub(ModelInfo[1], -4)
+			if (util.IsValidModel(test) && util.IsValidProp(test)) then
+				ModelInfo[3] = test
+			end
+		end
+		self:MakeGhostEntity( ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
 	end
-
+	if !self.GhostEntity || !self.GhostEntity:IsValid() || !self.GhostEntity:GetModel() then
+		self:MakeGhostEntity( ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
+	end
 	self:UpdateGhostWireWatersensor( self.GhostEntity, self:GetOwner() )
 end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_watersensor_name", Description = "#Tool_wire_watersensor_desc" })
+	panel:AddControl("Label", {Text = "Model Size (if available)"})
+	panel:AddControl("ComboBox", {
+		Label = "Model Size",
+		MenuButton = 0,
+		Options = {
+				["normal"] = { wire_watersensor_modelsize = "" },
+				["mini"] = { wire_watersensor_modelsize = "_mini" },
+				["nano"] = { wire_watersensor_modelsize = "_nano" }
+			}
+	})
+	ModelPlug_AddToCPanel(panel, "WaterSensor", "wire_watersensor", "#ToolWireIndicator_Model")
 end

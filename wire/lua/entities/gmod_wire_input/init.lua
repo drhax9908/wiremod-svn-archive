@@ -9,10 +9,7 @@ ENT.OverlayDelay = 0
 
 local keylist = {"0","1","2","3","4","5","6","7","8","9",".","Enter","+","-","*","/"}
 
-local MODEL = Model("models/jaanus/wiretool/wiretool_input.mdl")
-
 function ENT:Initialize()
-	self.Entity:SetModel( MODEL )
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
@@ -95,9 +92,7 @@ end
 numpad.Register( "WireInput_On", On )
 numpad.Register( "WireInput_Off", Off )
 
-
-
-function MakeWireInput( pl, Pos, Ang, keygroup, toggle, value_off, value_on, Vel, aVel, frozen )
+function MakeWireInput( pl, Pos, Ang, keygroup, toggle, value_off, value_on, model, Vel, aVel, frozen )
 	if ( !pl:CheckLimit( "wire_inputs" ) ) then return false end
 
 	local wire_input = ents.Create( "gmod_wire_input" )
@@ -105,7 +100,7 @@ function MakeWireInput( pl, Pos, Ang, keygroup, toggle, value_off, value_on, Vel
 
 	wire_input:SetAngles( Ang )
 	wire_input:SetPos( Pos )
-	wire_input:SetModel( Model("models/jaanus/wiretool/wiretool_input.mdl") )
+	wire_input:SetModel( model or Model("models/jaanus/wiretool/wiretool_input.mdl") )
 	wire_input:Spawn()
 
 	if wire_input:GetPhysicsObject():IsValid() then
@@ -121,4 +116,4 @@ function MakeWireInput( pl, Pos, Ang, keygroup, toggle, value_off, value_on, Vel
 
 	return wire_input
 end
-duplicator.RegisterEntityClass("gmod_wire_input", MakeWireInput, "Pos", "Ang", "keygroup", "toggle", "value_off", "value_on", "Vel", "aVel", "frozen")
+duplicator.RegisterEntityClass("gmod_wire_input", MakeWireInput, "Pos", "Ang", "keygroup", "toggle", "value_off", "value_on", "model", "Vel", "aVel", "frozen")

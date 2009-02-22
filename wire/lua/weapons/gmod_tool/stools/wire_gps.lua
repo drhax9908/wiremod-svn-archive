@@ -13,9 +13,12 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_gpss', 10)
+	ModelPlug_Register("GPS")
 end
 
-TOOL.Model = "models/jaanus/wiretool/wiretool_speed.mdl"
+TOOL.ClientConVar[ "model" ] = "models/beer/wiremod/gps.mdl"
+TOOL.ClientConVar[ "modelsize" ] = ""
+local ModelInfo = {"","",""}
 
 cleanup.Register( "wire_gpss" )
 
@@ -33,13 +36,13 @@ function TOOL:LeftClick( trace )
 
 	if ( !self:GetSWEP():CheckLimit( "wire_gpss" ) ) then return false end
 
-	if (not util.IsValidModel(self.Model)) then return false end
-	if (not util.IsValidProp(self.Model)) then return false end		// Allow ragdolls to be used?
+	if ( !util.IsValidModel( ModelInfo[3] ) ) then return false end
+	if ( !util.IsValidProp( ModelInfo[3] ) ) then return false end
 
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	wire_gps = MakeWireGPS( ply, Ang, trace.HitPos )
+	wire_gps = MakeWireGPS( ply, Ang, trace.HitPos, ModelInfo[3] )
 
 	local min = wire_gps:OBBMins()
 	wire_gps:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -59,7 +62,7 @@ end
 
 if (SERVER) then
 
-	function MakeWireGPS( pl, Ang, Pos, nocollide, Vel, aVel, frozen )
+	function MakeWireGPS( pl, Ang, Pos, model, nocollide, Vel, aVel, frozen )
 		if ( !pl:CheckLimit( "wire_gpss" ) ) then return false end
 
 		local wire_gps = ents.Create( "gmod_wire_gps" )
@@ -67,7 +70,11 @@ if (SERVER) then
 
 		wire_gps:SetAngles( Ang )
 		wire_gps:SetPos( Pos )
-		wire_gps:SetModel( Model("models/jaanus/wiretool/wiretool_speed.mdl") )
+		if(!model) then
+			wire_gps:SetModel( Model("models/jaanus/wiretool/wiretool_speed.mdl") )
+		else
+			wire_gps:SetModel( Model(model) )
+		end
 		wire_gps:Spawn()
 
 		wire_gps:Setup()
@@ -81,9 +88,9 @@ if (SERVER) then
 		return wire_gps
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_gps", MakeWireGPS, "Ang", "Pos", "nocollide", "Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_gps", MakeWireGPS, "Ang", "Pos", "model", "nocollide", "Vel", "aVel", "frozen")
 
-end
+end //end server if
 
 function TOOL:UpdateGhostWireGPS( ent, player )
 	if ( !ent ) then return end
@@ -108,15 +115,36 @@ function TOOL:UpdateGhostWireGPS( ent, player )
 	ent:SetNoDraw( false )
 end
 
-
 function TOOL:Think()
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if ModelInfo[1]!= self:GetClientInfo( "model" ) || ModelInfo[2]!= self:GetClientInfo( "modelsize" ) then
+		ModelInfo[1] = self:GetClientInfo( "model" )
+		ModelInfo[2] = self:GetClientInfo( "modelsize" )
+		ModelInfo[3] = ModelInfo[1]
+		if (ModelInfo[1] && ModelInfo[2] && ModelInfo[2]!="") then
+			local test = string.sub(ModelInfo[1], 1, -5) .. ModelInfo[2] .. string.sub(ModelInfo[1], -4)
+			if (util.IsValidModel(test) && util.IsValidProp(test)) then
+				ModelInfo[3] = test
+			end
+		end
+		self:MakeGhostEntity( ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
 	end
-
+	if !self.GhostEntity || !self.GhostEntity:IsValid() || !self.GhostEntity:GetModel() then
+		self:MakeGhostEntity( ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
+	end
 	self:UpdateGhostWireGPS( self.GhostEntity, self:GetOwner() )
 end
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_gps_name", Description = "#Tool_wire_gps_desc" })
+	panel:AddControl("Label", {Text = "Model Size (if available)"})
+	panel:AddControl("ComboBox", {
+		Label = "Model Size",
+		MenuButton = 0,
+		Options = {
+				["normal"] = { wire_gps_modelsize = "" },
+				["mini"] = { wire_gps_modelsize = "_mini" },
+				["nano"] = { wire_gps_modelsize = "_nano" }
+			}
+	})
+	ModelPlug_AddToCPanel(panel, "GPS", "wire_gps", "#ToolWireIndicator_Model")
 end

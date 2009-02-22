@@ -7,10 +7,7 @@ include('shared.lua')
 ENT.WireDebugName = "DualInput"
 ENT.OverlayDelay = 0
 
-local MODEL = Model("models/jaanus/wiretool/wiretool_input.mdl")
-
 function ENT:Initialize()
-	self.Entity:SetModel( MODEL )
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
 	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
 	self.Entity:SetSolid( SOLID_VPHYSICS )
@@ -86,7 +83,7 @@ numpad.Register( "WireDualInput_On", On )
 numpad.Register( "WireDualInput_Off", Off )
 
 
-function MakeWireDualInput( pl, Pos, Ang, keygroup, keygroup2, toggle, value_off, value_on, value_on2, Vel, aVel, frozen )
+function MakeWireDualInput( pl, Pos, Ang, keygroup, keygroup2, toggle, value_off, value_on, value_on2, model, Vel, aVel, frozen )
 	if ( !pl:CheckLimit( "wire_dual_inputs" ) ) then return false end
 
 	local wire_dual_input = ents.Create( "gmod_wire_dual_input" )
@@ -94,7 +91,7 @@ function MakeWireDualInput( pl, Pos, Ang, keygroup, keygroup2, toggle, value_off
 
 	wire_dual_input:SetAngles( Ang )
 	wire_dual_input:SetPos( Pos )
-	wire_dual_input:SetModel( Model("models/jaanus/wiretool/wiretool_input.mdl") )
+	wire_dual_input:SetModel( model or Model("models/jaanus/wiretool/wiretool_input.mdl") )
 	wire_dual_input:Spawn()
 
 	if wire_dual_input:GetPhysicsObject():IsValid() then
@@ -117,4 +114,4 @@ function MakeWireDualInput( pl, Pos, Ang, keygroup, keygroup2, toggle, value_off
 	return wire_dual_input
 end
 
-duplicator.RegisterEntityClass("gmod_wire_dual_input", MakeWireDualInput, "Pos", "Ang", "keygroup", "keygroup2", "toggle", "value_off", "value_on", "value_on2", "Vel", "aVel", "frozen")
+duplicator.RegisterEntityClass("gmod_wire_dual_input", MakeWireDualInput, "Pos", "Ang", "keygroup", "keygroup2", "toggle", "value_off", "value_on", "value_on2", "model", "Vel", "aVel", "frozen")

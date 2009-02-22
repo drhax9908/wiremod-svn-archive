@@ -51,6 +51,7 @@ if (SERVER) then
 	CreateConVar('sbox_maxwire_target_finders',30)
 	CreateConVar("wire_target_finders_maxtargets",10)
 	CreateConVar("wire_target_finders_maxbogeys",30)
+	ModelPlug_Register("TargetFinder")
 end
 
 TOOL.ClientConVar[ "minrange" ]		= "1"
@@ -82,11 +83,11 @@ TOOL.ClientConVar[ "notownersstuff" ]	= "0"
 TOOL.ClientConVar[ "entityfil" ] 		= ""
 TOOL.ClientConVar[ "checkbuddylist" ]	= "0"
 TOOL.ClientConVar[ "onbuddylist" ]	= "0"
-
-TOOL.Model = "models/props_lab/powerbox02d.mdl"
+TOOL.ClientConVar[ "model" ] = "models/beer/wiremod/targetfinder.mdl"
+TOOL.ClientConVar[ "modelsize" ] = ""
+local ModelInfo = {"","",""}
 
 cleanup.Register( "wire_target_finders" )
-
 
 function TOOL:LeftClick(trace)
 	if (!trace.HitPos) then return false end
@@ -164,10 +165,16 @@ function TOOL:LeftClick(trace)
 	end	
 	
 	if ( !self:GetSWEP():CheckLimit( "wire_target_finders" ) ) then return false end
+
+	if ( !util.IsValidModel( ModelInfo[3] ) ) then return false end
+	if ( !util.IsValidProp( ModelInfo[3] ) ) then return false end
 	
 	local Ang = trace.HitNormal:Angle()
+	if(ModelInfo[1]!="models/props_lab/powerbox02d.mdl")then
+		Ang.p = Ang.p + 90
+	end
 	
-	local wire_target_finder = MakeWireTargetFinder( ply, trace.HitPos, Ang, range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity, notownersstuff, steamname, colorcheck, colortarget, pcolR, pcolG, pcolB, pcolA, checkbuddylist, onbuddylist )
+	local wire_target_finder = MakeWireTargetFinder( ply, trace.HitPos, Ang, range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity, notownersstuff, steamname, colorcheck, colortarget, pcolR, pcolG, pcolB, pcolA, checkbuddylist, onbuddylist, ModelInfo[3] )
 	
 	local min = wire_target_finder:OBBMins()
 	wire_target_finder:SetPos( trace.HitPos - trace.HitNormal*min.z )
@@ -201,13 +208,17 @@ end
 
 if SERVER then
 	
-	function MakeWireTargetFinder(pl, Pos, Ang, range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity, notownersstuff, steamname, colorcheck, colortarget, pcolR, pcolG, pcolB, pcolA, checkbuddylist, onbuddylist, Vel, aVel, frozen )
+	function MakeWireTargetFinder(pl, Pos, Ang, range, players, npcs, npcname, beacons, hoverballs, thrusters, props, propmodel,  vehicles, playername, casesen, rpgs, painttarget, minrange, maxtargets, maxbogeys, notargetowner, entity, notownersstuff, steamname, colorcheck, colortarget, pcolR, pcolG, pcolB, pcolA, checkbuddylist, onbuddylist, model, Vel, aVel, frozen )
 		if (!pl:CheckLimit("wire_target_finders")) then return end
 		
 		local wire_target_finder = ents.Create("gmod_wire_target_finder")
 		wire_target_finder:SetPos(Pos)
 		wire_target_finder:SetAngles(Ang)
-		wire_target_finder:SetModel( Model("models/props_lab/powerbox02d.mdl") )
+		if(!model) then
+			wire_target_finder:SetModel( Model("models/props_lab/powerbox02d.mdl") )
+		else
+			wire_target_finder:SetModel( Model(model) )
+		end
 		wire_target_finder:Spawn()
 		wire_target_finder:Activate()
 		
@@ -256,10 +267,9 @@ if SERVER then
 		return wire_target_finder
 	end
 
-	duplicator.RegisterEntityClass("gmod_wire_target_finder", MakeWireTargetFinder, "Pos", "Ang", "range", "players", "npcs", "npcname", "beacons", "hoverballs", "thrusters", "props", "propmodel", "vehicles", "playername", "casesen", "rpgs", "painttarget", "minrange", "maxtargets", "maxbogeys", "notargetowner", "entity", "notownersstuff", "steamname", "colorcheck", "colortarget", "pcolR", "pcolG", "pcolB", "pcolA", "checkbuddylist", "onbuddylist","Vel", "aVel", "frozen")
+	duplicator.RegisterEntityClass("gmod_wire_target_finder", MakeWireTargetFinder, "Pos", "Ang", "range", "players", "npcs", "npcname", "beacons", "hoverballs", "thrusters", "props", "propmodel", "vehicles", "playername", "casesen", "rpgs", "painttarget", "minrange", "maxtargets", "maxbogeys", "notargetowner", "entity", "notownersstuff", "steamname", "colorcheck", "colortarget", "pcolR", "pcolG", "pcolB", "pcolA", "checkbuddylist", "onbuddylist", "model", "Vel", "aVel", "frozen")
 
 end
-
 
 function TOOL:UpdateGhostWireTargetFinder( ent, player )
 	if ( !ent || !ent:IsValid() ) then return end
@@ -276,24 +286,47 @@ function TOOL:UpdateGhostWireTargetFinder( ent, player )
 
 	local min = ent:OBBMins()
 	ent:SetPos( trace.HitPos - trace.HitNormal * min.z )
+	if(ModelInfo[1]!="models/props_lab/powerbox02d.mdl")then
+		Ang.p = Ang.p + 90
+	end
 	ent:SetAngles( Ang )
 
 	ent:SetNoDraw( false )
 end
 
-
 function TOOL:Think()
-	if (!self.GhostEntity || !self.GhostEntity:IsValid() || self.GhostEntity:GetModel() != self.Model ) then
-		self:MakeGhostEntity( self.Model, Vector(0,0,0), Angle(0,0,0) )
+	if ModelInfo[1]!= self:GetClientInfo( "model" ) || ModelInfo[2]!= self:GetClientInfo( "modelsize" ) then
+		ModelInfo[1] = self:GetClientInfo( "model" )
+		ModelInfo[2] = self:GetClientInfo( "modelsize" )
+		ModelInfo[3] = ModelInfo[1]
+		if (ModelInfo[1] && ModelInfo[2] && ModelInfo[2]!="") then
+			local test = string.sub(ModelInfo[1], 1, -5) .. ModelInfo[2] .. string.sub(ModelInfo[1], -4)
+			if (util.IsValidModel(test) && util.IsValidProp(test)) then
+				ModelInfo[3] = test
+			end
+		end
+		self:MakeGhostEntity( ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
 	end
-	
+	if !self.GhostEntity || !self.GhostEntity:IsValid() || !self.GhostEntity:GetModel() then
+		self:MakeGhostEntity( ModelInfo[3], Vector(0,0,0), Angle(0,0,0) )
+	end
 	self:UpdateGhostWireTargetFinder( self.GhostEntity, self:GetOwner() )
 end
-
 
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_target_finder_name", Description = "#Tool_wire_target_finder_desc" })
 
+	panel:AddControl("Label", {Text = "Model Size (if available)"})
+	panel:AddControl("ComboBox", {
+		Label = "Model Size",
+		MenuButton = 0,
+		Options = {
+				["normal"] = { wire_target_finder_modelsize = "" },
+				["mini"] = { wire_target_finder_modelsize = "_mini" },
+				["nano"] = { wire_target_finder_modelsize = "_nano" }
+			}
+	})
+	ModelPlug_AddToCPanel(panel, "TargetFinder", "wire_target_finder", "#ToolWireIndicator_Model")
 	panel:AddControl("Slider", {
 		Label = "#WireTargetFinderTool_minrange",
 		Type = "Float",

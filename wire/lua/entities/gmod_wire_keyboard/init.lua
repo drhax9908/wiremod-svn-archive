@@ -8,10 +8,7 @@ include('remap.lua')
 ENT.WireDebugName = "Wired Keyboard"
 ENT.OverlayDelay = 0
 
-local MODEL = Model("models/jaanus/wiretool/wiretool_input.mdl")
-
 function ENT:Initialize()
-	self.Entity:SetModel(MODEL)
 	self.Entity:PhysicsInit(SOLID_VPHYSICS)
 	self.Entity:SetMoveType(MOVETYPE_VPHYSICS)
 	self.Entity:SetSolid(SOLID_VPHYSICS)

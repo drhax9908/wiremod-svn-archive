@@ -16,10 +16,13 @@ function WireToolMakeAdvInput( self, trace, ply )
 
 	if ( !self:GetSWEP():CheckLimit( "wire_adv_inputs" ) ) then return false end
 
+	if ( !util.IsValidModel( self.ModelInfo[3] ) ) then return false end
+	if ( !util.IsValidProp( self.ModelInfo[3] ) ) then return false end
+
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_adv_input = MakeWireAdvInput( ply, trace.HitPos, Ang, _keymore, _keyless, _toggle, _value_min, _value_max, _value_start, _speed )
+	local wire_adv_input = MakeWireAdvInput( ply, trace.HitPos, Ang, _keymore, _keyless, _toggle, _value_min, _value_max, _value_start, _speed, self.ModelInfo[3] )
 
 	local min = wire_adv_input:OBBMins()
 	wire_adv_input:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -87,10 +90,13 @@ function WireToolMakeDualInput( self, trace, ply )
 
 	if ( !self:GetSWEP():CheckLimit( "wire_dual_inputs" ) ) then return false end
 
+	if ( !util.IsValidModel( self.ModelInfo[3] ) ) then return false end
+	if ( !util.IsValidProp( self.ModelInfo[3] ) ) then return false end
+
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_dual_input = MakeWireDualInput( ply, trace.HitPos, Ang, _keygroup, _keygroup2, _toggle, _value_off, _value_on, _value_on2 )
+	local wire_dual_input = MakeWireDualInput( ply, trace.HitPos, Ang, _keygroup, _keygroup2, _toggle, _value_off, _value_on, _value_on2, self.ModelInfo[3] )
 
 	local min = wire_dual_input:OBBMins()
 	wire_dual_input:SetPos( trace.HitPos - trace.HitNormal * min.z )
@@ -113,10 +119,13 @@ function WireToolMakeInput( self, trace, ply )
 
 	if ( !self:GetSWEP():CheckLimit( "wire_inputs" ) ) then return false end
 
+	if ( !util.IsValidModel( self.ModelInfo[3] ) ) then return false end
+	if ( !util.IsValidProp( self.ModelInfo[3] ) ) then return false end
+
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_input = MakeWireInput( ply, trace.HitPos, Ang, keygroup, toggle, value_off, value_on )
+	local wire_input = MakeWireInput( ply, trace.HitPos, Ang, keygroup, toggle, value_off, value_on, self.ModelInfo[3] )
 
 	local min = wire_input:OBBMins()
 	wire_input:SetPos( trace.HitPos - trace.HitNormal * min.z )
