@@ -31,15 +31,17 @@ concommand.Add("wire_keyboard_releaseinput", Wire_ReleaseInput)
 KeyEvents = {}
 
 function WireKeyboardThink()
-	for i=1,130 do
-		if(input.IsKeyDown(i) && !KeyEvents[i]) then 
-			// The key has been pressed
-			KeyEvents[i] = true
-			LocalPlayer():ConCommand("wire_keyboard_press p "..i)
-		elseif(!input.IsKeyDown(i) && KeyEvents[i]) then 
-			// The key has been released
-			KeyEvents[i] = false
-			LocalPlayer():ConCommand("wire_keyboard_press r "..i)
+	if (WIRE_SCROLL_SPEED) then
+		for i=1,130 do
+			if(input.IsKeyDown(i) && !KeyEvents[i]) then 
+				// The key has been pressed
+				KeyEvents[i] = true
+				LocalPlayer():ConCommand("wire_keyboard_press p "..i)
+			elseif(!input.IsKeyDown(i) && KeyEvents[i]) then 
+				// The key has been released
+				KeyEvents[i] = false
+				LocalPlayer():ConCommand("wire_keyboard_press r "..i)
+			end
 		end
 	end
 end
