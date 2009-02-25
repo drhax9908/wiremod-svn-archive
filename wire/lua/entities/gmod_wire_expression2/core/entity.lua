@@ -572,6 +572,7 @@ end)
 registerFunction("hint", "sn", "", function(self, args)
     local op1, op2 = args[2], args[3]
     local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	if (!validEntity(self.player)) then return end
 	if(string.find(rv1,string.char(34)) != nil) then return end
 	self.player:SendLua("GAMEMODE:AddNotify(\"" .. rv1 .. "\", NOTIFY_GENERIC ," .. math.Clamp(rv2,0.7,7) .. ");")
 end)
