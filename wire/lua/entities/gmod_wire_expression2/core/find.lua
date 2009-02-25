@@ -65,17 +65,19 @@ local function canFindByTime(id)
 	//	time - exp2LastPlayerFind[exp2Discoveries[id].playerId] >= playerFindRate
 end
 
-local function clipEntities(entity)
+local function clipEntities(self)
+	if self == nil then return end
+	entity = self.entity
 	if not entity:IsValid() then return end
-	local id = entity:EntIndex()
-	if exp2Discoveries[id] == nil then return end
-	if exp2Discoveries[id].entities == nil then exp2Discoveries[id].entities = {} return end
+	local myId = entity:EntIndex()
+	if exp2Discoveries[myId] == nil then return end
+	if exp2Discoveries[myId].entities == nil then exp2Discoveries[myId].entities = {} return end
 	local indexOffset = 0
-	for i = 1, table.Count(exp2Discoveries[id].entities), 1 do
-		local ent = exp2Discoveries[id].entities[i - indexOffset]
+	for i = 1, table.Count(exp2Discoveries[myId].entities), 1 do
+		local ent = exp2Discoveries[myId].entities[i - indexOffset]
 		local entSteamId = nil
 		if ent:IsPlayer() then entSteamId = ent:SteamID() end
-		local entOwner = ent:GetOwner()
+		local entOwner = getOwner(self,ent)
 		if entOwner != nil && entOwner:IsValid() && entOwner:IsPlayer() then entOwner = entOwner:SteamID() end
 		local entModel = ent:GetModel()
 		if entModel != nil then
@@ -85,46 +87,46 @@ local function clipEntities(entity)
 		local cont = true
 		local found = false
 		//ignore: the chip, info entities, predicted entities, physgun_beam, prop_dynamic
-		if ent:EntIndex() == id || string.find(entClass,"info_") != nil 
+		if ent:EntIndex() == myId || string.find(entClass,"info_") != nil 
 				|| string.find(entClass,"predicted") != nil || entClass == "physgun_beam" || entClass == "prop_dynamic" 
 				|| entClass == "player_manager" then 
-			table.remove(exp2Discoveries[id].entities, i - indexOffset)
+			table.remove(exp2Discoveries[myId].entities, i - indexOffset)
 			indexOffset = indexOffset + 1
 		else
 			//black list
-			for _,id  in pairs(exp2Discoveries[id].blackPlayerList) do
-				if id == entSteamId then table.remove(exp2Discoveries[id].entities, i - indexOffset) cont = false indexOffset = indexOffset + 1 break end
+			for _,id  in pairs(exp2Discoveries[myId].blackPlayerList) do
+				if id == entSteamId then table.remove(exp2Discoveries[myId].entities, i - indexOffset) cont = false indexOffset = indexOffset + 1 break end
 			end
-			if cont then for _,id  in pairs(exp2Discoveries[id].blackPropList) do
-				if id == entOwner then table.remove(exp2Discoveries[id].entities, i - indexOffset) cont = false indexOffset = indexOffset + 1 break end
+			if cont then for _,id  in pairs(exp2Discoveries[myId].blackPropList) do
+				if id == entOwner then table.remove(exp2Discoveries[myId].entities, i - indexOffset) cont = false indexOffset = indexOffset + 1 break end
 			end
-			if cont then for _,model  in pairs(exp2Discoveries[id].blackModelList) do
-				if string.find(entModel, model) != nil then table.remove(exp2Discoveries[id].entities, i - indexOffset) cont = false indexOffset = indexOffset + 1 break end
+			if cont then for _,model  in pairs(exp2Discoveries[myId].blackModelList) do
+				if entModel != nil && string.find(entModel, model) != nil then table.remove(exp2Discoveries[myId].entities, i - indexOffset) cont = false indexOffset = indexOffset + 1 break end
 			end
-			if cont then for _,class  in pairs(exp2Discoveries[id].blackClassList) do
-				if string.find(entClass,class) then table.remove(exp2Discoveries[id].entities, i - indexOffset) cont = false indexOffset = indexOffset + 1 break end
+			if cont then for _,class  in pairs(exp2Discoveries[myId].blackClassList) do
+				if string.find(entClass,class) then table.remove(exp2Discoveries[myId].entities, i - indexOffset) cont = false indexOffset = indexOffset + 1 break end
 			end end end end
 
 			//white list
-			if cont and exp2Discoveries[id].whiteListInUse then
-				for _,id  in pairs(exp2Discoveries[id].whitePlayerList) do
+			if cont and exp2Discoveries[myId].whiteListInUse then
+				for _,id  in pairs(exp2Discoveries[myId].whitePlayerList) do
 					if id == entSteamId then found = true passKind = "player" break end
 				end
 				if not found then
-					for _,id  in pairs(exp2Discoveries[id].whitePropList) do
+					for _,id  in pairs(exp2Discoveries[myId].whitePropList) do
 						if id == entOwner then found = true passKind = "prop" break end
 					end
 				if not found then
-					for _,model  in pairs(exp2Discoveries[id].whiteModelList) do
-						if string.find(entModel,model) != nil then found = true passKind = "model" break end
+					for _,model  in pairs(exp2Discoveries[myId].whiteModelList) do
+						if entModel != nil && string.find(entModel,model) != nil then found = true passKind = "model" break end
 					end
 				if not found then
 
-					for _,class in pairs(exp2Discoveries[id].whiteClassList) do
+					for _,class in pairs(exp2Discoveries[myId].whiteClassList) do
 						if string.find(entClass,class) != nil then found = true passKind = "class" break end
 					end
 				if not found then
-					table.remove(exp2Discoveries[id].entities, i - indexOffset)
+					table.remove(exp2Discoveries[myId].entities, i - indexOffset)
 					indexOffset = indexOffset + 1 
 
 				end end end end
@@ -151,7 +153,7 @@ registerFunction("findInSphere", "vn", "n", function(self,args)
 	if canFind then
 		local time = CurTime()
 		exp2Discoveries[id].entities = ents.FindInSphere(Vector(rv1[1],rv1[2],rv1[3]),rv2)
-		clipEntities(self.entity)
+		clipEntities(self)
 		exp2Discoveries[id].lastFind = time
 		exp2LastPlayerFind[exp2Discoveries[id].playerId] = time
 		exp2Discoveries[id].lastAccess = time
@@ -167,7 +169,7 @@ registerFunction("findInCone", "vvnn", "n", function(self,args)
 	if initTable(self.entity) and canFindByTime(id) then
 		local time = CurTime()
 		exp2Discoveries[id].entities = ents.FindInCone(Vector(rv1[1],rv1[2],rv1[3]),Vector(rv2[1],rv2[2],rv2[3]),rv3,rv4)
-		clipEntities(self.entity)
+		clipEntities(self)
 		exp2Discoveries[id].lastFind = time
 		exp2LastPlayerFind[exp2Discoveries[id].playerId] = time
 		exp2Discoveries[id].lastAccess = time
@@ -185,7 +187,7 @@ registerFunction("findInBox", "vv", "n", function(self,args)
 		exp2Discoveries[id].lastFind = time
 		exp2LastPlayerFind[exp2Discoveries[id].playerId] = time
 		exp2Discoveries[id].entities = ents.FindInBox(Vector(rv1[1],rv1[2],rv1[3]),Vector(rv2[1],rv2[2],rv2[3]))
-		clipEntities(self.entity)
+		clipEntities(self)
 		exp2Discoveries[id].lastAccess = time
 		return table.Count(exp2Discoveries[id].entities)
 	end
@@ -201,7 +203,7 @@ registerFunction("findByName", "s", "n", function(self,args)
 		exp2Discoveries[id].lastFind = time
 		exp2LastPlayerFind[exp2Discoveries[id].playerId] = time
 		exp2Discoveries[id].entities = ents.FindByName(rv1)
-		clipEntities(self.entity)
+		clipEntities(self)
 		exp2Discoveries[id].lastAccess = time
 		return table.Count(exp2Discoveries[id].entities)
 	end
@@ -217,7 +219,7 @@ registerFunction("findByClass", "s", "n", function(self,args)
 		exp2Discoveries[id].lastFind = time
 		exp2LastPlayerFind[exp2Discoveries[id].playerId] = time
 		exp2Discoveries[id].entities = ents.FindByClass(rv1)
-		clipEntities(self.entity)
+		clipEntities(self)
 		exp2Discoveries[id].lastAccess = time
 		return table.Count(exp2Discoveries[id].entities)
 	end
@@ -234,7 +236,7 @@ registerFunction("findByModel", "s", "n", function(self,args)
 		exp2Discoveries[id].lastFind = time
 		exp2LastPlayerFind[exp2Discoveries[id].playerId] = time
 		exp2Discoveries[id].entities = ents.FindByModel(rv1)
-		clipEntities(self.entity)
+		clipEntities(self)
 		exp2Discoveries[id].lastAccess = time
 		return table.Count(exp2Discoveries[id].entities)
 	end
@@ -274,7 +276,7 @@ registerFunction("findExcludePlayer","s","", function(self,args)
 	local rv1 = op1[1](self,op1)
 	local plyr = ents.FindByName(rv1)
 	if plyr != nil then rv1 = plyr[1] else 
-		for _,player  in pairs(ents.FindByClass("player")) do
+		for _,player  in pairs(player.GetAll()) do
 			if string.find(player:GetName(),rv1) != nil then rv1 = player break end
 		end
 	end
@@ -289,7 +291,7 @@ end)
 registerFunction("findExcludePlayerProps","e","", function(self,args)
 	local op1 = args[2]
 	local rv1 = op1[1](self,op1)
-	if not rv1:IsValid() then return end
+	if not rv1:IsValid() || not rv1:IsPlayer() then return end
 	initTable(self.entity)
 	local id = self.entity:EntIndex()
 	if not table.HasValue(exp2Discoveries[id].blackPropList, rv1:SteamID()) then
@@ -302,7 +304,7 @@ registerFunction("findExcludePlayerProps","s","", function(self,args)
 	local rv1 = op1[1](self,op1)
 	local plyr = ents.FindByName(rv1)
 	if plyr != nil then rv1 = plyr[1] else 
-		for _,player  in pairs(ents.FindByClass("player")) do
+		for _,player  in pairs(player.GetAll()) do
 			if string.find(player:GetName(),rv1) != nil then rv1 = player break end
 		end
 	end
@@ -439,7 +441,7 @@ end)
 registerFunction("findIncludePlayerProps","e","", function(self,args)
 	local op1 = args[2]
 	local rv1 = op1[1](self,op1)
-	if not rv1:IsValid() then return end
+	if !rv1:IsValid() || !rv1:IsPlayer() then return end
 	initTable(self.entity)
 	local id = self.entity:EntIndex()
 	if not table.HasValue(exp2Discoveries[id].whitePropList, rv1:SteamID()) then
