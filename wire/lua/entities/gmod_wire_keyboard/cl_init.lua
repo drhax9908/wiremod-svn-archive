@@ -31,7 +31,7 @@ concommand.Add("wire_keyboard_releaseinput", Wire_ReleaseInput)
 KeyEvents = {}
 
 function WireKeyboardThink()
-	if (WIRE_SCROLL_SPEED) then
+	if (WIRE_CLIENT_INSTALLED) then
 		for i=1,130 do
 			if(input.IsKeyDown(i) && !KeyEvents[i]) then 
 				// The key has been pressed
