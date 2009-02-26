@@ -3,6 +3,8 @@ local WIRE_BLINKS_PER_SECOND = 2
 local CurPathEnt = {}
 local Wire_DisableWireRender = 2 --bug with mode 0 and gmod2007beta
 
+WIRE_CLIENT_INSTALLED = 1
+
 Msg("loading materials\n")
 list.Add( "WireMaterials", "cable/rope_icon" )
 list.Add( "WireMaterials", "cable/cable2" )
