@@ -726,6 +726,7 @@ function TOOL:UpdateList()
 	
 	
 	local cdir = AdvDupe[self:GetOwner()].cdir
+
 	--Msg("cdir= "..cdir.."\n")
 	self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs={}" )
 	self:GetOwner():SendLua( "AdvDupeClient.LoadListFiles={}" )
@@ -745,11 +746,11 @@ function TOOL:UpdateList()
 	end
 	
 	if ( file.Exists(cdir) && file.IsDir(cdir) ) then
-		for key, val in pairs( file.Find( cdir.."/*" ) ) do
-			if ( !file.IsDir( cdir.."/"..val ) ) then
+		for key, val in pairs( file.Find(dupeshare.ParsePath( cdir.."/*" )) ) do
+			if ( !file.IsDir(dupeshare.ParsePath( cdir.."/"..val )) ) then
 				//self:GetOwner():SendLua( "AdvDupeClient.LoadListFiles[\""..val.."\"] = \""..cdir.."/"..val.."\"" )
 				self:GetOwner():SendLua( "AdvDupeClient.LoadListFiles[\""..val.."\"] = \""..val.."\"" )
-			elseif  ( file.IsDir( cdir.."/"..val ) ) then
+			elseif  ( file.IsDir(dupeshare.ParsePath( cdir.."/"..val )) ) then
 				self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs[\"/"..val.."\"] = \""..cdir.."/"..val.. "\"" )
 			end
 		end
@@ -777,10 +778,10 @@ function TOOL:UpdateList()
 		end
 		
 		if ( file.Exists(cdir2) && file.IsDir(cdir2)) then
-			for key, val in pairs( file.Find( cdir2.."/*" ) ) do
-				if ( !file.IsDir( cdir2.."/"..val ) ) then
+			for key, val in pairs( file.Find(dupeshare.ParsePath( cdir2.."/*" ) )) do
+				if ( !file.IsDir(dupeshare.ParsePath( cdir2.."/"..val )) ) then
 					self:GetOwner():SendLua( "AdvDupeClient.LoadListFiles2[\""..val.."\"] = \""..cdir2.."/"..val.."\"" )
-				elseif  ( file.IsDir( cdir2.."/"..val ) ) then
+				elseif  ( file.IsDir(dupeshare.ParsePath( cdir2.."/"..val )) ) then
 					self:GetOwner():SendLua( "AdvDupeClient.LoadListDirs2[\"/"..val.."\"] = \""..cdir2.."/"..val.. "\"" )
 				end
 			end

@@ -464,6 +464,32 @@ function dupeshare.UpDir(path)
 	return "" //if path/.. is root
 end
 
+function dupeshare.ParsePath(path)
+	path = string.gsub(path,"/","\\")
+
+	local gpath = ""
+	local tpath = ""
+
+	for i=1,string.len(path) do
+		local chr = string.byte(path,i) //FIXME
+		if ((chr >= 32) and (chr <= 126)) then
+			tpath = tpath .. string.char(chr)
+			if (chr ~= 32) then
+				gpath = gpath .. string.char(chr)
+			end
+		end
+	end
+
+	if ((string.find(gpath,"\\%.%.") ~= nil) ||
+	    (string.find(gpath,"%.%.\\") ~= nil) ||
+	    (string.find(gpath,"%.\\") ~= nil) ||
+	    (string.find(gpath,"\\%.") ~= nil)) then
+		return "adv_duplicator\\_"
+	else
+		return tpath
+	end
+end
+
 
 
 Msg("==== Advanced Duplicator v."..dupeshare.Version.." shared module installed! ====\n")

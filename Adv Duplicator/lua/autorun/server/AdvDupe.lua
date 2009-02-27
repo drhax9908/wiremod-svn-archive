@@ -366,7 +366,7 @@ function AdvDupe.LoadDupeTableFromFile( pl, filepath )
 	end
 	
 	AdvDupe.SetPercent(pl, 10)
-	timer.Simple(.1, Load1, pl, filepath, tool, file.Read(filepath))
+	timer.Simple(.1, Load1, pl, filepath, tool, file.Read(dupeshare.ParsePath(filepath)) or "")
 	
 end
 
@@ -829,7 +829,7 @@ if (dupeshare and dupeshare.PublicDirs) then
 		local dir = dupeshare.BaseDir.."/"..v
 		AdvDupe.PublicDirs[v] = dir
 		if ( !file.Exists(dir) ) or ( file.Exists(dir) and !file.IsDir(dir) ) then 
-			file.CreateDir( dir )
+			file.CreateDir( dupeshare.ParsePath(dir) )
 		end
 	end
 end
@@ -920,7 +920,7 @@ function AdvDupe.FileOpts(pl, action, filename, dir, dir2)
 	
 	if (action == "delete") and AdvDupe.CheckPerms(pl, "", dir, "delete") then
 		
-		file.Delete(file1)
+		file.Delete(dupeshare.ParsePath(file1))
 		AdvDupe.HideGhost(pl, false)
 		AdvDupe.UpdateList(pl)
 		
@@ -936,7 +936,7 @@ function AdvDupe.FileOpts(pl, action, filename, dir, dir2)
 				AdvDupe.SendClientError(pl, "File Exists at Destination, Saved File as: "..filename2)
 			end
 		end
-		file.Write(file2, file.Read(file1))
+		file.Write(dupeshare.ParsePath(file2), file.Read(dupeshare.ParsePath(file1)) or "")
 		AdvDupe.UpdateList(pl)
 		
 	elseif (action == "move") and AdvDupe.CheckPerms(pl, "", dir, "delete")
@@ -962,7 +962,7 @@ function AdvDupe.FileOpts(pl, action, filename, dir, dir2)
 			return
 		end
 		
-		file.CreateDir(file1)
+		file.CreateDir(dupeshare.ParsePath(file1))
 		AdvDupe.HideGhost(pl, false)
 		AdvDupe.UpdateList(pl)
 		
@@ -980,7 +980,7 @@ function AdvDupe.FileOpts(pl, action, filename, dir, dir2)
 			file2, filename2 = dupeshare.FileNoOverWriteCheck(dir, dir2)
 			AdvDupe.SendClientError(pl, "File Exists With That Name Already, Renamed as: "..filename2)
 		end
-		file.Write(file2, file.Read(file1))
+		file.Write(dupeshare.ParsePath(file2), file.Read(dupeshare.ParsePath(file1)) or "")
 		AdvDupe.UpdateList(pl)
 		
 	else
@@ -1424,7 +1424,7 @@ function AdvDupe.RecieveFileContentSave( pl, filepath )
 		temp = dupeshare.DeCompress(temp, true, AdvDupe[pl].compress)
 	end
 	
-	file.Write(filepath, temp)
+	file.Write(dupeshare.ParsePath(filepath), temp)
 	
 	AdvDupe[pl].tempfile = nil
 	
@@ -1472,7 +1472,7 @@ function AdvDupe.SendSaveToClient( pl, filename )
 	
 	filename = dupeshare.GetFileFromFilename(filepath)
 	
-	AdvDupe.SendBuffer[pl] = file.Read(filepath)
+	AdvDupe.SendBuffer[pl] = file.Read(dupeshare.ParsePath(filepath)) or ""
 	
 	local compress = (pl:GetInfo("ZLib_Installed") == "1") and dupeshare.ZLib_Installed
 	MsgN("Compress = ",compress)
