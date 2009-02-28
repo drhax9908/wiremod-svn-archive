@@ -51,12 +51,13 @@ function WireToolMakeButton( self, trace, ply )
 	
 	local _model			= self:GetClientInfo( "model" )
 	local _toggle			= (self:GetClientNumber( "toggle" ) ~= 0)
+	local _entity			= (self:GetClientNumber( "entity" ) ~= 0)
 	local _value_off		= self:GetClientNumber( "value_off" )
 	local _value_on			= self:GetClientNumber( "value_on" )
 	local _description		= self:GetClientInfo( "description" )
 
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_button" && trace.Entity.pl == ply ) then
-		trace.Entity:Setup(_toggle, _value_off, _value_on)
+		trace.Entity:Setup(_toggle, _value_off, _value_on, _entity)
 		return true
 	end
 
@@ -65,7 +66,7 @@ function WireToolMakeButton( self, trace, ply )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 
-	local wire_button = MakeWireButton( ply, _model, trace.HitPos, Ang, _toggle, _value_off, _value_on, _description )
+	local wire_button = MakeWireButton( ply, _model, trace.HitPos, Ang, _toggle, _value_off, _value_on, _description, _entity )
 
 	local min = wire_button:OBBMins()
 	wire_button:SetPos( trace.HitPos - trace.HitNormal * min.z )

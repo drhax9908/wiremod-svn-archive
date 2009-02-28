@@ -137,6 +137,7 @@ if CLIENT then
     language.Add( "Tool_wire_button_desc", "Spawns a button for use with the wire system." )
     language.Add( "Tool_wire_button_0", "Primary: Create/Update Button" )
     language.Add( "WireButtonTool_toggle", "Toggle:" )
+    language.Add( "WireButtonTool_entity", "Output EntID:" )
     language.Add( "WireButtonTool_value_on", "Value On:" )
     language.Add( "WireButtonTool_value_off", "Value Off:" )
 	language.Add( "sboxlimit_wire_buttons", "You've hit wired buttons limit!" )
@@ -151,6 +152,7 @@ end
 TOOL.ClientConVar = {
 	model = "models/props_c17/clock01.mdl",
 	toggle = "0",
+	entity = "0",
 	value_off = "0",
 	value_on = "1",
 	description = ""
@@ -160,6 +162,7 @@ function TOOL.BuildCPanel(panel)
 	WireToolHelpers.MakePresetControl(panel, "wire_button")
 	ModelPlug_AddToCPanel(panel, "button", "wire_button", "#Button_Model", nil, "#Button_Model", 6)
 	panel:CheckBox("#WireButtonTool_toggle", "wire_button_toggle")
+	panel:CheckBox("#WireButtonTool_entity", "wire_button_entity")
 	panel:NumSlider("#WireButtonTool_value_on", "wire_button_value_on", -10, 10, 1)
 	panel:NumSlider("#WireButtonTool_value_off", "wire_button_value_off", -10, 10, 1)
 end

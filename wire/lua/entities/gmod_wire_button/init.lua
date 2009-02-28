@@ -5,6 +5,8 @@ include('shared.lua')
 
 ENT.WireDebugName = "Button"
 ENT.OverlayDelay = 0
+ENT.OutputEntID = false
+ENT.EntIDToOutput = 0
 
 function ENT:Initialize()
 	self.Entity:PhysicsInit( SOLID_VPHYSICS )
@@ -18,7 +20,7 @@ end
 function ENT:Use(ply)
 	if (not ply:IsPlayer()) then return end
 	if (self.PrevUser) and (self.PrevUser:IsValid()) then return end
-
+	if(self.OutputEntID)then self.EntIDToOutput = ply:EntIndex() end
 	if (self:IsOn()) then
 		if (self.toggle) then self:Switch(false) end
 		
@@ -50,7 +52,7 @@ function ENT:Think()
 	end
 end
 
-function ENT:Setup(toggle, value_off, value_on)
+function ENT:Setup(toggle, value_off, value_on, entity)
 	self.toggle = toggle
 	self.value_off = value_off
 	self.value_on = value_on
@@ -59,6 +61,15 @@ function ENT:Setup(toggle, value_off, value_on)
 
 	self:ShowOutput(self.value_off)
 	Wire_TriggerOutput(self.Entity, "Out", self.value_off)
+
+	if(entity)then
+	Wire_AdjustOutputs(self.Entity, { "Out", "EntID" })
+	Wire_TriggerOutput(self.Entity, "EntID", 0)
+	self.OutputEntID=true
+	else
+	Wire_AdjustOutputs(self.Entity, { "Out" })
+	self.OutputEntID=false
+	end
 end
 
 function ENT:Switch(on)
@@ -72,10 +83,11 @@ function ENT:Switch(on)
 	else
 		self:ShowOutput(self.value_off)
 		self.Value = self.value_off
+		if(self.OutputEntID)then self.EntIDToOutput=0 end
 	end
 
 	Wire_TriggerOutput(self.Entity, "Out", self.Value)
-
+	if(self.OutputEntID)then Wire_TriggerOutput(self.Entity, "EntID", self.EntIDToOutput) end
 	return true
 end
 
@@ -84,7 +96,7 @@ function ENT:ShowOutput(value)
 end
 
 
-function MakeWireButton( pl, Model, Pos, Ang, toggle, value_off, value_on, description, Vel, aVel, frozen )
+function MakeWireButton( pl, Model, Pos, Ang, toggle, value_off, value_on, description, entity, Vel, aVel, frozen )
 	if ( !pl:CheckLimit( "wire_buttons" ) ) then return false end
 
 	local wire_button = ents.Create( "gmod_wire_button" )
@@ -100,7 +112,7 @@ function MakeWireButton( pl, Model, Pos, Ang, toggle, value_off, value_on, descr
 		Phys:EnableMotion(!frozen)
 	end
 
-	wire_button:Setup(toggle, value_off, value_on )
+	wire_button:Setup(toggle, value_off, value_on, entity )
 	wire_button:SetPlayer(pl)
 	wire_button.pl = pl
 	
@@ -109,4 +121,4 @@ function MakeWireButton( pl, Model, Pos, Ang, toggle, value_off, value_on, descr
 	return wire_button
 end
 
-duplicator.RegisterEntityClass("gmod_wire_button", MakeWireButton, "Model", "Pos", "Ang", "toggle", "value_off", "value_on", "description", "Vel", "aVel", "frozen" )
+duplicator.RegisterEntityClass("gmod_wire_button", MakeWireButton, "Model", "Pos", "Ang", "toggle", "value_off", "value_on", "description", "entity", "Vel", "aVel", "frozen" )
