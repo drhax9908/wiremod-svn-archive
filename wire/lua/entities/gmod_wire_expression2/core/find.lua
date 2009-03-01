@@ -742,7 +742,7 @@ registerFunction("findClipToModel","s","n", function(self,args)
 	//for i,ent in ipairs(exp2Discoveries[id].entities) do
 	for i = 1, table.Count(exp2Discoveries[id].entities), 1 do
 		local ent = exp2Discoveries[id].entities[i - indexOffset]
-		if ent != nil && ent:IsValid() && string.find(string.lower(ent:GetModel()), rv1) == nil then
+		if ent != nil && ent:IsValid() && ent:GetModel() != nil && string.find(string.lower(ent:GetModel()), rv1) == nil then
 			table.remove(exp2Discoveries[id].entities, i - indexOffset)
 			indexOffset = indexOffset + 1
 		end
@@ -760,7 +760,7 @@ registerFunction("findClipFromModel","s","n", function(self,args)
 	//for i,ent in ipairs(exp2Discoveries[id].entities) do
 	for i = 1, table.Count(exp2Discoveries[id].entities), 1 do
 		local ent = exp2Discoveries[id].entities[i - indexOffset]
-		if ent != nil && ent:IsValid() && string.find(string.lower(ent:GetModel()), rv1) != nil then
+		if ent != nil && ent:IsValid() && ent:GetModel() != nil && string.find(string.lower(ent:GetModel()), rv1) != nil then
 			table.remove(exp2Discoveries[id].entities, i - indexOffset)
 			indexOffset = indexOffset + 1
 		end
