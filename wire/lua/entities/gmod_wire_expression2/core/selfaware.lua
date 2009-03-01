@@ -17,3 +17,7 @@ registerFunction("setColor", "nnn", "", function(self, args)
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	self.entity:SetColor(math.Clamp(rv1, 0, 255), math.Clamp(rv2, 0, 255), math.Clamp(rv3, 0, 255), 255)
 end)
+
+registerFunction("selfDestruct", "", "", function(self, args)
+    self.entity:Remove()
+end)
