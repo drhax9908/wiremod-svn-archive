@@ -496,6 +496,13 @@ registerFunction("applyAngForce", "e:a", "", function(self,args)
 	phys:ApplyForceOffset( up * -1, pos + right * rv2[3]/2 )
 end)
 
+registerFunction("inertia", "e:", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!validPhysics(rv1)) then return {0,0,0} end
+	local vec = rv1:GetPhysicsObject():GetInertia()
+	return {vec.x,vec.y,vec.z}
+end)
 
 
 /******************************************************************************/
