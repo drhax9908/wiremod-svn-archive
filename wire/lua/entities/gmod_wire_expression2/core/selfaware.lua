@@ -21,3 +21,12 @@ end)
 registerFunction("selfDestruct", "", "", function(self, args)
     self.entity:Remove()
 end)
+
+registerFunction("selfDestructAll", "", "", function(self, args)
+    for k,v in pairs(constraint.GetAllConstrainedEntities(self.entity)) do
+		if(isOwner(self, v)) then
+			v:Remove()
+		end
+    end
+    self.entity:Remove()
+end)
