@@ -212,7 +212,6 @@ registerFunction("popString", "r:", "s", function(self, args)
 	local rv1 = op1[1](self, op1)
 	local ret = table.remove(rv1)
 	if ret then return tostring(ret) end
-	return ""	
 end)
 
 registerFunction("pushEntity", "r:e", "", function(self, args)
@@ -223,11 +222,11 @@ registerFunction("pushEntity", "r:e", "", function(self, args)
 end)
 
 registerFunction("popEntity", "r:", "e", function(self, args)
-	local op1, op2 = args[2], args[3]
-	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	local ret = table.remove(rv1)
-	if validEntity(ret) then return ret end
-	return nil
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    local ret = table.remove(rv1)
+    if validEntity(ret) then return ret end
+    return nil
 end)
 
 registerFunction("pop", "r:", "", function(self,args)
