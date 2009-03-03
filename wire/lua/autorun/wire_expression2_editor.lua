@@ -476,7 +476,7 @@ end
 
 function Editor:NewScript()
 	self:ChosenFile()
-	self:SetCode("@name \n@inputs \n@outputs \n@persist \n\n#CAUTION: Garry has disabled writing to sub-folders\n#This will cause your scripts to end up in the data-folder itself!\n#Browsing has been changed to read from the data folder\#until this is solved or another solution is found")
+	self:SetCode("@name \n@inputs \n@outputs \n@persist \n\n")
 end
 
 function Editor:Validate(gotoerror)
