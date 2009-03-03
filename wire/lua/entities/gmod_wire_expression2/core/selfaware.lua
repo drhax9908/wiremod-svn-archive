@@ -24,9 +24,10 @@ end)
 
 registerFunction("selfDestructAll", "", "", function(self, args)
     for k,v in pairs(constraint.GetAllConstrainedEntities(self.entity)) do
-		if(isOwner(self, v)) then
+		if(getOwner(self,v)==self.player) then
 			v:Remove()
 		end
     end
+    constraint.RemoveAll(self.entity)
     self.entity:Remove()
 end)
