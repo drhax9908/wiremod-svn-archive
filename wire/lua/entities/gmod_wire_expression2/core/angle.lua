@@ -117,6 +117,12 @@ registerOperator("sub", "aa", "a", function(self, args)
 	return { rv1[1] - rv2[1], rv1[2] - rv2[2], rv1[3] - rv2[3] }
 end)
 
+registerOperator("mul", "aa", "a", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	return { rv1[1] * rv2[1], rv1[2] * rv2[2], rv1[3] * rv2[3] }
+end)
+
 registerOperator("mul", "na", "a", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)

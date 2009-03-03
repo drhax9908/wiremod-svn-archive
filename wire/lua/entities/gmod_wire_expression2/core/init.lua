@@ -1144,7 +1144,7 @@ function Parser:ExprError()
 		elseif self:AcceptRoamingToken("dec") then
 			self:Error("Decrement operator (--) must be preceded by variable")
 			
-		elseif self:AcceptRoamingToken("lpa") then
+		elseif self:AcceptRoamingToken("rpa") then
 			self:Error("Right parenthesis ()) without matching left parenthesis")
 		elseif self:AcceptRoamingToken("lcb") then
 			self:Error("Left curly bracket ({) must be part of an if-statement block")
