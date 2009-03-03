@@ -233,7 +233,7 @@ if CLIENT then
 		})
 		
 		Editor = vgui.Create( "Expression2EditorFrame")
-		Editor:Setup("Expression 2 Editor","Expression2",true)
+		Editor:Setup("Expression 2 Editor","",true)
 
 		local FileBrowser = vgui.Create("wire_expression2_browser" , panel)
 		panel:AddPanel(FileBrowser)
