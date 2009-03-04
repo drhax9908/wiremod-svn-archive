@@ -82,6 +82,8 @@ registerFunction("setNumber", "xwl:sn", "", function(self, args)
 	if(!entity or !entity.extended) then return end
 	if !entity.Inputs[rv2] then return end
 	if entity.Inputs[rv2].Type != "NORMAL" then return end
+	entity.Inputs[rv2].Value = rv3
+	if(entity.TriggerInput == nil) return
 	entity:TriggerInput(rv2, rv3)
 end)
 
@@ -104,6 +106,8 @@ registerFunction("setVector", "xwl:sv", "", function(self, args)
 	if !entity.Inputs[rv2] then return end
 	if entity.Inputs[rv2].Type != "VECTOR" then return end
 	local vec = Vector(rv3[1], rv3[2], rv3[3])
+	entity.Inputs[rv2].Value = vec
+	if(entity.TriggerInput == nil) return
 	entity:TriggerInput(rv2, vec)
 end)
 
@@ -126,6 +130,8 @@ registerFunction("setEntity", "xwl:se", "", function(self, args)
 	if(!entity or !entity.extended) then return end
 	if !entity.Inputs[rv2] then return end
 	if entity.Inputs[rv2].Type != "ENTITY" then return end
+	entity.Inputs[rv2].Value = rv3
+	if(entity.TriggerInput == nil) return
 	entity:TriggerInput(rv2, rv3)
 end)
 
@@ -147,6 +153,8 @@ registerFunction("setString", "xwl:ss", "", function(self, args)
     if(!entity or !entity.extended) then return end
     if !entity.Inputs[rv2] then return end
     if entity.Inputs[rv2].Type != "STRING" then return end
+	entity.Inputs[rv2].Value = rv3
+	if(entity.TriggerInput == nil) return
     entity:TriggerInput(rv2, rv3)
 end)
 
@@ -168,6 +176,10 @@ registerFunction("setXyz", "xwl:v", "", function(self, args)
 	if(!entity or !entity.extended) then return end
 	if !entity.Inputs["X"] || !entity.Inputs["Y"] || !entity.Inputs["Z"] then return end
 	if entity.Inputs["X"].Type != "NORMAL" || entity.Inputs["Y"].Type != "NORMAL" || entity.Inputs["Z"].Type != "NORMAL" then return end
+	entity.Inputs["X"].Value = rv2[1]
+	entity.Inputs["Y"].Value = rv2[2]
+	entity.Inputs["Z"].Value = rv2[3]
+	if(entity.TriggerInput == nil) return
 	entity:TriggerInput("X", rv2[1])
 	entity:TriggerInput("Y", rv2[2])
 	entity:TriggerInput("Z", rv2[3])
