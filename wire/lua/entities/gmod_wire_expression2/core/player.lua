@@ -80,3 +80,25 @@ registerFunction("isAlive", "e:", "n", function(self, args)
 	if(rv1:IsNPC() and rv1:Health() > 0) then return 1 end
 	return 0
 end)
+
+registerFunction("frags", "e:", "n", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!validEntity(rv1)) then return 0 end
+	if(rv1:IsPlayer()) then return rv1:Frags() else return 0 end
+end)
+
+registerFunction("team", "e:", "n", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!validEntity(rv1)) then return 0 end
+	if(rv1:IsPlayer()) then return rv1:Team() else return 0 end
+end)
+
+registerFunction("teamname", "n", "s", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local str = team.GetName(rv1)
+	if str == nil then return "" end
+	return str
+end)
