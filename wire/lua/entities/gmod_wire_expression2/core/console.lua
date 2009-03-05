@@ -5,7 +5,7 @@ AddCSLuaFile('console.lua')
 \******************************************************************************/
 
 if (CLIENT) then
-	CreateClientConVar("wire_expression2_concmd", 1, true, true)
+	CreateClientConVar("wire_expression2_concmd", 0, true, true)
 end
 
 local function validConCmd(self)
