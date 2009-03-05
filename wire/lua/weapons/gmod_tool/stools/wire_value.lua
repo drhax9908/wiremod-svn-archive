@@ -47,6 +47,11 @@ function TOOL:LeftClick( trace )
 	
 	//value is a table of strings so we can save a step later in adjusting the outputs
 	local value = {}
+	if (numvalues < 1) then
+        	numvalues = 1
+	elseif (numvalues > 12) then
+		numvalues = 12
+	end
 	for i = 1, numvalues do
 		value[i] = tostring( self:GetClientNumber( "value"..i ) )
 	end
