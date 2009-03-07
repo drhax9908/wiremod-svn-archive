@@ -224,6 +224,7 @@ local function fixupangle(angle)
 end
 
 function ENT:Think()
+	local _,_,_,coloralpha = self.Entity:GetColor()
 	if self.Pod and self.Pod:IsValid() then
 		local Ply = nil
 		if self.RC then
@@ -246,7 +247,7 @@ function ENT:Think()
 			end
 			self.Ply = Ply
 			if temp then self.Ply.Initial = self.Ply:GetAimVector():Angle() end
-			self.Entity:SetColor( 0, 255, 0, 255 )
+			self.Entity:SetColor( 0, 255, 0, coloralpha )
 			Wire_TriggerOutput( self.Entity, "Active", 1)
 			
 			if not self.disablevar then
@@ -315,7 +316,7 @@ function ENT:Think()
 		else
 			if self.Ply then --clear outputs
 				Wire_TriggerOutput( self.Entity, "Active", 0) 
-				self.Entity:SetColor( 255, 0, 0, 255 )
+				self.Entity:SetColor( 255, 0, 0, coloralpha )
 				for k, _ in pairs( self.keys )  do
 					Wire_TriggerOutput( self.Entity, k, 0 )
 				end

@@ -4,6 +4,7 @@ AddCSLuaFile( "shared.lua" )
 include('shared.lua')
 
 ENT.WireDebugName = "Hoverball"
+ENT.OnState = 0
 
 /*---------------------------------------------------------
    Name: Initialize
@@ -46,9 +47,9 @@ function ENT:TriggerInput(iname, value)
 	if (iname == "A: ZVelocity") then
 		self:SetZVelocity( value )
 	elseif (iname == "B: HoverMode") then
-		if (value >= 1 && !self:GetHoverMode()) then
+		if (value >= 1 && self.OnState==0) then
 			self:EnableHover()
-		elseif (self:GetHoverMode()) then
+		else
 			self:DisableHover()
 		end
 	elseif (iname == "C: SetZTarget") then
@@ -58,6 +59,7 @@ end
 
 
 function ENT:EnableHover()
+	self.OnState = 1
 	self:SetHoverMode( true )
 	self:SetStrength( self.strength or 1 ) //reset weight so it will work
 	self:SetTargetZ ( self.Entity:GetPos().z ) //set height to current
@@ -69,6 +71,7 @@ function ENT:EnableHover()
 end
 
 function ENT:DisableHover()
+	self.OnState = 0
 	self:SetHoverMode( false )
 	self:SetStrength(0.1) //for less dead weight while off
 	local phys = self.Entity:GetPhysicsObject()
@@ -213,3 +216,24 @@ function ENT:SetStrength( strength )
 	end
 end
 
+/*---------------------------------------------------------
+--Duplicator support
+---------------------------------------------------------*/
+function ENT:BuildDupeInfo()
+	local info = self.BaseClass.BuildDupeInfo(self) or {}
+	info.OnState = self.OnState
+	return info
+end
+
+function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
+	if(ply && ent && info && GetEntByID)then
+		self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
+	end
+    if (info && info.OnState) then
+	if(info.OnState==0)then
+		self:DisableHover()
+	else
+		self:EnableHover()
+	end
+    end
+end
