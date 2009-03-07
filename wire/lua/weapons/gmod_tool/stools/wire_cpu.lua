@@ -429,9 +429,9 @@ function CPU_UploadProgram(pl)
 end
 	
 function CPU_LoadProgram(pl, command, args)
-	local fname = pl:GetInfo("wire_cpu_filename")//"CPUChip\\"..pl:GetInfo("wire_cpu_filename");
+	local fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename");
 	if (!file.Exists(fname)) then
-		fname = pl:GetInfo("wire_cpu_filename")..".txt"//"CPUChip\\"..pl:GetInfo("wire_cpu_filename")..".txt";
+		fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename")..".txt";
 	end
 	
 	if (!file.Exists(fname)) then

@@ -705,6 +705,8 @@ function ENT:InitializeOpcodeTable()
 	end
 	self.OpcodeTable[93] = function (Param1,Param2)	//TPG
 		local tadd = Param1*128
+		local oldint = self.IF
+		self.IF = 0
 		self.CMPR = 0
 		while (tadd < Param1*128+128) do
 			local val = self:ReadCell(tadd)
@@ -714,6 +716,7 @@ function ENT:InitializeOpcodeTable()
 			end
 			tadd = tadd + 1
 		end
+		self.IF = oldint
 	end
 	self.OpcodeTable[94] = function (Param1,Param2)	//FCEIL
 		return math.ceil(Param1)
