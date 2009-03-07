@@ -190,7 +190,7 @@ function ENT:Interrupt(intnumber,intparam)
 				end
 			end
 		end
-		self.BusLock = 0
 	end
+	self.BusLock = 0
 end
 
