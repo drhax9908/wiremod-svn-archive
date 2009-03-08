@@ -732,25 +732,29 @@ if CLIENT then
 				Command = "wire_gate_expression_validate_cl"
 			})
 			
-			if wire_gate_expression_hintrev < 1 then
+			//if wire_gate_expression_hintrev < 1 then
 				panel:AddControl("Label", {
-					Text = "             New self-awareness functionality available"
+					Text = ""
+				})			
+				
+				panel:AddControl("Label", {
+					Text = "Expression Gate 1 will become deprecated and removed from WireMod sometime in the future. We advice you to use Expression 2 instead, it has a proper editor, is faster, more powerful and the syntax is almost exactly the same."
+				})
+
+				panel:AddControl("Label", {
+					Text = "If you have any questions or concerns feel free to visit the community at www.wiremod.com, thank you! -- Syranide"
 				})
 				
 				panel:AddControl("Label", {
-					Text = "           Check out the selfaware folder for examples"
+					Text = ""
 				})
 				
-				panel:AddControl("Label", {
-					Text = "              Documentation available at wiremod.com"
-				})
-				
-				panel:AddControl("Button", {
+				/*panel:AddControl("Button", {
 					Text = "                  Click here to hide this notification!",
 					Name = "Hide",
 					Command = "wire_gate_expression_hide_cl"
-				})
-			end
+				})*/
+			//end
 			
 			panel:AddControl("TextBox", {
 				Label = "Label:",
