@@ -318,6 +318,27 @@ end)
 
 /******************************************************************************/
 
+registerFunction("round", "v:", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local x = rv1[1] - (rv1[1] + 0.5) % 1 + 0.5
+	local y = rv1[2] - (rv1[2] + 0.5) % 1 + 0.5
+	local z = rv1[3] - (rv1[3] + 0.5) % 1 + 0.5
+	return {x, y, z}
+end)
+
+registerFunction("round", "v:n", "v", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local shf = 10 ^ rv2
+	local x = rv1[1] - ((rv1[1] * shf + 0.5) % 1 + 0.5) / shf
+	local y = rv1[2] - ((rv1[2] * shf + 0.5) % 1 + 0.5) / shf
+	local z = rv1[3] - ((rv1[3] * shf + 0.5) % 1 + 0.5) / shf
+	return {x, y, z}
+end)
+
+/******************************************************************************/
+
 registerFunction("toAngle", "v:", "a", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
