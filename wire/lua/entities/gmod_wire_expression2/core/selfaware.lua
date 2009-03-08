@@ -31,3 +31,9 @@ registerFunction("selfDestructAll", "", "", function(self, args)
     //constraint.RemoveAll(self.entity)
     self.entity:Remove()
 end)
+
+registerFunction("print", "s", "", function(self,args)
+	local op1 = args[2]
+	local rv1 = op1[1](self,op1)
+	self.player:ChatPrint(rv1)
+end)
