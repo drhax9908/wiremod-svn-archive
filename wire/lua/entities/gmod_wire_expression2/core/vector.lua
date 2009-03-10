@@ -29,6 +29,13 @@ registerFunction("vec", "nnn", "v", function(self, args)
 	return { rv1, rv2, rv3 }
 end)
 
+// Convert Angle -> Vector
+registerFunction("vec", "a", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	return {rv1[1],rv1[2],rv1[3]}
+end)
+
 /******************************************************************************/
 // TODO: do we want it this way? right now we are never allowed to modify vectors
 //       hence, A=B, modifying A will modify B, easy to fix, but "costly"
@@ -335,6 +342,143 @@ registerFunction("round", "v:n", "v", function(self, args)
 	local y = rv1[2] - ((rv1[2] * shf + 0.5) % 1 + 0.5) / shf
 	local z = rv1[3] - ((rv1[3] * shf + 0.5) % 1 + 0.5) / shf
 	return {x, y, z}
+end)
+
+registerFunction("ceil", "v", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local x = rv1[1] - rv1[1] % -1
+	local y = rv1[2] - rv1[2] % -1
+	local z = rv1[3] - rv1[3] % -1
+	return {x, y, z}
+end)
+
+registerFunction("ceil", "vn", "v", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local shf = 10 ^ rv2
+	local x = rv1[1] - ((rv1[1] * shf) % -1) / shf
+	local y = rv1[2] - ((rv1[2] * shf) % -1) / shf
+	local z = rv1[3] - ((rv1[3] * shf) % -1) / shf
+	return {x, y, z}
+end)
+
+registerFunction("floor", "v", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local x = rv1[1] - rv1[1] % 1
+	local y = rv1[2] - rv1[2] % 1
+	local z = rv1[3] - rv1[3] % 1
+	return {x, y, z}
+end)
+
+registerFunction("floor", "vn", "v", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local shf = 10 ^ rv2
+	local x = rv1[1] - ((rv1[1] * shf) % 1) / shf
+	local y = rv1[2] - ((rv1[2] * shf) % 1) / shf
+	local z = rv1[3] - ((rv1[3] * shf) % 1) / shf
+	return {x, y, z}
+end)
+
+// min/max based on vector length - returns shortest/longest vector
+registerFunction("min", "vv", "v", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local length1 = (rv1[1] * rv1[1] + rv1[2] * rv1[2] + rv1[3] * rv1[3]) ^ (1 / 2)
+	local length2 = (rv2[1] * rv2[1] + rv2[2] * rv2[2] + rv2[3] * rv2[3]) ^ (1 / 2)
+	if length1 < length2 then return rv1 else return rv2 end
+end)
+
+registerFunction("max", "vv", "v", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local length1 = (rv1[1] * rv1[1] + rv1[2] * rv1[2] + rv1[3] * rv1[3]) ^ (1 / 2)
+	local length2 = (rv2[1] * rv2[1] + rv2[2] * rv2[2] + rv2[3] * rv2[3]) ^ (1 / 2)
+	if length1 > length2 then return rv1 else return rv2 end
+end)
+
+// Performs modulo on x,y,z separately
+registerFunction("mod", "vn", "v", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local x,y,z
+	if rv1[1] >= 0 then
+		x = rv1[1] % rv2
+	else x = rv1[1] % -rv2 end
+	if rv1[2] >= 0 then
+		y = rv1[2] % rv2
+	else y = rv1[2] % -rv2 end
+	if rv1[3] >= 0 then
+		z = rv1[3] % rv2
+	else z = rv1[3] % -rv2 end
+	return {x, y, z}
+end)
+
+// Modulo where divisors are defined as a vector
+registerFunction("mod", "vv", "v", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local x,y,z
+	if rv1[1] >= 0 then
+		x = rv1[1] % rv2[1]
+	else x = rv1[1] % -rv2[1] end
+	if rv1[2] >= 0 then
+		y = rv1[2] % rv2[2]
+	else y = rv1[2] % -rv2[2] end
+	if rv1[3] >= 0 then
+		z = rv1[3] % rv2[3]
+	else z = rv1[3] % -rv2[3] end
+	return {x, y, z}
+end)
+
+// Clamp according to limits defined by two min/max vectors
+registerFunction("clamp", "vvv", "v", function(self, args)
+	local op1, op2, op3 = args[2], args[3], args[4]
+	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+	local x,y,z
+	
+	if rv1[1] < rv2[1] then x = rv2[1]
+	elseif rv1[1] > rv3[1] then x = rv3[1]
+	else x = rv1[1] end
+
+	if rv1[2] < rv2[2] then y = rv2[2]
+	elseif rv1[2] > rv3[2] then y = rv3[2]
+	else y = rv1[2] end
+
+	if rv1[3] < rv2[3] then z = rv2[3]
+	elseif rv1[3] > rv3[3] then z = rv3[3]
+	else z = rv1[3] end
+
+	return {x, y, z}
+end)
+
+// Mix two vectors by a given proportion (between 0 and 1)
+registerFunction("mix", "vvn", "v", function(self, args)
+	local op1, op2, op3 = args[2], args[3], args[4]
+	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+	local n
+	if rv3 < 0 then n = 0
+	elseif rv3 > 1 then n = 1
+	else n = rv3 end
+	local x = rv1[1] * n + rv2[1] * (1-n)
+	local y = rv1[2] * n + rv2[2] * (1-n)
+	local z = rv1[3] * n + rv2[3] * (1-n)
+	return {x, y, z}
+end)
+
+// Circular shift function: shiftr( x,y,z ) = ( z,x,y )
+registerFunction("shiftr", "v", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	return {rv1[3], rv1[1], rv1[2]}
+end)
+
+registerFunction("shiftl", "v", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	return {rv1[2], rv1[3], rv1[1]}
 end)
 
 /******************************************************************************/
