@@ -1682,6 +1682,7 @@ include("sound.lua");
 include("color.lua");
 include("serverinfo.lua");
 include("chat.lua");
+include("constraint.lua");
 include("custom.lua");
 //include("quaternion.lua");
 
