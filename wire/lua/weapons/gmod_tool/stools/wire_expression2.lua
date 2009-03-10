@@ -73,6 +73,20 @@ if SERVER then
 		return true
 	end
 	
+	function TOOL:Reload(trace)
+		if trace.Entity:IsPlayer() then return false end
+		if CLIENT then return true end
+		
+		local player = self:GetOwner()
+
+		if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_expression2" && (trace.Entity:GetPlayer() == player || GetConVarNumber('wire_expression2_protected') == 0)) then
+			trace.Entity:Reset()
+			return true
+		else
+			return false
+		end
+	end
+	
 	function MakeWireExpression2(player, ang, pos, model, buffer, name, inputs, outputs, vars)
 		if !player:CheckLimit("wire_gate_expressions") then return false end
 		
