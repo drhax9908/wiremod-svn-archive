@@ -360,13 +360,13 @@ registerFunction("mix", "aan", "a", function(self, args)
 end)
 
 // Circular shift function: shiftr(  p,y,r ) = ( r,p,y )
-registerFunction("shiftr", "a", "a", function(self, args)
+registerFunction("shiftR", "a", "a", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	return {rv1[3], rv1[1], rv1[2]}
 end)
 
-registerFunction("shiftl", "a", "a", function(self, args)
+registerFunction("shiftL", "a", "a", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	return {rv1[2], rv1[3], rv1[1]}
