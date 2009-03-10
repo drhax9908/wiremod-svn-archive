@@ -23,6 +23,13 @@ registerFunction("ang", "nnn", "a", function(self, args)
 	return { rv1, rv2, rv3 }
 end)
 
+// Convert Vector -> Angle
+registerFunction("ang", "v", "a", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	return {rv1[1],rv1[2],rv1[3]}
+end)
+
 /******************************************************************************/
 
 registerOperator("ass", "a", "a", function(self, args)
@@ -221,6 +228,148 @@ registerFunction("round", "a:n", "a", function(self, args)
 	local y = rv1[2] - ((rv1[2] * shf + 0.5) % 1 + 0.5) / shf
 	local r = rv1[3] - ((rv1[3] * shf + 0.5) % 1 + 0.5) / shf
 	return {p, y, r}
+end)
+
+// ceil/floor on p,y,r separately
+registerFunction("ceil", "a", "a", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local p = rv1[1] - rv1[1] % -1
+	local y = rv1[2] - rv1[2] % -1
+	local r = rv1[3] - rv1[3] % -1
+	return {p, y, r}
+end)
+
+registerFunction("ceil", "an", "a", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local shf = 10 ^ rv2
+	local p = rv1[1] - ((rv1[1] * shf) % -1) / shf
+	local y = rv1[2] - ((rv1[2] * shf) % -1) / shf
+	local r = rv1[3] - ((rv1[3] * shf) % -1) / shf
+	return {p, y, r}
+end)
+
+registerFunction("floor", "a", "a", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	local p = rv1[1] - rv1[1] % 1
+	local y = rv1[2] - rv1[2] % 1
+	local r = rv1[3] - rv1[3] % 1
+	return {p, y, r}
+end)
+
+registerFunction("floor", "an", "a", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local shf = 10 ^ rv2
+	local p = rv1[1] - ((rv1[1] * shf) % 1) / shf
+	local y = rv1[2] - ((rv1[2] * shf) % 1) / shf
+	local r = rv1[3] - ((rv1[3] * shf) % 1) / shf
+	return {p, y, r}
+end)
+
+// Performs modulo on p,y,r separately
+registerFunction("mod", "an", "a", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local p,y,r
+	if rv1[1] >= 0 then
+		p = rv1[1] % rv2
+	else p = rv1[1] % -rv2 end
+	if rv1[2] >= 0 then
+		y = rv1[2] % rv2
+	else y = rv1[2] % -rv2 end
+	if rv1[3] >= 0 then
+		r = rv1[3] % rv2
+	else r = rv1[3] % -rv2 end
+	return {p, y, r}
+end)
+
+// Modulo where divisors are defined as an angle
+registerFunction("mod", "aa", "a", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local p,y,r
+	if rv1[1] >= 0 then
+		p = rv1[1] % rv2[1]
+	else p = rv1[1] % -rv2[1] end
+	if rv1[2] >= 0 then
+		y = rv1[2] % rv2[2]
+	else y = rv1[2] % -rv2[2] end
+	if rv1[3] >= 0 then
+		y = rv1[3] % rv2[3]
+	else y = rv1[3] % -rv2[3] end
+	return {p, y, r}
+end)
+
+// Clamp each p,y,r separately
+registerFunction("clamp", "ann", "a", function(self, args)
+	local op1, op2, op3 = args[2], args[3], args[4]
+	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+	local p,y,r
+	
+	if rv1[1] < rv2 then p = rv2
+	elseif rv1[1] > rv3 then p = rv3
+	else p = rv1[1] end
+
+	if rv1[2] < rv2 then y = rv2
+	elseif rv1[2] > rv3 then y = rv3
+	else y = rv1[2] end
+
+	if rv1[3] < rv2 then r = rv2
+	elseif rv1[3] > rv3 then r = rv3
+	else r = rv1[3] end
+
+	return {p, y, r}
+end)
+
+// Clamp according to limits defined by two min/max angles
+registerFunction("clamp", "aaa", "a", function(self, args)
+	local op1, op2, op3 = args[2], args[3], args[4]
+	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+	local p,y,r
+	
+	if rv1[1] < rv2[1] then p = rv2[1]
+	elseif rv1[1] > rv3[1] then p = rv3[1]
+	else p = rv1[1] end
+
+	if rv1[2] < rv2[2] then y = rv2[2]
+	elseif rv1[2] > rv3[2] then y = rv3[2]
+	else y = rv1[2] end
+
+	if rv1[3] < rv2[3] then r = rv2[3]
+	elseif rv1[3] > rv3[3] then r = rv3[3]
+	else r = rv1[3] end
+
+	return {p, y, r}
+end)
+
+// Mix two angles by a given proportion (between 0 and 1)
+registerFunction("mix", "aan", "a", function(self, args)
+	local op1, op2, op3 = args[2], args[3], args[4]
+	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
+	local n
+	if rv3 < 0 then n = 0
+	elseif rv3 > 1 then n = 1
+	else n = rv3 end
+	local p = rv1[1] * n + rv2[1] * (1-n)
+	local y = rv1[2] * n + rv2[2] * (1-n)
+	local r = rv1[3] * n + rv2[3] * (1-n)
+	return {p, y, r}
+end)
+
+// Circular shift function: shiftr(  p,y,r ) = ( r,p,y )
+registerFunction("shiftr", "a", "a", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	return {rv1[3], rv1[1], rv1[2]}
+end)
+
+registerFunction("shiftl", "a", "a", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	return {rv1[2], rv1[3], rv1[1]}
 end)
 
 /******************************************************************************/
