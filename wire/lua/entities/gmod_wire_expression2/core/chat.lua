@@ -1,3 +1,5 @@
+AddCSLuaFile('chat.lua')
+
 //Original author: ZeikJT
 //Modified by Gwahir
 
