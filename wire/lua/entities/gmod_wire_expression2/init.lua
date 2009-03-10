@@ -207,6 +207,10 @@ function ENT:Setup(buffer, restore)
 	self:Execute()
 end
 
+function ENT:Reset()
+	self.Setup(self.original)
+end
+
 function ENT:TriggerInput(key, value)
 	if key and self.inports[3][key] then
 		t = self.inports[3][key]
