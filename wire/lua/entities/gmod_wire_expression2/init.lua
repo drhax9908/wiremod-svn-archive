@@ -208,7 +208,7 @@ function ENT:Setup(buffer, restore)
 end
 
 function ENT:Reset()
-	self.Setup(self.original)
+	self:Setup(self.original)
 end
 
 function ENT:TriggerInput(key, value)
