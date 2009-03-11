@@ -103,17 +103,9 @@ registerFunction("teamname", "n", "s", function(self, args)
 	return str
 end)
 
-registerFunction("weapon", "e:", "e", function(self, args)
-	local op1 = args[2]
-	local rv1 = op1[1](self, op1)
-	if(!rv1 or !rv1:IsValid()) then return nil end
-	if(rv1:IsPlayer()) then return rv1:GetActiveWeapon() else return nil end
-end)
-
 registerFunction("deaths", "e:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	if(!rv1 or !rv1:IsValid()) then return 0 end
 	if(rv1:IsPlayer()) then return rv1:Deaths() else return 0 end
 end)
-
