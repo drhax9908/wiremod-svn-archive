@@ -1683,6 +1683,7 @@ include("color.lua");
 include("serverinfo.lua");
 include("chat.lua");
 include("constraint.lua");
+include("weapon.lua");
 include("custom.lua");
 //include("quaternion.lua");
 
