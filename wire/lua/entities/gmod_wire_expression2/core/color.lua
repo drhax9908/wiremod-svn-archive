@@ -40,6 +40,7 @@ registerFunction("setColor", "e:nnnn", "", function(self, args)
 	local op1, op2, op3, op4, op5 = args[2], args[3], args[4], args[5], args[6]
 	local rv1, rv2, rv3, rv4, rv5 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3), op4[1](self, op4), op5[1](self, op5)
 	if(!validEntity(rv1)) then return end
+	if(rv1:IsPlayer() or rv1:IsWeapon()) then rv5 = 255 end
 	if(!isOwner(self, rv1)) then return end
 	local color = ColorClamp{ rv2, rv3, rv4, rv5 }
 	rv1:SetColor(color[1], color[2], color[3], color[4])
@@ -59,6 +60,7 @@ registerFunction("setColor", "e:vn", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if(!validEntity(rv1)) then return end
+	if(rv1:IsPlayer() or rv1:IsWeapon()) then rv3 = 255 end
 	if(!isOwner(self, rv1)) then return end
 	local color = ColorClamp{ rv2[1], rv2[2], rv2[3], rv3 }
 	rv1:SetColor(color[1], color[2], color[3], color[4])
@@ -68,6 +70,7 @@ registerFunction("setAlpha", "e:n", "", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	if(!validEntity(rv1)) then return end
+	if(rv1:IsPlayer() or rv1:IsWeapon()) then return end
 	if(!isOwner(self, rv1)) then return end
 	local color = {rv1:GetColor()}
 	rv1:SetColor(color[1], color[2], color[3], math.Clamp(rv2, 0, 255))
