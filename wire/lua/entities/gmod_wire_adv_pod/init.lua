@@ -58,6 +58,7 @@ function ENT:Initialize()
 	
 	n = n + 1
 	outputs[n] = "Distance"
+	
 	n = n + 1
 	outputs[n] = "Active"
 	
@@ -78,7 +79,18 @@ function ENT:Initialize()
 	
 	self.VPos = Vector(0, 0, 0)
 	
-	self.Outputs = Wire_CreateOutputs( self.Entity, outputs )
+	// Create "Entity" output - must be at the end!
+	local outputtypes = { }
+	for i = 1, n do
+		outputtypes[i] = "NORMAL"
+	end
+	
+	n = n + 1
+	outputs[n] = "Entity"
+	outputtypes[n] = "ENTITY"
+	
+	//self.Outputs = Wire_CreateOutputs( self.Entity, outputs )
+	self.Outputs = WireLib.CreateSpecialOutputs(self.Entity, outputs, outputtypes)
 	self.Inputs = Wire_CreateInputs( self.Entity, { "Lock", "Terminate", "Strip weapons", "Eject", "Disable", "Crosshairs", "Brake", "Allow Buttons", "Relative", "Damage Health", "Damage Armor"} )
 	self:SetOverlayText( "Adv. Pod Controller" )
 	
@@ -226,6 +238,7 @@ end
 function ENT:Think()
 	local _,_,_,coloralpha = self.Entity:GetColor()
 	if self.Pod and self.Pod:IsValid() then
+		Wire_TriggerOutput( self.Entity, "Entity", self.Pod )
 		local Ply = nil
 		if self.RC then
 			if !self.Pod:Alive() then self.Pod.Active = false end
