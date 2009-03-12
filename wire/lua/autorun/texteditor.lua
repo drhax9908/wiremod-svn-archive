@@ -108,7 +108,7 @@ function EDITOR:OnMouseReleased(code)
 end
 
 function EDITOR:SetText(text)
-	self.Rows = string.Explode("\n", string.Trim(text))
+	self.Rows = string.Explode("\n", text)
 	self.Rows[#self.Rows + 1] = ""
 	self.Caret = {1, 1}
 	self.Start = {1, 1}
