@@ -4,6 +4,21 @@ AddCSLuaFile('player.lua')
   Player-Entity support
 \******************************************************************************/
 
+registerFunction("isAdmin", "e:", "n", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!validEntity(rv1)) then return 0 end
+	if rv1:IsAdmin() then return 1 else return 0 end
+end)
+
+registerFunction("isSuperAdmin", "e:", "n", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!validEntity(rv1)) then return 0 end
+	if rv1:IsSuperAdmin() then return 1 else return 0 end
+end)
+
+
 registerFunction("eye", "e:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
