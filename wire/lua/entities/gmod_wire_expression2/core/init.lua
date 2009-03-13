@@ -1236,15 +1236,15 @@ function Compiler:Process(root, inputs, outputs, persist, delta, params)
 	
 	for name,v in pairs(inputs) do
 		self.vars[name] = v
-		self:SetVariableType(name, wire_expression_types[v][1])
+		self:SetVariableType(name, wire_expression_types[v][1], {nil, nil, {0, 0}})
 	end
 	for name,v in pairs(outputs) do
 		self.vars[name] = v
-		self:SetVariableType(name, wire_expression_types[v][1])
+		self:SetVariableType(name, wire_expression_types[v][1], {nil, nil, {0, 0}})
 	end
 	for name,v in pairs(persist) do
 		self.vars[name] = v
-		self:SetVariableType(name, wire_expression_types[v][1])
+		self:SetVariableType(name, wire_expression_types[v][1], {nil, nil, {0, 0}})
 	end
 	for name,v in pairs(delta) do
 		self.dvars[name] = v
@@ -1271,18 +1271,39 @@ function Compiler:Evaluate(args, index)
 	local ex, tp = self:EvaluateStatement(args, index)
 
 	if tp == "" then
-		self:Error("No return value (void), statement cannot part of expression,", args)
+		self:Error("Function has no return value (void), cannot be part of expression or assigned", args)
 	end
 	
 	return ex, tp
 end
 
+local function tps_pretty(tps)
+	local ttt = {}
+	for i=1,#tps do
+		if wire_expression_types2[tps[i]][1] == "NORMAL" then
+			ttt[i] = "number"
+		else
+			ttt[i] = string.lower(wire_expression_types2[tps[i]][1])
+		end
+	end
+	return string.Implode(", ", ttt)
+end
+
+local function op_find(name,optable)
+	for k,v in pairs(optable) do
+		if v[1] == name then return k end
+		if v[2] then
+			local res = op_find(name, v[2])
+			if res then return res end
+		end
+	end
+end
 
 function Compiler:GetOperator(instr, name, tps)
 	pars = string.Implode("", tps)
 	local a = funcs["op:" .. name .. "(" .. pars .. ")"]
 	if !a then
-		self:Error("No operator (" .. name .. ") that accepts ["..pars.."]", instr)
+		self:Error("Operator (" .. op_find(name,optable) .. ") does not accept (".. tps_pretty(tps) ..")", instr)
 		return
 	end
 	return { a[3], a[2], a[1] }
@@ -1292,7 +1313,7 @@ function Compiler:GetFunction(instr, name, tps)
 	pars = string.Implode("", tps)
 	local a = funcs[name .. "(" .. pars .. ")"]
 	if !a then
-		self:Error("No functions (" .. name .. ") that accepts ["..pars.."]", instr)
+		self:Error("No such function: " .. name .. "(".. tps_pretty(tps) ..")", instr)
 		return
 	end
 	return { a[3], a[2], a[1] }
@@ -1302,7 +1323,7 @@ function Compiler:GetMethod(instr, name, tp, tps)
 	pars = tp .. ":" .. string.Implode("", tps)
 	local a = funcs[name .. "(" .. pars .. ")"]
 	if !a then
-		self:Error("No functions (" .. name .. ") that accepts ["..pars.."]", instr)
+		self:Error("No such function: " .. tps_pretty({tp}) .. ":" .. name .. "("..tps_pretty(tps) ..")", instr)
 		return
 	end
 	return { a[3], a[2], a[1] }
@@ -1318,23 +1339,23 @@ function Compiler:PopContext()
 	return context
 end
 
-function Compiler:MergeContext(cx1, cx2)
+function Compiler:MergeContext(cx1, cx2, instr)
 	local vr1 = {}
 	local vr2 = {}
 
 	for name,tp in pairs(cx1) do
 		if cx2[name] and cx2[name] != tp then
-			error("ERROR, TYPE MISMATCH!\n", 0)
+			self:Error("Variable (" .. stringlimit(name, 10) .. ") is assigned different types (" .. tps_pretty({tp}) .. ", " .. tps_pretty({cx2[name]}) .. ") in if-statement", instr)
 		end
 	end
 	
 	for name,tp in pairs(cx1) do
-		self:SetVariableType(name, tp)
+		self:SetVariableType(name, tp, instr)
 		if !cx2[name] then vr2[name] = tp end
 	end
 	
 	for name,tp in pairs(cx2) do
-		self:SetVariableType(name, tp)
+		self:SetVariableType(name, tp, instr)
 		if !cx1[name] then vr1[name] = tp end
 	end
 	
@@ -1342,10 +1363,10 @@ function Compiler:MergeContext(cx1, cx2)
 end
 
 
-function Compiler:SetVariableType(name, tp)
+function Compiler:SetVariableType(name, tp, instr)
 	for i=#self.context,1,-1 do
 		if self.context[i][name] then
-			if self.context[i][name] != tp then error("ERROR OVERLOADING VARIABLE TYPE [" .. name .. "]", 0) end
+			if self.context[i][name] != tp then self:Error("Variable (" .. stringlimit(name, 10) .. ") of type (" .. tps_pretty({self.context[i][name]}) .. ") cannot be assigned value of type (" .. tps_pretty({tp}) .. ")", instr) end
 			return
 		end
 	end
@@ -1386,7 +1407,7 @@ function Compiler:InstrIF(args)
 	local st2 = self:EvaluateStatement(args, 3)
 	local cx2 = self:PopContext()
 	
-	local vr1, vr2 = self:MergeContext(cx1, cx2)
+	local vr1, vr2 = self:MergeContext(cx1, cx2, args)
 	
 	for name,tp in pairs(vr1) do
 		st1[#st1 + 1] = { self:GetOperator(args, "ass", {tp})[1], name, { self:GetOperator(args, "dat", {})[1], wire_expression_types2[tp][2] } }
@@ -1410,7 +1431,7 @@ function Compiler:InstrCND(args)
 	local rtif     = self:GetOperator(args, "cnd", {rtis[2]})
 	
 	if tp2 != tp3 then
-		self:Error("CONDITIONAL GIVEN TWO DIFFERENT TYPES!", args)
+		self:Error("Different types (" .. tps_pretty({tp2}) .. ", " .. tps_pretty({tp3}) .. ") returned in conditional", args)
 	end
 	
 	return { rtif[1], { rtis[1], ex1 }, ex2, ex3 }, tp2
@@ -1458,7 +1479,7 @@ function Compiler:InstrASS(args)
 	local ex, tp = self:Evaluate(args, 2)
 	local rt     = self:GetOperator(args, "ass", {tp})
 	
-	self:SetVariableType(op, tp)
+	self:SetVariableType(op, tp, args)
 	
 	if self.dvars[op] then
 		local stmts = {self:GetOperator(args, "seq", {})[1]}

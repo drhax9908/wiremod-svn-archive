@@ -103,6 +103,13 @@ registerFunction("frags", "e:", "n", function(self, args)
 	if(rv1:IsPlayer()) then return rv1:Frags() else return 0 end
 end)
 
+registerFunction("deaths", "e:", "n", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!rv1 or !rv1:IsValid()) then return 0 end
+	if(rv1:IsPlayer()) then return rv1:Deaths() else return 0 end
+end)
+
 registerFunction("team", "e:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
@@ -110,7 +117,7 @@ registerFunction("team", "e:", "n", function(self, args)
 	if(rv1:IsPlayer()) then return rv1:Team() else return 0 end
 end)
 
-registerFunction("teamname", "n", "s", function(self, args)
+registerFunction("teamName", "n", "s", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	local str = team.GetName(rv1)
@@ -118,9 +125,26 @@ registerFunction("teamname", "n", "s", function(self, args)
 	return str
 end)
 
-registerFunction("deaths", "e:", "n", function(self, args)
+registerFunction("teamScore", "n:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	if(!rv1 or !rv1:IsValid()) then return 0 end
-	if(rv1:IsPlayer()) then return rv1:Deaths() else return 0 end
+	return team.GetScore(rv1)
+end)
+
+registerFunction("teamPlayers", "n:", "n", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	return team.NumPlayers(rv1)
+end)
+
+registerFunction("teamDeaths", "n:", "n", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	return team.TotalDeaths(rv1)
+end)
+
+registerFunction("teamFrags", "n:", "n", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	return team.TotalFrags(rv1)
 end)
