@@ -22,6 +22,7 @@ function ENT:InitializeAdvMathASMOpcodes()
 	self.DecodeOpcode["mident"]         = 270 //MIDENT X		: Load identity matrix into X				[MATRIX]	7.00
 	self.DecodeOpcode["vmode"]          = 273 //VMODE X		: Vector mode = Y					[INT]		7.00
 	self.DecodeOpcode["vdiv"]           = 295 //VDIV X,Y		: X = X / Y						[MODEF,MODEF]	7.00
+	self.DecodeOpcode["vtransform"]     = 296 //VTRANSFORM X,Y	: X = X * Y						[MODEF,MATRIX]	8.00
 	//---------------------------------------------------------------------------------------------------------------------
 end
 
@@ -419,6 +420,39 @@ function ENT:InitializeAdvMathOpcodeTable()
 				self:Write3f(Param1 + self[self.PrecompileData[self.XEIP].Segment2],
 					{x = vec.x/Param2, y = vec.y/Param2, z = vec.z/Param2})
 			end
+		end
+	end
+	self.OpcodeTable[296] = function (Param1, Param2)	//VTRANSFORM
+		if (self.VMODE == 2) then
+			local vec = self:Read3f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+			local mx = self:ReadMatrix(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
+
+			local tmp = {}
+			for i=0,3 do
+				tmp[i] = mx[i*4+0] * vec.x + 
+					 mx[i*4+1] * vec.y + 
+					 mx[i*4+2] * 0 + 
+					 mx[i*4+3] * 1
+			end
+
+
+			self:Write2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1],
+				{x = tmp[0], y = tmp[1], z = 0})
+		else
+			local vec = self:Read3f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+			local mx = self:ReadMatrix(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
+
+			local tmp = {}
+			for i=0,3 do
+				tmp[i] = mx[i*4+0] * vec.x + 
+					 mx[i*4+1] * vec.y + 
+					 mx[i*4+2] * vec.z + 
+					 mx[i*4+3] * 1
+			end
+
+
+			self:Write2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1],
+				{x = tmp[0], y = tmp[1], z = tmp[2]})
 		end
 	end
 end
