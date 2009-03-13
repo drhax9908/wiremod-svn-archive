@@ -412,7 +412,7 @@ function ENT:InitializeAdvMathOpcodeTable()
 			self:Interrupt(3,0)
 		else
 			if (self.VMODE == 2) then
-				local vec = self:Read3f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+				local vec = self:Read2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
 				self:Write2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1],
 					{x = vec.x/Param2, y = vec.y/Param2, z = 0})
 			else
@@ -424,7 +424,7 @@ function ENT:InitializeAdvMathOpcodeTable()
 	end
 	self.OpcodeTable[296] = function (Param1, Param2)	//VTRANSFORM
 		if (self.VMODE == 2) then
-			local vec = self:Read3f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
+			local vec = self:Read2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1])
 			local mx = self:ReadMatrix(Param2 + self[self.PrecompileData[self.XEIP].Segment2])
 
 			local tmp = {}
@@ -451,7 +451,7 @@ function ENT:InitializeAdvMathOpcodeTable()
 			end
 
 
-			self:Write2f(Param1 + self[self.PrecompileData[self.XEIP].Segment1],
+			self:Write3f(Param1 + self[self.PrecompileData[self.XEIP].Segment1],
 				{x = tmp[0], y = tmp[1], z = tmp[2]})
 		end
 	end
