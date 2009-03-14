@@ -133,6 +133,7 @@ function ENT:Setup(buffer, restore)
 	self.inports = directives.inputs
 	self.outports = directives.outputs
 	self.persists = directives.persist
+	self.notrigger = directives.notrigger
 	
 	local status, result = Tokenizer:Execute(self.buffer)
 	if(!status) then self:Error(result) end
@@ -222,8 +223,8 @@ function ENT:TriggerInput(key, value)
 			self.context.vars[key] = value
 		end
 		
-		self.context.triggerinput = key		
-		self:Execute()
+		self.context.triggerinput = key
+		if !self.notrigger then self:Execute() end
 		self.context.triggerinput = nil
 	end
 end
