@@ -134,9 +134,3 @@ end)
 registerFunction("exit", "", "", function(self, args)
 	error(nil, 0)
 end)
-
-registerFunction("test", "", "", function(self, args)
-	awd(1,1)
-	error("awdoijawdoij", 0)
-end)
-

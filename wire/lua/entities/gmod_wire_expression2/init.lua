@@ -208,7 +208,9 @@ function ENT:Setup(buffer, restore)
 		callback(self.context)
 	end
 	
+	self.first = true
 	self:Execute()
+	self.first = false
 end
 
 function ENT:Reset()
@@ -234,7 +236,7 @@ end
 
 function ENT:TriggerOutputs()
 	for key,t in pairs(self.outports[3]) do
-		if self.context.vclk[key] then
+		if self.context.vclk[key] or self.first then
 			if wire_expression_types[t][4] then
 				WireLib.TriggerOutput(self.Entity, key, wire_expression_types[t][4](self.context, self.context.vars[key]))
 			else
