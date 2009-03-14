@@ -111,6 +111,7 @@ function PreProcessor:Process(buffer, params)
 		outputs = { {}, {}, {} },
 		persist = { {}, {}, {} },
 		delta = { {}, {}, {} },
+		notrigger = false,
 	}
 	
 	local incode = false
@@ -194,6 +195,14 @@ function PreProcessor:Process(buffer, params)
 						directives.persist[2][index] = retval[2][i]
 						directives.persist[3][key] = retval[2][i]
 					end
+				end
+			elseif directive == "notrigger" then
+				if directives.notrigger then
+					self:Error("Directive (@notrigger) has already been specified")
+				elseif string.Trim(value) != "" then
+					self:Error("Directive (@notrigger) does not support any options")
+				else
+					directives.notrigger = true
 				end
 			else
 				self:Error("Unknown directive found (@" .. stringlimit(directive, 10) .. ")")
@@ -1705,6 +1714,7 @@ include("serverinfo.lua");
 include("chat.lua");
 include("constraint.lua");
 include("weapon.lua");
+include("gametick.lua");
 include("custom.lua");
 //include("quaternion.lua");
 
