@@ -106,7 +106,37 @@ end)
 
 /******************************************************************************/
 
+registerCallback("postexecute", function(self) 
+    if self.data["reset"] then self.entity:Reset() end
+end)
+ 
+registerFunction("reset", "", "", function(self,args)
+    self.data["reset"] = true
+end)
+
+/******************************************************************************/
+
+registerCallback("preexecute", function(self)
+	if self.data['first'] == nil then
+		self.data['first'] = true
+	elseif self.data['first'] == true then
+		self.data['first'] = false
+	end
+end)
+
 registerFunction("first", "", "n", function(self, args)
-	if runner == "interval"
+	if self.data['first'] == true
 	   then return 1 else return 0 end
 end)
+
+/******************************************************************************/
+
+registerFunction("exit", "", "", function(self, args)
+	error(nil, 0)
+end)
+
+registerFunction("test", "", "", function(self, args)
+	awd(1,1)
+	error("awdoijawdoij", 0)
+end)
+
