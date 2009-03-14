@@ -1236,15 +1236,15 @@ function Compiler:Process(root, inputs, outputs, persist, delta, params)
 	
 	for name,v in pairs(inputs) do
 		self.vars[name] = v
-		self:SetVariableType(name, wire_expression_types[v][1], {nil, nil, {0, 0}})
+		self:SetVariableType(name, wire_expression_types[v][1], {nil, {0, 0}})
 	end
 	for name,v in pairs(outputs) do
 		self.vars[name] = v
-		self:SetVariableType(name, wire_expression_types[v][1], {nil, nil, {0, 0}})
+		self:SetVariableType(name, wire_expression_types[v][1], {nil, {0, 0}})
 	end
 	for name,v in pairs(persist) do
 		self.vars[name] = v
-		self:SetVariableType(name, wire_expression_types[v][1], {nil, nil, {0, 0}})
+		self:SetVariableType(name, wire_expression_types[v][1], {nil, {0, 0}})
 	end
 	for name,v in pairs(delta) do
 		self.dvars[name] = v
