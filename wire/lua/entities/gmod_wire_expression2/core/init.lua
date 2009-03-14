@@ -111,7 +111,7 @@ function PreProcessor:Process(buffer, params)
 		outputs = { {}, {}, {} },
 		persist = { {}, {}, {} },
 		delta = { {}, {}, {} },
-		notrigger = false,
+		trigger = { nil, {} },
 	}
 	
 	local incode = false
@@ -196,13 +196,33 @@ function PreProcessor:Process(buffer, params)
 						directives.persist[3][key] = retval[2][i]
 					end
 				end
-			elseif directive == "notrigger" then
-				if directives.notrigger then
-					self:Error("Directive (@notrigger) has already been specified")
-				elseif string.Trim(value) != "" then
-					self:Error("Directive (@notrigger) does not support any options")
+			elseif directive == "trigger" then
+				if string.Trim(value) == "" then
+				elseif string.Trim(value) == "all" then
+					if directives.trigger[1] != nil then
+						self:Error("Directive (@trigger) conflicts with previous directives")
+					end
+					directives.trigger[1] = true
+				elseif string.Trim(value) == "none" then
+					if directives.trigger[1] != nil then
+						self:Error("Directive (@trigger) conflicts with previous directives")
+					end
+					directives.trigger[1] = false
 				else
-					directives.notrigger = true
+					if directives.trigger[1] != nil and #directives.trigger[2] == 0 then
+						self:Error("Directive (@trigger) conflicts with previous directives")
+					end
+				
+					directives.trigger[1] = false
+					local retval = self:ParsePorts(value)
+				
+					for i,key in ipairs(retval[1]) do
+						if directives.trigger[key] then
+							self:Error("Directive (@trigger) contains multiple definitions of the same variable")
+						else
+							directives.trigger[2][key] = true
+						end
+					end
 				end
 			else
 				self:Error("Unknown directive found (@" .. stringlimit(directive, 10) .. ")")
@@ -212,6 +232,7 @@ function PreProcessor:Process(buffer, params)
 		end
 	end
 	
+	if directives.trigger[1] == nil then directives.trigger[1] = true end
 	if !directives.name then directives.name = "" end
 	
 	return { directives, string.Implode("\n", lines) }

@@ -476,7 +476,7 @@ end
 
 function Editor:NewScript()
 	self:ChosenFile()
-	self:SetCode("@name \n@inputs \n@outputs \n@persist \n\n# Documentation and examples available at:\n# http://wiki.garrysmod.com/wiki/?title=Wire_Expression2\n# The community is available at http://www.wiremod.com")
+	self:SetCode("@name \n@inputs \n@outputs \n@persist \n@trigger all\n\n# Documentation and examples available at:\n# http://wiki.garrysmod.com/wiki/?title=Wire_Expression2\n# The community is available at http://www.wiremod.com")
 end
 
 function Editor:Validate(gotoerror)
