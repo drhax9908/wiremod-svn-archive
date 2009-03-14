@@ -4,15 +4,6 @@ AddCSLuaFile('selfaware.lua')
   Selfaware support
 \******************************************************************************/
 
-registerCallback("postexecute", function(self) 
-    if self.data["reset"] then self.entity:Reset() end
-end)
- 
-registerFunction("reset", "", "", function(self,args)
-    self.data["reset"] = true
-end)
-
-
 registerFunction("entity", "", "e", function(self, args)
 	return self.entity
 end)

@@ -19,10 +19,15 @@ function exp2FindCleanup()
 	end
 end
 
-function exp2FindOnRemove(entity)
-	if not entity:IsValid() then return false end
-	exp2Discoveries[entity:EntIndex()] = nil
-end
+registerCallback("construct", function(self)
+	if exp2Discoveries == nil then exp2Discoveries = {} end
+	exp2Discoveries[self.entity:EntIndex()] = nil
+end)
+
+registerCallback("destruct", function(self)
+	if !self.entity:IsValid() then return end
+	exp2Discoveries[self.entity:EntIndex()] = nil
+end)
 
 if not ConVarExists("wire_exp2_entFindRate") then CreateConVar("wire_exp2_entFindRate", ".05") end
 if not ConVarExists("wire_exp2_playerFindRate") then CreateConVar("wire_exp2_playerFindRate", ".01") end

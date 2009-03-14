@@ -66,11 +66,16 @@ function ENT:OnRestore()
 end
 
 function ENT:Execute()
+	if self.error then return end
+
 	for i,callback in ipairs(wire_expression_callbacks['preexecute']) do
 		callback(self.context)
 	end
 
-	self.script[1](self.context, self.script)
+	local ok, msg = pcall(self.script[1], self.context, self.script)
+	if !ok and msg then
+		self:Error("Expression 2: " .. msg .. "\n")
+	end
 	
 	for i,callback in ipairs(wire_expression_callbacks['postexecute']) do
 		callback(self.context)
@@ -92,7 +97,6 @@ function ENT:Execute()
 end
 
 function ENT:OnRemove( )
-	exp2FindOnRemove(self.Entity)
 	if(self.script) then
 		for i,callback in ipairs(wire_expression_callbacks['destruct']) do
 			callback(self.context)
@@ -104,7 +108,8 @@ function ENT:Error(message)
 	self:SetOverlayText("Expression 2\n(script error)")
 	self:SetColor(255, 0, 0, 255)
 	
-	error(message, 0)
+	self.error = true
+	ErrorNoHalt(message)
 end
 
 local function copytype(var)
@@ -127,6 +132,7 @@ function ENT:Setup(buffer, restore)
 	if(!status) then self:Error(result) end
 	local directives = result[1]
 	self.buffer = result[2]
+	self.error = false
 	
 	self.name = directives.name
 	if directives.name == "" then self.name = "generic" end
@@ -170,9 +176,6 @@ function ENT:Setup(buffer, restore)
 	self._outputs = { {}, {} }
 	self._vars = self.context.vars
 
-	if exp2Discoveries == nil then exp2Discoveries = {} end
-	exp2Discoveries[self.Entity:EntIndex()]=nil
-	
 	for k,v in pairs(self.inports[3]) do
 		self._inputs[1][#self._inputs[1] + 1] = k
 		self._inputs[2][#self._inputs[2] + 1] = v
