@@ -34,7 +34,7 @@ function TOOL:LeftClick( trace )
 	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_hdd" && trace.Entity.pl == ply ) then
 		trace.Entity.DriveID = tonumber(self:GetClientInfo( "driveid" ))
 		trace.Entity.DriveCap = tonumber(self:GetClientInfo( "drivecap" ))
-		trace.Entity.UpdateCap()
+		trace.Entity:UpdateCap()
 		return true
 	end
 
