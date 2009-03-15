@@ -221,106 +221,46 @@ end)
 
 /******************************************************************************/
 
-registerFunction("writeString","xwl:snnnnn", "n", function(self,args)
-    local op1, op2, op3, op4, op5, op6, op7 = args[2], args[3], args[4], args[5], args[6], args[7], args[8]
-    local rv1, rv2, rv3, rv4, rv5, rv6, rv7 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4), op5[1](self,op5), op6[1](self,op6), op7[1](self,op7)
-    local entity = checkEntity(rv1)
-    if(!entity or !entity.extended) then return 0 end
-    if !entity.WriteCell then return 0 end
-    rv5 = tostring(rv5) rv6 = tostring(rv6) rv7 = tostring(rv7)
-    if (rv7:len() > 1) then rv7 = rv7:sub(1,1) end
-    while rv5:len() < 3 do
-        rv5 = tostring(0) .. rv5
+local function WriteString(entity, string, X, Y, Tcolour, Bgcolour, Flash)
+    entity=checkEntity(entity)
+    if (!entity or !entity.extended or !entity.WriteCell) then return end
+    Tcolour = Tcolour - Tcolour % 1
+	Bgcolour = Bgcolour - Bgcolour % 1
+	Flash = Flash - Flash % 1
+	local Params = (Flash%10)*1000000 + (Bgcolour%1000)*1000 + (Tcolour % 1000)
+    for N = 1,string:len() do
+        local Address = 2*(X+N-1+30*Y)
+        if (Address>1080 or Address<0) then return end
+        local Byte = string.byte(string,N)
+        if (entity:ReadCell(Address)!=Byte) then
+            entity:WriteCell(Address,Byte)
+		end
+		if (entity:ReadCell(Address+1)!=Params) then
+            entity:WriteCell(Address+1,Params)
+        end
     end
-    while rv6:len() < 3 do
-        rv6 = tostring(0) .. rv6
-    end
-    local Params = tonumber( rv7 .. rv6 .. rv5)
-    for N = 1, rv2:len() do
-        local check = 2*(rv3 + N - 1) + 60*rv4 
-        if (check > 1080 or check < 0) then return 0 end
-        local Byte = string.byte( rv2, N)
-        local check2 = entity:WriteCell( check, Byte)
-        if(!check2) then return 0 end
-        entity:WriteCell(check + 1, Params)
-    end
-    return 1
+end
+
+registerFunction("writeString","xwl:snnnnn", "", function(self,args)
+	local op1, op2, op3, op4, op5, op6, op7 = args[2], args[3], args[4], args[5], args[6], args[7], args[8]
+	local rv1, rv2, rv3, rv4, rv5, rv6, rv7 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4), op5[1](self,op5), op6[1](self,op6), op7[1](self,op7)
+	WriteString(rv1,rv2,rv3,rv4,rv5,rv6,rv7)
 end)
 
-registerFunction("writeString","xwl:snnnn", "n", function(self,args)
-    local op1, op2, op3, op4, op5, op6 = args[2], args[3], args[4], args[5], args[6], args[7]
-    local rv1, rv2, rv3, rv4, rv5, rv6 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4), op5[1](self,op5), op6[1](self,op6)
-    local entity = checkEntity(rv1)
-    if(!entity or !entity.extended) then return 0 end
-    if !entity.WriteCell then return 0 end
-    rv5 = tostring(rv5) rv6 = tostring(rv6) rv7 = tostring(0)
-    if (rv7:len() > 1) then rv7 = rv7:sub(1,1) end
-    while rv5:len() < 3 do
-        rv5 = tostring(0) .. rv5
-    end
-    while rv6:len() < 3 do
-        rv6 = tostring(0) .. rv6
-    end
-    local Params = tonumber( rv7 .. rv6 .. rv5)
-    for N = 1, rv2:len() do
-        local check = 2*(rv3 + N - 1) + 60*rv4 
-        if (check > 1080 or check < 0) then return 0 end
-        local Byte = string.byte( rv2, N)
-        local check2 = entity:WriteCell( check, Byte)
-        if(!check2) then return 0 end
-        entity:WriteCell(check + 1, Params)
-    end
-    return 1
+registerFunction("writeString","xwl:snnnn", "", function(self,args)
+	local op1, op2, op3, op4, op5, op6 = args[2], args[3], args[4], args[5], args[6], args[7]
+	local rv1, rv2, rv3, rv4, rv5, rv6 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4), op5[1](self,op5), op6[1](self,op6)
+	WriteString(rv1,rv2,rv3,rv4,rv5,rv6,0)
 end)
 
-registerFunction("writeString","xwl:snnn", "n", function(self,args)
-    local op1, op2, op3, op4, op5 = args[2], args[3], args[4], args[5], args[6]
-    local rv1, rv2, rv3, rv4, rv5 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4), op5[1](self,op5)
-    local entity = checkEntity(rv1)
-    if(!entity or !entity.extended) then return 0 end
-    if !entity.WriteCell then return 0 end
-    rv5 = tostring(rv5) rv6 = tostring(0) rv7 = tostring(0)
-    if (rv7:len() > 1) then rv7 = rv7:sub(1,1) end
-    while rv5:len() < 3 do
-        rv5 = tostring(0) .. rv5
-    end
-    while rv6:len() < 3 do
-        rv6 = tostring(0) .. rv6
-    end
-    local Params = tonumber( rv7 .. rv6 .. rv5)
-    for N = 1, rv2:len() do
-        local check = 2*(rv3 + N - 1) + 60*rv4 
-        if (check > 1080 or check < 0) then return 0 end
-        local Byte = string.byte( rv2, N)
-        local check2 = entity:WriteCell( check, Byte)
-        if(!check2) then return 0 end
-        entity:WriteCell(check + 1, Params)
-    end
-    return 1
+registerFunction("writeString","xwl:snnn", "", function(self,args)
+	local op1, op2, op3, op4, op5 = args[2], args[3], args[4], args[5], args[6]
+	local rv1, rv2, rv3, rv4, rv5 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4), op5[1](self,op5)
+	WriteString(rv1,rv2,rv3,rv4,rv5,0,0)
 end)
 
-registerFunction("writeString","xwl:snn", "n", function(self,args)
-    local op1, op2, op3, op4, op5 = args[2], args[3], args[4], args[5]
-    local rv1, rv2, rv3, rv4, rv5 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4)
-    local entity = checkEntity(rv1)
-    if(!entity or !entity.extended) then return 0 end
-    if !entity.WriteCell then return 0 end
-    rv5 = tostring(999) rv6 = tostring(0) rv7 = tostring(0)
-    if (rv7:len() > 1) then rv7 = rv7:sub(1,1) end
-    while rv5:len() < 3 do
-        rv5 = tostring(0) .. rv5
-    end
-    while rv6:len() < 3 do
-        rv6 = tostring(0) .. rv6
-    end
-    local Params = tonumber( rv7 .. rv6 .. rv5)
-    for N = 1, rv2:len() do
-        local check = 2*(rv3 + N - 1) + 60*rv4 
-        if (check > 1080 or check < 0) then return 0 end
-        local Byte = string.byte( rv2, N)
-        local check2 = entity:WriteCell( check, Byte)
-        if(!check2) then return 0 end
-        entity:WriteCell(check + 1, Params)
-    end
-    return 1
+registerFunction("writeString","xwl:snn", "", function(self,args)
+	local op1, op2, op3, op4, op5 = args[2], args[3], args[4], args[5]
+	local rv1, rv2, rv3, rv4, rv5 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4)
+	WriteString(rv1,rv2,rv3,rv4,999,0,0)
 end)
