@@ -11,7 +11,7 @@ Sub = A - B
 Mul = A * B
 Div = A / B
 
-Less = A > B
+GreaterThan = A > B
 
 if(A > B) {
     Highest = A, Lowest = B
