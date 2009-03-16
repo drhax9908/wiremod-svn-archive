@@ -402,7 +402,7 @@ function Editor:AutoSave()
 	local buffer = self:GetCode()
 	if self.savebuffer == buffer then return end
 	self.savebuffer = buffer
-	file.Write(self.Location .. "/_autosave.txt_", buffer)
+	file.Write(self.Location .. "/_autosave_.txt", buffer)
 end
 
 function Editor:InitControlPanel(frame)
