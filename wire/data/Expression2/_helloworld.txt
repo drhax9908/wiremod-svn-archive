@@ -21,4 +21,4 @@ if(A > B) {
 
 Vector = vec(A, B, 0)
 Vector = Vector + vec(0, 0, A + B)
-Vector = Vector:normalize()
+Vector = Vector:normalized()
