@@ -453,6 +453,8 @@ function EDITOR:SetArea(selection, text, isundo, isredo, before, after)
 		
 		self.PaintRows = {}
 	
+		self:OnTextChanged()
+	
 		if isredo then
 			self.Undo[#self.Undo + 1] = { { self:CopyPosition(start), self:CopyPosition(start) }, buffer, after, before }
 			return before
@@ -495,6 +497,8 @@ function EDITOR:SetArea(selection, text, isundo, isredo, before, after)
 	
 	self.PaintRows = {}
 	
+	self:OnTextChanged()
+	
 	if isredo then
 		self.Undo[#self.Undo + 1] = { { self:CopyPosition(start), self:CopyPosition(stop) }, buffer, after, before }
 		return before
@@ -517,6 +521,8 @@ function EDITOR:SetSelection(text)
 	self:SetCaret(self:SetArea(self:Selection(), text))
 end
 
+function EDITOR:OnTextChanged()
+end
 
 function EDITOR:_OnLoseFocus()
 	if self.TabFocus then
@@ -581,8 +587,11 @@ function EDITOR:_OnKeyCodeTyped(code)
 	local control = input.IsKeyDown(KEY_LCONTROL) or input.IsKeyDown(KEY_RCONTROL)
 	
 	if control then
-	
-		if code == KEY_Z then
+		if code == KEY_A then
+			self.Caret = {#self.Rows, string.len(self.Rows[#self.Rows]) + 1}
+			self.Start = {1, 1}
+			self:ScrollCaret()
+		elseif code == KEY_Z then
 			if #self.Undo > 0 then
 				local undo = self.Undo[#self.Undo]
 				self.Undo[#self.Undo] = nil

@@ -321,6 +321,11 @@ function Editor:InitComponents()
 	self.C['Browser'].panel:AddRightClick( self.C['Browser'].panel.filemenu, "Save To" , function() 
 		self:SaveFile( self.C['Browser'].panel.File.FileDir)
 	end )
+	self.C['Editor'].panel.OnTextChanged = function(panel)
+		timer.Create("e2autosave", 5, 1, function()
+			self:AutoSave()
+		end)
+	end
 	self.C['Editor'].panel.OnShortcut = function(_, code)
 		if code == KEY_S then
 			self:SaveFile(chosenfile)
@@ -391,6 +396,13 @@ function Editor:InitComponents()
 	self:InitControlPanel(self.C['Control'].panel)	//making it seperate for better overview
 	self.C['Control'].panel:SetVisible(false)
 	self:Validate()
+end
+
+function Editor:AutoSave()
+	local buffer = self:GetCode()
+	if self.savebuffer == buffer then return end
+	self.savebuffer = buffer
+	file.Write(self.Location .. "/_autosave.txt_", buffer)
 end
 
 function Editor:InitControlPanel(frame)
@@ -475,8 +487,9 @@ end
 // options
 
 function Editor:NewScript()
+	self:AutoSave()
 	self:ChosenFile()
-	self:SetCode("@name \n@inputs \n@outputs \n@persist \n@trigger all\n\n# Latest changelog entry: Wirelinks now duplicate properly!\n# Documentation and examples available at:\n# http://wiki.garrysmod.com/wiki/?title=Wire_Expression2\n# The community is available at http://www.wiremod.com")
+	self:SetCode("@name \n@inputs \n@outputs \n@persist \n@trigger all\n\n# 2009-03-16: Wirelinks now duplicate properly and autosave added to editor!\n\n# Documentation and examples available at:\n# http://wiki.garrysmod.com/wiki/?title=Wire_Expression2\n# The community is available at http://www.wiremod.com")
 end
 
 function Editor:Validate(gotoerror)
@@ -548,6 +561,7 @@ end
 
 function Editor:SetCode(code)
 	self.C['Editor'].panel:SetText(code)
+	self.savebuffer = self:GetCode()
 	self:Validate()
 	self:ExtractName()
 end
@@ -585,18 +599,22 @@ function Editor:SaveFile(Line, close)
 	if(close) then self:Close() end
 end
 
-function Editor:LoadFile( Line ) 
+function Editor:LoadFile( Line )
 	if(!Line or file.IsDir( Line )) then return end
 	local str = file.Read(Line)
 	if str == nil then
 		Error("ERROR LOADING FILE!")
 	else
+		self:AutoSave()
 		if(!self.chip) then self:ChosenFile(Line) end
 		self:SetCode(str)
 	end
 end 
 
 function Editor:Close()
+	timer.Stop("e2autosave")
+	self:AutoSave()
+	
 	self:ExtractName()
 	self:SetV(false)
 	self.chip = false
