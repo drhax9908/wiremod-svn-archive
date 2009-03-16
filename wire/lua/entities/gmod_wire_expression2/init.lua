@@ -73,7 +73,7 @@ function ENT:Execute()
 	end
 
 	local ok, msg = pcall(self.script[1], self.context, self.script)
-	if !ok and msg then
+	if !ok and msg != "exit" then
 		self:Error("Expression 2: " .. msg .. "\n")
 	end
 	
