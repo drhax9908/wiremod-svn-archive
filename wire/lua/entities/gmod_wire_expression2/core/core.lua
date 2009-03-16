@@ -132,5 +132,5 @@ end)
 /******************************************************************************/
 
 registerFunction("exit", "", "", function(self, args)
-	error(nil, 0)
+	error("exit", 0)
 end)
