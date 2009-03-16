@@ -9,6 +9,11 @@ Thank you for supporting Expression 2
 -- Syranide
 
 ===============================================================================
+The changelog only lists additions and major fixes, minor fixes are not listed.
+
+2009-03-16
+fixed Wirelinks, they always duplicate properly now!, previously broken dupes
+  should also automatically become functional without any rewiring.
 
 2009-03-15
 added [exit()] for stopping execution of the expression

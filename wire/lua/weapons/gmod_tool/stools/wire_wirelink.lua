@@ -10,6 +10,7 @@ if CLIENT then
 end
 
 if SERVER then
+	local _Wire_Link_End = WireLib.Link_End
 	local _Wire_CreateSpecialOutputs = WireLib.CreateSpecialOutputs
 	local _Wire_AdjustSpecialOutputs = WireLib.AdjustSpecialOutputs
 	local _Wire_BuildDupeInfo = WireLib.BuildDupeInfo
@@ -43,18 +44,25 @@ if SERVER then
 			return func(ent, names, types, desc)
 		end
 	
-		if types == nil then types = {} end
-		types[#names + 1] = "WIRELINK"
-		names[#names + 1] = "link"
+		if types == nil then
+			types = {}
+			for i,_ in ipairs(names) do
+				types[i] = "NORMAL"
+			end
+		end
+		
+		table.insert(names, "link")
+		table.insert(types, "WIRELINK")
 		local outputs = func(ent, names, types, desc)
-		types[#names] = nil
-		names[#names] = nil
+		table.remove(names)
+		table.remove(types)
 		
 		return outputs
 	end
 	
 	function WireLib.BuildDupeInfo(ent)
 		local info = _Wire_BuildDupeInfo(ent)
+		PrintTable(info)
 		if ent.extended then
 			if info == nil then info = {} end
 			info.extended = true
@@ -65,6 +73,7 @@ if SERVER then
 	function WireLib.ApplyDupeInfo(ply, ent, info, GetEntByID)
 		if info.extended then ent.extended = true end
 		RefreshSpecialOutputs(ent)
+		
 		_Wire_ApplyDupeInfo(ply, ent, info, GetEntByID)
 	end
 	
@@ -77,15 +86,27 @@ if SERVER then
 	end
 	
 	function WireLib.CreateOutputs(ent, names, desc)
-		return WireLib.CreateSpecialOutputs(ent, names, {}, desc)
+		return WireLib.CreateSpecialOutputs(ent, names, nil, desc)
 	end
 	
 	function WireLib.AdjustOutputs(ent, names, desc)
-		return WireLib.AdjustSpecialOutputs(ent, names, {}, desc)
+		return WireLib.AdjustSpecialOutputs(ent, names, nil, desc)
 	end
 	
+	function WireLib.Link_End(idx, ent, pos, oname, pl)
+		if oname == "link" then
+			ent.extended = true
+			RefreshSpecialOutputs(ent)
+		end
+		
+		return _Wire_Link_End(idx, ent, pos, oname, pl)
+	end
+
+	Wire_Link_End = WireLib.Link_End
 	Wire_CreateOutputs = WireLib.CreateOutputs
 	Wire_AdjustOutputs = WireLib.AdjustOutputs
+	Wire_BuildDupeInfo = WireLib.BuildDupeInfo
+	Wire_ApplyDupeInfo = WireLib.ApplyDupeInfo
 end
 
 
