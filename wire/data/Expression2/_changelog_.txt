@@ -1,0 +1,46 @@
+# Please visit the documentation for more information:
+# http://wiki.garrysmod.com/wiki/?title=Wire_Expression2
+# 
+# You can also visit the community at:
+# http://www.wiremod.com
+# http://www.wiremod.com/forum/developers-showcase/4045-expression-gate-2-a-new-post.html
+# 
+# Thank you for supporting Expression 2
+# -- Syranide
+# 
+# ===============================================================================
+# The changelog only lists additions and major fixes, minor fixes are not listed.
+# 
+# 
+#
+# 2009-03-16
+# ADDED autosaving to the editor, it now automatically saves a copy of your script
+#   every minute when something has changed, or when you close the editor or
+#   load another expression.
+# FIXED Wirelinks, they always duplicate properly now!, previously broken dupes
+#   should also automatically become functional without any rewiring.
+# 
+# 2009-03-15
+# ADDED [exit()] for stopping execution of the expression
+# 
+# 2009-03-14
+# ADDED [@trigger]-directive, change the way the executions are triggered, all is
+#   the old behaviour, none means that it never triggers by inputs, or you can
+#   specify a list of inputs that will trigger execution.
+#   examples: @trigger all, @trigger none, @trigger Button, @trigger Button1 Button 2
+# 
+# ADDED [runOnTick(N)] and [tickClk()], works like a timer, but is executed each
+#   tick (server frame), which means that it is perfect for use with physics-based
+#   contraptions, both to lessen lag and to prevent applyForce from being applied
+#   mulitple times in a single frame.
+# 
+# 2009-03-13
+# ADDED [reset()], resets the expression, just as if you would reset it externally.
+# 
+# 2009-03-12
+# ADDED [E:isAdmin()=N] and [E:isSuperAdmin()=N], to determine if a player is admin.
+# 
+# 
+# 
+# ... and lots more has improved in the days, weeks, and months before that, check out
+#     the wiki for more information on the functions available.
