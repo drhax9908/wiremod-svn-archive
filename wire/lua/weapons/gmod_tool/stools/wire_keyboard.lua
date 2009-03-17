@@ -17,6 +17,7 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar[ "model" ] = "models/beer/wiremod/keyboard.mdl"
+TOOL.ClientConVar[ "sync" ] = "1"
 
 cleanup.Register( "wire_keyboards" )
 
@@ -122,4 +123,8 @@ end
 function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_keyboard_name", Description = "#Tool_wire_keyboard_desc" })
 	ModelPlug_AddToCPanel(panel, "Keyboard", "wire_keyboard", "#ToolWireIndicator_Model")
+
+	panel:AddControl( "CheckBox", { Label = "Synchronous keyboard",
+					 Description = "Pause user input when keyboard is active (clientside)",
+					 Command = "wire_keyboard_sync" } )
 end
