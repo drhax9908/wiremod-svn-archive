@@ -1,5 +1,6 @@
 -- a variable inside a single if-branch is discarded, even though that type should be forced for any consecutive assignments
 
+AddCSLuaFile('init.lua')
 AddCSLuaFile('cl_init.lua')
 AddCSLuaFile('shared.lua')
 include('shared.lua')

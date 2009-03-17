@@ -3,12 +3,9 @@
   Andreas "Syranide" Svensson, me@syranide.com
 \******************************************************************************/
 
-if SERVER then
-	AddCSLuaFile("E2toolscreen.lua")
-	resource.AddFile("materials/expression 2/cog.vmt")
-	resource.AddFile("materials/expression 2/cog.vtf")
-	return
-end
+AddCSLuaFile("E2toolscreen.lua")
+resource.AddFile("materials/expression 2/cog.vmt")
+resource.AddFile("materials/expression 2/cog.vtf")
 
 surface.CreateFont("Arial", 40, 1000, true, false, "Expression2ToolScreenFont")
 surface.CreateFont("Arial", 30, 1000, true, false, "Expression2ToolScreenSubFont")
