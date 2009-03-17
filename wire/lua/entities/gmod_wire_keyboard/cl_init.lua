@@ -12,11 +12,13 @@ function Wire_BlockInput(pl,cmd,args)
 		BlockFrame:SetVisible(false)
 	end
 
-	BlockFrame = vgui.Create("Panel")
-	BlockFrame:SetSize(10,10)
-	BlockFrame:SetPos(-100,-100)
-	BlockFrame:SetVisible(true)
-	BlockFrame:MakePopup()
+	if (GetConVarString("wire_keyboard_sync") == "1") then
+		BlockFrame = vgui.Create("Panel")
+		BlockFrame:SetSize(10,10)
+		BlockFrame:SetPos(-100,-100)
+		BlockFrame:SetVisible(true)
+		BlockFrame:MakePopup()
+	end
 end
 concommand.Add("wire_keyboard_blockinput", Wire_BlockInput)
 
