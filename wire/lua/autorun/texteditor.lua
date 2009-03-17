@@ -3,10 +3,7 @@
   Andreas "Syranide" Svensson, me@syranide.com
 \******************************************************************************/
 
-if SERVER then
-	AddCSLuaFile("texteditor.lua")
-	return
-end
+AddCSLuaFile("texteditor.lua")
 
 local EDITOR = {}
 
@@ -108,8 +105,11 @@ function EDITOR:OnMouseReleased(code)
 end
 
 function EDITOR:SetText(text)
-	self.Rows = string.Explode("\n", string.TrimRight(text))
-	self.Rows[#self.Rows + 1] = ""
+	self.Rows = string.Explode("\n", text)
+	if self.Rows[#self.Rows] != "" then
+		self.Rows[#self.Rows + 1] = ""
+	end
+	
 	self.Caret = {1, 1}
 	self.Start = {1, 1}
 	self.Scroll = {1, 1}
