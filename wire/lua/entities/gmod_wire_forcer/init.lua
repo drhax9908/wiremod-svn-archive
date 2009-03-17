@@ -45,10 +45,16 @@ function ENT:TriggerInput(iname, value)
 		self.FoO = value
 		self:ShowOutput()
 	elseif (iname == "Velocity") then
-		self.V = value
+		self.V = math.max(math.min(100000,value),-100000)
 		self:SetForceBeam(self.V != 0)
 		self:ShowOutput()
 	end
+end
+
+local function clamp_length(vector)
+	local length = vector:length()
+	if length > 100000 then return vector / length * 100000 end
+	return vector
 end
 
 function ENT:Think()
