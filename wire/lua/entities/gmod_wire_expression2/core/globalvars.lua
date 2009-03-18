@@ -1,7 +1,7 @@
 AddCSLuaFile('globalvars.lua')
 
 /******************************************************************************\
-  Global variable support v1.4
+  Global variable support v1.5
 \******************************************************************************/
 
 //--------------------------//
@@ -17,6 +17,9 @@ local function glTid(self)
 		local T = _G[uid][group]
 		T["s"] = {}
 		T["n"] = {}
+		T["v"] = {}
+		T["a"] = {}
+		T["e"] = {}
 		return T
 	end
 	return _G[uid][group]
@@ -178,6 +181,255 @@ registerFunction("gDeleteNum", "n", "n", function(self, args)
 	return value
 end)
 
+//--------------//
+//--Vectors--//
+//-------------//
+
+registerFunction("gSetVec", "v", "", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	local T = glTid(self)
+	if rv1[1] == 0 and rv1[2] == 0 and rv1[3] == 0 then rv1 = nil end
+	T["xv"] = rv1
+end)
+
+registerFunction("gGetVec", "", "v", function(self, args)
+	local T = glTid(self)
+	local ret = T["xv"]
+	if type(ret) == "table" and table.getn(ret) == 3 then return ret end
+	return { 0, 0, 0 }
+end)
+
+registerFunction("gDeleteVec", "", "v", function(self, args)
+	local T = glTid(self)
+	if T["xv"]==nil then return { 0, 0, 0 } end
+	local value = T["xv"]
+	T["xv"] = nil
+	return value
+end)
+
+registerFunction("gSetVec", "sv", "", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local T = glTid(self)
+	if rv2[1] == 0 and rv2[2] == 0 and rv2[3] == 0 then rv2 = nil end
+	T["v"][rv1] = rv2
+end)
+
+registerFunction("gGetVec", "s", "v", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	local T = glTid(self)
+	local ret = T["v"][rv1]
+	if type(ret) == "table" and table.getn(ret) == 3 then return ret end
+	return { 0, 0, 0 }
+end)
+
+registerFunction("gDeleteVec", "s", "v", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	local T = glTid(self)
+	if T["v"][rv1]==nil then return { 0, 0, 0 } end
+	local value = T["v"][rv1]
+	T["v"][rv1] = nil
+	return value
+end)
+
+registerFunction("gSetVec", "nv", "", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	rv1 = rv1 - rv1 % 1
+	local T = glTid(self)
+	if rv2[1] == 0 and rv2[2] == 0 and rv2[3] == 0 then rv2 = nil end
+	T["v"][rv1] = rv2
+end)
+
+registerFunction("gGetVec", "n", "v", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	rv1 = rv1 - rv1 % 1
+	local T = glTid(self)
+	local ret = T["v"][rv1]
+	if type(ret) == "table" and table.getn(ret) == 3 then return ret end
+	return { 0, 0, 0 }
+end)
+
+registerFunction("gDeleteVec", "n", "v", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	rv1 = rv1 - rv1 % 1
+	local T = glTid(self)
+	if T["v"][rv1]==nil then return { 0, 0, 0 } end
+	local value = T["v"][rv1]
+	T["v"][rv1] = nil
+	return value
+end)
+
+//--------------//
+//--Angles--//
+//-------------//
+
+registerFunction("gSetAng", "a", "", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	local T = glTid(self)
+	if rv1[1] == 0 and rv1[2] == 0 and rv1[3] == 0 then rv1 = nil end
+	T["xa"] = rv1
+end)
+
+registerFunction("gGetAng", "", "a", function(self, args)
+	local T = glTid(self)
+	local ret = T["xa"]
+	if type(ret) == "table" and table.getn(ret) == 3 then return ret end
+	return { 0, 0, 0 }
+end)
+
+registerFunction("gDeleteAng", "", "a", function(self, args)
+	local T = glTid(self)
+	if T["xa"]==nil then return { 0, 0, 0 } end
+	local value = T["xa"]
+	T["xa"] = nil
+	return value
+end)
+
+registerFunction("gSetAng", "sa", "", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local T = glTid(self)
+	if rv2[1] == 0 and rv2[2] == 0 and rv2[3] == 0 then rv2 = nil end
+	T["a"][rv1] = rv2
+end)
+
+registerFunction("gGetAng", "s", "a", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	local T = glTid(self)
+	local ret = T["a"][rv1]
+	if type(ret) == "table" and table.getn(ret) == 3 then return ret end
+	return { 0, 0, 0 }
+end)
+
+registerFunction("gDeleteAng", "s", "a", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	local T = glTid(self)
+	if T["a"][rv1]==nil then return { 0, 0, 0 } end
+	local value = T["a"][rv1]
+	T["a"][rv1] = nil
+	return value
+end)
+
+registerFunction("gSetAng", "na", "", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	rv1 = rv1 - rv1 % 1
+	local T = glTid(self)
+	if rv2[1] == 0 and rv2[2] == 0 and rv2[3] == 0 then rv2 = nil end
+	T["a"][rv1] = rv2
+end)
+
+registerFunction("gGetAng", "n", "a", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	rv1 = rv1 - rv1 % 1
+	local T = glTid(self)
+	local ret = T["a"][rv1]
+	if type(ret) == "table" and table.getn(ret) == 3 then return ret end
+	return { 0, 0, 0 }
+end)
+
+registerFunction("gDeleteAng", "n", "a", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	rv1 = rv1 - rv1 % 1
+	local T = glTid(self)
+	if T["a"][rv1]==nil then return { 0, 0, 0 } end
+	local value = T["a"][rv1]
+	T["a"][rv1] = nil
+	return value
+end)
+
+//------------//
+//--Entity--//
+//-----------//
+
+registerFunction("gSetEnt", "e", "", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	local T = glTid(self)
+	T["xe"] = rv1
+end)
+
+registerFunction("gGetEnt", "", "e", function(self, args)
+	local T = glTid(self)
+	local ret = T["xe"]
+	if validEntity(ret) then return ret end
+	return nil
+end)
+
+registerFunction("gDeleteEnt", "", "e", function(self, args)
+	local T = glTid(self)
+	local ret = T["xe"]
+	T["xe"] = nil
+	if validEntity(ret) then return ret end
+	return nil
+end)
+
+registerFunction("gSetEnt", "se", "", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	local T = glTid(self)
+	T["e"][rv1] = rv2
+end)
+
+registerFunction("gGetEnt", "s", "e", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	local T = glTid(self)
+	local ret = T["e"][rv1]
+	if validEntity(ret) then return ret end
+	return nil
+end)
+
+registerFunction("gDeleteEnt", "s", "e", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	local T = glTid(self)
+	local ret = T["e"][rv1]
+	T["e"][rv1] = nil
+	if validEntity(ret) then return ret end
+	return nil
+end)
+
+registerFunction("gSetEnt", "ne", "", function(self, args)
+    local op1, op2 = args[2], args[3]
+    local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	rv1 = rv1 - rv1 % 1
+	local T = glTid(self)
+	T["e"][rv1] = rv2
+end)
+
+registerFunction("gGetEnt", "n", "e", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	rv1 = rv1 - rv1 % 1
+	local T = glTid(self)
+	local ret = T["e"][rv1]
+	if validEntity(ret) then return ret end
+	return nil
+end)
+
+registerFunction("gDeleteEnt", "n", "e", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+	rv1 = rv1 - rv1 % 1
+	local T = glTid(self)
+	local ret = T["e"][rv1]
+	T["e"][rv1] = nil
+	if validEntity(ret) then return ret end
+	return nil
+end)
+
 //-----------------//
 //--Clean Up--//
 //-----------------//
@@ -204,6 +456,29 @@ registerFunction("gDeleteAllNum", "", "", function(self, args)
 	T["n"] = {}
 	T["xn"] = nil
 end)
+
+registerFunction("gDeleteAllVec", "", "", function(self, args)
+	local T = glTid(self)
+	T["v"] = nil
+	T["v"] = {}
+	T["xv"] = nil
+end)
+
+registerFunction("gDeleteAllAng", "", "", function(self, args)
+	local T = glTid(self)
+	T["a"] = nil
+	T["a"] = {}
+	T["xa"] = nil
+end)
+
+registerFunction("gDeleteAllEnt", "", "", function(self, args)
+	local T = glTid(self)
+	T["e"] = nil
+	T["e"] = {}
+	T["xe"] = nil
+end)
+
+
 
 //---------------//
 //--Sharing--//
