@@ -70,8 +70,10 @@ if SERVER then
 	end
 	
 	function WireLib.ApplyDupeInfo(ply, ent, info, GetEntByID)
-		if info.extended then ent.extended = true end
-		RefreshSpecialOutputs(ent)
+		if info.extended and ent.extended == nil then
+			ent.extended = true
+			RefreshSpecialOutputs(ent)
+		end
 		
 		_Wire_ApplyDupeInfo(ply, ent, info, GetEntByID)
 	end
@@ -93,7 +95,7 @@ if SERVER then
 	end
 	
 	function WireLib.Link_End(idx, ent, pos, oname, pl)
-		if oname == "link" then
+		if oname == "link" and ent.extended == nil then
 			ent.extended = true
 			RefreshSpecialOutputs(ent)
 		end
