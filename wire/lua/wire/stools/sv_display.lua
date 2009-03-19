@@ -407,6 +407,7 @@ function WireToolMakeEmitter( self, tr, pl )
 	local a = self:GetClientNumber( "a" );
 	local size = self:GetClientNumber( "size" );
 	local showbeams = util.tobool( self:GetClientNumber( "showbeams" ) );
+	local groundbeams = util.tobool( self:GetClientNumber( "groundbeams" ) );
 	
 	// did we hit another holoemitter?
 	if( tr.HitNonWorld && tr.Entity:GetClass() == "gmod_wire_holoemitter" ) then
@@ -415,6 +416,7 @@ function WireToolMakeEmitter( self, tr, pl )
 		
 		// update size and show states
 		tr.Entity:SetNetworkedBool( "ShowBeam", showbeams );
+		tr.Entity:SetNetworkedBool( "GroundBeam", groundbeams );
 		tr.Entity:SetNetworkedFloat( "PointSize", size );
 		
 		tr.Entity.r = r
@@ -422,6 +424,7 @@ function WireToolMakeEmitter( self, tr, pl )
 		tr.Entity.b = b
 		tr.Entity.a = a
 		tr.Entity.showbeams = showbeams
+		tr.Entity.groundbeams = groundbeams
 		tr.Entity.size = size
 		
 		return true;
@@ -453,7 +456,7 @@ function WireToolMakeEmitter( self, tr, pl )
 	ang.pitch = ang.pitch + 90;
 	
 	// create emitter
-	local emitter = MakeWireHoloemitter( pl, tr.HitPos, ang, r, g, b, a, showbeams, size );
+	local emitter = MakeWireHoloemitter( pl, tr.HitPos, ang, r, g, b, a, showbeams, groundbeams, size );
 	
 	// pull it out of the spawn point
 	local mins = emitter:OBBMins();

@@ -1,4 +1,4 @@
-TOOL.Category		= "Wire - Physics"
+TOOL.Category		= "Wire - Render"
 TOOL.Name			= "Trail"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
@@ -10,7 +10,7 @@ if ( CLIENT ) then
     language.Add( "WireTrailTool_trail", "Trail:" )
     language.Add( "WireTrailTool_mat", "Material:" )
 	language.Add( "sboxlimit_wire_trails", "You've hit trails limit!" )
-	language.Add( "undone_Wire Data Transferer", "Undone Wire Trail" )
+	language.Add( "Undone_Wire Trails", "Undone Wire Trail" )
 end
 
 if (SERVER) then

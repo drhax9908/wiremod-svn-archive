@@ -82,6 +82,7 @@ function ENT:Draw( )
 
 	// draw beam?
 	local drawbeam	= self.Entity:GetNetworkedBool( "ShowBeam" );
+	local groundbeam	= self.Entity:GetNetworkedBool( "GroundBeam" );
 	
 	// read point size
 	local size	= self.Entity:GetNetworkedFloat( "PointSize" );
@@ -101,7 +102,7 @@ function ENT:Draw( )
 	end
 	
 	// draw active point - beam
-	if( drawbeam ) then
+	if( drawbeam && groundbeam ) then
 		render.SetMaterial( matbeam );
 		render.DrawBeam(
 			self.Entity:GetPos(),
@@ -124,6 +125,7 @@ function ENT:Draw( )
 	
 	// draw fading points.
 	local point, lastpos, i = nil, pixelpos;
+	local newlist = {}
 	for i = table.getn( self.PointList ), 1, -1 do
 		// easy access
 		local point = self.PointList[i];
@@ -136,10 +138,9 @@ function ENT:Draw( )
 		// die?
 		if( point.alpha <= 0 ) then
 			table.remove( self.PointList, i );
-			
-			
-		// WHY CAN'T LUA SUPPORT CONTINUE!?!?!!?
 		else
+			table.insert( newlist, { pos = point.pos, alpha = point.alpha, faderate = point.faderate } );
+					
 			// calculate pixel point.
 			local pixelpos
 			if (usegps == true) then
@@ -153,14 +154,17 @@ function ENT:Draw( )
 			
 			// draw active point - beam
 			if( drawbeam ) then
-				render.SetMaterial( matbeam );
-				render.DrawBeam(
-					self.Entity:GetPos(),
-					pixelpos,
-					beamsize,
-					0, 1,
-					color
-				);
+				if (groundbeam) then
+					render.SetMaterial( matbeam );
+					render.DrawBeam(
+						self.Entity:GetPos(),
+						pixelpos,
+						beamsize,
+						0, 1,
+						color
+					);
+				end
+				render.SetMaterial( matbeam )
 				render.DrawBeam(
 					lastpos,
 					pixelpos,
@@ -183,5 +187,6 @@ function ENT:Draw( )
 		end
 		
 	end
+	self.PointList = newlist
 end
 

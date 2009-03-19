@@ -1,6 +1,8 @@
 
 AddCSLuaFile("wire_expression2_editor.lua")
 
+if SERVER then return end
+
 local Editor = {}
 
 // overwritten commands
