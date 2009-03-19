@@ -25,6 +25,7 @@ function ENT:Initialize( )
 	self.Entity:SetNetworkedFloat( "FadeRate", 50 );
 	self.Entity:SetNetworkedFloat( "PointSize", 0.2 );
 	self.Entity:SetNetworkedBool( "ShowBeam", true );
+	self.Entity:SetNetworkedBool( "GroundBeam", true );
 	self.Entity:SetNetworkedBool( "Active", false );
 	self.Entity:SetNetworkedBool( "UseGPS", false );
 	self.Entity:SetNetworkedInt( "LastClear", 0 );
@@ -63,7 +64,7 @@ end
 
 
 if ( SERVER ) then
-	function MakeWireHoloemitter( pl, pos, ang, r, g, b, a, showbeams, size, frozen )
+	function MakeWireHoloemitter( pl, pos, ang, r, g, b, a, showbeams, groundbeams, size, frozen )
 		// check the players limit
 		if( !pl:CheckLimit( "wire_holoemitters" ) ) then return; end
 		
@@ -85,6 +86,7 @@ if ( SERVER ) then
 		
 		// update size and show states
 		emitter:SetNetworkedBool( "ShowBeam", showbeams );
+		emitter:SetNetworkedBool( "GroundBeam", groundbeams );
 		emitter:SetNetworkedFloat( "PointSize", size );
 		
 		// store the color on the table.
@@ -94,6 +96,7 @@ if ( SERVER ) then
 			b = b,
 			a = a,
 			showbeams = showbeams,
+			groundbeams = groundbeams,
 			size = size,
 		};
 		table.Merge( emitter:GetTable(), tbl );
@@ -105,7 +108,7 @@ if ( SERVER ) then
 		return emitter;
 	end
 	
-	duplicator.RegisterEntityClass("gmod_wire_holoemitter",MakeWireHoloemitter,"Pos","Ang","r", "g", "b", "a","showbeams","size","frozen");
+	duplicator.RegisterEntityClass("gmod_wire_holoemitter",MakeWireHoloemitter,"Pos","Ang","r", "g", "b", "a","showbeams","groundbeams","size","frozen");
 end
 
 function ENT:BuildDupeInfo()

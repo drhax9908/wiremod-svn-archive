@@ -33,10 +33,10 @@ registerFunction("getConstraints", "e:", "r", function(self, args)
     local entity = checkEntity(rv1)
 	if(!entity) then return 0 end
     if(constraint.HasConstraints(rv1))then
-	local keytable = table.ClearKeys(constraint.GetAllConstrainedEntities(rv1),false)
+	local keytable = constraint.GetAllConstrainedEntities(rv1)
 	local array = {}
 	local count = 0
-		for k,v in pairs(keytable) do
+		for _,v in pairs(keytable) do
 			if v!=rv1 && validEntity(v) then
 				count = count + 1
 				array[count] = v

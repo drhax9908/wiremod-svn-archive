@@ -5,6 +5,8 @@
 
 AddCSLuaFile("texteditor.lua")
 
+if SERVER then return end
+
 local EDITOR = {}
 
 surface.CreateFont("Courier New", 16, 400, false, false, "Expression2EditorFont")

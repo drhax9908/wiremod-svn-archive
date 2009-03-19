@@ -2,6 +2,8 @@
 
 AddCSLuaFile("wire_expression2_browser.lua")
 
+if SERVER then return end
+
 local PANEL = {}
 
 function PANEL:Init()

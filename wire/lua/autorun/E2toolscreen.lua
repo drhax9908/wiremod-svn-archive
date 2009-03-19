@@ -7,6 +7,8 @@ AddCSLuaFile("E2toolscreen.lua")
 resource.AddFile("materials/expression 2/cog.vmt")
 resource.AddFile("materials/expression 2/cog.vtf")
 
+if SERVER then return end
+
 surface.CreateFont("Arial", 40, 1000, true, false, "Expression2ToolScreenFont")
 surface.CreateFont("Arial", 30, 1000, true, false, "Expression2ToolScreenSubFont")
 
