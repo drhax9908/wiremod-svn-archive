@@ -2,6 +2,7 @@
 include('shared.lua')
 
 ENT.RenderGroup 	= RENDERGROUP_OPAQUE
+ENT.Delay = 0.05
 
 local matLight 		= Material( "sprites/light_ignorez" )
 local matBeam		= Material( "effects/lamp_beam" )
@@ -30,7 +31,6 @@ end
 function ENT:Think()
 
 	if ( !(self:GetOn()~=0) ) then return end
-	self.Delay = self.Delay or 0.05
 	
 	if ( self.Delay > CurTime() ) then return end
 	self.Delay = CurTime() + self:GetDelay()
