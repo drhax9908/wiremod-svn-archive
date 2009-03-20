@@ -504,8 +504,11 @@ registerFunction("gSetGroup", "s", "", function(self, args)
 	local group = self.data['globavars']
 	if _G[uid][group]==nil then _G[uid][group] = {} end
 	local T = _G[uid][group]
-	if T["s"]==nil then T["s"] = {} end
-	if T["n"]==nil then T["n"] = {} end
+	if !T["s"] then T["s"] = {} end
+	if !T["n"] then T["n"] = {} end
+	if !T["v"] then T["v"] = {} end
+	if !T["a"] then T["a"] = {} end
+	if !T["e"] then T["e"] = {} end
 end)
 
 registerFunction("gGetGroup", "", "s", function(self, args)
@@ -521,6 +524,9 @@ registerFunction("gResetGroup", "", "", function(self, args)
 	local T = _G[uid][group]
 	if !T["s"] then T["s"] = {} end
 	if !T["n"] then T["n"] = {} end
+	if !T["v"] then T["v"] = {} end
+	if !T["a"] then T["a"] = {} end
+	if !T["e"] then T["e"] = {} end
 end)
 
 /******************************************************************************/

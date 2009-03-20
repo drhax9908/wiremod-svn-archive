@@ -6,6 +6,7 @@ TOOL.ConfigName		= ""
 
 TOOL.ClientConVar[ "Effect" ] 		= "sparks"
 TOOL.ClientConVar[ "Delay" ]		= "0.07"
+TOOL.ClientConVar[ "Weldworld" ]		= "0"
 
 if SERVER then
 	CreateConVar('sbox_maxwire_fx_emitter', 20)
@@ -27,22 +28,23 @@ if ( CLIENT ) then
 end
 
 
-function TOOL:LeftClick( trace, worldweld )
+function TOOL:LeftClick( trace )
 
 	worldweld = worldweld or false
 
 	if ( trace.Entity && trace.Entity:IsPlayer() ) then return false end
 
+	if (CLIENT) then return true end
+
 	if !self:GetSWEP():CheckLimit( "wire_fx_emitter" ) then return false end
 	
 	// If there's no physics object then we can't constraint it!
 	if ( SERVER && !util.IsValidPhysicsObject( trace.Entity, trace.PhysicsBone ) ) then return false end
-	
-	if (CLIENT) then return true end
-	
+
 	local ply = self:GetOwner()
 	local delay 		= self:GetClientNumber( "Delay" )
 	local effect	 	= self:GetClientInfo( "Effect" )
+	local worldweld		= self:GetClientNumber( "Weldworld" ) ~= 0
 
 	effect = ComboBox_Wire_FX_Emitter_Options[effect]
 
@@ -63,13 +65,13 @@ function TOOL:LeftClick( trace, worldweld )
 	if ( !self:GetSWEP():CheckLimit( "emitters" ) ) then return false end
 	
 	if ( trace.Entity != NULL && (!trace.Entity:IsWorld() || worldweld) ) then
-	
+
 		trace.HitPos = trace.HitPos + trace.HitNormal * -5
-	
+
 	else
-	
-		trace.HitPos = trace.HitPos + trace.HitNormal * 2
-	
+
+		trace.HitPos = trace.HitPos + trace.HitNormal * 1.75
+
 	end
 	
 	local ang = trace.HitNormal:Angle()
@@ -139,6 +141,41 @@ if (SERVER) then
 	
 	duplicator.RegisterEntityClass( "gmod_wire_fx_emitter", MakeWireFXEmitter, "Pos", "Ang", "effect", "Vel", "aVel", "frozen", "nocollide" )
 
+	function TOOL:UpdateGhostWireFXEmitter( ent, player )
+	if ( !ent || !ent:IsValid() ) then return end
+
+	local tr 	= utilx.GetPlayerTrace( player, player:GetCursorAimVector() )
+	local trace 	= util.TraceLine( tr )
+
+	if (!trace.Hit || trace.Entity:IsPlayer() || trace.Entity:GetClass() == "gmod_wire_fx_emitter" ) then
+		ent:SetNoDraw( true )
+		return
+	end
+
+	local worldweld		= self:GetClientNumber( "Weldworld" ) ~= 0
+	if ( !trace.Entity:IsWorld() || worldweld ) then
+
+		ent:SetPos( trace.HitPos + trace.HitNormal * -5 )
+
+	else
+
+		ent:SetPos( trace.HitPos + trace.HitNormal * 1.75 )
+
+	end
+
+	ent:SetAngles( trace.HitNormal:Angle() )
+
+	ent:SetNoDraw( false )
+	end
+
+	function TOOL:Think()
+	if (!self.GhostEntity || !self.GhostEntity:IsValid() ) then
+		self:MakeGhostEntity( "models/props_lab/tpplug.mdl", Vector(0,0,0), Angle(0,0,0) )
+	end
+
+	self:UpdateGhostWireFXEmitter( self.GhostEntity, self:GetOwner() )
+	end
+
 end
 
 
@@ -164,4 +201,10 @@ function TOOL.BuildCPanel( CPanel )
 		Min		= 0.05,
 		Max		= 5,
 		Command = "wire_fx_emitter_Delay" }	 )
+
+	CPanel:AddControl("CheckBox", {
+		Label = "Allow weld to world",
+		Command = "wire_fx_emitter_Weldworld"
+	})
+
 end
