@@ -73,7 +73,7 @@ registerFunction("setNumber", "r:nn", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if(rv2 >= E2_MAX_ARRAY_SIZE) then return end
-	if rv3 == 0 then rv3 = nil end
+//	if rv3 == 0 then rv3 = nil end
 	rv1[rv2] = rv3
 	self.vclk[op1] = true
 end)
@@ -90,7 +90,7 @@ registerFunction("setVector", "r:nv", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if(rv2 >= E2_MAX_ARRAY_SIZE) then return end
-	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
+//	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
 	rv1[rv2] = rv3
 	self.vclk[op1] = true
 end)
@@ -107,7 +107,7 @@ registerFunction("setAngle", "r:na", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if(rv2 >= E2_MAX_ARRAY_SIZE) then return end
-	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
+//	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
 	rv1[rv2] = rv3
 	self.vclk[op1] = true
 end)
@@ -124,7 +124,7 @@ registerFunction("setString", "r:ns", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if(rv2 >= E2_MAX_ARRAY_SIZE) then return end
-	if rv3 == "" then rv3 = nil end
+//	if rv3 == "" then rv3 = nil end
 	rv1[rv2] = rv3
 	self.vclk[op1] = true
 end)
@@ -151,7 +151,7 @@ registerFunction("pushNumber", "r:n", "", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
-	if (rv2 == 0) then rv2=nil end
+//	if (rv2 == 0) then rv2 = nil end
 	table.insert(rv1,rv2)
 	return
 end)
@@ -168,7 +168,7 @@ registerFunction("pushVector", "r:v", "", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
-	if rv2[1] == 0 and rv2[2] == 0 and rv2[3] == 0 then rv2 = nil end
+//	if rv2[1] == 0 and rv2[2] == 0 and rv2[3] == 0 then rv2 = nil end
 	table.insert(rv1,rv2)
 	return
 end)
@@ -185,7 +185,7 @@ registerFunction("pushAngle", "r:a", "", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
-	if rv2[1] == 0 and rv2[2] == 0 and rv2[3] == 0 then rv2 = nil end
+//	if rv2[1] == 0 and rv2[2] == 0 and rv2[3] == 0 then rv2 = nil end
 	table.insert(rv1,rv2)
 	return
 end)
@@ -202,7 +202,7 @@ registerFunction("pushString", "r:s", "", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
-	if (rv2 == "") then rv2=nil end
+//	if (rv2 == "") then rv2 = nil end
 	table.insert(rv1,rv2)
 	return
 end)
@@ -242,7 +242,7 @@ registerFunction("insertNumber", "r:nn", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
-	if (rv3 == 0) then rv3=nil end
+//	if (rv3 == 0) then rv3 = nil end
 	table.insert(rv1,rv2,rv3)
 end)
 
@@ -258,7 +258,7 @@ registerFunction("insertVector", "r:nv", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
-	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
+//	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
 	table.insert(rv1,rv2,rv3)
 end)
 
@@ -274,7 +274,7 @@ registerFunction("insertAngle", "r:na", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
-	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
+//	if rv3[1] == 0 and rv3[2] == 0 and rv3[3] == 0 then rv3 = nil end
 	table.insert(rv1,rv2,rv3)
 end)
 
@@ -290,7 +290,7 @@ registerFunction("insertString", "r:ns", "", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
-	if (rv3 == "") then rv3=nil end
+//	if (rv3 == "") then rv3 = nil end
 	table.insert(rv1,rv2,rv3)
 end)
 
@@ -330,7 +330,7 @@ registerFunction("unshiftNumber", "r:n", "", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
-	if (rv2 == 0) then rv2=nil end
+//	if (rv2 == 0) then rv2 = nil end
 	table.insert(rv1,1,rv2)
 	return
 end)
@@ -347,7 +347,7 @@ registerFunction("unshiftVector", "r:v", "", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
-	if rv2[1] == 0 and rv2[2] == 0 and rv2[3] == 0 then rv2 = nil end
+//	if rv2[1] == 0 and rv2[2] == 0 and rv2[3] == 0 then rv2 = nil end
 	table.insert(rv1,1,rv2)
 	return
 end)
@@ -364,7 +364,7 @@ registerFunction("unshiftAngle", "r:a", "", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
-	if rv2[1] == 0 and rv2[2] == 0 and rv2[3] == 0 then rv2 = nil end
+//	if rv2[1] == 0 and rv2[2] == 0 and rv2[3] == 0 then rv2 = nil end
 	table.insert(rv1,1,rv2)
 	return
 end)
@@ -381,7 +381,7 @@ registerFunction("unshiftString", "r:s", "", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	if ((table.getn(rv1)+1) >= E2_MAX_ARRAY_SIZE) then return end
-	if (rv2 == "") then rv2=nil end
+//	if (rv2 == "") then rv2 = nil end
 	table.insert(rv1,1,rv2)
 	return
 end)
