@@ -53,6 +53,7 @@ local function ranger(self, type, range, p1, p2)
 	local Entity = nil
 	local HitPos = trace.HitPos
 	local Hit = 0
+	local HitNormal = trace.HitNormal
 	if (trace.Hit) then Hit=1 end
 	if (!checkEntity(trace.Entity)) then
 		if (world!=0) then
@@ -62,9 +63,9 @@ local function ranger(self, type, range, p1, p2)
 		Entity=trace.Entity
 	end
 	if (trace.Hit) then
-		return {trace.Fraction*range,HitPos,Entity,Hit}
+		return {trace.Fraction*range,HitPos,Entity,Hit,HitNormal}
 	else
-		return {range*default,HitPos,Entity,Hit}
+		return {range*default,HitPos,Entity,Hit,HitNormal}
 	end
 end
 
@@ -155,6 +156,12 @@ registerFunction("hit", "xrd:", "n", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
     return rv1[4]
+end)
+
+registerFunction("hitNormal", "xrd:", "v", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    return rv1[5]
 end)
 
 /******************************************************************************/
