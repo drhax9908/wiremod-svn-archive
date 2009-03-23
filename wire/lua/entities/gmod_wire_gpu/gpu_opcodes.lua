@@ -302,7 +302,7 @@ function ENT:InitializeGPUOpcodeTable()
  		surface.SetDrawColor(tcolor.x,tcolor.y,tcolor.z,tcolor.w)
  		surface.DrawRect(0,0,512,512)
 
-		if (!self.VertexBuffer[self.VertexBufferCount]) then
+		if (not self.VertexBuffer[self.VertexBufferCount]) then
 			self.VertexBuffer[self.VertexBufferCount] = {}
 		end
 		self.VertexBuffer[self.VertexBufferCount].SetColor = tcolor
@@ -312,7 +312,7 @@ function ENT:InitializeGPUOpcodeTable()
 		self.CurColor = tcolor
 
  		surface.SetDrawColor(tcolor.x,tcolor.y,tcolor.z,tcolor.w)
-		if (!self.VertexBuffer[self.VertexBufferCount]) then
+		if (not self.VertexBuffer[self.VertexBufferCount]) then
 			self.VertexBuffer[self.VertexBufferCount] = {}
 		end
 		self.VertexBuffer[self.VertexBufferCount].SetColor = tcolor
@@ -320,7 +320,7 @@ function ENT:InitializeGPUOpcodeTable()
 	self.OpcodeTable[216] = function (Param1, Param2)	//DBINDTEXTURE
 		if (Param2 != 0) then
 			local addr = Param2
-			if (!self.StringCache[addr]) then
+			if (not self.StringCache[addr]) then
 				self.StringCache[addr] = self:ReadStr(addr)
 			end
 			self.CurrentTexture = self.StringCache[addr]
@@ -329,7 +329,7 @@ function ENT:InitializeGPUOpcodeTable()
 		end
 
 		self:BindTexture(self.CurrentTexture)
-		if (!self.VertexBuffer[self.VertexBufferCount]) then
+		if (not self.VertexBuffer[self.VertexBufferCount]) then
 			self.VertexBuffer[self.VertexBufferCount] = {}
 		end
 		self.VertexBuffer[self.VertexBufferCount].SetTexture = self.CurrentTexture
@@ -669,7 +669,7 @@ function ENT:InitializeGPUOpcodeTable()
 	end
 	//------------------------------------------------------------
 	self.OpcodeTable[240] = function (Param1, Param2)	//DWRITE
-		if (!self.StringCache[Param2]) then
+		if (not self.StringCache[Param2]) then
 			self.StringCache[Param2] = self:ReadStr(Param2)
 		end
 		local text = self.StringCache[Param2]
@@ -709,7 +709,7 @@ function ENT:InitializeGPUOpcodeTable()
 		end		
 	end
 	self.OpcodeTable[246] = function (Param1, Param2)	//DWRITEFMT string.format(
-		if (!self.StringCache[Param2]) then
+		if (not self.StringCache[Param2]) then
 			self.StringCache[Param2] = self:ReadStr(Param2)
 		end
 		local text = self.StringCache[Param2]
@@ -772,7 +772,7 @@ function ENT:InitializeGPUOpcodeTable()
 					lengthmod = nil
 				elseif (chr == "s") then
 					local addr = self:ReadCell(ptr)
-					if (!self.StringCache[addr]) then
+					if (not self.StringCache[addr]) then
 						self.StringCache[addr] = self:ReadStr(addr)
 					end
 					local str = self.StringCache[addr]

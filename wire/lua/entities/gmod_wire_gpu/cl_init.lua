@@ -68,9 +68,6 @@ function WireGPU_MemoryMessage(umsg)
 
 				ent:WriteCell(cachebase+i,value)
 				ent.ROMMemory[cachebase+i] = value
-				if (cachebase+i == 65534) then
-					ent:GPUHardReset()
-				end
 			end
 		end
 	end
@@ -93,6 +90,10 @@ function ENT:DoCall(callid,calldepth)
 			self:GPUExecute()
 			cmdcount = cmdcount + 1
 			self.FrameInstructions = self.FrameInstructions + 1
+		end
+
+		if (EmuFox) then
+			SetInstructions(cmdcount)
 		end
 	end
 end
@@ -128,7 +129,7 @@ function ENT:RenderGPU(clearbg)
 	self.FrameBuffer = WireGPU_GetMyRenderTarget(self:EntIndex())
 	//self.SpriteBuffer = WireGPU_GetMyRenderTarget(10002*(2*self:EntIndex()+1))
 
-	local FrameRate = self.MinFrameRateRatio:GetFloat() or 4//self.FrameRateRatio
+	local FrameRate = self.MinFrameRateRatio:GetFloat() or 4
 	self.FramesSinceRedraw = self.FramesSinceRedraw + 1
 	self.FrameInstructions = 0
 	if (self.FramesSinceRedraw >= FrameRate) then
@@ -252,7 +253,7 @@ function drawGPUHUD()
 	if (WireGPU_HookedGPU) then
 		Msg("Render GPU\n")
 
-		if (!WireGPU_HookedGPU.RenderGPU) then
+		if (not WireGPU_HookedGPU.RenderGPU) then
 			WireGPU_HookedGPU = nil
 			return
 		end

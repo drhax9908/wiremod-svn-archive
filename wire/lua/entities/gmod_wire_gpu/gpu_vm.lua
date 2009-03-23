@@ -24,6 +24,10 @@ function ENT:GPUHardReset()
 	self.Memory[65531] = 0
 end
 
+function ENT:GPURAMReset()
+	self.Memory = {}
+end
+
 function ENT:GPUFrameReset()
 	self:Reset()
 
@@ -69,6 +73,7 @@ function ENT:GPUResetRegisters()
 	//[65533] - HARDWARE CLEAR
 	//[65532] - Vertex mode (render vertex instead of RT)
 	//[65531] - HALT
+	//[65530] - RAM_RESET
 
 	self.Memory[65535] = 1
 	self.Memory[65534] = 0
@@ -202,7 +207,7 @@ function ENT:GPUExecute()
 	self.TIMER = self.TIMER + self.DeltaTime
 	self.TMR = self.TMR + 1
 
-	if (!self.IP) then
+	if (not self.IP) then
 		self:Interrupt(5,0)
 		return
 	end
@@ -382,10 +387,10 @@ end
 function ENT:VertexTransform(coord) //FIXME: coord can have UV
 	local resultcoord = coord
 
-	if (!coord["x"]) then coord["x"] = 0 end
-	if (!coord["y"]) then coord["y"] = 0 end
-	if (!coord["z"]) then coord["z"] = 0 end
-	if (!coord["w"]) then coord["w"] = 1 end
+	if (not coord["x"]) then coord["x"] = 0 end
+	if (not coord["y"]) then coord["y"] = 0 end
+	if (not coord["z"]) then coord["z"] = 0 end
+	if (not coord["w"]) then coord["w"] = 1 end
 
 	coord["z"] = coord["z"] + self:ReadCell(65472)
 
@@ -394,7 +399,7 @@ function ENT:VertexTransform(coord) //FIXME: coord can have UV
 	resultcoord.trans.y = 0
 	resultcoord.trans.z = 0
 	resultcoord.trans.w = 0
-	if (!coord) then return end
+	if (not coord) then return resultcoord end
 
 	if (self.VertexPipe == 0) then
 		resultcoord = self:Transform(coord["x"],coord["y"])
@@ -446,15 +451,15 @@ function ENT:VertexTransform(coord) //FIXME: coord can have UV
 		resultcoord.trans = acoord
 	end
 
-	if (!resultcoord.trans) then
+	if (not resultcoord.trans) then
 		resultcoord.trans = {}
 		resultcoord.trans.x = 0
 		resultcoord.trans.y = 0
 		resultcoord.trans.z = 0
 	end
-	if (!resultcoord.trans.x) then resultcoord.trans.x = 0 end
-	if (!resultcoord.trans.y) then resultcoord.trans.y = 0 end
-	if (!resultcoord.trans.z) then resultcoord.trans.z = 0 end
+	if (not resultcoord.trans.x) then resultcoord.trans.x = 0 end
+	if (not resultcoord.trans.y) then resultcoord.trans.y = 0 end
+	if (not resultcoord.trans.z) then resultcoord.trans.z = 0 end
 
 	return resultcoord
 end

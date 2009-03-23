@@ -46,6 +46,9 @@ function ENT:WriteCell(Address, value)
 	if (Address < 0) || (Address > 65536) then
 		return false
 	else
+		if (Address == 65534) then self:GPUHardReset() end
+		if (Address == 65530) then self:GPURAMReset() end
+
 		self.Memory[Address] = value
 		return true
 	end
