@@ -63,9 +63,9 @@ function ENT:Initialize()
 	self.Memory1[2029] = 1
 	self.Memory1[2030] = 1
 	self.Memory1[2031] = 0
-	self.Memory1[2032] = 17
+	self.Memory1[2032] = 29
 	self.Memory1[2033] = 0
-	self.Memory1[2034] = 29
+	self.Memory1[2034] = 17
 	self.Memory1[2035] = 0
 	self.Memory1[2036] = 0
 
@@ -120,8 +120,8 @@ function ConsoleScreen_DataMessage(um)
 
 			if (address == 2037) then
 				local delta = value
-				local low = math.floor(math.Clamp(ent.Memory1[2031],0,17))
-				local high = math.floor(math.Clamp(ent.Memory1[2032],0,17))
+				local low = math.floor(math.Clamp(ent.Memory1[2031],0,29))
+				local high = math.floor(math.Clamp(ent.Memory1[2032],0,29))
 				if (delta > 0) then
 					for j = low,high do
 						for i = 29,delta do
@@ -169,8 +169,8 @@ function ConsoleScreen_DataMessage(um)
 			end
 			if (address == 2038) then
 				local delta = value
-				local low = math.floor(math.Clamp(ent.Memory1[2033],0,29))
-				local high = math.floor(math.Clamp(ent.Memory1[2034],0,29))
+				local low = math.floor(math.Clamp(ent.Memory1[2033],0,17))
+				local high = math.floor(math.Clamp(ent.Memory1[2034],0,17))
 				if (delta > 0) then
 					for j = low, high-delta do
 						for i = 0, 59 do
@@ -190,7 +190,7 @@ function ConsoleScreen_DataMessage(um)
 					end
 				else
 					delta = -delta
-					for j = high,delta do
+					for j = low+delta,high do
 						for i = 0, 59 do
 							if (clk == 1) then
 								ent.Memory1[j*60+i] = ent.Memory1[(j-delta)*60+i]
@@ -198,7 +198,7 @@ function ConsoleScreen_DataMessage(um)
 							ent.Memory2[j*60+i] = ent.Memory2[(j-delta)*60+i]
 						end
 					end
-					for j = delta+1,low do
+					for j = low,low+delta-1 do
 						for i = 0, 59 do
 							if (clk == 1) then
 								ent.Memory1[j*60+i] = 0
