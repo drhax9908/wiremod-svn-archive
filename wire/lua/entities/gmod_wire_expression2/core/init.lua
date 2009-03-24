@@ -1736,6 +1736,7 @@ include("chat.lua");
 include("constraint.lua");
 include("weapon.lua");
 include("gametick.lua");
+include("npc.lua");
 include("custom.lua");
 //include("quaternion.lua");
 
