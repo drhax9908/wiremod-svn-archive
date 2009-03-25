@@ -9,11 +9,12 @@ registerType("entity", "e", nil)
 /******************************************************************************/
 
 function validEntity(entity)
-	return (entity and type(entity)!="number" and entity:IsValid())
+	Msg(type(entity));
+	return (entity and type(entity) == "Entity" and entity:IsValid())
 end
 
 function validPhysics(entity)
-	if (entity and type(entity)!="number" and entity:IsValid() and !entity:IsWorld()) then
+	if (entity and type(entity) == "Entity" and entity:IsValid() and !entity:IsWorld()) then
 		local phys = entity:GetPhysicsObject()
 		return (phys and phys:IsValid() and entity:GetMoveType() == MOVETYPE_VPHYSICS)
 	end
