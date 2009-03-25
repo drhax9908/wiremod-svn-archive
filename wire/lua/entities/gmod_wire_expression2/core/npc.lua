@@ -115,7 +115,7 @@ end)
 registerFunction("npcRelationship", "e:ssn", "", function(self,args)
 	local op1, op2, op3, op4 = args[2], args[3], args[4], args[5]
 	local rv1, rv2, rv3, rv4 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4)
-	if !validNPC(rv1) || !validEntity(rv2) || !isOwner(self,rv1) then return end
+	if !validNPC(rv1) || !isOwner(self,rv1) then return end
 	local entity = rv1
 	local target = rv2
 	local disp = NpcDispString(rv3)
@@ -128,7 +128,7 @@ end)
 registerFunction("npcRelationshipByOwner", "e:esn", "n", function(self,args)
 	local op1, op2, op3, op4 = args[2], args[3], args[4], args[5]
 	local rv1, rv2, rv3, rv4 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4)
-	if !validNPC(rv1) || !validEntity(rv2) || !isOwner(self,rv1) then return 0 end
+	if !validNPC(rv1) || !isOwner(self,rv1) then return 0 end
 	local entity = rv1
 	local owner = rv2
 	local disp = NpcDisp(rv3)
