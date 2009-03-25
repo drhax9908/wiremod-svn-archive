@@ -1,7 +1,7 @@
 AddCSLuaFile('ranger.lua')
 
 /******************************************************************************\
-  Built-in Ranger support v1.7
+  Built-in Ranger support v1.71
 \******************************************************************************/
 
 //----------------//
@@ -10,12 +10,14 @@ AddCSLuaFile('ranger.lua')
 
 local function ranger(self, type, range, p1, p2)
 	local trace = {}
-	local default = self.data['rangerdefault']
-	self.data['rangerdefault'] = 1
-	local world = self.data['rangerworld']
-	self.data['rangerworld']=0
-	local water = self.data['rangerwater']
-	self.data['rangerwater']=0
+	local default = self.data.rangerdefault
+	local world = self.data.rangerworld
+	local water = self.data.rangerwater
+	local filter = self.data.rangerfilter
+	self.data.rangerdefault = 1
+	self.data.rangerworld=0
+	self.data.rangerwater=0
+	self.data.rangerfilter={}
 	trace.start = self.entity:GetPos()
 	if (type==3) then
 		trace.start = Vector( p1[1], p1[2], p1[3] )
@@ -47,13 +49,12 @@ local function ranger(self, type, range, p1, p2)
 	else
 		trace.endpos = trace.start + self.entity:GetUp()*range
 	end
-	trace.filter = { self.entity }
+	table.insert(filter,self.entity)
+	trace.filter = filter
 	if water==1 then trace.mask = -1 end
 	trace = util.TraceLine(trace)
 	local Entity = nil
-	local HitPos = trace.HitPos
 	local Hit = 0
-	local HitNormal = trace.HitNormal
 	if (trace.Hit) then Hit=1 end
 	if (!checkEntity(trace.Entity)) then
 		if (world!=0) then
@@ -63,9 +64,9 @@ local function ranger(self, type, range, p1, p2)
 		Entity=trace.Entity
 	end
 	if (trace.Hit) then
-		return {trace.Fraction*range,HitPos,Entity,Hit,HitNormal}
+		return {trace.Fraction*range,trace.HitPos,Entity,Hit,trace.HitNormal}
 	else
-		return {range*default,HitPos,Entity,Hit,HitNormal}
+		return {range*default,trace.HitPos,Entity,Hit,trace.HitNormal}
 	end
 end
 
@@ -88,21 +89,27 @@ end)
 registerFunction("rangerHitWater", "n", "", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
-    if rv1!=0 then self.data['rangerwater']=1 end
+    if rv1!=0 then self.data.rangerwater=1 end
 end)
 
 registerFunction("rangerIgnoreWorld", "n", "", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
-    if rv1!=0 then self.data['rangerworld']=1 end
+    if rv1!=0 then self.data.rangerworld=1 end
 end)
 
 registerFunction("rangerDefaultZero", "n", "", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
-    if rv1!=0 then self.data['rangerdefault']=0 end
+    if rv1!=0 then self.data.rangerdefault=0 end
 end)
 
+registerFunction("rangerFilter", "e", "", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!validEntity(rv1)) then return end
+    table.insert(self.data.rangerfilter,rv1)
+end)
 
 registerFunction("ranger", "n", "xrd", function(self, args)
     local op1 = args[2]
@@ -167,13 +174,15 @@ end)
 /******************************************************************************/
 
 registerCallback("construct", function(self)
-	self.data['rangerwater'] = 0
-	self.data['rangerworld'] = 0
-	self.data['rangerdefault'] = 1
+	self.data.rangerwater = 0
+	self.data.rangerworld = 0
+	self.data.rangerdefault = 1
+	self.data.rangerfilter = {}
 end)
 
 registerCallback("postexecute", function(self)
-	if (self.data['rangerwater'] != 0) then self.data['rangerwater'] = 0 end
-	if (self.data['rangerworld'] != 0) then self.data['rangerworld'] = 0 end
-	if (self.data['rangerdefault'] != 1) then self.data['rangerdefault'] = 1 end
+	if (self.data.rangerwater ~= 0) then self.data.rangerwater = 0 end
+	if (self.data.rangerworld ~= 0) then self.data.rangerworld = 0 end
+	if (self.data.rangerdefault ~= 1) then self.data.rangerdefault = 1 end
+	if (self.data.rangerfilter ~= {}) then self.data.rangerfilter = {} end
 end)
