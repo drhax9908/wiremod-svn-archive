@@ -11,7 +11,7 @@ end
 registerFunction("npcGoWalk", "e:v", "", function(self,args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
-	if !validNPC(rv1) then return end
+	if !validNPC(rv1) || !isOwner(self,rv1) then return end
 	rv1:SetLastPosition( Vector(rv2[1], rv2[2], rv2[3]) )
 	rv1:SetSchedule( SCHED_FORCED_GO )
 end)
@@ -19,7 +19,7 @@ end)
 registerFunction("npcGoRun", "e:v", "", function(self,args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
-	if !validNPC(rv1) then return end
+	if !validNPC(rv1) || !isOwner(self,rv1) then return end
 	rv1:SetLastPosition( Vector(rv2[1], rv2[2], rv2[3]) )
 	rv1:SetSchedule( SCHED_FORCED_GO_RUN )
 end)
@@ -27,14 +27,14 @@ end)
 registerFunction("npcAttack", "e:", "", function(self,args)
 	local op1 = args[2]
 	local rv1 = op1[1](self,op1)
-	if !validNPC(rv1) then return end
+	if !validNPC(rv1) || !isOwner(self,rv1) then return end
 	rv1:SetSchedule( SCHED_MELEE_ATTACK1 )
 end)
 
 registerFunction("npcShoot", "e:", "", function(self,args)
 	local op1= args[2]
 	local rv1 = op1[1](self,op1)
-	if !validNPC(rv1) then return end
+	if !validNPC(rv1) || !isOwner(self,rv1) then return end
 	if !rv1:HasCondition( COND_NO_WEAPON ) then return end
 	rv1:SetSchedule( SCHED_RANGE_ATTACK1 )
 end)
@@ -42,7 +42,7 @@ end)
 registerFunction("npcFace", "e:v", "", function(self,args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
-	if !validNPC(rv1) then return end
+	if !validNPC(rv1) || !isOwner(self,rv1) then return end
 	local Vec = Vector(rv2[1], rv2[2], rv2[3]) - self.entity:GetPos()
 	local ang = Vec:Angle()
 	rv1:SetAngles( Angle(0,ang.y,0) )
@@ -51,21 +51,21 @@ end)
 registerFunction("npcGiveWeapon", "e:", "", function(self,args)
 	local op1 = args[2]
 	local rv1 = op1[1](self,op1)
-	if !validNPC(rv1) then return end
+	if !validNPC(rv1) || !isOwner(self,rv1) then return end
 	rv1:Give( "ai_weapon_smg1" )
 end)
 
 registerFunction("npcGiveWeapon", "e:s", "", function(self,args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
-	if !validNPC(rv1) then return end
+	if !validNPC(rv1) || !isOwner(self,rv1) then return end
 	rv1:Give( "ai_weapon_" .. rv2 )
 end)
 
 registerFunction("npcStop", "e:", "", function(self,args)
 	local op1= args[2]
 	local rv1 = op1[1](self,op1)
-	if !validNPC(rv1) then return end
+	if !validNPC(rv1) || !isOwner(self,rv1) then return end
 	rv1:SetSchedule( SCHED_NONE )
 end)
 
@@ -103,7 +103,7 @@ end
 registerFunction("npcRelationship", "e:esn", "", function(self,args)
 	local op1, op2, op3, op4 = args[2], args[3], args[4], args[5]
 	local rv1, rv2, rv3, rv4 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4)
-	if !validNPC(rv1) || !validEntity(rv2) then return end
+	if !validNPC(rv1) || !validEntity(rv2) || !isOwner(self,rv1) then return end
 	local entity = rv1
 	local target = rv2
 	local disp = NpcDisp(rv3)
@@ -115,7 +115,7 @@ end)
 registerFunction("npcRelationship", "e:ssn", "", function(self,args)
 	local op1, op2, op3, op4 = args[2], args[3], args[4], args[5]
 	local rv1, rv2, rv3, rv4 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4)
-	if !validNPC(rv1) || !validEntity(rv2) then return end
+	if !validNPC(rv1) || !validEntity(rv2) || !isOwner(self,rv1) then return end
 	local entity = rv1
 	local target = rv2
 	local disp = NpcDispString(rv3)
@@ -128,7 +128,7 @@ end)
 registerFunction("npcRelationshipByOwner", "e:esn", "n", function(self,args)
 	local op1, op2, op3, op4 = args[2], args[3], args[4], args[5]
 	local rv1, rv2, rv3, rv4 = op1[1](self,op1), op2[1](self,op2), op3[1](self,op3), op4[1](self,op4)
-	if !validNPC(rv1) || !validEntity(rv2) then return 0 end
+	if !validNPC(rv1) || !validEntity(rv2) || !isOwner(self,rv1) then return 0 end
 	local entity = rv1
 	local owner = rv2
 	local disp = NpcDisp(rv3)
@@ -147,7 +147,7 @@ end)
 registerFunction("npcDisp", "e:e", "s", function(self,args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self,op1), op2[1](self,op2)
-	if !validNPC(rv1) || !validEntity(rv2) then return "" end
+	if !validNPC(rv1) || !validEntity(rv2) || !isOwner(self,rv1) then return "" end
 	local entity = rv1
 	local target = rv2
 	local disp = entity:Disposition( target )
