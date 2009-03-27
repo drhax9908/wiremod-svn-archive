@@ -504,7 +504,7 @@ registerFunction("matrix", "xm2", "m", function(self, args)
 			 0,		 0,		 0 }
 end)
 
-registerFunction("identity3", "", "m", function(self, args)
+registerFunction("identity", "", "m", function(self, args)
 	return { 1, 0, 0,
 			 0, 1, 0,
 			 0, 0, 1 }
