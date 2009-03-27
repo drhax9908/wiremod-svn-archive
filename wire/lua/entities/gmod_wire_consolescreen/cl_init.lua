@@ -1,4 +1,6 @@
-include('shared.lua')
+if (not EmuFox) then
+	include('shared.lua')
+end
 
 ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
@@ -89,6 +91,7 @@ function ENT:Initialize()
 	self.FrameNeedsFlash = false
 
 	self.FramesSinceRedraw = 0
+	self.NewClk = 1
 
 	WireGPU_NeedRenderTarget(self:EntIndex())
 end
@@ -105,141 +108,162 @@ function ConsoleScreen_DataMessage(um)
 		local address = um:ReadLong()
 		local value = um:ReadFloat()
 		if (ent) && (ent.Memory1) && (ent.Memory2) then
-			if (clk == 1) then
-				ent.Memory1[address] = value //Vis mem
-				ent.Memory2[address] = value //Invis mem
-				ent.NeedRefresh = true
-			else
-				ent.Memory2[address] = value //Invis mem
-			end
-	
-			//2038 - Shift rows (number of rows, >0 shift down, <0 shift up)
-			//2039 - Hardware Clear Row (Writing clears row)
-			//2040 - Hardware Clear Column (Writing clears column)
-			//2041 - Hardware Clear Screen
-
-			if (address == 2037) then
-				local delta = value
-				local low = math.floor(math.Clamp(ent.Memory1[2031],0,29))
-				local high = math.floor(math.Clamp(ent.Memory1[2032],0,29))
-				if (delta > 0) then
-					for j = low,high do
-						for i = 29,delta do
-							if (clk == 1) then
-								ent.Memory1[j*60+i*2] = ent.Memory1[j*60+i*2-delta*2]
-								ent.Memory1[j*60+i*2+1] = ent.Memory1[j*60+i*2+1-delta*2]
-							end
-							ent.Memory2[j*60+i*2] = ent.Memory2[j*60+i*2-delta*2]
-							ent.Memory2[j*60+i*2+1] = ent.Memory2[j*60+i*2+1-delta*2]
-						end
-					end
-					for j = low,high do
-						for i = 0, delta-1 do
-							if (clk == 1) then
-								ent.Memory1[j*60+i*2] = 0
-								ent.Memory1[j*60+i*2+1] = 0
-							end
-							ent.Memory2[j*60+i*2] = 0
-							ent.Memory2[j*60+i*2+1] = 0
-						end
-					end
-				else
-					delta = -delta
-					for j = low,high do
-						for i = 0,29-delta do
-							if (clk == 1) then
-								ent.Memory1[j*60+i*2] = ent.Memory1[j*60+i*2+delta*2]
-								ent.Memory1[j*60+i*2+1] = ent.Memory1[j*60+i*2+1+delta*2]
-							end
-							ent.Memory2[j*60+i*2] = ent.Memory2[j*60+i*2+delta*2]
-							ent.Memory2[j*60+i*2+1] = ent.Memory2[j*60+i*2+1+delta*2]
-						end
-					end
-					for j = low,high do
-						for i = 29-delta+1,29 do
-							if (clk == 1) then
-								ent.Memory1[j*60+i*2] = 0
-								ent.Memory1[j*60+i*2+1] = 0
-							end
-							ent.Memory2[j*60+i*2] = 0
-							ent.Memory2[j*60+i*2+1] = 0
-						end
-					end
-				end
-			end
-			if (address == 2038) then
-				local delta = value
-				local low = math.floor(math.Clamp(ent.Memory1[2033],0,17))
-				local high = math.floor(math.Clamp(ent.Memory1[2034],0,17))
-				if (delta > 0) then
-					for j = low, high-delta do
-						for i = 0, 59 do
-							if (clk == 1) then
-								ent.Memory1[j*60+i] = ent.Memory1[(j+delta)*60+i]
-							end
-							ent.Memory2[j*60+i] = ent.Memory2[(j+delta)*60+i]
-						end
-					end
-					for j = high-delta+1,high do
-						for i = 0, 59 do
-							if (clk == 1) then
-								ent.Memory1[j*60+i] = 0
-							end
-							ent.Memory2[j*60+i] = 0
-						end
-					end
-				else
-					delta = -delta
-					for j = low+delta,high do
-						for i = 0, 59 do
-							if (clk == 1) then
-								ent.Memory1[j*60+i] = ent.Memory1[(j-delta)*60+i]
-							end
-							ent.Memory2[j*60+i] = ent.Memory2[(j-delta)*60+i]
-						end
-					end
-					for j = low,low+delta-1 do
-						for i = 0, 59 do
-							if (clk == 1) then
-								ent.Memory1[j*60+i] = 0
-							end
-							ent.Memory2[j*60+i] = 0
-						end
-					end
-				end
-			end
-			if (address == 2039) then
-				for i = 0, 59 do
-					ent.Memory1[value*60+i] = 0
-					ent.Memory2[value*60+i] = 0
-				end
-				ent.NeedRefresh = true
-			end
-			if (address == 2040) then
-				for i = 0, 17 do
-					ent.Memory1[i*60+value] = 0
-					ent.Memory2[i*60+value] = 0
-				end
-				ent.NeedRefresh = true
-			end
-			if (address == 2041) then
-				for i = 0, 18*30*2 do 
-					ent.Memory1[i] = 0
-					ent.Memory2[i] = 0
-				end
-				ent.NeedRefresh = true
-			end
-	
-			if (ent.LastClk ~= clk) then
-				ent.LastClk = clk //swap the memory if clock changes
-				ent.Memory1 = table.Copy(ent.Memory2)
-
-				ent.NeedRefresh = true
-			end
+			ent.NewClk = clk
+			ent:WriteCell(address,value)
 		end
 	end
 end
 usermessage.Hook("consolescreen_datamessage", ConsoleScreen_DataMessage) 
+
+function ENT:ReadCell(Address,value)
+	if ((Address >= 0) && (Address < 2048)) then
+		return self.Memory2[Address]
+	else
+		return nil
+	end	
+end
+
+function ENT:WriteCell(Address,value)
+	if ((Address >= 0) && (Address < 2048)) then
+		if (Address == 2047) then
+			self.NewClk = value
+//			return
+		end
+		if (self.NewClk == 1) then
+			self.Memory1[Address] = value //Vis mem
+			self.Memory2[Address] = value //Invis mem
+			self.NeedRefresh = true
+		else
+			self.Memory2[Address] = value //Invis mem
+		end
+		
+		//2038 - Shift rows (number of rows, >0 shift down, <0 shift up)
+		//2039 - Hardware Clear Row (Writing clears row)
+		//2040 - Hardware Clear Column (Writing clears column)
+		//2041 - Hardware Clear Screen
+	
+		if (Address == 2037) then
+			local delta = value
+			local low = math.floor(math.Clamp(self.Memory1[2031],0,29))
+			local high = math.floor(math.Clamp(self.Memory1[2032],0,29))
+			if (delta > 0) then
+				for j = low,high do
+					for i = 29,delta do
+					if (self.NewClk == 1) then
+						self.Memory1[j*60+i*2] = self.Memory1[j*60+i*2-delta*2]
+						self.Memory1[j*60+i*2+1] = self.Memory1[j*60+i*2+1-delta*2]
+					end
+					self.Memory2[j*60+i*2] = self.Memory2[j*60+i*2-delta*2]
+					self.Memory2[j*60+i*2+1] = self.Memory2[j*60+i*2+1-delta*2]
+				end
+			end
+			for j = low,high do
+				for i = 0, delta-1 do
+					if (self.NewClk == 1) then
+						self.Memory1[j*60+i*2] = 0
+						self.Memory1[j*60+i*2+1] = 0
+					end
+						self.Memory2[j*60+i*2] = 0
+						self.Memory2[j*60+i*2+1] = 0
+					end
+				end
+			else
+				delta = -delta
+				for j = low,high do
+					for i = 0,29-delta do
+						if (self.NewClk == 1) then
+							self.Memory1[j*60+i*2] = self.Memory1[j*60+i*2+delta*2]
+							self.Memory1[j*60+i*2+1] = self.Memory1[j*60+i*2+1+delta*2]
+						end
+						self.Memory2[j*60+i*2] = self.Memory2[j*60+i*2+delta*2]
+						self.Memory2[j*60+i*2+1] = self.Memory2[j*60+i*2+1+delta*2]
+					end
+				end
+				for j = low,high do
+					for i = 29-delta+1,29 do
+						if (self.NewClk == 1) then
+							self.Memory1[j*60+i*2] = 0
+							self.Memory1[j*60+i*2+1] = 0
+						end
+						self.Memory2[j*60+i*2] = 0
+						self.Memory2[j*60+i*2+1] = 0
+					end
+				end
+			end
+		end
+		if (Address == 2038) then
+			local delta = value
+			local low = math.floor(math.Clamp(self.Memory1[2033],0,17))
+			local high = math.floor(math.Clamp(self.Memory1[2034],0,17))
+			if (delta > 0) then
+				for j = low, high-delta do
+					for i = 0, 59 do
+						if (self.NewClk == 1) then
+							self.Memory1[j*60+i] = self.Memory1[(j+delta)*60+i]
+						end
+						self.Memory2[j*60+i] = self.Memory2[(j+delta)*60+i]
+					end
+				end
+				for j = high-delta+1,high do
+					for i = 0, 59 do
+						if (self.NewClk == 1) then
+							self.Memory1[j*60+i] = 0
+						end
+						self.Memory2[j*60+i] = 0
+					end
+				end
+			else
+				delta = -delta
+				for j = low+delta,high do
+					for i = 0, 59 do
+						if (self.NewClk == 1) then
+							self.Memory1[j*60+i] = self.Memory1[(j-delta)*60+i]
+						end
+						self.Memory2[j*60+i] = self.Memory2[(j-delta)*60+i]
+					end
+				end
+				for j = low,low+delta-1 do
+					for i = 0, 59 do
+						if (self.NewClk == 1) then
+							self.Memory1[j*60+i] = 0
+						end
+						self.Memory2[j*60+i] = 0
+					end
+				end
+			end
+		end
+		if (Address == 2039) then
+			for i = 0, 59 do
+				self.Memory1[value*60+i] = 0
+				self.Memory2[value*60+i] = 0
+			end
+			self.NeedRefresh = true
+		end
+		if (Address == 2040) then
+			for i = 0, 17 do
+				self.Memory1[i*60+value] = 0
+				self.Memory2[i*60+value] = 0
+			end
+			self.NeedRefresh = true
+		end
+		if (Address == 2041) then
+			for i = 0, 18*30*2 do 
+				self.Memory1[i] = 0
+				self.Memory2[i] = 0
+			end
+			self.NeedRefresh = true
+		end
+
+		if (self.LastClk ~= self.NewClk) then
+			self.LastClk = self.NewClk //swap the memory if clock changes
+			self.Memory1 = table.Copy(self.Memory2)
+
+			self.NeedRefresh = true
+		end
+		return true
+	end
+	return false
+end
 
 function ENT:DrawGraphicsChar(c,x,y,w,h,r,g,b)
 	surface.SetDrawColor(r,g,b,255)
@@ -334,7 +358,7 @@ function ENT:Draw()
 
 	self.FramesSinceRedraw = self.FramesSinceRedraw + 1
 
-	if /*(self.FramesSinceRedraw > 4) && */(self.NeedRefresh == true) then
+	if (self.NeedRefresh == true) then
 		self.FramesSinceRedraw = 0
 		self.NeedRefresh = false
 		self.FrameNeedsFlash = false
@@ -465,6 +489,10 @@ function ENT:Draw()
 		if (self.IntTimer >= self.Memory1[2043]*2) then
 			self.IntTimer = 0
 		end
+	end
+
+	if (EmuFox) then
+		return
 	end
 
 	if (WireGPU_Monitors[self.Entity:GetModel()]) && (WireGPU_Monitors[self.Entity:GetModel()].OF) then

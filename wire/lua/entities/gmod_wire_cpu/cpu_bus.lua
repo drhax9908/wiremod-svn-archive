@@ -7,7 +7,9 @@ function ENT:Write(value)
 		end
 
 		self:WriteCell(self.WIP,value)
-		//if (self.Debug) && (value != 0) then Msg("-> ZyeliosASM: Wrote "..value.." at ["..self.WIP.."]\n") end
+		if (self.Debug) && (value != 0) then 
+			Msg("-> ZyeliosASM: Wrote "..value.." at ["..self.WIP.."]\n")
+		end
 	end
 	self.WIP = self.WIP + 1
 end
@@ -29,6 +31,11 @@ function ENT:ReadCell(Address)
 	if (self.BusLock == 1) then
 		if (self.Debug) then DebugMessage("Warning: Bus was read while locked") end
 		return nil
+	end
+
+	//Map address
+	if ((self.Page[Page]) && (self.Page[Page].MappedTo)) then
+		Address = Address % 128 + self.Page[Page].MappedTo*128
 	end
 
 	if (Address < 0) then
@@ -85,6 +92,11 @@ function ENT:WriteCell(Address, value)
 	if (self.BusLock == 1) then
 		if (self.Debug) then DebugMessage("Warning: Bus was written while locked") end
 		return false
+	end
+
+	//Map address
+	if ((self.Page[Page]) && (self.Page[Page].MappedTo)) then
+		Address = Address % 128 + self.Page[Page].MappedTo*128
 	end
 
 	if (Address < 0) then

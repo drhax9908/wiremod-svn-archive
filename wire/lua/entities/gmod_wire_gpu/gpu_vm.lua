@@ -1,9 +1,20 @@
-include('entities/gmod_wire_cpu/cpu_vm.lua')		//Include ZCPU VM
-include('entities/gmod_wire_cpu/cpu_opcodes.lua')	//Include ZCPU opcodes
-include('entities/gmod_wire_cpu/cpu_bitwise.lua')	//Include bitwise operations
-include('gpu_opcodes.lua')				//Override ZCPU opcodes
-include('gpu_clientbus.lua')				//Own GPU bus
-include('gpu_interrupt.lua')				//Own GPU interrupts
+if (EmuFox) then
+	include('gmod_wire_cpu/cpu_vm.lua')		//Include ZCPU VM
+	include('gmod_wire_cpu/cpu_opcodes.lua')	//Include ZCPU opcodes
+	include('gmod_wire_cpu/cpu_bitwise.lua')	//Include bitwise operations
+	
+	include('gmod_wire_gpu/gpu_opcodes.lua')	//Override ZCPU opcodes
+	include('gmod_wire_gpu/gpu_clientbus.lua')	//Own GPU bus
+	include('gmod_wire_gpu/gpu_interrupt.lua')	//Own GPU interrupts
+else
+	include('entities/gmod_wire_cpu/cpu_vm.lua')		//Include ZCPU VM
+	include('entities/gmod_wire_cpu/cpu_opcodes.lua')	//Include ZCPU opcodes
+	include('entities/gmod_wire_cpu/cpu_bitwise.lua')	//Include bitwise operations
+
+	include('gpu_opcodes.lua')				//Override ZCPU opcodes
+	include('gpu_clientbus.lua')				//Own GPU bus
+	include('gpu_interrupt.lua')				//Own GPU interrupts
+end
 
 function ENT:GPUHardReset()
 	self.HandleError = 0
@@ -26,6 +37,12 @@ end
 
 function ENT:GPURAMReset()
 	self.Memory = {}
+	self.ROMMemory = {}
+
+	self.PrecompileData = {}
+	self.PrecompileMemory = {}
+
+	self:GPUMathInit()
 end
 
 function ENT:GPUFrameReset()
@@ -305,7 +322,7 @@ function ENT:GPUMathReset()
 
 	self.CurFont = 0
 	self.CurFontSize = 12
-	self.CurColor = {0, 0, 0, 255}
+	self.CurColor = {x = 0, y = 0, z = 0, w = 255}
 
 	self.TransformMatrix = {}
 	
