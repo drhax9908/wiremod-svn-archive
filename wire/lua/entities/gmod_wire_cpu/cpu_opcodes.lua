@@ -163,7 +163,10 @@ function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode["cmpor"]  = 129 //CMPOR X,Y  : CMPR = CMPR OR (X - Y)    	6.00
 	//-----------------------------------------------------------------------------------
 	self.DecodeOpcode["mshift"] = 130 //MSHIFT X   : SHIFT DATA (look in lua)	7.00
+	self.DecodeOpcode["smap"]    = 131 //SMAP X,Y   : PAGE[X].MappedTo = Y	   	8.00 [BLOCK]
+	self.DecodeOpcode["gmap"]    = 132 //GMAP X,Y   : X = PAGE[Y].MappedTo		8.00
 	//-----------------------------------------------------------------------------------
+	self.DecodeOpcode["breakpoint"] = 138  //BREAKPOINT (EmuFox only)
 
 	self:InitializeAdvMathASMOpcodes()
 end
@@ -198,8 +201,10 @@ function ENT:InitializeASMOpcodes()
 			self.OpcodeCount[i] = 0
 		elseif (i >= 120) && (i <= 129) then
 			self.OpcodeCount[i] = 2
-		elseif (i >= 130) && (i <= 139) then
+		elseif (i >= 130) && (i <= 137) then
 			self.OpcodeCount[i] = 2
+		elseif (i >= 138) && (i <= 139) then
+			self.OpcodeCount[i] = 0
 
 		//GPU OPCODES
 		elseif (i >= 200) && (i <= 209) then
@@ -572,7 +577,7 @@ function ENT:InitializeOpcodeTable()
 	end
 	//------------------------------------------------------------
 	self.OpcodeTable[70] = function (Param1,Param2)	//NMIINT
-		self:NMIInterrupt(math.floor(Param1))	
+		self.NMIInterrupt(math.floor(Param1))	
 	end
 	self.OpcodeTable[71] = function (Param1,Param2)	//CNE
 		if (self.CMPR ~= 0) then
@@ -1087,18 +1092,6 @@ function ENT:InitializeOpcodeTable()
 		local Buffer = {}
 		local Count = math.Clamp(Param1,0,8192)-1
 
-		//0 1 2 3 4 5
-		//2 3 4 5 0 1
-		//
-		//0 5
-		//0 3
-		//4 5
-
-		//0 1 2 3 4 5
-		//4 5 0 1 2 3
-		//
-		//2 5
-		//0 1
 		if (Param2 > 0) then
 			for i = 0,Count-Param2 do //Shifted part
 				Buffer[i] = self:ReadCell(self.ESI+i+Param2)
@@ -1119,6 +1112,66 @@ function ENT:InitializeOpcodeTable()
 			self:WriteCell(self.ESI+i,Buffer[i])
 		end
 		self.ESI = self.ESI + math.Clamp(Param1,0,8192)
+	end
+	self.OpcodeTable[131] = function (Param1,Param2)	//SMAP
+		if (self.BlockSize > 0) then
+			local addr = self.BlockStart
+			self.BlockSize = math.Clamp(self.BlockSize,0,8192)
+			while (addr < self.BlockStart + self.BlockSize) do
+				local page = math.floor(addr / 128)
+				if (not self.Page[page]) then
+					self.Page[page] = {}
+					self.Page[page].Read  = 1
+					self.Page[page].Write = 1
+					self.Page[page].Execute = 1
+					self.Page[page].RunLevel = self.CurrentPage.RunLevel
+				end
+		
+				if (self.CurrentPage.RunLevel <= self.Page[page].RunLevel) then
+					self.Page[page].MappedTo = Param2
+				else
+					self:Interrupt(11,page)
+					return
+				end
+				addr = addr + 128
+				Param2 = Param2 + 128
+			end
+			self.BlockSize = 0
+		else
+			local page = math.floor(Param1 / 128)
+			if (not self.Page[page]) then
+				self.Page[page] = {}
+				self.Page[page].Read  = 1
+				self.Page[page].Write = 1
+				self.Page[page].Execute = 1
+				self.Page[page].RunLevel = self.CurrentPage.RunLevel
+			end
+	
+			if (self.CurrentPage.RunLevel <= self.Page[page].RunLevel) then
+				self.Page[page].MappedTo = Param2
+			else
+				self:Interrupt(11,page)
+			end
+		end
+	end
+	self.OpcodeTable[132] = function (Param1,Param2)	//GMAP
+		local page = math.floor(Param2 / 128)
+		if (not self.Page[page]) then
+			self.Page[page] = {}
+			self.Page[page].Read  = 1
+			self.Page[page].Write = 1
+			self.Page[page].Execute = 1
+			self.Page[page].RunLevel = self.CurrentPage.RunLevel
+		end
+
+		return self.Page[page].MappedTo
+		
+	end
+	self.OpcodeTable[138] = function (Param1,Param2)	//BREAKPOINT
+		if (EmuFox) then
+			print("CPU BREAKPOINT AT "..self.XEIP)
+			self.Clk = 0
+		end
 	end
 	self.OpcodeTable[139] = function (Param1,Param2)	//CLD
 		self.Debug = false
@@ -1155,4 +1208,5 @@ function ENT:InitializeOpcodeRunlevels()
 	self.OpcodeRunLevel[122] = 0	//CPP
 	self.OpcodeRunLevel[123] = 0	//SPP
 	self.OpcodeRunLevel[124] = 0	//SRL
+	self.OpcodeRunLevel[131] = 0	//SMAP
 end

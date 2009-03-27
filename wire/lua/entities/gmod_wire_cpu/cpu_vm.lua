@@ -612,6 +612,7 @@ function ENT:SetCurrentPage(address)
 		self.Page[self.CPAGE].Write = 1
 		self.Page[self.CPAGE].Execute = 1
 		self.Page[self.CPAGE].RunLevel = 0
+		self.Page[self.CPAGE].MappedTo = self.CPAGE
 	end
 	self.CurrentPage = self.Page[self.CPAGE]
 end

@@ -293,12 +293,16 @@ function ENT:ParseOpcodeParameter(keyword)
 				end
 			end
 		else
-//			if (self:_need("(")) then //(1,2,3,4)
+//			if (self:_need("(")) then //(1,2,3,4) FIXME
 //				self:_whitespace()
-//				while (!_self:_need())
+//				while (not self:_peek(')')) do
+//					result.RM = 25
+//					result.Byte = self:GetValidValue("programsize")
 //
-//				if (!self:_need(")")) then
-//					self:Error("Excepted closing bracket for in-place definition")
+//					if (self:_peek(',')) then
+//						self:_need(',')
+//					end
+//					self:_whitespace()
 //				end
 //			else
 				self:Error("Expected '#' for memory reference")
@@ -435,11 +439,17 @@ function ENT:Compile()
 	end
 	self.Dump = self.Dump.."["..self.WIP.."]["..self.Line.."]"..self.CurrentLine.."\n"
 
+	local prevline = self.CurrentLine.."_"
 	while (self.FatalError == false) && (self.CurrentLine ~= "") do
 		//< >MOV< >
 		if (self.WIP < 0) then
 			self:Error("Write pointer out of range")
 		end
+		if (self.CurrentLine == prevline) then
+			self:Error("Infinite loop in parser, you must have done something wrong")
+			return
+		end
+		prevline = self.CurrentLine
 
 	 	self:_whitespace()
 		local word = self:_word()

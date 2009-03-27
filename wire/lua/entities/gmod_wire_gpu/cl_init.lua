@@ -1,7 +1,14 @@
-include('shared.lua')
-include('gpu_vm.lua')
-include('gpu_opcodes.lua')
-include('gpu_clientbus.lua')
+if (EmuFox) then
+	include('gmod_wire_gpu/shared.lua')
+	include('gmod_wire_gpu/gpu_vm.lua')
+	include('gmod_wire_gpu/gpu_opcodes.lua')
+	include('gmod_wire_gpu/gpu_clientbus.lua')
+else
+	include('shared.lua')
+	include('gpu_vm.lua')
+	include('gpu_opcodes.lua')
+	include('gpu_clientbus.lua')
+end
 
 ENT.Spawnable			= false
 ENT.AdminSpawnable		= false
@@ -122,6 +129,10 @@ function ENT:OutputError(intnumber,intparam)
 end
 
 function ENT:RenderGPU(clearbg)
+	if (EmuFox) then
+		self:WriteCell(65513,1.33)
+	end
+
 	local DeltaTime = CurTime()-(self.PrevTime or CurTime())
 	self.PrevTime = CurTime()//(self.PrevTime or CurTime())+DeltaTime
 	self.DeltaTime = DeltaTime

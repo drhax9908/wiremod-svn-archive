@@ -1,6 +1,6 @@
 "UnlitGeneric"
 {
-	"$baseTexture" "models\cheeze\pcb\pcb_base"
+	"$baseTexture" "models\duckeh\buttons\1"
 	"$ignorez"		1
 	"$vertexcolor" 		1
 	"$vertexalpha" 		1

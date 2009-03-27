@@ -429,9 +429,9 @@ function CPU_UploadProgram(pl)
 end
 	
 function CPU_LoadProgram(pl, command, args)
-	local fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename");
+	local fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename")
 	if (!file.Exists(fname)) then
-		fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename")..".txt";
+		fname = "CPUChip\\"..pl:GetInfo("wire_cpu_filename")..".txt"
 	end
 	
 	if (!file.Exists(fname)) then
@@ -450,6 +450,25 @@ function CPU_LoadProgram(pl, command, args)
 	SourceLines = string.Explode("\n", filedata)
 	SourceLinesSent = 0
 	SourceTotalChars = string.len(filedata)
+
+	//Parse include files
+	if (string.find(filedata,"##include##")) then
+		for i=1,#SourceLines do
+			if (string.sub(SourceLines[i],1,12) == "##include## ") then
+				local fname2 = string.sub(SourceLines[i],13)
+				if (file.Exists("CPUChip\\"..fname2)) then
+					SourceLines[i] = "asmfile "..fname.."\n"..file.Read("CPUChip\\"..fname2).."\nasmend\n"
+				else
+					SourceLines[i] = ""
+				end
+			end
+		end
+
+		filedata = string.Implode("\n", SourceLines)
+		SourceLines = string.Explode("\n", filedata)
+		SourceLinesSent = 0
+		SourceTotalChars = string.len(filedata)
+	end
 
 	SourcePrevCharRate = string.len(SourceLines[1])
 	SourceLoadedChars = 0

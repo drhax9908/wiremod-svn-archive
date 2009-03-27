@@ -111,6 +111,23 @@ function ENT:Think()
 	return true
 end
 
+function ENT:SingleThink()
+	if (self.Clk >= 1.0) then
+		self:Execute()
+	end
+
+	//Restore current page for external bus reading
+	self.CurrentPage = {}
+	self.CurrentPage.Read = 1
+	self.CurrentPage.Write = 1
+	self.CurrentPage.Execute = 1
+	self.CurrentPage.RunLevel = 1 //External reads have runlevel 1
+
+	if (self.Idle == 1) then
+		self.Idle = 0
+	end
+end
+
 function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
 

@@ -24,6 +24,7 @@ function ENT:ReadCell(Address)
 end
 
 function ENT:WriteCell(Address, value)
+//	if (Address ~= 65513) then print("write cell "..Address.." = "..value) end
 	if (not Address) then
 		if (self.Debug) then
 			print("Non-existant address fed into address bus (read)!")
