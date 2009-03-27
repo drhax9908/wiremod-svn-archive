@@ -87,6 +87,8 @@ if (SERVER) then
 								dbginfo = dbginfo .. k .. ":" .. math.Round(input.Value*1000)/1000 .. " "
 							elseif (type(input.Value) == "string") then
 								dbginfo = dbginfo .. k .. ":\"" .. input.Value .. "\" "
+							elseif (input.Type == "VECTOR2") then
+								dbginfo = dbginfo .. k .. ":(" .. math.Round(input.Value[1]*10)/10 .. "," .. math.Round(input.Value[2]*10)/10 .. ") "
 							elseif (type(input.Value) == "Vector") then
 								dbginfo = dbginfo .. k .. ":(" .. math.Round(input.Value.x*10)/10 .. "," .. math.Round(input.Value.y*10)/10 .. "," .. math.Round(input.Value.z*10)/10 .. ") "
 							elseif (type(input.Value) == "Angle") then
@@ -104,6 +106,8 @@ if (SERVER) then
 								dbginfo = dbginfo .. k .. ":" .. math.Round(output.Value*1000)/1000 .. " "
 							elseif (type(output.Value) == "string") then
 								dbginfo = dbginfo .. k .. ":\"" .. output.Value .. "\" "
+							elseif (output.Type == "VECTOR2") then
+								dbginfo = dbginfo .. k .. ":(" .. math.Round(output.Value[1]*10)/10 .. "," .. math.Round(output.Value[2]*10)/10 .. ") "
 							elseif (type(output.Value) == "Vector") then
 								dbginfo = dbginfo .. k .. ":(" .. math.Round(output.Value.x*10)/10 .. "," .. math.Round(output.Value.y*10)/10 .. "," .. math.Round(output.Value.z*10)/10 .. ") "
 							elseif (type(output.Value) == "Angle") then

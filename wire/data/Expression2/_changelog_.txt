@@ -12,6 +12,14 @@
 # The changelog only lists additions and major fixes, minor fixes are not listed.
 # 
 # 
+# 2009-03-27
+# ADDED major extensions: vector2, matrix2 and matrix(3) extensions by Jimlad!
+#   Visit http://www.wiremod.com/forum/wiremod-addons/8240-jimlads-wire-addons.html
+#   for more information and feedback.
+#
+# 2009-03-24
+# ADDED npc-extension by Bobsymalone, it is now possible to "mind control" your
+#   NPCs and have the act the way you want!
 #
 # 2009-03-16
 # ADDED autosaving to the editor, it now automatically saves a copy of your script

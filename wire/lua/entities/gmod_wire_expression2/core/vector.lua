@@ -29,11 +29,23 @@ registerFunction("vec", "nnn", "v", function(self, args)
 	return { rv1, rv2, rv3 }
 end)
 
+registerFunction("vec", "xv2", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	return { rv1[1], rv1[2], 0 }
+end)
+
+registerFunction("vec", "xv2n", "v", function(self, args)
+	local op1, op2 = args[2], args[3]
+	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
+	return { rv1[1], rv1[2], rv2 }
+end)
+
 // Convert Angle -> Vector
 registerFunction("vec", "a", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	return {rv1[1],rv1[2],rv1[3]}
+	return { rv1[1], rv1[2], rv1[3] }
 end)
 
 /******************************************************************************/
@@ -75,42 +87,6 @@ registerOperator("neq", "vv", "n", function(self, args)
 	if rv1[1] - rv2[1] > delta || rv2[1] - rv1[1] > delta ||
 	   rv1[2] - rv2[2] > delta || rv2[2] - rv1[2] > delta ||
 	   rv1[3] - rv2[3] > delta || rv2[3] - rv1[3] > delta
-	   then return 1 else return 0 end
-end)
-
-registerOperator("geq", "vv", "n", function(self, args)
-	local op1, op2 = args[2], args[3]
-	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	if rv2[1] - rv1[1] <= delta &&
-	   rv2[2] - rv1[2] <= delta &&
-	   rv2[3] - rv1[3] <= delta
-	   then return 1 else return 0 end
-end)
-
-registerOperator("leq", "vv", "n", function(self, args)
-	local op1, op2 = args[2], args[3]
-	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	if rv1[1] - rv2[1] <= delta &&
-	   rv1[2] - rv2[2] <= delta &&
-	   rv1[3] - rv2[3] <= delta
-	   then return 1 else return 0 end
-end)
-
-registerOperator("gth", "vv", "n", function(self, args)
-	local op1, op2 = args[2], args[3]
-	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	if rv1[1] - rv2[1] > delta &&
-	   rv1[2] - rv2[2] > delta &&
-	   rv1[3] - rv2[3] > delta
-	   then return 1 else return 0 end
-end)
-
-registerOperator("lth", "vv", "n", function(self, args)
-	local op1, op2 = args[2], args[3]
-	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	if rv2[1] - rv1[1] > delta &&
-	   rv2[2] - rv1[2] > delta &&
-	   rv2[3] - rv1[3] > delta
 	   then return 1 else return 0 end
 end)
 
@@ -206,7 +182,7 @@ end)
 registerFunction("length", "v:", "n", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	return (rv1[1] * rv1[1] + rv1[2] * rv1[2] + rv1[3] * rv1[3]) ^ (1 / 2)
+	return (rv1[1] * rv1[1] + rv1[2] * rv1[2] + rv1[3] * rv1[3]) ^ 0.5
 end)
 
 registerFunction("length2", "v:", "n", function(self, args)
@@ -219,7 +195,7 @@ registerFunction("distance", "v:v", "n", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
 	local rvd1, rvd2, rvd3 = rv1[1] - rv2[1], rv1[2] - rv2[2], rv1[3] - rv2[3]
-	return (rvd1 * rvd1 + rvd2 * rvd2 + rvd3 * rvd3) ^ (1 / 2)
+	return (rvd1 * rvd1 + rvd2 * rvd2 + rvd3 * rvd3) ^ 0.5
 end)
 
 registerFunction("distance2", "v:v", "n", function(self, args)
@@ -232,7 +208,7 @@ end)
 registerFunction("normalized", "v:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	local len = (rv1[1] * rv1[1] + rv1[2] * rv1[2] + rv1[3] * rv1[3]) ^ (1 / 2)
+	local len = (rv1[1] * rv1[1] + rv1[2] * rv1[2] + rv1[3] * rv1[3]) ^ 0.5
 	if len > delta then return { rv1[1] / len, rv1[2] / len, rv1[3] / len }
 	               else return { 0, 0, 0 } end
 end)
@@ -274,7 +250,7 @@ end)
 registerFunction("clamp", "vnn", "v", function(self, args)
 	local op1, op2, op3 = args[2], args[3], args[4]
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
-	local length = (rv1[1] * rv1[1] + rv1[2] * rv1[2] + rv1[3] * rv1[3]) ^ (1 / 2)
+	local length = (rv1[1] * rv1[1] + rv1[2] * rv1[2] + rv1[3] * rv1[3]) ^ 0.5
 	if length < rv2 then
 		return {rv1[1]*rv2/length,rv1[2]*rv2/length,rv1[3]*rv2/length}
 	elseif length > rv3 then
@@ -386,16 +362,16 @@ end)
 registerFunction("min", "vv", "v", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	local length1 = (rv1[1] * rv1[1] + rv1[2] * rv1[2] + rv1[3] * rv1[3]) ^ (1 / 2)
-	local length2 = (rv2[1] * rv2[1] + rv2[2] * rv2[2] + rv2[3] * rv2[3]) ^ (1 / 2)
+	local length1 = ( rv1[1] * rv1[1] + rv1[2] * rv1[2] + rv1[3] * rv1[3] ) ^ 0.5
+	local length2 = ( rv2[1] * rv2[1] + rv2[2] * rv2[2] + rv2[3] * rv2[3] ) ^ 0.5
 	if length1 < length2 then return rv1 else return rv2 end
 end)
 
 registerFunction("max", "vv", "v", function(self, args)
 	local op1, op2 = args[2], args[3]
 	local rv1, rv2 = op1[1](self, op1), op2[1](self, op2)
-	local length1 = (rv1[1] * rv1[1] + rv1[2] * rv1[2] + rv1[3] * rv1[3]) ^ (1 / 2)
-	local length2 = (rv2[1] * rv2[1] + rv2[2] * rv2[2] + rv2[3] * rv2[3]) ^ (1 / 2)
+	local length1 = ( rv1[1] * rv1[1] + rv1[2] * rv1[2] + rv1[3] * rv1[3] ) ^ 0.5
+	local length2 = ( rv2[1] * rv2[1] + rv2[2] * rv2[2] + rv2[3] * rv2[3] ) ^ 0.5
 	if length1 > length2 then return rv1 else return rv2 end
 end)
 
