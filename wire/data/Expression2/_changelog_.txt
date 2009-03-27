@@ -13,7 +13,7 @@
 # 
 # 
 # 2009-03-27
-# ADDED major extensions: vector2, matrix2 and matrix(3) extensions by Jimlad!
+# ADDED awesome extensions: vector2, matrix2 and matrix(3) by Jimlad!
 #   Visit http://www.wiremod.com/forum/wiremod-addons/8240-jimlads-wire-addons.html
 #   for more information and feedback.
 #
