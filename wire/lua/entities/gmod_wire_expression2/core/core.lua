@@ -106,16 +106,6 @@ end)
 
 /******************************************************************************/
 
-registerCallback("postexecute", function(self) 
-    if self.data["reset"] then self.entity:Reset() end
-end)
- 
-registerFunction("reset", "", "", function(self,args)
-    self.data["reset"] = true
-end)
-
-/******************************************************************************/
-
 registerCallback("preexecute", function(self)
 	if self.data['first'] == nil then
 		self.data['first'] = true
@@ -132,5 +122,16 @@ end)
 /******************************************************************************/
 
 registerFunction("exit", "", "", function(self, args)
+	error("exit", 0)
+end)
+
+/******************************************************************************/
+
+registerCallback("postexecute", function(self) 
+    if self.data["reset"] then self.entity:Reset() end
+end)
+ 
+registerFunction("reset", "", "", function(self,args)
+    self.data["reset"] = true
 	error("exit", 0)
 end)
