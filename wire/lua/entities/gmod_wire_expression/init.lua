@@ -195,7 +195,7 @@ function ENT:_prm(tbl)  local prm = self["_"..tbl[2][1]](self,tbl[2]) table.inse
 function ENT:_nil(tbl)  return {} end
 
 function ENT:_con(tbl)
-	if self:GetPlayer() then
+	/*if self:GetPlayer() then
 		local instr = tbl[2]
 		local outstr = ""
 		
@@ -223,7 +223,7 @@ function ENT:_con(tbl)
 		end
 		
 		self:GetPlayer():ConCommand(outstr)
-	end
+	end*/
 end
 
 function ENT:_imp(tbl)  if math.abs(self["_"..tbl[2][1]](self,tbl[2])) >= self.Delta then self.elser = 0    if self["_"..tbl[3][1]](self,tbl[3]) == false then return false end else self.elser = 1 end end
