@@ -148,3 +148,10 @@ registerFunction("teamFrags", "n:", "n", function(self, args)
 	local rv1 = op1[1](self, op1)
 	return team.TotalFrags(rv1)
 end)
+
+registerFunction("ping", "e:", "n", function(self, args)
+    local op1 = args[2]
+    local rv1 = op1[1](self, op1)
+    if(!rv1 or !rv1:IsValid()) then return 0 end
+    if(rv1:IsPlayer()) then return rv1:Ping() else return 0 end
+end)
