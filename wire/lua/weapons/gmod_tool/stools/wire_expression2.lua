@@ -246,9 +246,8 @@ if CLIENT then
 			}
 		})
 		
-		Editor = vgui.Create( "Expression2EditorFrame")
-		Editor:Setup("Expression 2 Editor","Expression2",true)
-
+		initE2Editor()
+		
 		local FileBrowser = vgui.Create("wire_expression2_browser" , panel)
 		panel:AddPanel(FileBrowser)
 		FileBrowser:Setup("Expression2")
@@ -294,8 +293,14 @@ if CLIENT then
 		end
 		
 	end
+
+	function initE2Editor()
+		Editor = vgui.Create( "Expression2EditorFrame")
+		Editor:Setup("Expression 2 Editor","Expression2",true)
+	end
 	
 	function openE2Editor()
+		if( Editor == nil ) then initE2Editor() end
 		Editor:Open()
 	end
 	
