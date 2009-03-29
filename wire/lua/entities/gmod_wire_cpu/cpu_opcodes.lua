@@ -1182,11 +1182,7 @@ function ENT:InitializeOpcodeTable()
 end
 
 function ENT:InitializeOpcodeRunlevels()
-	self.OpcodeRunlevel = {}
-
-	for i=0,511 do
-		self.OpcodeRunLevel[i] = 1
-	end
+	self.OpcodeRunLevel = {}
 
 	//Priviliegied opcodes:
 	self.OpcodeRunLevel[16]  = 0	//RD
