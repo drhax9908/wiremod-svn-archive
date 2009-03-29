@@ -661,6 +661,17 @@ function ENT:Execute()
 
 		//Verify opcode
 		if (self.PrecompileData[self.XEIP].Valid) then
+			if (self.OpcodeRunLevel[self.PrecompileData[self.XEIP].Opcode]) then
+				if (self.OpcodeRunLevel[self.PrecompileData[self.XEIP].Opcode] == 0) then
+					if (self.Page[self.CPAGE].RunLevel ~= 0) then
+						print("crashed: "..self.PrecompileData[self.XEIP].Opcode)
+						print(self.OpcodeRunLevel[self.PrecompileData[self.XEIP].Opcode])
+						self.CMPR = self.PrecompileData[self.XEIP].Opcode
+						self:Interrupt(13,self.XEIP)
+					end
+				end
+			end
+
 			//Execute
 			local Result = self.PrecompileData[self.XEIP].Execute()
 			if (Result) then
