@@ -93,6 +93,10 @@ end)
 /******************************************************************************/
 // Functions getting string
 
+registerFunction("noentity", "", "e", function(self, args)
+	return nil
+end)
+
 registerFunction("type", "e:", "s", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
