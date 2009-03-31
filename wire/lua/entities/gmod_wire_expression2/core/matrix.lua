@@ -421,8 +421,8 @@ end)
 \******************************************************************************/
 
 registerType("matrix", "m", { 0, 0, 0,
-							   0, 0, 0,
-							   0, 0, 0 },
+							  0, 0, 0,
+							  0, 0, 0 },
 	function(self, input)
 		local ret = {}
 		for k,v in pairs(input) do ret[k] = v end
@@ -481,7 +481,7 @@ registerFunction("matrix", "vvv", "m", function(self, args)
 	local rv1, rv2, rv3 = op1[1](self, op1), op2[1](self, op2), op3[1](self, op3)
 	return { rv1[1], rv2[1], rv3[1],
 			 rv1[2], rv2[2], rv3[2],
-			 rv1[3], rv2[3], rv4[3] }
+			 rv1[3], rv2[3], rv3[3] }
 end)
 
 registerFunction("matrix", "nnnnnnnnn", "m", function(self, args)
@@ -499,8 +499,8 @@ end)
 registerFunction("matrix", "xm2", "m", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
-	return { rv1[1], rv2[2], 0,
-			 rv1[3], rv2[4], 0,
+	return { rv1[1], rv1[2], 0,
+			 rv1[3], rv1[4], 0,
 			 0,		 0,		 0 }
 end)
 
@@ -889,7 +889,7 @@ registerFunction("swapElements", "m:nnnn", "m", function(self, args)
 	
 	local k1 = i1 + (j1 - 1) * 3
 	local k2 = i2 + (j2 - 1) * 3
-	local a = rv1
+	local a = clone(rv1)
 	a[k1], a[k2] = rv1[k2], rv1[k1]
 	return a
 end)
@@ -942,27 +942,27 @@ registerFunction("matrix", "e", "m", function(self, args)
 				 0, 0, 0,
 				 0, 0, 0 }
 	end
-	local x = rv1:GetRight()
-	local y = rv1:GetUp()
-	local z = rv1:GetForward()
+	local x = rv1:GetForward()
+	local y = rv1:GetRight()
+	local z = rv1:GetUp()
 	return { x.x, x.y, x.z,
 			 y.x, y.y, y.z,
 			 z.x, z.y, z.z }
 end)
 
-registerFunction("right", "m:", "v", function(self, args)
+registerFunction("forward", "m:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	return { rv1[1], rv1[2], rv1[3] }
 end)
 
-registerFunction("up", "m:", "v", function(self, args)
+registerFunction("right", "m:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	return { rv1[4], rv1[5], rv1[6] }
 end)
 
-registerFunction("forward", "m:", "v", function(self, args)
+registerFunction("up", "m:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	return { rv1[7], rv1[8], rv1[9] }
