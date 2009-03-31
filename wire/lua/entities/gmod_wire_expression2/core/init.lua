@@ -121,7 +121,29 @@ function PreProcessor:Process(buffer, params)
 		self.readline = i
 		line = string.TrimRight(line)
 		
-		local comment = string.find(line, "#", 1, true)
+		-- Search for string literals and comments
+		local comment = string.find(line, '[#"]')
+		
+		-- While the current match is not a comment...
+		while (comment and (string.sub(line, comment, comment) != '#')) do
+			-- ...skip the string literal...
+			-- condition: comment points to a "
+			comment = string.find(line, '\\"', comment+1)
+			-- condition: comment points to a \ or a "
+			while (comment and (string.sub(line, comment, comment) == '\\')) do
+				-- comment points to a \ -> skip 2 characters
+				comment = string.find(line, '\\"', comment+2)
+				-- comment points to a \ or a " or nil
+				if (comment == nil) then break end -- syntax error: missing closing quote -> break
+				-- comment points to a \ or a "
+			end
+			-- condition: comment points to a " or nil
+			if (comment == nil) then break end -- syntax error: missing closing quote -> break
+			-- condition: comment points to a "
+			-- ...and look for the next string literal or comment.
+			comment = string.find(line, '[#"]', comment+1)
+		end
+		
 		if comment then
 			if comment == 1 then
 				line = ""

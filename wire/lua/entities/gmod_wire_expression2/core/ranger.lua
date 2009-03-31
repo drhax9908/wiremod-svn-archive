@@ -104,11 +104,14 @@ registerFunction("rangerDefaultZero", "n", "", function(self, args)
     if rv1!=0 then self.data.rangerdefault=0 end
 end)
 
-registerFunction("rangerFilter", "e", "", function(self, args)
+registerFunction("rangerFilter", "r", "", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
-    if(!validEntity(rv1)) then return end
-    table.insert(self.data.rangerfilter,rv1)
+    for _,ent in ipairs(rv1) do
+		if (validEntity(ent)) then
+			table.insert(self.data.rangerfilter,ent)
+		end
+	end
 end)
 
 registerFunction("rangerFilter", "r", "", function(self, args)
