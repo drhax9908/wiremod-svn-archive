@@ -437,7 +437,7 @@ function ENT:Compile()
 		self.DebugLines[self.Line] = "["..self.Line.."]"..self.CurrentLine
 		self.DebugData[self.WIP] = self.Line
 	end
-	self.Dump = self.Dump.."["..self.WIP.."]["..self.Line.."]"..self.CurrentLine.."\n"
+	self.Dump = self.Dump.."["..(self.WIP+self.OffsetWIP).."]["..self.Line.."]["..self.WIP.."]"..self.CurrentLine.."\n"
 
 	local prevline = self.CurrentLine.."_"
 	while (self.FatalError == false) && (self.CurrentLine ~= "") do
