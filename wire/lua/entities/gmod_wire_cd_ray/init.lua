@@ -45,6 +45,36 @@ function ENT:Initialize()
 	self:ShowOutput()
 end
 
+function ENT:ReadCell(Address)
+	if (Address >= 0) && (Address < 32) then
+		if (self.Command[Address]) then
+			return self.Command[Address]
+		else
+			return 0
+		end
+	end
+	if (Address >= 512) && (Address < 1024) then
+		if (self.WriteBuffer[Address-512]) then
+			return self.WriteBuffer[Address-512]
+		else
+			return 0
+		end
+	end
+	return nil
+end
+
+function ENT:WriteCell(Address, value)
+	if (Address >= 0) && (Address < 32) then
+		self.Command[Address] = value
+		return true
+	end
+	if (Address >= 512) && (Address < 1024) then
+		self.WriteBuffer[Address-512] = value
+		return true
+	end
+	return false
+end
+
 function ENT:Setup(Range,DefaultZero)
 	self.DefaultZero = DefaultZero
 	self:SetBeamRange(Range)
