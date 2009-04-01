@@ -15,6 +15,7 @@ function ENT:Initialize()
 
 	self.DiskMemory = {}
 	self.Precision = 1 //1 unit
+	self.IRadius = 12 //units
 
 	//Use Z axis for Sector address
 	//Use XY radius for Track address
@@ -30,7 +31,8 @@ function ENT:BuildDupeInfo()
 	local info = self.BaseClass.BuildDupeInfo(self) or {}
 
 	info.Precision = self.Precision
-//	info.DiskMemory = self.DiskMemory
+	info.IRadius = self.IRadius
+	info.DiskMemory = self.DiskMemory
 
 	return info
 end
@@ -40,7 +42,8 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 
 	self.Precision = info.Precison
-//	self.DiskMemory = info.DiskMemory
+	self.IRadius = info.IRadius
+	self.DiskMemory = info.DiskMemory
 	self:Setup()
 end
 
@@ -55,7 +58,7 @@ function ENT:Setup()
 
 	self.DiskSectors = 0
 	self.TrackSectors = {}
-	self.FirstTrack = math.floor(12 / self.Precision)
+	self.FirstTrack = math.floor((self.IRadius) / self.Precision)
 	for i=self.FirstTrack,self.DiskTracks do
 		self.DiskSectors = self.DiskSectors + math.floor((2*3.1415926*(i*self.Precision)) / self.Precision)
 		self.TrackSectors[i] = self.DiskSectors
