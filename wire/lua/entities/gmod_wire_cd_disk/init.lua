@@ -41,7 +41,7 @@ end
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
 
-	self.Precision = info.Precison
+	self.Precision = info.Precision
 	self.IRadius = info.IRadius
 	self.DiskMemory = info.DiskMemory
 	self:Setup()
