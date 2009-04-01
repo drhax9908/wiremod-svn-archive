@@ -14,6 +14,7 @@ end
 
 if (SERVER) then
 	CreateConVar('sbox_maxwire_cd_rays', 20)
+	CreateConVar('sbox_maxwire_cd_locks', 20)
 end
 
 TOOL.ClientConVar[ "model" ] = "models/jaanus/wiretool/wiretool_siren.mdl"
