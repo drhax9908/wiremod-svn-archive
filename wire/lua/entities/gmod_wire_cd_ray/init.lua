@@ -77,7 +77,11 @@ function ENT:WriteCell(Address, value)
 		return true
 	end
 	if (Address >= 512) && (Address < 1024) then
-		self.WriteBuffer[Address-512] = value
+		if (value ~= 0) then
+			self.WriteBuffer[Address-512] = value
+		else
+			self.WriteBuffer[Address-512] = nil
+		end
 		return true
 	end
 	return false
@@ -218,7 +222,11 @@ function ENT:Think()
 		end
 
 		//Update output
-		Wire_TriggerOutput(self.Entity, "Data", 	self.WriteBuffer[0])
+		if (self.WriteBuffer[0]) then
+			Wire_TriggerOutput(self.Entity, "Data", 	self.WriteBuffer[0])
+		else
+			Wire_TriggerOutput(self.Entity, "Data", 	self.WriteBuffer[0])
+		end
 		Wire_TriggerOutput(self.Entity, "Sector", 	self.Command[2])
 		Wire_TriggerOutput(self.Entity, "LocalSector",	self.Command[3])
 		Wire_TriggerOutput(self.Entity, "Track", 	self.Command[4])
