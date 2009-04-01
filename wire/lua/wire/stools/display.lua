@@ -590,7 +590,7 @@ TOOL.Model = "models/kobilica/wiremonitorbig.mdl"
 if CLIENT then
     language.Add( "Tool_wire_textscreen_name", "Text Screen Tool (Wire)" )
     language.Add( "Tool_wire_textscreen_desc", "Spawns a screen that display text." )
-    language.Add( "Tool_wire_textscreen_0", "Primary: Create/Update text screen" )
+    language.Add( "Tool_wire_textscreen_0", "Primary: Create/Update text screen Secondary: Copy textscreenlines" )
 	language.Add( "sboxlimit_wire_textscreens", "You've hit text screens limit!" )
 	for i=1,12 do
 		language.Add("Tool_wire_textscreen_text"..i, "Text "..i..":")
@@ -625,6 +625,25 @@ end
 
 local TSMaxTextLength = "80"
 
+function TOOL:RightClick( trace )
+	if (!trace.HitPos) then return false end
+	if (trace.Entity:IsPlayer()) then return false end
+	if ( CLIENT ) then return true end
+
+	local ply = self:GetOwner()
+
+	if ( trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_textscreen" ) then
+		for i=1, 12 do
+			if(trace.Entity.TextList[i]!="") then
+			ply:ConCommand("wire_textscreen_text"..i.." "..trace.Entity.TextList[i])
+			else
+			ply:ConCommand("wire_textscreen_text"..i.." \"\"")
+			end
+		end
+		return true
+	end
+end
+
 function TOOL.BuildCPanel(panel)
 	WireToolHelpers.MakePresetControl(panel, "wire_textscreen")
 	panel:NumSlider("#Tool_wire_textscreen_tsize", "wire_textscreen_tsize", 1, 15, 0)
@@ -651,7 +670,7 @@ end
 
 
 -- Holography--
-WireToolSetup.setCategory( "Render" )
+WireToolSetup.setCategory( "Holography" )
 
 --wire_holoemitter
 WireToolSetup.open( "holoemitter", "HoloEmitter", "gmod_wire_holoemitter", WireToolMakeEmitter )
@@ -662,7 +681,6 @@ if CLIENT then
 	language.Add( "Tool_wire_holoemitter_0", "Primary: Create emitter      Secondary: Link emitter" )
 	language.Add( "Tool_wire_holoemitter_1", "Select the emitter point to link to." )
 	language.Add( "Tool_wire_holoemitter_showbeams", "Show beam" )
-	language.Add( "Tool_wire_holoemitter_groundbeams", "Show Emitter->Point beams" )
 	language.Add( "Tool_wire_holoemitter_size", "Point size" )
 	language.Add( "Tool_wire_holoemitter_minimum_fade_rate", "CLIENT: Minimum Fade Rate - Applyed to all holoemitters" )
 	language.Add( "sboxlimit_wire_holoemitters", "You've hit the holoemitters limit!" )
@@ -677,7 +695,6 @@ TOOL.ClientConVar ={
 	b	= "255",
 	a	= "255",
 	showbeams	= "1",
-	groundbeams = "1",
 	size	= "4"
 }
 
@@ -697,7 +714,6 @@ end
 function TOOL.BuildCPanel( panel )
 	WireToolHelpers.MakePresetControl(panel, "wire_holoemitter")
 	panel:CheckBox("#Tool_wire_holoemitter_showbeams", "wire_holoemitter_showbeams")
-	panel:CheckBox("#Tool_wire_holoemitter_groundbeams", "wire_holoemitter_groundbeams")
 	panel:NumSlider("#Tool_wire_holoemitter_size","wire_holoemitter_size", 1, 32, 1)
 
 	panel:AddControl( "Color", {
