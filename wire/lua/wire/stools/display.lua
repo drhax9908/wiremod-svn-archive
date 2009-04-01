@@ -670,7 +670,7 @@ end
 
 
 -- Holography--
-WireToolSetup.setCategory( "Holography" )
+WireToolSetup.setCategory( "Render" )
 
 --wire_holoemitter
 WireToolSetup.open( "holoemitter", "HoloEmitter", "gmod_wire_holoemitter", WireToolMakeEmitter )
@@ -681,7 +681,7 @@ if CLIENT then
 	language.Add( "Tool_wire_holoemitter_0", "Primary: Create emitter      Secondary: Link emitter" )
 	language.Add( "Tool_wire_holoemitter_1", "Select the emitter point to link to." )
 	language.Add( "Tool_wire_holoemitter_showbeams", "Show beam" )
-	language.Add( "Tool_wire_holoemitter_size", "Point size" )
+	language.Add( "Tool_wire_holoemitter_groundbeams", "Show Emitter->Point beams" )	language.Add( "Tool_wire_holoemitter_size", "Point size" )
 	language.Add( "Tool_wire_holoemitter_minimum_fade_rate", "CLIENT: Minimum Fade Rate - Applyed to all holoemitters" )
 	language.Add( "sboxlimit_wire_holoemitters", "You've hit the holoemitters limit!" )
 end
@@ -695,7 +695,7 @@ TOOL.ClientConVar ={
 	b	= "255",
 	a	= "255",
 	showbeams	= "1",
-	size	= "4"
+	groundbeams = "1",	size	= "4"
 }
 
 TOOL.Model = "models/jaanus/wiretool/wiretool_range.mdl"
@@ -714,7 +714,7 @@ end
 function TOOL.BuildCPanel( panel )
 	WireToolHelpers.MakePresetControl(panel, "wire_holoemitter")
 	panel:CheckBox("#Tool_wire_holoemitter_showbeams", "wire_holoemitter_showbeams")
-	panel:NumSlider("#Tool_wire_holoemitter_size","wire_holoemitter_size", 1, 32, 1)
+	panel:CheckBox("#Tool_wire_holoemitter_groundbeams", "wire_holoemitter_groundbeams")	panel:NumSlider("#Tool_wire_holoemitter_size","wire_holoemitter_size", 1, 32, 1)
 
 	panel:AddControl( "Color", {
 		Label 	= "Color",
