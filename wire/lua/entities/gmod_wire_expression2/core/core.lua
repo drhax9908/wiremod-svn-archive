@@ -128,7 +128,13 @@ end)
 /******************************************************************************/
 
 registerCallback("postexecute", function(self) 
-    if self.data["reset"] then self.entity:Reset() end
+    if self.data["reset"] then
+		if self.data['first'] then
+			self.data["reset"] = nil
+		else
+			self.entity:Reset()
+		end
+	end
 end)
  
 registerFunction("reset", "", "", function(self,args)
