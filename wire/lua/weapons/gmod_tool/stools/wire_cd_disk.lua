@@ -5,7 +5,7 @@ TOOL.ConfigName		= ""
 
 if (CLIENT) then
     language.Add("Tool_wire_cd_disk_name", "CD Disk Tool (Wire)")
-    language.Add("Tool_wire_cd_disk_desc", "Spawns aCD Disk.")
+    language.Add("Tool_wire_cd_disk_desc", "Spawns a CD Disk.")
     language.Add("Tool_wire_cd_disk_0", "Primary: Create/Update CD Disk, Secondary: Change model")
     language.Add("WireDataTransfererTool_cd_disk", "CD Disk:")
 	language.Add("sboxlimit_wire_cd_disks", "You've hit CD Disks limit!")
