@@ -17,7 +17,8 @@ if (SERVER) then
 end
 
 TOOL.ClientConVar["model"] = "models/kobilica/wiremonitorrtbig.mdl"
-TOOL.ClientConVar["precision"] = 1
+TOOL.ClientConVar["precision"] = 4
+TOOL.ClientConVar["iradius"] = 12
 
 TOOL.FirstSelected = nil
 
@@ -32,6 +33,7 @@ function TOOL:LeftClick(trace)
 
 	if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_cd_disk" && trace.Entity:GetTable().pl == ply) then
 		trace.Entity.Precision = tonumber(self:GetClientInfo("precision"))
+		trace.Entity.IRadius = tonumber(self:GetClientInfo("iradius"))
 		trace.Entity:Setup()
 		return true
 	end
@@ -43,6 +45,7 @@ function TOOL:LeftClick(trace)
 
 	local wire_cd_disk = MakeWireCDDisk(ply, trace.HitPos, Ang , self:GetClientInfo("model"))
 	wire_cd_disk.Precision = tonumber(self:GetClientInfo("precision"))
+	wire_cd_disk.IRadius = tonumber(self:GetClientInfo("iradius"))
 	wire_cd_disk:Setup()
 
 	local min = wire_cd_disk:OBBMins()
@@ -137,5 +140,13 @@ function TOOL.BuildCPanel(panel)
 		Min = "1",
 		Max = "16",
 		Command = "wire_cd_disk_precision"
+	})
+
+	panel:AddControl("Slider", {
+		Label = "Inner radius (disk hole radius)",
+		Type = "Integer",
+		Min = "1",
+		Max = "48",
+		Command = "wire_cd_disk_iradius"
 	})
 end

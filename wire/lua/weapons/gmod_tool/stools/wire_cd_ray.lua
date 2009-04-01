@@ -6,7 +6,7 @@ TOOL.ConfigName		= ""
 if ( CLIENT ) then
     language.Add( "Tool_wire_cd_ray_name", "CD Ray Tool (Wire)" )
     language.Add( "Tool_wire_cd_ray_desc", "Spawns a CD Ray." )
-    language.Add( "Tool_wire_cd_ray_0", "Primary: Create/Update CD Ray" )
+    language.Add( "Tool_wire_cd_ray_0", "Primary: Create/Update CD Ray Secondary: Create CD lock (to keep CD in same spot)" )
     language.Add( "WireCDRayTool_cd_ray", "CD Ray:" )
 	language.Add( "sboxlimit_wire_cd_rays", "You've hit CD Rays limit!" )
 	language.Add( "undone_Wire CDRay", "Undone Wire CD Ray" )

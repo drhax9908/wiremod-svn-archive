@@ -18,7 +18,11 @@ end
 
 function ENT:Notify(message, value)
 	local rp = RecipientFilter()
-	rp:AddAllPlayers()
+	if (self.ForcePlayer) then
+		rp:AddPlayer(self.ForcePlayer)
+	else
+		rp:AddAllPlayers()
+	end
 
 	umsg.Start(message, rp)
 		umsg.Long(self:EntIndex())
@@ -28,7 +32,11 @@ end
 
 function ENT:FlushCache()
 	local rp = RecipientFilter()
-	rp:AddAllPlayers()
+	if (self.ForcePlayer) then
+		rp:AddPlayer(self.ForcePlayer)
+	else
+		rp:AddAllPlayers()
+	end
 	
 	umsg.Start("wiregpu_memorymessage", rp)
 		umsg.Long(self:EntIndex())

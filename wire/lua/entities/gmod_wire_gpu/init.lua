@@ -80,10 +80,6 @@ end
 //	//return false
 //end
 //
-function ENT:GPU_ResendData(pl)
-	//FIXME
-	//self:FlushCache()
-end
 
 function GPU_PlayerRespawn(pl)
 	print("Player has occured")
@@ -163,6 +159,20 @@ function Resend_GPU_Data(gpuent)
 	gpuent:WriteCell(65535,gpuent.Clk)
 end
 
+function Reflush_GPU_Data(gpuent,pl)
+	gpuent.ForcePlayer = pl
+	gpuent:FlushCache()
+	for i=0,65535 do
+		if (gpuent.Memory[i]) then
+			gpuent:WriteCell(i,gpuent.Memory[i])
+		end
+	end
+	gpuent:FlushCache()
+
+	gpuent:WriteCell(65534,1) //reset
+	gpuent:WriteCell(65535,gpuent.Clk)
+	gpuent.ForcePlayer = nil
+end
 
 function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	self.BaseClass.ApplyDupeInfo(self, ply, ent, info, GetEntByID)
@@ -177,4 +187,8 @@ function ENT:ApplyDupeInfo(ply, ent, info, GetEntByID)
 	end
 
 	timer.Create("GPU_Paste_Timer"..math.floor(math.random()*1000000),0.1+math.random()*0.7,1,Resend_GPU_Data,self)
+end
+
+function ENT:GPU_ResendData(pl)
+	timer.Create("GPU_Resend_Timer"..math.floor(math.random()*1000000),0.1+math.random()*3.0,1,Resend_GPU_Data,self,pl)
 end
