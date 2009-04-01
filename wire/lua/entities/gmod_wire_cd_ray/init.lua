@@ -227,12 +227,13 @@ function ENT:Think()
 
 		//Read more
 		self.Entity:NextThink(CurTime()+0.01)
-		return
+		return true
 	end
 	if (Color(self.Entity:GetColor()) != Color(255,255,255,255)) then
 		self.Entity:SetColor(255, 255, 255, 255)
 	end
 	self.Entity:NextThink(CurTime()+0.25)
+	return true
 end
 
 function ENT:ShowOutput()
