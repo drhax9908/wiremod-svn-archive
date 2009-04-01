@@ -106,6 +106,12 @@ end)
 
 /******************************************************************************/
 
+registerOperator("dlt", "a", "a", function(self, args)
+	local op1 = args[2]
+	local rv1, rv2 = self.vars[op1], self.vars["$" .. op1]
+	return { rv1[1] - rv2[1], rv1[2] - rv2[2], rv1[3] - rv2[3] }
+end)
+
 registerOperator("neg", "a", "a", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
