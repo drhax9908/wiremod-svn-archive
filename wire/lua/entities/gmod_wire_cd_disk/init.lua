@@ -51,6 +51,9 @@ function ENT:Setup()
 	local min = self:OBBMins()
 	local max = self:OBBMaxs()
 
+	self.Precision = math.floor(math.Clamp(self.Precision,1,64))
+	self.IRadius = math.max(self.IRadius,0)
+
 	self.StackStartHeight = -min.z
 
 	self.DiskStacks = math.floor((max.z - min.z) / self.Precision)+1
@@ -60,8 +63,8 @@ function ENT:Setup()
 	self.TrackSectors = {}
 	self.FirstTrack = math.floor((self.IRadius) / self.Precision)
 	for i=self.FirstTrack,self.DiskTracks do
-		self.DiskSectors = self.DiskSectors + math.floor((2*3.1415926*(i*self.Precision)) / self.Precision)
 		self.TrackSectors[i] = self.DiskSectors
+		self.DiskSectors = self.DiskSectors + math.floor((2*3.1415926*(i*self.Precision)) / self.Precision)
 	end
 
 	self.DiskVolume = self.DiskSectors*self.DiskStacks
