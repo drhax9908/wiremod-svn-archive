@@ -121,7 +121,18 @@ function PreProcessor:Process(buffer, params)
 		self.readline = i
 		line = string.TrimRight(line)
 		
-		-- Search for string literals and comments
+		local comment = string.find(line, "#", 1, true)
+		if comment then
+			if comment == 1 then
+				line = ""
+			else
+				line = string.sub(line, 1, comment - 1)
+			end
+			
+			lines[i] = line
+		end
+		
+		/*-- Search for string literals and comments
 		local comment = string.find(line, '[#"]')
 		
 		-- While the current match is not a comment...
@@ -152,7 +163,7 @@ function PreProcessor:Process(buffer, params)
 			end
 			
 			lines[i] = line
-		end
+		end*/
 		
 		if string.sub(line, 1, 1) == "@" then
 			local position = string.find(line, " ", 2, true)
