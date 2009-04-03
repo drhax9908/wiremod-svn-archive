@@ -582,6 +582,327 @@ function EDITOR:ScrollCaret()
 	self.ScrollBar:SetScroll(self.Scroll[1] - 1)
 end
 
+function EDITOR:FindFunction(self,reversed,searchterm,MatchCase)
+	//local reversed = self:GetParent().Reversed
+	//local searchterm = self:GetParent().String:GetValue()
+	if searchterm=="" then return end
+	//local oldself = self
+	//self = self:GetParent():GetParent()
+	if !MatchCase then
+		searchterm = string.lower(searchterm)
+	end
+	local Num,Row = 1,1
+	local find = false
+	local currentrow = Row
+	if !reversed then
+		if self.Caret[1] < self.Start[1] then
+			Row=self.Caret[1]
+		else
+			Row=self.Start[1]
+		end
+		if self.Caret[2] < self.Start[2] then
+			Num=self.Caret[2]
+		else
+			Num=self.Start[2]
+		end
+		if (MatchCase and self:GetSelection()==searchterm) or (!MatchCase and string.lower(self:GetSelection())==searchterm) then
+			Num=Num+1
+		end
+		for i=Row, #self.Rows do
+			local row = self.Rows[i]
+			if !MatchCase then
+				row = string.lower(row)
+			end
+			find = string.find(row,searchterm,Num,true)
+			currentrow = i
+			Num=1
+			if find then break end
+		end
+	else
+		if self.Caret[1] > self.Start[1] then
+			Row=self.Caret[1]
+		else
+			Row=self.Start[1]
+		end
+		if self.Caret[2] > self.Start[2] then
+			Num=self.Caret[2]
+		else
+			Num=self.Start[2]
+		end
+		if (MatchCase and self:GetSelection()==searchterm) or (!MatchCase and string.lower(self:GetSelection())==searchterm) then
+			Num=Num-1
+		end
+		searchterm = string.reverse(searchterm)
+		Num=#self.Rows[Row] - Num +2
+		for i=1, Row do
+			local now = Row-i+1
+			local row = self.Rows[now]
+			row = string.reverse(row)
+			if !MatchCase then
+				row = string.lower(row)
+			end
+			find = string.find(row,searchterm,Num,true)
+			currentrow = now
+			Num=1
+			if find then
+				find = #self.Rows[now] - (find - 2) - #searchterm
+				break
+			end
+		end
+	end
+	if find then
+		self.Caret[1] = currentrow
+		self.Caret[2] = find+#searchterm
+		self.Start[1] = currentrow
+		self.Start[2] = find
+		self:ScrollCaret()
+	/*
+	else
+		if self.eof && type(self.eof)=="Panel" && self.eof:IsValid() then
+			self.eof:Close()
+		end
+		self.eof = vgui.Create("DFrame", oldself)
+		local popup = self.eof
+		popup:SetSize(200,100)
+		popup:Center()
+		popup:SetTitle("End of file")
+		popup:MakePopup()
+		popup.Text = vgui.Create("DLabel", popup)
+		popup.Text:SetPos(20,20)
+		popup.Text:SetSize(200,20)
+		popup.Text:SetText("File end has been reached")
+	//*/
+	end
+end
+
+function EDITOR:ReplaceNextFunction(self,ToRep,RepWith,MatchCase)
+	local oldcoords = {self.Caret[1],self.Caret[2],self.Start[1],self.Start[2]}
+	if ToRep == "" then return end
+	self:FindFunction(self,false,ToRep,MatchCase)
+	if oldcoords[1]!=self.Caret[1] or oldcoords[2]!=self.Caret[2] or oldcoords[3]!=self.Start[1] or oldcoords[4]!=self.Start[2] then
+		self:SetArea(self:Selection(),RepWith)
+		self.Caret[2]=self.Caret[2]-(#ToRep-#RepWith)
+		self:ScrollCaret()
+	end
+end
+
+function EDITOR:ReplaceAllFunction(self,ToRep,RepWith,MatchCase)
+	if ToRep == "" then return end
+	if MatchCase then
+		local text = string.gsub(self:GetValue(),ToRep,RepWith)
+		self:SetArea({{1,1},{#self.Rows, string.len(self.Rows[#self.Rows]) + 1}},text)
+		self:ScrollCaret()
+		return
+	end
+	local originaltext = self:GetValue()
+	local text = string.lower(originaltext)
+	ToRep = string.lower(ToRep)
+	local offset = #ToRep-#RepWith
+	local totaloffset = 0
+	local curpos = 1
+	local chardiff = #ToRep
+	local success = false
+	repeat
+		local find = string.find(text,ToRep,curpos,true)
+		if find then
+			success = true
+			originaltext = string.sub(originaltext,1,find+totaloffset-1)..RepWith..string.sub(originaltext,find+totaloffset+#ToRep)
+			totaloffset=totaloffset-offset
+			curpos = find+chardiff
+		end
+	until !find
+	if success then
+		self:SetArea({{1,1},{#self.Rows, string.len(self.Rows[#self.Rows]) + 1}},originaltext)
+		self:ScrollCaret()
+	end
+end
+
+function EDITOR:FindWindow()
+	// Does a find box already exist? Kill it
+	if self.FW && type(self.FW)=="Panel" && self.FW:IsValid() then
+		self.FW:Close()
+	end
+
+	// Create the frame, make it highlight the line and show cursor
+	FW = vgui.Create("DFrame",self)
+	self.FW = FW
+	FW.OldThink = FW.Think
+	FW.Think = function(self)
+		self:GetParent().ForceDrawCursor = true
+		self:OldThink()
+	end
+	FW.OldClose = FW.Close
+	FW.Close = function(self)
+		self:GetParent().ForceDrawCursor = false
+		self:OldClose(self)
+	end
+	FW.Reversed = false
+	FW:SetSize(250,100)
+	FW:ShowCloseButton(true)
+	FW:SetTitle("Search")
+	FW:MakePopup()
+	FW:Center()
+
+	// Search Textbox
+	FW.String = vgui.Create("DTextEntry",FW)
+	FW.String:SetPos(10,30)
+	FW.String:SetSize(230,20)
+	FW.String:RequestFocus()
+	FW.String.OnKeyCodeTyped = function(self,code)
+		if ( code == KEY_ENTER ) then
+			self:GetParent().Next.DoClick(self:GetParent().Next)
+		end
+	end
+
+	// Forward Checkbox
+	FW.Forw = vgui.Create("DCheckBox",FW)
+	FW.Forw:SetPos(115,55)
+	FW.Forw:SetValue(true)
+	FW.Forw.OnMousePressed = function(self)
+		if !self:GetChecked() then
+			self:GetParent().Back:SetValue(self:GetChecked())
+			self:GetParent().Reversed = false
+			self:SetValue(!self:GetChecked())
+		end
+	end
+
+	// Backward Checkbox
+	FW.Back = vgui.Create("DCheckBox",FW)
+	FW.Back:SetPos(115,75)
+	FW.Back:SetValue(false)
+	FW.Back.OnMousePressed = function(self)
+		if !self:GetChecked() then
+			self:GetParent().Forw:SetValue(self:GetChecked())
+			self:GetParent().Reversed = true
+			self:SetValue(!self:GetChecked())
+		end
+	end
+
+	// Case Sensitive Checkbox
+	FW.Case = vgui.Create("DCheckBoxLabel",FW)
+	FW.Case:SetPos(10,75)
+	FW.Case:SetValue(false)
+	FW.Case:SetText("Case Sensitive")
+	FW.Case:SizeToContents()
+
+	// Checkbox Labels
+	local Label = vgui.Create("DLabel",FW)
+	local xpos, ypos = FW.Forw:GetPos()
+	Label:SetPos(xpos+20,ypos-3)
+	Label:SetText("Forward")
+	Label = vgui.Create("DLabel",FW)
+	local xpos, ypos = FW.Back:GetPos()
+	Label:SetPos(xpos+20,ypos-3)
+	Label:SetText("Backward")
+
+	// Cancel Button
+	FW.CloseB = vgui.Create("DButton",FW)
+	FW.CloseB:SetText("Cancel")
+	FW.CloseB:SetPos(190,75)
+	FW.CloseB:SetSize(50,20)
+	FW.CloseB.DoClick = function(self)
+		self:GetParent():Close()
+	end
+
+	// Find Button
+	FW.Next = vgui.Create("DButton",FW)
+	FW.Next:SetText("Find")
+	FW.Next:SetPos(190,52)
+	FW.Next:SetSize(50,20)
+	FW.Next.DoClick = function(self)
+		self = self:GetParent():GetParent()
+		self:FindFunction(self,self.FW.Reversed,self.FW.String:GetValue(),self.FW.Case:GetChecked())
+	end
+end
+
+function EDITOR:FindAndReplaceWindow()
+	// Does a find box already exist? Kill it
+	if self.FRW && type(self.FRW)=="Panel" && self.FRW:IsValid() then
+		self.FRW:Close()
+	end
+
+	// Create the frame, make it highlight the line and show cursor
+	FRW = vgui.Create("DFrame",self)
+	self.FRW = FRW
+	FRW.OldThink = FRW.Think
+	FRW.Think = function(self)
+		self:GetParent().ForceDrawCursor = true
+		self:OldThink()
+	end
+	FRW.OldClose = FRW.Close
+	FRW.Close = function(self)
+		self:GetParent().ForceDrawCursor = false
+		self:OldClose(self)
+	end
+	FRW:SetSize(250,142)
+	FRW:ShowCloseButton(true)
+	FRW:SetTitle("Replace")
+	FRW:MakePopup()
+	FRW:Center()
+
+	// ToReplace Textentry
+	FRW.ToRep = vgui.Create("DTextEntry",FRW)
+	FRW.ToRep:SetPos(10,30)
+	FRW.ToRep:SetSize(230,20)
+	FRW.ToRep:RequestFocus()
+	FRW.ToRep.OnKeyCodeTyped = function(self,code)
+		if ( code == KEY_ENTER ) then
+			//self:GetParent().Replace.DoClick(self:GetParent().Next)
+			self:GetParent().RepWith:RequestFocus()
+		end
+	end
+
+	// ReplaceWith Textentry
+	FRW.RepWith = vgui.Create("DTextEntry",FRW)
+	FRW.RepWith:SetPos(10,64)
+	FRW.RepWith:SetSize(230,20)
+
+	// Text Labels
+	local Label = vgui.Create("DLabel",FRW)
+	Label:SetPos(12,50)
+	Label:SetText("Replace With:")
+	Label:SizeToContents()
+
+	// Case Sensitive Checkbox
+	FRW.Case = vgui.Create("DCheckBoxLabel",FRW)
+	FRW.Case:SetPos(10,117)
+	FRW.Case:SetValue(false)
+	FRW.Case:SetText("Case Sensitive")
+	FRW.Case:SizeToContents()
+
+	// Cancel Button
+	FRW.CloseB = vgui.Create("DButton",FRW)
+	FRW.CloseB:SetText("Cancel")
+	FRW.CloseB:SetPos(190,115)
+	FRW.CloseB:SetSize(50,20)
+	FRW.CloseB.DoClick = function(self)
+		self:GetParent():Close()
+	end
+
+	// Replace Button
+	FRW.Replace = vgui.Create("DButton",FRW)
+	FRW.Replace:SetText("Replace")
+	FRW.Replace:SetPos(190,90)
+	FRW.Replace:SetSize(50,21)
+	FRW.Replace.DoClick = function(self)
+		self = self:GetParent():GetParent()
+		self:ReplaceNextFunction(self,self.FRW.ToRep:GetValue(),self.FRW.RepWith:GetValue(),self.FRW.Case:GetChecked())
+	end
+
+	// Replace All Button
+	FRW.ReplaceAll = vgui.Create("DButton",FRW)
+	FRW.ReplaceAll:SetText("Replace All")
+	FRW.ReplaceAll:SetPos(127,90)
+	FRW.ReplaceAll:SetSize(60,21)
+	FRW.ReplaceAll.DoClick = function(self)
+		self = self:GetParent():GetParent()
+		self:ReplaceAllFunction(self,self.FRW.ToRep:GetValue(),self.FRW.RepWith:GetValue(),self.FRW.Case:GetChecked())
+	end
+
+end
+
+
+
 function EDITOR:_OnKeyCodeTyped(code)
 	self.Blink = RealTime()
 	
@@ -624,6 +945,10 @@ function EDITOR:_OnKeyCodeTyped(code)
 			//if self.clipboard then
 			//	self:SetSelection(self.clipboard)
 			//end
+		elseif code == KEY_F then
+			self:FindWindow()
+		elseif code == KEY_H then
+			self:FindAndReplaceWindow()
 		elseif code == KEY_UP then
 			self.Scroll[1] = self.Scroll[1] - 1
 			if self.Scroll[1] < 1 then self.Scroll[1] = 1 end
