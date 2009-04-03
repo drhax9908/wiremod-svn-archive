@@ -563,6 +563,40 @@ registerFunction("aimPos", "e:", "v", function(self, args)
 	else return {0,0,0} end
 end)
 
+/******************************************************************************/
+
+/*registerFunction("boxSize", "e:", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!validEntity(rv1)) then return {0,0,0} end
+	local vmax = rv1:OBBMaxs()
+	local vmin = rv1:OBBMins()
+	return { vec.x, vec.y, vec.z }
+end)*/
+
+registerFunction("boxCenter", "e:", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!validEntity(rv1)) then return {0,0,0} end
+	local vec = rv1:OBBCenter()
+	return { vec.x, vec.y, vec.z }
+end)
+
+registerFunction("boxMax", "e:", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!validEntity(rv1)) then return {0,0,0} end
+	local vec = rv1:OBBMaxs()
+	return { vec.x, vec.y, vec.z }
+end)
+
+registerFunction("boxMin", "e:", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!validEntity(rv1)) then return {0,0,0} end
+	local vec = rv1:OBBMins()
+	return { vec.x, vec.y, vec.z }
+end)
 
 /******************************************************************************/
 
