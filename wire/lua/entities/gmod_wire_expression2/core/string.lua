@@ -86,6 +86,8 @@ end)
 registerFunction("toChar", "n", "s", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
+	if rv1 < 32 then return "" end
+	if rv1 > 255 then return "" end
 	return string.char(rv1)
 end)
 
