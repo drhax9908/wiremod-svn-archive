@@ -64,7 +64,6 @@ function ENT:Setup()
 	self.FirstTrack = math.floor((self.IRadius) / self.Precision)
 	for i=self.FirstTrack,self.DiskTracks-1 do
 		self.TrackSectors[i] = self.DiskSectors
-		print("Track "..i..": "..self.DiskSectors)
 		self.DiskSectors = self.DiskSectors + math.floor(2*3.1415926*i) + 1
 	end
 
