@@ -565,14 +565,13 @@ end)
 
 /******************************************************************************/
 
-/*registerFunction("boxSize", "e:", "v", function(self, args)
+registerFunction("boxSize", "e:", "v", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	if(!validEntity(rv1)) then return {0,0,0} end
-	local vmax = rv1:OBBMaxs()
-	local vmin = rv1:OBBMins()
+	local vec = rv1:OBBMaxs() - rv1:OBBMins()
 	return { vec.x, vec.y, vec.z }
-end)*/
+end)
 
 registerFunction("boxCenter", "e:", "v", function(self, args)
 	local op1 = args[2]
