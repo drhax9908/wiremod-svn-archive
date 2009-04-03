@@ -175,11 +175,11 @@ function ENT:Think()
 		local vel = disk.Entity:GetPhysicsObject():GetAngleVelocity().z
 
 		local r = (lpos.x^2+lpos.y^2)^0.5 //radius
-		local a = math.fmod(3.1415926+math.atan2(lpos.x,lpos.y),3.1415926*2) //angle
+		local a = math.fmod(3.1415926+math.atan2(lpos.x,lpos.y),2*3.1415926) //angle
 		local h = lpos.z-disk.StackStartHeight //stack 
 
 		local track = math.floor(r / disk.Precision)
-		local sector = math.floor(a*(track*disk.Precision))
+		local sector = math.floor(a*track)//*disk.Precision)
 		local stack = math.floor(h/disk.Precision)
 		if (disk.DiskStacks == 1) then stack = 0 end
 
