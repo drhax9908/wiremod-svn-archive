@@ -634,8 +634,7 @@ function EDITOR:_OnKeyCodeTyped(code)
 			if self:HasSelection() and !shift then
 				self.Start = self:CopyPosition(self.Caret)
 			else
-				self.Caret = self:MovePosition(self.Caret, -2)
-				self:SetCaret(self:getWordStart(self.Caret))
+				self.Caret = self:getWordStart(self:MovePosition(self.Caret, -2))
 			end
 			
 			self:ScrollCaret()
@@ -647,8 +646,7 @@ function EDITOR:_OnKeyCodeTyped(code)
 			if self:HasSelection() and !shift then
 				self.Start = self:CopyPosition(self.Caret)
 			else
-				self.Caret = self:MovePosition(self.Caret, 1)
-				self:SetCaret(self:getWordEnd(self.Caret))
+				self.Caret = self:getWordEnd(self:MovePosition(self.Caret, 1))
 			end
 			
 			self:ScrollCaret()
