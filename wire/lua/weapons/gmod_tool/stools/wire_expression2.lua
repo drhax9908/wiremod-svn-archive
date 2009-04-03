@@ -178,6 +178,7 @@ if CLIENT then
 	local Editor, Validation
 	
 	function wire_expression2_upload()
+		if( Editor == nil ) then initE2Editor() end
 		local result = wire_expression_validate(Editor:GetCode())
 		if result then
 			GAMEMODE:AddNotify(result, NOTIFY_ERROR, 7)
@@ -206,6 +207,7 @@ if CLIENT then
 		end
 			
 		if( download.downloading && download.chunks == chunks) then
+			if( Editor == nil ) then initE2Editor() end
 			Editor:Open(download.name, download.code)
 			Editor.chip = true
 			download = {}
