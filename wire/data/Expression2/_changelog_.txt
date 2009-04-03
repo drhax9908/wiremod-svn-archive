@@ -12,6 +12,11 @@
 # The changelog only lists additions and major fixes, minor fixes are not listed.
 # 
 # 
+# 2009-04-03
+# ADDED editor improvements by TomyLobo, it is now possible to indent or unindent
+#   entire codeblocks with TAB/SHIFT-TAB.
+# ADDED search/replace by ZeikJT, can be access via CTRL-F and CTRL-H.
+#
 # 2009-03-27
 # ADDED awesome extensions: vector2, matrix2 and matrix(3) by Jimlad!
 #   Visit http://www.wiremod.com/forum/wiremod-addons/8240-jimlads-wire-addons.html
