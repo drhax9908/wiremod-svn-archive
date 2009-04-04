@@ -954,7 +954,6 @@ function EDITOR:_OnKeyCodeTyped(code)
 			if self.Scroll[1] < 1 then self.Scroll[1] = 1 end
 		elseif code == KEY_DOWN then
 			self.Scroll[1] = self.Scroll[1] + 1
-		--inserted:
 		elseif code == KEY_LEFT then
 			if self:HasSelection() and !shift then
 				self.Start = self:CopyPosition(self.Caret)
@@ -979,13 +978,31 @@ function EDITOR:_OnKeyCodeTyped(code)
 			if !shift then
 				self.Start = self:CopyPosition(self.Caret)
 			end
-		--[[
+		--[[ -- old code that scrolls on ctrl-left/right:
 		elseif code == KEY_LEFT then
 			self.Scroll[2] = self.Scroll[2] - 1
 			if self.Scroll[2] < 1 then self.Scroll[2] = 1 end
 		elseif code == KEY_RIGHT then
 			self.Scroll[2] = self.Scroll[2] + 1
 		]]
+		elseif code == KEY_HOME then
+			self.Caret[1] = 1
+			self.Caret[2] = 1
+			
+			self:ScrollCaret()
+			
+			if !shift then
+				self.Start = self:CopyPosition(self.Caret)
+			end
+		elseif code == KEY_END then
+			self.Caret[1] = #self.Rows
+			self.Caret[2] = 1
+			
+			self:ScrollCaret()
+			
+			if !shift then
+				self.Start = self:CopyPosition(self.Caret)
+			end
 		end
 		
 	else
@@ -1116,57 +1133,60 @@ function EDITOR:_OnKeyCodeTyped(code)
 					self:SetCaret(self:SetArea({self.Caret, self:MovePosition(self.Caret, 1)}))
 				end
 			end
-		elseif code == KEY_TAB then
-			if self:HasSelection() then
-				-- TAB with a selection --
-				-- remember scroll position
-				local tab_scroll = self:CopyPosition(self.Scroll)
-				
-				-- normalize selection, so it spans whole lines
-				local tab_start, tab_caret = self:MakeSelection(self:Selection())
-				tab_start[2] = 1
-				if (tab_caret[2] != 1) then
-					tab_caret[1] = tab_caret[1] + 1 -- Is there a check needed? In theory, There is always a next line if the current line is not empty.
-					tab_caret[2] = 1
-				end
-				
-				-- remember selection
-				self.Caret = self:CopyPosition(tab_caret)
-				self.Start = self:CopyPosition(tab_start)
-				-- (temporarily) adjust selection, so there is no empty line in it.
-				if (self.Caret[2] == 1) then
-					self.Caret = self:MovePosition(self.Caret, -1)
-				end
-				-- this also makes sure that the first line is also indented.
-				if (self.Start[2] == 1) then
-					self.Start = self:MovePosition(self.Start, -1)
-				end
-				if shift then
-					-- shift-TAB with a selection --
-					self:SetSelection(self:GetSelection():gsub("\n    ", "\n"))
-					
-				else
-					-- plain TAB with a selection --
-					self:SetSelection(self:GetSelection():gsub("\n", "\n    "))
-				end
-				-- restore selection
-				self.Caret = self:CopyPosition(tab_caret)
-				self.Start = self:CopyPosition(tab_start)
-				-- restore scroll position
-				self.Scroll = self:CopyPosition(tab_scroll)
-				-- trigger scroll bar update (TODO: find a better way)
-				self:ScrollCaret()
-				-- signal that we want our focus back after (since TAB normally switches focus)
-				self.TabFocus = true
-			else
-				-- TAB without a selection --
-				-- TODO: shift-tab without a selection
-				local count = (self.Caret[2] + 2) % 4 + 1
-				self:SetSelection(string.rep(" ", count))
-				self.TabFocus = true
-			end
 		end
-		
+	end
+	
+	if (!control and code == KEY_TAB) or (control and (code == KEY_I or code == KEY_O)) then
+		if code == KEY_O then shift = true end
+		if self:HasSelection() then
+			-- TAB with a selection --
+			-- remember scroll position
+			local tab_scroll = self:CopyPosition(self.Scroll)
+			
+			-- normalize selection, so it spans whole lines
+			local tab_start, tab_caret = self:MakeSelection(self:Selection())
+			tab_start[2] = 1
+			
+			if (tab_caret[2] != 1) then
+				tab_caret[1] = tab_caret[1] + 1
+				tab_caret[2] = 1
+			end
+			
+			-- remember selection
+			self.Caret = self:CopyPosition(tab_caret)
+			self.Start = self:CopyPosition(tab_start)
+			-- (temporarily) adjust selection, so there is no empty line in it.
+			if (self.Caret[2] == 1) then
+				self.Caret = self:MovePosition(self.Caret, -1)
+			end
+			-- this also makes sure that the first line is also indented.
+			if (self.Start[2] == 1) then -- TODO: this breaks if the first line of the selection is the first line of the text
+				self.Start = self:MovePosition(self.Start, -1)
+			end
+			if shift then
+				-- shift-TAB with a selection --
+				self:SetSelection(self:GetSelection():gsub("\n    ", "\n"))
+				
+			else
+				-- plain TAB with a selection --
+				self:SetSelection(self:GetSelection():gsub("\n", "\n    "))
+			end
+			-- restore selection
+			self.Caret = self:CopyPosition(tab_caret)
+			self.Start = self:CopyPosition(tab_start)
+			-- restore scroll position
+			self.Scroll = self:CopyPosition(tab_scroll)
+			-- trigger scroll bar update (TODO: find a better way)
+			self:ScrollCaret()
+			-- signal that we want our focus back after (since TAB normally switches focus)
+			self.TabFocus = true
+		else
+			-- TAB without a selection --
+			-- TODO: shift-tab without a selection
+			local count = (self.Caret[2] + 2) % 4 + 1
+			self:SetSelection(string.rep(" ", count))
+			self.TabFocus = true
+		end
 	end
 	
 	if control then

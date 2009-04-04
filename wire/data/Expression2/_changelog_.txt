@@ -12,10 +12,14 @@
 # The changelog only lists additions and major fixes, minor fixes are not listed.
 # 
 # 
+# 2009-04-04 
+# ADDED some more editor improvements by TomyLobo, CTRL-I and CTRL-O can now also
+#   be used for indenting and outdenting instead of TAB/SHIFT-TAB
+# 
 # 2009-04-03
-# ADDED editor improvements by TomyLobo, it is now possible to indent or unindent
+# ADDED editor improvements by TomyLobo, it is now possible to indent and outdent
 #   entire codeblocks with TAB/SHIFT-TAB.
-# ADDED search/replace by ZeikJT, can be access via CTRL-F and CTRL-H.
+# ADDED search/replace by ZeikJT, can be accessed via CTRL-F and CTRL-H.
 #
 # 2009-03-27
 # ADDED awesome extensions: vector2, matrix2 and matrix(3) by Jimlad!
@@ -52,7 +56,6 @@
 # 
 # 2009-03-12
 # ADDED [E:isAdmin()=N] and [E:isSuperAdmin()=N], to determine if a player is admin.
-# 
 # 
 # 
 # ... and lots more has improved in the days, weeks, and months before that, check out
