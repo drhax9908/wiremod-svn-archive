@@ -106,18 +106,16 @@ end)
 
 /******************************************************************************/
 
-registerCallback("preexecute", function(self)
-	if self.data['first'] == nil then
-		self.data['first'] = true
-	elseif self.data['first'] == true then
-		self.data['first'] = false
-	end
-end)
-
 registerFunction("first", "", "n", function(self, args)
-	if self.data['first'] == true
+	if self.entity.first == true
 	   then return 1 else return 0 end
 end)
+
+registerFunction("duped", "", "n", function(self, args)
+	if self.entity.duped == true
+	   then return 1 else return 0 end
+end)
+
 
 /******************************************************************************/
 
