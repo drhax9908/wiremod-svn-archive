@@ -1137,7 +1137,7 @@ function EDITOR:_OnKeyCodeTyped(code)
 	end
 	
 	if (!control and code == KEY_TAB) or (control and (code == KEY_I or code == KEY_O)) then
-		if code == KEY_O then shift = true end
+		if code == KEY_O then shift = not shift end
 		if self:HasSelection() then
 			-- TAB with a selection --
 			-- remember scroll position
@@ -1147,7 +1147,7 @@ function EDITOR:_OnKeyCodeTyped(code)
 			local tab_start, tab_caret = self:MakeSelection(self:Selection())
 			tab_start[2] = 1
 			
-			if (tab_caret[2] != 1) then
+			if (tab_caret[2] ~= 1) then
 				tab_caret[1] = tab_caret[1] + 1
 				tab_caret[2] = 1
 			end
@@ -1155,21 +1155,22 @@ function EDITOR:_OnKeyCodeTyped(code)
 			-- remember selection
 			self.Caret = self:CopyPosition(tab_caret)
 			self.Start = self:CopyPosition(tab_start)
-			-- (temporarily) adjust selection, so there is no empty line in it.
+			-- (temporarily) adjust selection, so there is no empty line at its end.
 			if (self.Caret[2] == 1) then
 				self.Caret = self:MovePosition(self.Caret, -1)
 			end
-			-- this also makes sure that the first line is also indented.
-			if (self.Start[2] == 1) then -- TODO: this breaks if the first line of the selection is the first line of the text
-				self.Start = self:MovePosition(self.Start, -1)
-			end
 			if shift then
 				-- shift-TAB with a selection --
-				self:SetSelection(self:GetSelection():gsub("\n    ", "\n"))
+				local tmp = self:GetSelection():gsub("\n ? ? ? ?", "\n")
 				
+				-- makes sure that the first line is outdented				
+				local i = tmp:find("[^ ]")
+				if i == nil then i = 1 end
+				if i > 5 then i = 5 end
+				self:SetSelection(tmp:sub(i))
 			else
 				-- plain TAB with a selection --
-				self:SetSelection(self:GetSelection():gsub("\n", "\n    "))
+				self:SetSelection("    " .. self:GetSelection():gsub("\n", "\n    "))
 			end
 			-- restore selection
 			self.Caret = self:CopyPosition(tab_caret)
