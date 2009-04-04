@@ -113,7 +113,9 @@ if SERVER then
 			entity.context.vars[k] = v
 		end
 		
+		entity.duped = true
 		entity:Execute()
+		entity.duped = false
 		
 		player:AddCount("wire_gate_expressions", entity)
 		return entity

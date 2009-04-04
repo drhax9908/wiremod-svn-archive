@@ -209,9 +209,11 @@ function ENT:Setup(buffer, restore)
 		callback(self.context)
 	end
 	
-	self.first = true
-	self:Execute()
-	self.first = false
+	if !restore then
+		self.first = true
+		self:Execute()
+		self.first = false
+	end
 end
 
 function ENT:Reset()
