@@ -31,6 +31,8 @@ wire_expression_callbacks['construct'] = {}
 wire_expression_callbacks['destruct'] = {}
 wire_expression_callbacks['preexecute'] = {}
 wire_expression_callbacks['postexecute'] = {}
+wire_expression_callbacks['predupe'] = {}
+wire_expression_callbacks['postdupe'] = {}
 
 wire_expression_types = {}
 wire_expression_types2 = {}
@@ -300,12 +302,10 @@ function PreProcessor:ParsePorts(ports)
 					elseif !wire_expression_types[vtype:upper()] then
 						self:Error("Unknown variable type (" .. stringlimit(vtype, 10) .. ") specified for variable (" .. stringlimit(key, 10) .. ")")
 					end
-					break
 				/*elseif character == "=" then
 					local dval = key:sub(i + 1)
 					key = key:sub(1, i - 1)
-					self:Error("Variable declaration (" .. stringlimit(key, 10) .. ") contains a default value (" .. stringlimit(dval, 10) .. "), which is currently unimplemented")
-					break*/
+					self:Error("Variable declaration (" .. stringlimit(key, 10) .. ") contains a default value (" .. stringlimit(dval, 10) .. "), which is currently unimplemented")*/
 				else
 					self:Error("Variable declaration (" .. stringlimit(key, 10) .. ") contains invalid characters")
 				end
