@@ -121,29 +121,18 @@ function PreProcessor:Process(buffer, params)
 		self.readline = i
 		line = string.TrimRight(line)
 		
-		local comment = string.find(line, "#", 1, true)
-		if comment then
-			if comment == 1 then
-				line = ""
-			else
-				line = string.sub(line, 1, comment - 1)
-			end
-			
-			lines[i] = line
-		end
-		
-		/*-- Search for string literals and comments
+		-- Search for string literals and comments
 		local comment = string.find(line, '[#"]')
 		
 		-- While the current match is not a comment...
 		while (comment and (string.sub(line, comment, comment) != '#')) do
 			-- ...skip the string literal...
 			-- condition: comment points to a "
-			comment = string.find(line, '\\"', comment+1)
+			comment = string.find(line, '[\\"]', comment+1)
 			-- condition: comment points to a \ or a "
 			while (comment and (string.sub(line, comment, comment) == '\\')) do
 				-- comment points to a \ -> skip 2 characters
-				comment = string.find(line, '\\"', comment+2)
+				comment = string.find(line, '[\\"]', comment+2)
 				-- comment points to a \ or a " or nil
 				if (comment == nil) then break end -- syntax error: missing closing quote -> break
 				-- comment points to a \ or a "
@@ -163,7 +152,7 @@ function PreProcessor:Process(buffer, params)
 			end
 			
 			lines[i] = line
-		end*/
+		end
 		
 		if string.sub(line, 1, 1) == "@" then
 			local position = string.find(line, " ", 2, true)
@@ -276,47 +265,54 @@ function PreProcessor:ParsePorts(ports)
 	local vals = {}
 	local names = {}
 	local types = {}
-	local keys = {}
-	local tp = "NORMAL"
 	ports = string.Explode(" ", string.Trim(ports))
 	
 	for _,key in ipairs(ports) do
-		key = string.Trim(key)
+		key = key:Trim()
 		if key ~= "" then
-			character = string.sub(key, 1, 1)
-			charvalue = string.byte(character)
-			if charvalue >= 65 and charvalue <= 90 or character == "_" then
-				for i=2,string.len(key) do
-					character = string.sub(key, i, i)
-					charvalue = string.byte(character)
-					if character and charvalue >= 65 and charvalue <= 90 or charvalue >= 97 and charvalue <= 122 or character >= "0" and character <= "9" or character == "_" then
-					elseif character == ":" then
-						tp = string.sub(key, i + 1, string.len(key))
-						key = string.sub(key, 1, i - 1)
-						
-						if tp != string.lower(tp) then
-							self:Error("Variable type (" .. stringlimit(tp, 10) .. ") must be lowercase")
-						elseif !wire_expression_types[string.upper(tp)] then
-							self:Error("Unknown variable type (" .. stringlimit(tp, 10) .. ") specified for variable (" .. stringlimit(key, 10) .. ")")
-						end
-						break
-					else
-						self:Error("Variable declaration (" .. stringlimit(key, 10) .. ") contains invalid characters")
-					end
-				end
-			else
+			local vtype = "NORMAL" -- type defaults to NORMAL
+			
+			character = key:sub(1, 1)
+			charvalue = character:byte()
+			if (charvalue < 65 or charvalue > 90) and character != "_" then
 				self:Error("Variable declaration (" .. stringlimit(key, 10) .. ") contains invalid characters")
 			end
-			
-			if keys[key] then
-				self:Error("Variable (" .. stringlimit(key, 10) .. ") is already declared") -- this should be removed
-			else
-				names[#names + 1] = key
-				types[#types + 1] = string.upper(tp)
-				keys[key] = string.upper(tp)
-				tp = "NORMAL"
-				--table.insert(vals, key)
+			local i = key:find("[^A-Za-z0-9]",2) -- find the first non-alphanumeric char from character 2 on
+			if i then
+				character = key:sub(i, i)
+				charvalue = character:byte()
+				if character == ":" then
+					/*local j = key:find("=", i+1, true)
+					if j then
+						-- contains a default value
+						local dval = key:sub(j + 1)
+						vtype = key:sub(i + 1, j-1)
+						key = key:sub(1, i - 1)
+						self:Error("Variable declaration (" .. stringlimit(key, 10) .. ") contains a default value (" .. stringlimit(dval, 10) .. "), which is currently unimplemented")
+					else*/
+						-- no default value
+						vtype = key:sub(i + 1)
+						key = key:sub(1, i - 1)
+					/*end*/
+
+					if vtype != vtype:lower() then
+						self:Error("Variable type (" .. stringlimit(vtype, 10) .. ") must be lowercase")
+					elseif !wire_expression_types[vtype:upper()] then
+						self:Error("Unknown variable type (" .. stringlimit(vtype, 10) .. ") specified for variable (" .. stringlimit(key, 10) .. ")")
+					end
+					break
+				/*elseif character == "=" then
+					local dval = key:sub(i + 1)
+					key = key:sub(1, i - 1)
+					self:Error("Variable declaration (" .. stringlimit(key, 10) .. ") contains a default value (" .. stringlimit(dval, 10) .. "), which is currently unimplemented")
+					break*/
+				else
+					self:Error("Variable declaration (" .. stringlimit(key, 10) .. ") contains invalid characters")
+				end
 			end
+			
+			names[#names + 1] = key
+			types[#types + 1] = vtype:upper()
 		end
 	end
 	
