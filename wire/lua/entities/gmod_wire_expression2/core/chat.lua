@@ -11,8 +11,8 @@ registerFunction("lastSaid", "e:", "s", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
     local entity = checkEntity(rv1)
-	if(!entity || !rv1:IsValid()) then return nil end
-	if(!entity:IsPlayer()) then return nil end
+	if(!entity || !rv1:IsValid()) then return "" end
+	if(!entity:IsPlayer()) then return "" end
 	if !wire_exp2_TextList[entity] then return "" end
     return wire_exp2_TextList[entity][1]
 end)
@@ -20,11 +20,10 @@ end)
 registerFunction("lastSaidWhen", "e:", "n", function(self, args)
     local op1 = args[2]
     local rv1 = op1[1](self, op1)
-    local entity = checkEntity(rv1)
-	if(!entity || !rv1:IsValid()) then return nil end
-	if(!entity:IsPlayer()) then return nil end
-	if !wire_exp2_TextList[entity] then return 0 end
-    return wire_exp2_TextList[entity][3]
+	if(!validEntity(rv1)) then return 0 end
+	if(!rv1:IsPlayer()) then return 0 end
+	if !wire_exp2_TextList[rv1] then return 0 end
+    return wire_exp2_TextList[rv1][3]
 end)
 
 registerFunction("lastSaid", "", "s", function(self, args)
@@ -38,9 +37,9 @@ registerFunction("lastSaidWhen", "", "n", function(self, args)
 end)
 
 registerFunction("lastSpoke", "", "e", function(self, args)
-	if (!wire_exp2_TextList['last'] || !wire_exp2_TextList['last'][1]) then return null end
+	if (!wire_exp2_TextList['last'] || !wire_exp2_TextList['last'][1]) then return nil end
 	local ply = wire_exp2_TextList['last'][1]
-	if (!ply:IsValid() || !ply:IsPlayer()) then return null end
+	if (!ply:IsValid() || !ply:IsPlayer()) then return nil end
     return wire_exp2_TextList['last'][1]
 end)
 
