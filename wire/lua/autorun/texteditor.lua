@@ -534,18 +534,25 @@ function EDITOR:_OnLoseFocus()
 end
 
 function EDITOR:_OnTextChanged()
+	local ctrlv = false
 	local text = self.TextEntry:GetValue()
 	self.TextEntry:SetText("")
 
-	if input.IsKeyDown(KEY_LCONTROL) or input.IsKeyDown(KEY_RCONTROL) then
-		if !input.IsKeyDown(KEY_LALT) and !input.IsKeyDown(KEY_RALT) and !input.IsKeyDown(KEY_V) then
+	if (input.IsKeyDown(KEY_LCONTROL) or input.IsKeyDown(KEY_RCONTROL)) and not (input.IsKeyDown(KEY_LALT) or input.IsKeyDown(KEY_RALT)) then
+		-- ctrl+[shift+]key
+		if input.IsKeyDown(KEY_V) then
+			-- ctrl+[shift+]V
+			ctrlv = true
+		else
+			-- ctrl+[shift+]key with key ~= V
 			return
 		end
 	end
 	
-	if text != "\n" then
-		self:SetSelection(text)
-	end
+	if text == "" then return end
+	if text == "\n" and not ctrlv then return end
+	
+	self:SetSelection(text)
 end
 
 function EDITOR:OnMouseWheeled(delta)
