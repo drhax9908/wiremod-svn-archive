@@ -31,8 +31,6 @@ wire_expression_callbacks['construct'] = {}
 wire_expression_callbacks['destruct'] = {}
 wire_expression_callbacks['preexecute'] = {}
 wire_expression_callbacks['postexecute'] = {}
-wire_expression_callbacks['predupe'] = {}
-wire_expression_callbacks['postdupe'] = {}
 
 wire_expression_types = {}
 wire_expression_types2 = {}

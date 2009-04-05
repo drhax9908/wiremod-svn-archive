@@ -11,6 +11,11 @@
 # ===============================================================================
 # The changelog only lists additions and major fixes, minor fixes are not listed.
 # 
+#
+# 2009-04-05
+# ADDED auto-indentation to editor by TomyLobo, this can be turned off executing
+#   this in the console: wire_expression2_autoindent 0, but we definately think
+#   some of you need to keep it enabled :P
 # 
 # 2009-04-04 
 # ADDED some more editor improvements by TomyLobo, CTRL-I and CTRL-O can now also

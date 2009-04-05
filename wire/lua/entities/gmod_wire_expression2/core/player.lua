@@ -117,7 +117,7 @@ registerFunction("team", "e:", "n", function(self, args)
 	if(rv1:IsPlayer()) then return rv1:Team() else return 0 end
 end)
 
-registerFunction("teamName", "n", "s", function(self, args)
+registerFunction("teamName", "n:", "s", function(self, args)
 	local op1 = args[2]
 	local rv1 = op1[1](self, op1)
 	local str = team.GetName(rv1)

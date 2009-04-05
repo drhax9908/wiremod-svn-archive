@@ -550,7 +550,15 @@ function EDITOR:_OnTextChanged()
 	end
 	
 	if text == "" then return end
-	if text == "\n" and not ctrlv then return end
+	if not ctrlv then
+		if text == "\n" then return end
+		if text == "}" and GetConVarNumber('wire_expression2_autoindent') then
+			local row = self.Rows[self.Caret[1]]
+			if string.find("{" .. row .. "}", "^%b{}.*$") then 
+				self.Rows[self.Caret[1]] = unindent(row)
+			end
+		end
+	end
 	
 	self:SetSelection(text)
 end
@@ -909,6 +917,12 @@ function EDITOR:FindAndReplaceWindow()
 end
 
 
+-- removes the first 0-4 spaces from a string and returns it
+function unindent(line)
+	local i = line:find("[^ ]")
+	if i == nil or i > 5 then i = 5 end
+	return line:sub(i)
+end
 
 function EDITOR:_OnKeyCodeTyped(code)
 	self.Blink = RealTime()
@@ -1018,6 +1032,7 @@ function EDITOR:_OnKeyCodeTyped(code)
 			local row = self.Rows[self.Caret[1]]
 			local diff = string.len(row) - string.len(string.TrimRight(string.reverse(row)))
 			local tabs = string.rep("    ", math.floor(diff / 4))
+			if GetConVarNumber('wire_expression2_autoindent') and (string.find("{" .. row .. "}", "^%b{}.*$") == nil) then tabs = tabs .. "    " end
 			self:SetSelection("\n" .. tabs)
 		elseif code == KEY_UP then
 			if self.Caret[1] > 1 then
@@ -1170,11 +1185,8 @@ function EDITOR:_OnKeyCodeTyped(code)
 				-- shift-TAB with a selection --
 				local tmp = self:GetSelection():gsub("\n ? ? ? ?", "\n")
 				
-				-- makes sure that the first line is outdented				
-				local i = tmp:find("[^ ]")
-				if i == nil then i = 1 end
-				if i > 5 then i = 5 end
-				self:SetSelection(tmp:sub(i))
+				-- makes sure that the first line is outdented
+				self:SetSelection(unindent(tmp))
 			else
 				-- plain TAB with a selection --
 				self:SetSelection("    " .. self:GetSelection():gsub("\n", "\n    "))
