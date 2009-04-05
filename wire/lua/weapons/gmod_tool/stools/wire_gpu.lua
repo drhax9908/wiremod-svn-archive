@@ -544,6 +544,8 @@ function TOOL.BuildCPanel(panel)
 	New:SetText("New file")
 	New.DoClick = function(button)
 		GPU_Editor:Open()
+		GPU_Editor:AutoSave()
+		GPU_Editor:ChosenFile()
 		GPU_Editor:SetCode("\n\n")
 	end
 

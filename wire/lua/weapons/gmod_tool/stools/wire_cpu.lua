@@ -522,6 +522,8 @@ function TOOL.BuildCPanel(panel)
 	New:SetText("New file")
 	New.DoClick = function(button)
 		CPU_Editor:Open()
+		CPU_Editor:AutoSave()
+		CPU_Editor:ChosenFile()
 		CPU_Editor:SetCode("\n\n")
 	end
 
