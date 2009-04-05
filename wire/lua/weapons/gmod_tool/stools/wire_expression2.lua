@@ -4,9 +4,10 @@ TOOL.Command 		= nil
 TOOL.ConfigName 	= ""
 
 TOOL.ClientConVar = {
-	model    = "models/beer/wiremod/gate_e2.mdl",
-	size     = "",
-	select   = "",
+	model      = "models/beer/wiremod/gate_e2.mdl",
+	size       = "",
+	select     = "",
+	autoindent = 1,
 }
 
 if CLIENT then
