@@ -295,7 +295,7 @@ function Editor:InitComponents()
 		surface.SetDrawColor( 255, 255, 255, 255 )
 		surface.DrawTexturedRect( 2, 2, w-4, h-4)
 	end
-	self.C['Sav'].panel.DoClick = function( button ) self:SaveFile( chosenfile ) end
+	self.C['Sav'].panel.DoClick = function( button ) self:SaveFile( self.chosenfile ) end
 	self.C['SaE'].panel:SetText("")
 	self.C['SaE'].panel.Font = "E2SmallFont"
 	self.C['SaE'].panel.Paint = function(button) 
@@ -308,7 +308,7 @@ function Editor:InitComponents()
 		if(self.chip) then surface.DrawText("Upload & Exit")
 		else surface.DrawText(" Save & Exit") end
 	end
-	self.C['SaE'].panel.DoClick = function( button ) self:SaveFile( chosenfile, true ) end
+	self.C['SaE'].panel.DoClick = function( button ) self:SaveFile( self.chosenfile, true ) end
 	self.C['Browser'].panel.OnFileClick = function(panel)
 		if(panel.sDir and panel.sDir == panel.File.FileDir and CurTime()-LastClick < 1) then
 			self:LoadFile(panel.sDir)
@@ -327,7 +327,7 @@ function Editor:InitComponents()
 	end
 	self.C['Editor'].panel.OnShortcut = function(_, code)
 		if code == KEY_S then
-			self:SaveFile(chosenfile)
+			self:SaveFile(self.chosenfile)
 			self:Validate()
 		elseif code == KEY_SPACE then
 			self:Validate(true)
@@ -531,7 +531,7 @@ function Editor:SetV(bool)
 end
 
 function Editor:ChosenFile(Line)
-	chosenfile = Line
+	self.chosenfile = Line
 	if(Line) then
 		self:SubTitle("Editing: " .. Line)
 		self.C['Dir'].panel:SetText(Line)
