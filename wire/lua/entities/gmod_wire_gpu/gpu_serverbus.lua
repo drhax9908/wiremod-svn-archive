@@ -98,7 +98,11 @@ function ENT:WriteCell(Address, value)
 			self.MemoryCache[0] = value
 		else
 			local rp = RecipientFilter()
-			rp:AddAllPlayers()
+			if (self.ForcePlayer) then
+				rp:AddPlayer(self.ForcePlayer)
+			else
+				rp:AddAllPlayers()
+			end
 	
 			umsg.Start("wiregpu_memorymessage", rp)
 				umsg.Long(self:EntIndex())
