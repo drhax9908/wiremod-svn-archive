@@ -563,6 +563,16 @@ registerFunction("aimPos", "e:", "v", function(self, args)
 	else return {0,0,0} end
 end)
 
+registerFunction("aimNormal", "e:", "v", function(self, args)
+	local op1 = args[2]
+	local rv1 = op1[1](self, op1)
+	if(!validEntity(rv1)) then return {0,0,0} end
+	if(rv1:IsPlayer()) then
+		local vec = rv1:GetEyeTrace().HitNormal
+		return vec
+	else return {0,0,0} end
+end)
+
 /******************************************************************************/
 
 registerFunction("boxSize", "e:", "v", function(self, args)
