@@ -5,11 +5,11 @@
 # http://www.wiremod.com
 # http://www.wiremod.com/forum/developers-showcase/4045-expression-gate-2-a-new-post.html
 # 
-# Thank you for supporting Expression 2
+# Thank you for supporting Expression 2!
 # -- Syranide
 # 
 # ===============================================================================
-# The changelog only lists additions and major fixes, minor fixes are not listed.
+# The changelog only lists additions and major changes, minor changes are not listed.
 # 
 #
 # 2009-04-05
@@ -18,6 +18,7 @@
 #   some of you need to keep it enabled :P
 # 
 # 2009-04-04 
+# ADDED [duped()], works the same way as first(), but returns 1 when duped instead
 # ADDED some more editor improvements by TomyLobo, CTRL-I and CTRL-O can now also
 #   be used for indenting and outdenting instead of TAB/SHIFT-TAB
 # 
@@ -33,7 +34,7 @@
 #
 # 2009-03-24
 # ADDED npc-extension by Bobsymalone, it is now possible to "mind control" your
-#   NPCs and have the act the way you want!
+#   NPCs and have them act the way you want!
 #
 # 2009-03-16
 # ADDED autosaving to the editor, it now automatically saves a copy of your script
