@@ -34,7 +34,7 @@ function ENT:ReadCell(Address)
 	end
 
 	//Map address
-	if ((self.Page[Page]) && (self.Page[Page].MappedTo)) then
+	if ((self.Page[Page]) and (self.Page[Page].MappedTo) and (self.Page[Page].MappedTo ~= Page)) then
 		Address = Address % 128 + self.Page[Page].MappedTo*128
 	end
 
@@ -95,7 +95,7 @@ function ENT:WriteCell(Address, value)
 	end
 
 	//Map address
-	if ((self.Page[Page]) && (self.Page[Page].MappedTo)) then
+	if ((self.Page[Page]) and (self.Page[Page].MappedTo) and (self.Page[Page].MappedTo ~= Page)) then
 		Address = Address % 128 + self.Page[Page].MappedTo*128
 	end
 

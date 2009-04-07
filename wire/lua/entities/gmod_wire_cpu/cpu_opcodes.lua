@@ -163,8 +163,8 @@ function ENT:InitializeOpcodeNames()
 	self.DecodeOpcode["cmpor"]  = 129 //CMPOR X,Y  : CMPR = CMPR OR (X - Y)    	6.00
 	//-----------------------------------------------------------------------------------
 	self.DecodeOpcode["mshift"] = 130 //MSHIFT X   : SHIFT DATA (look in lua)	7.00
-	self.DecodeOpcode["smap"]    = 131 //SMAP X,Y   : PAGE[X].MappedTo = Y	   	8.00 [BLOCK]
-	self.DecodeOpcode["gmap"]    = 132 //GMAP X,Y   : X = PAGE[Y].MappedTo		8.00
+	self.DecodeOpcode["smap"]   = 131 //SMAP X,Y   : PAGE[X].MappedTo = Y	   	8.00 [BLOCK]
+	self.DecodeOpcode["gmap"]   = 132 //GMAP X,Y   : X = PAGE[Y].MappedTo		8.00
 	//-----------------------------------------------------------------------------------
 	self.DecodeOpcode["breakpoint"] = 138  //BREAKPOINT (EmuFox only)
 
@@ -1129,12 +1129,21 @@ function ENT:InitializeOpcodeTable()
 		
 				if (self.CurrentPage.RunLevel <= self.Page[page].RunLevel) then
 					self.Page[page].MappedTo = Param2
+					//Invalidate precompile data
+					for tmpaddr=page*128,page*128+127 do
+						self.PrecompileMemory[tmpaddr] = nil
+						self.PrecompileData[tmpaddr] = nil
+					end
+					for tmpaddr=Param2*128,Param2*128+127 do
+						self.PrecompileMemory[tmpaddr] = nil
+						self.PrecompileData[tmpaddr] = nil
+					end
 				else
 					self:Interrupt(11,page)
 					return
 				end
 				addr = addr + 128
-				Param2 = Param2 + 128
+				Param2 = Param2 + 1
 			end
 			self.BlockSize = 0
 		else
@@ -1149,6 +1158,15 @@ function ENT:InitializeOpcodeTable()
 	
 			if (self.CurrentPage.RunLevel <= self.Page[page].RunLevel) then
 				self.Page[page].MappedTo = Param2
+				//Invalidate precompile data
+				for tmpaddr=page*128,page*128+127 do
+					self.PrecompileMemory[tmpaddr] = nil
+					self.PrecompileData[tmpaddr] = nil
+				end
+				for tmpaddr=Param2*128,Param2*128+127 do
+					self.PrecompileMemory[tmpaddr] = nil
+					self.PrecompileData[tmpaddr] = nil
+				end
 			else
 				self:Interrupt(11,page)
 			end
