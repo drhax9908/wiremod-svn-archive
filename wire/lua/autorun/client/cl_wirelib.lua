@@ -293,6 +293,7 @@ end
 
 
 local function initplayer(um)
+	WIRE_SERVER_INSTALLED = 1
 	WireVersion = um:ReadShort()
 	Msg("===============================\n===  Wire  "..WireVersion.."   Installed  ===\n===============================\n")
 end
