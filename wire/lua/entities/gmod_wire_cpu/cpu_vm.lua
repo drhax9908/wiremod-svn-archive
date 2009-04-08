@@ -690,6 +690,7 @@ function ENT:Execute()
 		end
 	else
 		self:Precompile(self.XEIP)
+		self.TMR = self.TMR + 29
 	end
 
 	if (self.Debug) then

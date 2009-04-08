@@ -120,7 +120,7 @@ function WireToolMakeDigitalScreen( self, trace, ply )
 	local Ang = trace.HitNormal:Angle()
 	Ang.pitch = Ang.pitch + 90
 	
-	local wire_digitalscreen = MakeWireDigitalScreen( ply, Ang, trace.HitPos, model )
+	local wire_digitalscreen = MakeWireDigitalScreen( ply, self:GetClientInfo("width"), self:GetClientInfo("height"), Ang, trace.HitPos, model )
 	local min = wire_digitalscreen:OBBMins()
 	wire_digitalscreen:SetPos( trace.HitPos - trace.HitNormal * min.z )
 

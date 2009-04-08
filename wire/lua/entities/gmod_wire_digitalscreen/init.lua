@@ -4,79 +4,131 @@ include('shared.lua')
 
 ENT.WireDebugName = "DigitalScreen"
 
+AddCSLuaFile("cl_init.lua")
+AddCSLuaFile("shared.lua")
+include('shared.lua')
+
+ENT.WireDebugName = "ConsoleScreen"
+
 function ENT:Initialize()
 	
-	self.Entity:PhysicsInit( SOLID_VPHYSICS )
-	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
-	self.Entity:SetSolid( SOLID_VPHYSICS )
+	self.Entity:PhysicsInit(SOLID_VPHYSICS)
+	self.Entity:SetMoveType(MOVETYPE_VPHYSICS)
+	self.Entity:SetSolid(SOLID_VPHYSICS)
 	
 	self.Inputs = Wire_CreateInputs(self.Entity, { "PixelX", "PixelY", "PixelG", "Clk", "FillColor", "ClearRow", "ClearCol" })
 	self.Outputs = Wire_CreateOutputs(self.Entity, { "Memory" }) 
 
 	self.Memory = {}
 
-	for i = 0, 2047 do
-		self.Memory[i] = 0
-	end
-
 	self.PixelX = 0
 	self.PixelY = 0
 	self.PixelG = 0
 	self.Clk = 1
+
+	self.Width = 32
+	self.Height = 32
+
+	self.DataCache = {}
+	self.DataCacheSize = 0
+	self.IgnoreDataTransfer = false
 end
 
-function ENT:Use()
+function ENT:SetDigitalSize(w,h)
+	self.Width = math.Clamp(math.floor(w),1,512)
+	self.Height = math.Clamp(math.floor(h),1,512)
+
+	self:WriteCell(1048572,self.Height)
+	self:WriteCell(1048573,self.Width)
 end
 
 function ENT:SendPixel()
-	if (self.Clk >= 1) && (self.PixelX >= 0) && (self.PixelX < 32) &&
-			      (self.PixelY >= 0) && (self.PixelY < 32) then
-		local address = math.floor(self.PixelY)*32+math.floor(self.PixelX)
-		self.Memory[address] = self.PixelG 
+	if (self.Clk >= 1) && (self.PixelX >= 0) && (self.PixelX < self.Width) &&
+			      (self.PixelY >= 0) && (self.PixelY < self.Height) then
+		local address = self.PixelX*self.Width + self.PixelY
+		self.Memory[address] = self.PixelG
 
 		local rp = RecipientFilter()
 		rp:AddAllPlayers()
 
 		umsg.Start("digitalscreen_datamessage", rp)
-			umsg.Long( self:EntIndex() )
-			umsg.Long( self.Clk )
-			umsg.Long( address )
-			umsg.Float( self.PixelG )
+			umsg.Long(self:EntIndex())
+			umsg.Long(self.Clk)
+			umsg.Long(1)
+			umsg.Long(address)
+			umsg.Float(self.PixelG)
 		umsg.End()
 	end
 end
 
-function ENT:ReadCell( Address )
-	if (Address < 0) || (Address > 2047) then
+function ENT:ReadCell(Address)
+	if (Address < 0) || (Address > 1048575) then
 		return nil
-	elseif (Address == 2047) then
+	elseif (Address == 1048575) then
 		return self.Clk
-	elseif (Address >= 0) && (Address <= 2046) then
-		return self.Memory[Address]
+	elseif (Address >= 0) && (Address <= 1048574) then
+		if (self.Memory[Address]) then
+			return self.Memory[Address]
+		else
+			return 0
+		end
 	end
 end
 
-function ENT:WriteCell( Address, value )
-	if (Address < 0) || (Address > 2047) then
-		return false
-	elseif (Address == 2047) then
-		self.Clk = value
-		return true
-	elseif (Address >= 0) && (Address <= 2046) then
-		self.Memory[Address] = value
-
+function ENT:FlushCache()
+	if (self.DataCacheSize > 0) then
 		local rp = RecipientFilter()
 		rp:AddAllPlayers()
-
+	
 		umsg.Start("digitalscreen_datamessage", rp)
-			umsg.Long( self:EntIndex() )
-			umsg.Long( self.Clk )
-			umsg.Long( Address )
-			umsg.Float( value )
+		umsg.Long(self:EntIndex())
+		umsg.Long(self.Clk)
+		umsg.Long(self.DataCacheSize)
+
+		for i=0,self.DataCacheSize-1 do
+			umsg.Long(self.DataCache[i].Address)
+			umsg.Float(self.DataCache[i].Value)
+		end
+
+		self.DataCacheSize = 0
 		umsg.End()
+	end
+end
+
+function ENT:WriteCell(Address, value)
+	if (Address < 0) || (Address > 1048575) then
+		return false
+	elseif (Address >= 0) && (Address <= 1048575) then
+		if (Address == 1048575) then
+			self.Clk = value
+		end
+
+		//self:ClientWriteCell(Address,value)
+		
+		self.DataCache[self.DataCacheSize] = {}
+		self.DataCache[self.DataCacheSize].Address = Address
+		self.DataCache[self.DataCacheSize].Value = value
+		self.DataCacheSize = self.DataCacheSize + 1
+		if (Address == 1048575) || (self.DataCacheSize > 20) then
+			self:FlushCache()
+			self.IgnoreDataTransfer = true
+		end
+		self.Memory[Address] = value
 		return true
 	end
 end
+
+function ENT:Think()
+	if (self.IgnoreDataTransfer == true) then
+		self.IgnoreDataTransfer = false
+		self.Entity:NextThink(CurTime()+0.2)
+	else
+		self:FlushCache()
+		self.Entity:NextThink(CurTime()+0.1)
+	end
+	return true
+end
+
 
 function ENT:TriggerInput(iname, value)
 	if (iname == "PixelX") then
@@ -92,16 +144,16 @@ function ENT:TriggerInput(iname, value)
 		self.Clk = value
 		self:SendPixel()
 	elseif (iname == "FillColor") then
-		self:WriteCell(2041,value)
+		self:WriteCell(1048574,value)
 	elseif (iname == "ClearCol") then
-		self:WriteCell(2040,math.Clamp( value, 0, 31 ))
+		self:WriteCell(1048571,math.Clamp( value, 0, 31 ))
 	elseif (iname == "ClearRow") then
-		self:WriteCell(2039,math.Clamp( value, 0, 31 ))
+		self:WriteCell(1048570,math.Clamp( value, 0, 31 ))
 	end
 end
 
 
-function MakeWireDigitalScreen( pl, Ang, Pos, Smodel )
+function MakeWireDigitalScreen( pl, w, h, Ang, Pos, Smodel )
 	
 	if ( !pl:CheckLimit( "wire_digitalscreens" ) ) then return false end
 	
@@ -112,6 +164,7 @@ function MakeWireDigitalScreen( pl, Ang, Pos, Smodel )
 	wire_digitalscreen:SetAngles( Ang )
 	wire_digitalscreen:SetPos( Pos )
 	wire_digitalscreen:Spawn()
+	wire_digitalscreen:SetDigitalSize(w,h)
 	
 	wire_digitalscreen:SetPlayer(pl)
 		
@@ -126,5 +179,5 @@ function MakeWireDigitalScreen( pl, Ang, Pos, Smodel )
 	return wire_digitalscreen
 end
 
-duplicator.RegisterEntityClass("gmod_wire_digitalscreen", MakeWireDigitalScreen, "Ang", "Pos", "Smodel")
+duplicator.RegisterEntityClass("gmod_wire_digitalscreen", MakeWireDigitalScreen, "w", "h", "Ang", "Pos", "Smodel")
 
