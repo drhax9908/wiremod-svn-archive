@@ -214,6 +214,20 @@ function TOOL:Compile_End()
 end
 
 //=============================================================================
+function TOOL:Reload(trace)
+	if trace.Entity:IsPlayer() then return false end
+	if (CLIENT) 		   then return true end
+
+	local ply = self:GetOwner()
+	if (trace.Entity:IsValid() && trace.Entity:GetClass() == "gmod_wire_cpu" && trace.Entity.pl == ply) then
+		trace.Entity.Memory = {}
+		trace.Entity.ROMMemory = {}
+		trace.Entity.PrecompileData = {}
+		trace.Entity.PrecompileMemory = {}
+		return true
+	end
+end
+
 function TOOL:LeftClick(trace)
 	if trace.Entity:IsPlayer() then return false end
 	if (CLIENT) 		   then return true end

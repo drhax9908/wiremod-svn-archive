@@ -51,7 +51,9 @@ function ENT:Initialize()
 	self:Reset()
 
 	self.DeltaTime = 0
-	self.ThinkTime = (1000)/100
+	self.Freq = 2000
+	self.PrevThinkTime = CurTime()
+
 	self.PrevTime = CurTime()
 	self.SkipIterations = false
 
@@ -83,8 +85,7 @@ end
 //1	| RAM Size
 //--------------------------------------------
 
-function ENT:Think()
-	local Iterations = self.ThinkTime*0.5
+function ENT:RunExecute(Iterations)
 	while (Iterations > 0) && (self.Clk >= 1.0) && (self.Idle == 0) do
 		self:Execute()
 		if (self.SkipIterations == true) then
@@ -105,13 +106,21 @@ function ENT:Think()
 	if (self.Idle == 1) then
 		self.Idle = 0
 	end
+end//self.Freq
 
-	if (self.Clk >= 1.0) then
-		self.Entity:NextThink(CurTime()+0.01)
-	end
+function ENT:Think()
+	local DeltaTime = CurTime() - self.PrevThinkTime
+	local Iterations = math.floor(self.Freq*DeltaTime*0.5)
+	self:RunExecute(Iterations)
+
+	self.PrevThinkTime = CurTime()
+
+	//Run every tick (or at least attempt to)
+	if (self.Clk >= 1.0) then self.Entity:NextThink(CurTime()) end
 	return true
 end
 
+//FIXME: remove this:
 function ENT:SingleThink()
 	if (self.Clk >= 1.0) then
 		self:Execute()
@@ -170,15 +179,15 @@ function ENT:TriggerInput(iname, value)
 		self.Clk = value
 		self.InputClk = value
 		self.PrevTime = CurTime()
-
+		self.PrevThinkTime = CurTime()
 		self.Entity:NextThink(CurTime())
 	elseif (iname == "Frequency") then
 		if (not SinglePlayer() && (value > 120000)) then 
-			self.ThinkTime = 1200
+			self.Freq = 120000
 			return
 		end
 		if (value > 0) then
-			self.ThinkTime = value/100
+			self.Freq = math.floor(value)
 		end
 	elseif (iname == "Reset") then
 		if (value >= 1.0) then

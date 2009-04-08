@@ -135,7 +135,7 @@ function TOOL.BuildCPanel(panel)
 	panel:AddControl("Header", { Text = "#Tool_wire_cd_disk_name", Description = "#Tool_wire_cd_disk_desc" })
 
 	panel:AddControl("Slider", {
-		Label = "Disk precision (inches per block)",
+		Label = "Disk density (inches per block, ipb)",
 		Type = "Integer",
 		Min = "1",
 		Max = "16",

@@ -243,6 +243,8 @@ if SERVER then
 end
 
 TOOL.ClientConVar[ "model" ] = "models/props_lab/monitor01b.mdl"
+TOOL.ClientConVar[ "width" ] = "32"
+TOOL.ClientConVar[ "height" ] = "32"
 TOOL.NoLeftOnClass = true
 
 function TOOL.BuildCPanel(panel)
@@ -255,6 +257,24 @@ function TOOL.BuildCPanel(panel)
 			["#Monitor Big"]	= { wire_digitalscreen_model = "models/kobilica/wiremonitorbig.mdl" },
 			["#Monitor Small"]	= { wire_digitalscreen_model = "models/kobilica/wiremonitorsmall.mdl" },
 		}
+	})
+
+
+	panel:AddControl("Slider", {
+		Label = "Width",
+		Type = "Integer",
+		Min = "1",
+		Max = "512",
+		Command = "wire_digitalscreen_width"
+	})
+
+
+	panel:AddControl("Slider", {
+		Label = "Height",
+		Type = "Integer",
+		Min = "1",
+		Max = "512",
+		Command = "wire_digitalscreen_height"
 	})
 end
 
