@@ -1,23 +1,93 @@
 AddCSLuaFile( "helpers.lua" )
 
+if (CLIENT) then
+    language.Add( "Wire_Model", "Model" )
+    language.Add( "Wire_Model_Category", "Category" )
 
-function ModelPlug_AddToCPanel(panel, category, toolname, label, _, textbox_label, height)
-	
-	local list = list.Get( "Wire_"..category.."_Models" )
-	
-	if (table.Count(list) > 1) then
-		
-		panel:AddControl( "PropSelect", { Label = "#WireThrusterTool_Model",
+	function ModelPlug_AddToCPanel(panel, category, toolname, label, _, textbox_label, height)
+
+		local list = list.Get( "Wire_"..category.."_Models" )
+
+		if (table.Count(list) > 1) then
+
+			panel:AddControl( "PropSelect", { Label = "#WireThrusterTool_Model",
+				ConVar = toolname .. "_model",
+				Category = "",
+				Models = list,
+				Height = height or 2
+			})
+
+		end
+
+		if (textbox_label) and (GetConVarNumber("cl_showmodeltextbox") > 0) then
+			panel:TextEntry(textbox_label, toolname .. "_model")
+		end
+	end
+
+
+	function ModelPlug_AddToCPanel_Multi(panel, categories, toolname, label, _, textbox_label, height)
+
+		local options = {}
+		for category,name in pairs(categories) do
+			options[name] = { [toolname .. "_model_category"] = category }
+		end
+
+		local ctrl = vgui.Create("CtrlListBox", panel)
+		for k, v in pairs(options) do
+			v.id = nil // Some txt file configs still have an `ID'. But these are redundant now.
+			ctrl:AddOption(k, v)
+		end
+
+		panel:AddPanel(ctrl)
+
+		local list = list.Get( "Wire_"..LocalPlayer():GetInfo(toolname .. "_model_category").."_Models" )
+		local ctrl = panel:AddControl("PropSelect", {
+			Label = "#Wire_Model",
 			ConVar = toolname .. "_model",
 			Category = "",
 			Models = list,
 			Height = height or 2
 		})
-		
-	end
-	
-	if (textbox_label) and (GetConVarNumber("cl_showmodeltextbox") > 0) then
-		panel:TextEntry(textbox_label, toolname .. "_model")
+		ctrl.List:SortByMember("Model", false)
+
+		ctrl.CurrentCategory = GetConVarString(toolname .. "_model_category")
+		local prevTestForChanges = ctrl.TestForChanges
+		function ctrl:TestForChanges()
+			local value = GetConVarString(toolname .. "_model_category")
+			if (value != self.CurrentCategory) then
+				self.CurrentCategory = value
+
+				local wep = nil
+				for k,v in pairs(LocalPlayer():GetWeapons()) do
+					if (v:GetClass() == "gmod_tool") then
+						wep = v
+					end
+				end
+				if (!wep || !wep:IsValid()) then
+					Msg("ModelPlug_AddToCPanel_Multi: ctrl.TestForChanges: No weapon!\n")
+				else
+					local tool = wep:GetToolObject(toolname)
+					if (!tool) then
+						Msg("ModelPlug_AddToCPanel_Multi: ctrl.TestForChanges: No tool!\n")
+					elseif (!panel) then
+						Msg("ModelPlug_AddToCPanel_Multi: ctrl.TestForChanges: No panel!\n")
+					else
+						panel:ClearControls()
+						panel:AddHeader()
+
+						if (tool.BuildCPanel) then
+							tool.BuildCPanel(panel)
+						end
+					end
+				end
+			end
+
+			prevTestForChanges(ctrl)
+		end
+
+		if (textbox_label) and (GetConVarNumber("cl_showmodeltextbox") > 0) then
+			panel:TextEntry(textbox_label, toolname .. "_model")
+		end
 	end
 end
 
@@ -129,7 +199,7 @@ if CLIENT then
 		end
 		panel:AddPanel( ctrl )
 	end
-	
+
 	function WireToolHelpers.MakeModelSel(panel, mode)
 		local TOOL = GetTOOL(mode)
 		if !TOOL then return end
@@ -154,14 +224,14 @@ end
 
 function WireToolSetup.open( s_mode, s_name, s_class, f_toolmakeent )
 	if (TOOL) then WireToolSetup.close() end
-	
+
 	TOOL				= ToolObj:Create()
 	TOOL.Command		= nil
 	TOOL.ConfigName		= ""
 	TOOL.LeftClick		= WireToolHelpers.LeftClick
 	TOOL.UpdateGhost	= WireToolHelpers.UpdateGhost
 	TOOL.Think			= WireToolHelpers.Think
-	
+
 	TOOL.Mode			= "wire_"..s_mode
 	TOOL.short_name		= s_mode
 	TOOL.Category		= WireToolSetup.cat

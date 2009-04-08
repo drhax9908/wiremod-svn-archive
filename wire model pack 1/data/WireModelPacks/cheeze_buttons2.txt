@@ -533,7 +533,7 @@
 	}
 	"Button 0_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/0_small.mdl"
 		"files"
 		{
@@ -552,7 +552,7 @@
 
 	"Button 1_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/1_small.mdl"
 		"files"
 		{
@@ -571,7 +571,7 @@
 
 	"Button 2_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/2_small.mdl"
 		"files"
 		{
@@ -590,7 +590,7 @@
 
 	"Button 3_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/3_small.mdl"
 		"files"
 		{
@@ -609,7 +609,7 @@
 
 	"Button 4_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/4_small.mdl"
 		"files"
 		{
@@ -628,7 +628,7 @@
 
 	"Button 5_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/5_small.mdl"
 		"files"
 		{
@@ -647,7 +647,7 @@
 
 	"Button 6_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/6_small.mdl"
 		"files"
 		{
@@ -666,7 +666,7 @@
 
 	"Button 7_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/7_small.mdl"
 		"files"
 		{
@@ -685,7 +685,7 @@
 
 	"Button 8_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/8_small.mdl"
 		"files"
 		{
@@ -703,7 +703,7 @@
 
 	"Button 9_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/9_small.mdl"
 		"files"
 		{
@@ -721,7 +721,7 @@
 
 	"Button Aim_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/aim_small.mdl"
 		"files"
 		{
@@ -739,7 +739,7 @@
 
 	"Button Arm_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/arm_small.mdl"
 		"files"
 		{
@@ -757,7 +757,7 @@
 
 	"Button Clear_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/clear_small.mdl"
 		"files"
 		{
@@ -775,7 +775,7 @@
 
 	"Button Down_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/down_small.mdl"
 		"files"
 		{
@@ -793,7 +793,7 @@
 
 	"Button Easy_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/easy_small.mdl"
 		"files"
 		{
@@ -811,7 +811,7 @@
 
 	"Button Enter_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/enter_small.mdl"
 		"files"
 		{
@@ -829,7 +829,7 @@
 
 	"Button Fire_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/fire_small.mdl"
 		"files"
 		{
@@ -847,7 +847,7 @@
 
 	"Button Go_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/go_small.mdl"
 		"files"
 		{
@@ -865,7 +865,7 @@
 
 	"Button Left_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/left_small.mdl"
 		"files"
 		{
@@ -883,7 +883,7 @@
 
 	"Button Minus_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/minus_small.mdl"
 		"files"
 		{
@@ -901,7 +901,7 @@
 
 	"Button Muffin_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/muffin_small.mdl"
 		"files"
 		{
@@ -919,7 +919,7 @@
 
 	"Button Plus_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/plus_small.mdl"
 		"files"
 		{
@@ -938,7 +938,7 @@
 
 	"Button Reset_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/reset_small.mdl"
 		"files"
 		{
@@ -956,7 +956,7 @@
 
 	"Button Right_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/right_small.mdl"
 		"files"
 		{
@@ -975,7 +975,7 @@
 
 	"Button Set_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/set_small.mdl"
 		"files"
 		{
@@ -993,7 +993,7 @@
 
 	"Button Start_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/start_small.mdl"
 		"files"
 		{
@@ -1011,7 +1011,7 @@
 
 	"Button Stop_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/stop_small.mdl"
 		"files"
 		{
@@ -1029,7 +1029,7 @@
 
 	"Button Toggle_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/toggle_small.mdl"
 		"files"
 		{
@@ -1047,7 +1047,7 @@
 
 	"Button Up_small new"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/up_small.mdl"
 		"files"
 		{
@@ -1499,7 +1499,7 @@
 
 	"Button Clock_small (CLK)"
 	{
-		"categories"	"button"
+		"categories"	"button_small"
 		"model"			"models/cheeze/buttons2/clock_small.mdl"
 		"files"
 		{
